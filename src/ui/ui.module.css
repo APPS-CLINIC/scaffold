@@ -1,0 +1,39 @@
+/*
+ * Minimal placeholder styling. Replace this whole layer with your internal
+ * organization UI library — keep the prop contracts in the sibling files and
+ * the rest of the app will not need to change.
+ */
+.control {
+  font: inherit;
+  padding: 6px 10px;
+  border: 1px solid var(--border, #cbd2d9);
+  border-radius: 6px;
+  background: var(--surface, #fff);
+  color: inherit;
+  line-height: 1.4;
+}
+
+.control:focus-visible {
+  outline: 2px solid var(--focus, #2563eb);
+  outline-offset: 1px;
+}
+
+.button {
+  cursor: pointer;
+  user-select: none;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.primary {
+  background: var(--accent, #2563eb);
+  border-color: var(--accent, #2563eb);
+  color: #fff;
+}
+
+.ghost {
+  background: transparent;
+}

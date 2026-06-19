@@ -1,0 +1,23 @@
+.shell {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 16px 64px;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border, #e1e5ea);
+}
+
+.subtitle {
+  color: var(--muted, #687280);
+  font-size: 14px;
+}
+
+.main {
+  display: block;
+}
