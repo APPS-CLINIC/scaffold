@@ -7,6 +7,13 @@
   --accent: #2563eb;
   --focus: #2563eb;
 
+  /* Entity accent tokens (see src/ui/tokens.ts + ADR 0016). */
+  --color-accent-blue: #2563eb;
+  --color-accent-purple: #7c3aed;
+  --entity-client: var(--color-accent-blue);
+  --entity-capital-group: var(--color-accent-blue);
+  --entity-own-group: var(--color-accent-purple);
+
   color-scheme: light;
   font-family:
     system-ui,
