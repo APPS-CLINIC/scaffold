@@ -15,7 +15,8 @@ docs/
 ├─ README.md            ← jesteś tutaj (spis treści)
 ├─ steps/               ← budowa opowiedziana jako uporządkowane, samodzielne kroki
 │  ├─ 01-scaffold-and-config.md
-│  └─ 02-app-architecture.md
+│  ├─ 02-app-architecture.md
+│  └─ 03-scope-alignment.md
 └─ adr/                 ← „dlaczego": jedna decyzja na plik, niezmienna po akceptacji
    ├─ README.md
    ├─ 0000-record-architecture-decisions.md
@@ -32,6 +33,7 @@ docs/
 | ---- | ----------------------------- | ------------------------------------------------------------- |
 | 01   | `docs/scaffold-and-config`    | Narzędzia, konfiguracja języka, bramki jakości, proces.       |
 | 02   | `docs/app-architecture`       | Architektura runtime: stan, dane, stan widoku w URL, UI.      |
+| 03   | `docs/scope-alignment`        | Dostrojenie do scope'u z discovery: IWA/PrimeReact, i18n, Entra ID, encje, dostarczanie. |
 
 > **Proces:** rozwój zgodnie z **GitHub Flow** — zob.
 > [`../CONTRIBUTING.md`](../CONTRIBUTING.md), gdzie opisano model gałęzi,
