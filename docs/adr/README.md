@@ -32,6 +32,12 @@ ogóle prowadzimy ADR-y; użyj go też jako szablonu dla nowych rekordów.
 
 ### Krok 02 — Architektura aplikacji
 
-> Dodane na gałęzi `docs/app-architecture` (ADR 0006–0012): URL jako jedyne
-> źródło prawdy, Redux Toolkit + RTK Query, totalne parsowanie Zod, reselect +
-> listener middleware, wirtualizacja list, szew UI oraz routing.
+| ADR                                                      | Tytuł                                            | Status      |
+| -------------------------------------------------------- | ------------------------------------------------ | ----------- |
+| [0006](0006-url-as-single-source-of-truth.md)            | URL jako jedyne źródło prawdy dla stanu widoku    | Zaakceptowano |
+| [0007](0007-redux-toolkit-and-rtk-query.md)              | Redux Toolkit + RTK Query do stanu i cache       | Zaakceptowano |
+| [0008](0008-zod-total-parsing-of-search-params.md)       | Totalne parsowanie search params przez Zod       | Zaakceptowano |
+| [0009](0009-reselect-and-listener-middleware.md)         | Selektory reselect + listener middleware         | Zaakceptowano |
+| [0010](0010-list-virtualization.md)                      | Wirtualizacja list + paginacja po stronie serwera| Zaakceptowano |
+| [0011](0011-ui-seam-no-bundled-ui-library.md)            | Szew UI — brak dołączonej biblioteki UI          | Zaakceptowano |
+| [0012](0012-routing-react-router-v7.md)                  | Routing z React Router v7                        | Zaakceptowano |
