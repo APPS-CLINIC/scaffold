@@ -11,6 +11,7 @@ export const en: Record<MessageKey, string> = {
   'common.search': 'Search',
   'common.loading': 'Loading…',
   'common.empty': 'No data',
+  'home.intro': 'Clean scaffold — add your first feature.',
   'entity.client': 'Client',
   'entity.capitalGroup': 'Capital group',
   'entity.ownGroup': 'Own group',

@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { parseItemsQuery, serializeItemsQuery, type ItemsQuery } from './urlState.schema';
+import { parseListQuery, serializeListQuery, type ListQuery } from './urlState.schema';
 
 export interface SetQueryOptions {
   /**
@@ -17,24 +17,24 @@ export interface SetQueryOptions {
  * The write-side counterpart to the URL-as-source-of-truth pattern.
  *
  * Reading state from this hook is fine, but most components should read the
- * mirrored value via `useAppSelector(selectItemsQuery)` so they benefit from
+ * mirrored value via `useAppSelector(selectListQuery)` so they benefit from
  * reselect memoization. Use `setQuery` here to mutate the URL.
  */
-export function useItemsUrlState() {
+export function useListQueryState() {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const query = useMemo(() => parseItemsQuery(searchParams), [searchParams]);
+  const query = useMemo(() => parseListQuery(searchParams), [searchParams]);
 
   const setQuery = useCallback(
-    (patch: Partial<ItemsQuery>, options: SetQueryOptions = {}) => {
+    (patch: Partial<ListQuery>, options: SetQueryOptions = {}) => {
       const touchesPage = 'page' in patch;
-      const next: ItemsQuery = { ...query, ...patch };
+      const next: ListQuery = { ...query, ...patch };
 
       if ((options.resetPage ?? !touchesPage) && !touchesPage) {
         next.page = 1;
       }
 
-      setSearchParams(serializeItemsQuery(next), { replace: options.replace ?? false });
+      setSearchParams(serializeListQuery(next), { replace: options.replace ?? false });
     },
     [query, setSearchParams],
   );

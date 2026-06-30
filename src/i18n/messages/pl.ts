@@ -13,6 +13,7 @@ export const pl = {
   'common.search': 'Szukaj',
   'common.loading': 'Ładowanie…',
   'common.empty': 'Brak danych',
+  'home.intro': 'Czysty scaffold — dodaj swoją pierwszą funkcję.',
   'entity.client': 'Klient',
   'entity.capitalGroup': 'Grupa kapitałowa',
   'entity.ownGroup': 'Grupa własna',

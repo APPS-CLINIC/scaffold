@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { shallowEqual } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import { useAppDispatch, useAppStore } from '@/app/hooks';
-import { parseItemsQuery } from './urlState.schema';
-import { itemsQueryChanged } from './urlState.slice';
+import { parseListQuery } from './urlState.schema';
+import { listQueryChanged } from './urlState.slice';
 
 /**
  * Bridges React Router -> Redux. Mounted once in the root layout, it watches
@@ -19,10 +19,10 @@ export function UrlStateSync() {
   const store = useAppStore();
 
   useEffect(() => {
-    const next = parseItemsQuery(searchParams);
-    const current = store.getState().urlState.items;
+    const next = parseListQuery(searchParams);
+    const current = store.getState().urlState.list;
     if (!shallowEqual(next, current)) {
-      dispatch(itemsQueryChanged(next));
+      dispatch(listQueryChanged(next));
     }
   }, [searchParams, dispatch, store]);
 

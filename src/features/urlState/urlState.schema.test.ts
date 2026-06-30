@@ -1,52 +1,41 @@
 import { describe, expect, it } from 'vitest';
 import {
-  defaultItemsQuery,
-  parseItemsQuery,
-  serializeItemsQuery,
-  type ItemsQuery,
+  defaultListQuery,
+  parseListQuery,
+  serializeListQuery,
+  type ListQuery,
 } from './urlState.schema';
 
-describe('itemsQuery schema', () => {
+describe('listQuery schema', () => {
   it('falls back to defaults for an empty URL', () => {
-    expect(parseItemsQuery(new URLSearchParams())).toEqual(defaultItemsQuery);
+    expect(parseListQuery(new URLSearchParams())).toEqual(defaultListQuery);
   });
 
   it('coerces and validates raw params', () => {
-    const params = new URLSearchParams('q=abc&status=active&page=3&pageSize=100&sort=name&dir=asc');
-    expect(parseItemsQuery(params)).toEqual({
+    const params = new URLSearchParams('q=abc&page=3&pageSize=100&sort=name&dir=asc');
+    expect(parseListQuery(params)).toEqual({
       q: 'abc',
-      status: 'active',
       sort: 'name',
       dir: 'asc',
       page: 3,
       pageSize: 100,
-    } satisfies ItemsQuery);
+    });
   });
 
-  it('never throws on malformed input — it catches to defaults', () => {
-    const params = new URLSearchParams('status=bogus&page=-5&pageSize=99999&dir=sideways');
-    const parsed = parseItemsQuery(params);
-    expect(parsed.status).toBe(defaultItemsQuery.status);
-    expect(parsed.page).toBe(defaultItemsQuery.page);
-    expect(parsed.pageSize).toBe(defaultItemsQuery.pageSize);
-    expect(parsed.dir).toBe(defaultItemsQuery.dir);
+  it('falls back per-field on malformed values', () => {
+    const query = parseListQuery(new URLSearchParams('page=0&pageSize=9999&dir=sideways'));
+    expect(query.page).toBe(defaultListQuery.page); // min 1
+    expect(query.pageSize).toBe(defaultListQuery.pageSize); // out of range
+    expect(query.dir).toBe(defaultListQuery.dir); // invalid enum
   });
 
-  it('omits default values when serializing to keep URLs short', () => {
-    const serialized = serializeItemsQuery({ ...defaultItemsQuery, q: 'hello', page: 2 });
-    expect(serialized).toEqual({ q: 'hello', page: '2' });
+  it('omits defaults when serializing (short URLs)', () => {
+    const query: ListQuery = { ...defaultListQuery, q: 'hello', page: 2 };
+    expect(serializeListQuery(query)).toEqual({ q: 'hello', page: '2' });
   });
 
   it('round-trips a non-default query', () => {
-    const query: ItemsQuery = {
-      q: 'widget',
-      status: 'inactive',
-      sort: 'value',
-      dir: 'asc',
-      page: 4,
-      pageSize: 25,
-    };
-    const roundTripped = parseItemsQuery(new URLSearchParams(serializeItemsQuery(query)));
-    expect(roundTripped).toEqual(query);
+    const query: ListQuery = { q: 'x', sort: 'name', dir: 'desc', page: 4, pageSize: 25 };
+    expect(parseListQuery(new URLSearchParams(serializeListQuery(query)))).toEqual(query);
   });
 });

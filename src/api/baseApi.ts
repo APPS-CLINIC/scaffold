@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 /**
  * Single RTK Query API instance. Feature endpoints are injected via
  * `baseApi.injectEndpoints(...)` so each feature stays self-contained and
- * code-splittable. See `src/features/items/items.api.ts` for an example.
+ * code-splittable.
  */
 /**
  * Minimal shape of the auth slice this layer needs. Typed locally (instead of
@@ -27,8 +27,9 @@ export const baseApi = createApi({
       return headers;
     },
   }),
-  // Centralize cache tags here so invalidation is coordinated across features.
-  tagTypes: ['Item'],
+  // Register cache tags here as features add endpoints, so invalidation stays
+  // coordinated across the app.
+  tagTypes: [],
   // Keep responses cached for a minute after the last subscriber unmounts.
   keepUnusedDataFor: 60,
   endpoints: () => ({}),

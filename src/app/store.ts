@@ -4,9 +4,6 @@ import { baseApi } from '@/api/baseApi';
 import { listenerMiddleware } from './listenerMiddleware';
 import { rootReducer, type RootState } from './rootReducer';
 
-// Side-effect import: registers feature listeners on the shared middleware.
-import '@/features/items/items.listeners';
-
 /**
  * Store factory. Using a factory (instead of a singleton-only export) keeps
  * tests isolated — every test can spin up a fresh store, optionally with
