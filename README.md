@@ -79,7 +79,7 @@ Why this shape:
 src/
 ├─ app/                 # store, typed hooks, listener middleware, root reducer
 ├─ api/                 # baseApi (RTK Query root)
-├─ features/            # auth/, entities/, urlState/ — and your own features
+├─ features/            # urlState/ — and your own features
 │  └─ urlState/         # generic Zod list-query schema, slice mirror, selectors, sync, write hook
 ├─ ui/                  # SEAM for your internal UI library (placeholders only)
 ├─ routes/              # router, layout, pages

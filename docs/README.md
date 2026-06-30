@@ -29,11 +29,11 @@ docs/
 
 ## Kroki budowy
 
-| Krok | Gałąź                         | Co ustanawia                                                   |
-| ---- | ----------------------------- | ------------------------------------------------------------- |
-| 01   | `docs/scaffold-and-config`    | Narzędzia, konfiguracja języka, bramki jakości, proces.       |
-| 02   | `docs/app-architecture`       | Architektura runtime: stan, dane, stan widoku w URL, UI.      |
-| 03   | `docs/scope-alignment`        | Dostrojenie do scope'u z discovery: IWA/PrimeReact, i18n, Entra ID, encje, dostarczanie. |
+| Krok | Co ustanawia                                              |
+| ---- | --------------------------------------------------------- |
+| 01   | Narzędzia, konfiguracja języka, bramki jakości, proces.   |
+| 02   | Architektura runtime: stan, dane, stan widoku w URL, UI.  |
+| 03   | Dostrojenie do scope'u z discovery: IWA/PrimeReact, i18n. |
 
 > **Proces:** rozwój zgodnie z **GitHub Flow** — zob.
 > [`../CONTRIBUTING.md`](../CONTRIBUTING.md), gdzie opisano model gałęzi,

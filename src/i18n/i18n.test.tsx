@@ -9,8 +9,8 @@ function Sample() {
   const { locale, setLocale } = useI18n();
   return (
     <div>
-      <span data-testid="title">{t('nav.clients')}</span>
-      <span data-testid="count">{t('entity.count', { count: 3 })}</span>
+      <span data-testid="label">{t('common.search')}</span>
+      <span data-testid="count">{t('common.results', { count: 3 })}</span>
       <span data-testid="locale">{locale}</span>
       <button type="button" onClick={() => setLocale('en')}>
         switch
@@ -26,7 +26,7 @@ describe('i18n', () => {
         <Sample />
       </I18nProvider>,
     );
-    expect(screen.getByTestId('title')).toHaveTextContent('Klienci');
+    expect(screen.getByTestId('label')).toHaveTextContent('Szukaj');
   });
 
   it('interpolates variables', () => {
@@ -35,7 +35,7 @@ describe('i18n', () => {
         <Sample />
       </I18nProvider>,
     );
-    expect(screen.getByTestId('count')).toHaveTextContent('3 podmiotów');
+    expect(screen.getByTestId('count')).toHaveTextContent('3 wyników');
   });
 
   it('switches locale at runtime', async () => {
@@ -46,6 +46,6 @@ describe('i18n', () => {
     );
     await userEvent.click(screen.getByRole('button', { name: 'switch' }));
     expect(screen.getByTestId('locale')).toHaveTextContent('en');
-    expect(screen.getByTestId('title')).toHaveTextContent('Clients');
+    expect(screen.getByTestId('label')).toHaveTextContent('Search');
   });
 });

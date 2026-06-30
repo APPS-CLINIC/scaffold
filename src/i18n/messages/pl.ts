@@ -7,17 +7,12 @@
  * (see docs/adr/0014-internationalization-i18n.md).
  */
 export const pl = {
-  'app.title': 'BIX',
-  'nav.portfolio': 'Portfel',
-  'nav.clients': 'Klienci',
+  'app.title': 'Scaffold',
   'common.search': 'Szukaj',
   'common.loading': 'Ładowanie…',
   'common.empty': 'Brak danych',
+  'common.results': '{count} wyników',
   'home.intro': 'Czysty scaffold — dodaj swoją pierwszą funkcję.',
-  'entity.client': 'Klient',
-  'entity.capitalGroup': 'Grupa kapitałowa',
-  'entity.ownGroup': 'Grupa własna',
-  'entity.count': '{count} podmiotów',
 } as const;
 
 export type MessageKey = keyof typeof pl;
