@@ -20,7 +20,7 @@ export const baseApi = createApi({
     baseUrl: import.meta.env.VITE_API_BASE_URL ?? '/api',
     // Forward the Entra ID bearer token to the OKAPI gateway when present.
     // The gateway may also inject identity headers server-side; this is the
-    // client-side seam (see docs/adr/0015-authentication-entra-id.md).
+    // client-side seam.
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as AuthSlicePeek).auth.token;
       if (token) headers.set('Authorization', `Bearer ${token}`);

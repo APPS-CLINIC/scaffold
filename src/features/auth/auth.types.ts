@@ -15,8 +15,7 @@ export interface AuthState {
   user: UserIdentity | null;
   /**
    * Optional bearer token forwarded to the API gateway (OKAPI). May stay null
-   * when the gateway injects identity headers server-side
-   * (see docs/adr/0015-authentication-entra-id.md).
+   * when the gateway injects identity headers server-side.
    */
   token: string | null;
 }

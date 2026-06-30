@@ -68,14 +68,12 @@ unieważnianiem cache opartym na tagach), **czyta** stan zapytania z URL przez
 `selectListQuery` / `useListQueryState`, a jeśli renderuje dużą listę —
 opcjonalnie ją **wirtualizuje** (server-side paginacja niesiona przez
 `page`/`pageSize` w `listQuerySchema`).
-→ [ADR 0010](../adr/0010-list-virtualization.md)
 
 ### 5. Szew UI — `src/ui`
 
 Wszystko importuje prymitywy UI z `@/ui`, cienkiej warstwy-zaślepki, więc
 wewnętrzną bibliotekę UI organizacji można podpiąć w jednym folderze bez
 dotykania kodu funkcji.
-→ [ADR 0011](../adr/0011-ui-seam-no-bundled-ui-library.md)
 
 ### 6. Routing — `src/routes`
 

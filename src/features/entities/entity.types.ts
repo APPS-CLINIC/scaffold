@@ -12,7 +12,7 @@ export interface EntityRef {
  * the only difference is how many members sit underneath. Modeling every
  * target as a collection (a client is a one-member collection) lets one set of
  * components and selectors serve both, and lets endpoints assume N from the
- * start (see docs/adr/0016-entity-parametrized-views.md).
+ * start.
  */
 export interface EntityCollection {
   type: EntityType;

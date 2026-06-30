@@ -2,12 +2,10 @@
 
 - **Status:** Zaakceptowano (kierunek; szczegóły zależne od dostępu do repo IWA)
 - **Data:** 2026-06-22
-- **Powiązane:** rozwija [ADR 0011](0011-ui-seam-no-bundled-ui-library.md)
 
 ## Kontekst
 
-[ADR 0011](0011-ui-seam-no-bundled-ui-library.md) ustanowił szew UI (`@/ui`) bez
-wskazania konkretnej biblioteki. Ze spotkania planistycznego wynika, że
+Szew UI (`@/ui`) ustanowiono bez wskazania konkretnej biblioteki. Ze spotkania planistycznego wynika, że
 wewnętrzną biblioteką organizacji są **IWA Components** (ING), zbudowane na
 **PrimeReact** (+ PrimeIcons, PrimeFlex), w repozytorium z **Tailwind**,
 **React Router** i **Toastify** (notyfikacje).
@@ -45,5 +43,5 @@ Celem szwu `@/ui` są **IWA Components (PrimeReact)**:
 ## Rozważane alternatywy
 
 - **Własny design system.** Duplikuje IWA; niezgodne ze standardem organizacji.
-- **Bezpośredni import PrimeReact w funkcjach.** Łamie szew z ADR 0011 i wiąże
+- **Bezpośredni import PrimeReact w funkcjach.** Łamie szew `@/ui` i wiąże
   kod z konkretnym vendorem.

@@ -5,8 +5,7 @@ import type { UserIdentity } from './auth.types';
 /**
  * The gateway (OKAPI) is expected to inject the Entra ID identity into the page
  * — here we read it from a global it sets. This is the single seam to adapt
- * when the real SSO/header flow is finalized (see the Entra ID spike and
- * docs/adr/0015-authentication-entra-id.md).
+ * when the real SSO/header flow is finalized (see the Entra ID spike).
  */
 interface IdentityWindow {
   __BIX_IDENTITY__?: UserIdentity;

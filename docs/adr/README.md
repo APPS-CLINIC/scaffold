@@ -38,8 +38,6 @@ ogóle prowadzimy ADR-y; użyj go też jako szablonu dla nowych rekordów.
 | [0007](0007-redux-toolkit-and-rtk-query.md)              | Redux Toolkit + RTK Query do stanu i cache       | Zaakceptowano |
 | [0008](0008-zod-total-parsing-of-search-params.md)       | Totalne parsowanie search params przez Zod       | Zaakceptowano |
 | [0009](0009-reselect-and-listener-middleware.md)         | Selektory reselect + listener middleware         | Zaakceptowano |
-| [0010](0010-list-virtualization.md)                      | Wirtualizacja list + paginacja po stronie serwera| Zaakceptowano (wzorzec) |
-| [0011](0011-ui-seam-no-bundled-ui-library.md)            | Szew UI — brak dołączonej biblioteki UI          | Zaakceptowano (rozwinięte w [0013](0013-iwa-components-primereact.md)) |
 | [0012](0012-routing-react-router-v7.md)                  | Routing z React Router v7                        | Zaakceptowano |
 
 ### Krok 03 — Dostrojenie do scope'u (discovery)
@@ -48,7 +46,3 @@ ogóle prowadzimy ADR-y; użyj go też jako szablonu dla nowych rekordów.
 | -------------------------------------------------------- | ------------------------------------------------ | ----------- |
 | [0013](0013-iwa-components-primereact.md)                | IWA Components (PrimeReact) za szwem `@/ui`       | Zaakceptowano |
 | [0014](0014-internationalization-i18n.md)                | Internacjonalizacja (i18n)                       | Zaakceptowano |
-| [0015](0015-authentication-entra-id.md)                  | Uwierzytelnianie przez Azure Entra ID            | Zaakceptowano |
-| [0016](0016-entity-parametrized-views.md)                | Widoki parametryzowane encją (klient i grupy)    | Zaakceptowano |
-| [0017](0017-delivery-docker-azure-pipelines.md)          | Dostarczanie: Docker + Azure Pipelines + GCP/OKAPI | Zaakceptowano |
-| [0018](0018-openapi-type-generation.md)                  | Generowanie typów z OpenAPI                      | Proponowane |
