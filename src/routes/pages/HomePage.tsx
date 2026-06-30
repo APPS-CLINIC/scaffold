@@ -1,12 +1,12 @@
-import { useT } from '@/i18n';
+import { useTranslation } from 'react-i18next';
 
 /**
  * Placeholder landing page. Replace it with your first real feature — the
- * scaffold already provides the store, API layer, auth, i18n, the UI seam,
- * routing and the URL-driven state pattern to build on.
+ * scaffold already provides the store, API layer, i18n, the UI seam, routing
+ * and the URL-driven state pattern to build on.
  */
 export function HomePage() {
-  const t = useT();
+  const { t } = useTranslation();
   return (
     <section>
       <h1>{t('app.title')}</h1>

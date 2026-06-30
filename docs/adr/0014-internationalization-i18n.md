@@ -1,6 +1,6 @@
 # ADR 0014 — Internacjonalizacja (i18n)
 
-- **Status:** Zaakceptowano (kierunek; biblioteka i szczegóły do ustalenia)
+- **Status:** Zaakceptowano
 - **Data:** 2026-06-22
 
 ## Kontekst
@@ -20,15 +20,18 @@ Rozróżnienie z dyskusji:
 
 ## Decyzja
 
-Wprowadzamy warstwę i18n od początku:
+Wprowadzamy warstwę i18n od początku, na bibliotece **`react-i18next`** (na
+`i18next`):
 
-- Katalog `src/i18n` z providerem i plikami tłumaczeń (`pl`, `en`); domyślny
-  język + przełącznik.
+- Katalog `src/i18n` z konfiguracją i18next i plikami tłumaczeń (`pl`, `en`);
+  domyślny język `pl`, `fallbackLng: 'pl'`. Komponenty tłumaczą przez
+  `useTranslation()`.
+- **Klucze płaskie, kropkowane** (`keySeparator: false`), interpolacja `{{var}}`.
+  Type-safety kluczy przez augmentację `src/i18n/i18next.d.ts` (literówka =
+  błąd kompilacji).
 - **Statyczne teksty UI przez klucze** (żadnych literałów w komponentach).
 - Dla **danych z backendu** zakładamy, że backend zwraca treść w języku
   użytkownika; front nie tłumaczy danych domenowych.
-- Decyzja o konkretnej bibliotece (np. `react-i18next` / `formatjs`) — w osobnej
-  historyjce; struktura ma być od niej maksymalnie niezależna.
 
 ## Konsekwencje
 
@@ -38,6 +41,10 @@ Wprowadzamy warstwę i18n od początku:
 
 ## Rozważane alternatywy
 
+- **Własna, ręczna warstwa i18n.** Reinventing — react-i18next robi
+  interpolację, liczbę mnogą, detekcję języka i lazy-loading sprawdzonym kodem.
+- **formatjs / @lingui.** Dobre alternatywy; react-i18next wybrany jako
+  najpopularniejszy w ekosystemie React.
 - **i18n później.** Odrzucone — wymusiłoby przepisanie wszystkich widoków
   (decyzja „trzeba na tej fazie").
 - **Tłumaczenie danych domenowych na froncie.** Kosztowne i kruche; dane lepiej

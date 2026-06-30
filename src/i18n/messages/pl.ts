@@ -11,7 +11,7 @@ export const pl = {
   'common.search': 'Szukaj',
   'common.loading': 'Ładowanie…',
   'common.empty': 'Brak danych',
-  'common.results': '{count} wyników',
+  'common.results': '{{count}} wyników',
   'home.intro': 'Czysty scaffold — dodaj swoją pierwszą funkcję.',
 } as const;
 

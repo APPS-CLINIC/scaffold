@@ -9,6 +9,6 @@ export const en: Record<MessageKey, string> = {
   'common.search': 'Search',
   'common.loading': 'Loading…',
   'common.empty': 'No data',
-  'common.results': '{count} results',
+  'common.results': '{{count}} results',
   'home.intro': 'Clean scaffold — add your first feature.',
 };

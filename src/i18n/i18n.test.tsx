@@ -1,51 +1,36 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { I18nProvider } from './I18nProvider';
-import { useI18n, useT } from './useT';
+import { useTranslation } from 'react-i18next';
+import i18n from '.';
 
 function Sample() {
-  const t = useT();
-  const { locale, setLocale } = useI18n();
+  const { t } = useTranslation();
   return (
     <div>
       <span data-testid="label">{t('common.search')}</span>
       <span data-testid="count">{t('common.results', { count: 3 })}</span>
-      <span data-testid="locale">{locale}</span>
-      <button type="button" onClick={() => setLocale('en')}>
-        switch
-      </button>
     </div>
   );
 }
 
 describe('i18n', () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('pl');
+  });
+
   it('translates with the default (Polish) catalog', () => {
-    render(
-      <I18nProvider>
-        <Sample />
-      </I18nProvider>,
-    );
+    render(<Sample />);
     expect(screen.getByTestId('label')).toHaveTextContent('Szukaj');
   });
 
   it('interpolates variables', () => {
-    render(
-      <I18nProvider>
-        <Sample />
-      </I18nProvider>,
-    );
+    render(<Sample />);
     expect(screen.getByTestId('count')).toHaveTextContent('3 wyników');
   });
 
-  it('switches locale at runtime', async () => {
-    render(
-      <I18nProvider>
-        <Sample />
-      </I18nProvider>,
-    );
-    await userEvent.click(screen.getByRole('button', { name: 'switch' }));
-    expect(screen.getByTestId('locale')).toHaveTextContent('en');
+  it('switches language at runtime', async () => {
+    await i18n.changeLanguage('en');
+    render(<Sample />);
     expect(screen.getByTestId('label')).toHaveTextContent('Search');
   });
 });

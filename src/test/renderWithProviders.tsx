@@ -3,7 +3,7 @@ import { render, type RenderOptions } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router-dom';
 import { makeStore, type AppStore, type RootState } from '@/app/store';
-import { I18nProvider } from '@/i18n';
+import '@/i18n';
 
 interface ExtendedRenderOptions extends Omit<RenderOptions, 'wrapper'> {
   preloadedState?: Partial<RootState>;
@@ -28,9 +28,7 @@ export function renderWithProviders(
   function Wrapper({ children }: { children: ReactNode }) {
     return (
       <Provider store={store}>
-        <I18nProvider>
-          <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
-        </I18nProvider>
+        <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
       </Provider>
     );
   }
