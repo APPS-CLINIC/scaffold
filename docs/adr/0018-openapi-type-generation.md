@@ -16,8 +16,8 @@ To jest **decyzja jeszcze niepodjęta** — rejestrujemy ją jako otwartą.
 
 ## Opcje
 
-1. **Bez codegenu** — typy i endpointy RTK Query pisane ręcznie (jak dziś:
-   `items.types.ts` + `items.api.ts`). Pełna kontrola, więcej pracy ręcznej.
+1. **Bez codegenu** — ręcznie pisane typy i endpointy RTK Query per funkcja
+   (jak dziś). Pełna kontrola, więcej pracy ręcznej.
 2. **`@rtk-query/codegen-openapi`** — generuje endpointy bezpośrednio do RTK
    Query, którego już używamy ([ADR 0007](0007-redux-toolkit-and-rtk-query.md)).
 3. **Kubb** — generuje typy/klienty z OpenAPI; elastyczny, ale wprowadza własny

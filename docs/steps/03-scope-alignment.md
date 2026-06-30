@@ -1,6 +1,5 @@
 # Krok 03 — Dostrojenie do scope'u (z discovery)
 
-> **Gałąź:** `docs/scope-alignment` (zbudowana na `docs/app-architecture`)
 > **Cel:** uzgodnić scaffold z zakresem aplikacji ustalonym na spotkaniach
 > (demo BIX + spotkanie planistyczne) i zarejestrować wynikające decyzje jako
 > ADR-y.

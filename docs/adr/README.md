@@ -38,7 +38,7 @@ ogóle prowadzimy ADR-y; użyj go też jako szablonu dla nowych rekordów.
 | [0007](0007-redux-toolkit-and-rtk-query.md)              | Redux Toolkit + RTK Query do stanu i cache       | Zaakceptowano |
 | [0008](0008-zod-total-parsing-of-search-params.md)       | Totalne parsowanie search params przez Zod       | Zaakceptowano |
 | [0009](0009-reselect-and-listener-middleware.md)         | Selektory reselect + listener middleware         | Zaakceptowano |
-| [0010](0010-list-virtualization.md)                      | Wirtualizacja list + paginacja po stronie serwera| Zaakceptowano |
+| [0010](0010-list-virtualization.md)                      | Wirtualizacja list + paginacja po stronie serwera| Zaakceptowano (wzorzec) |
 | [0011](0011-ui-seam-no-bundled-ui-library.md)            | Szew UI — brak dołączonej biblioteki UI          | Zaakceptowano (rozwinięte w [0013](0013-iwa-components-primereact.md)) |
 | [0012](0012-routing-react-router-v7.md)                  | Routing z React Router v7                        | Zaakceptowano |
 

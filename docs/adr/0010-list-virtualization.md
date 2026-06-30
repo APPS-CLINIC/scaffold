@@ -1,6 +1,6 @@
 # ADR 0010 — Wirtualizacja list + paginacja po stronie serwera
 
-- **Status:** Zaakceptowano
+- **Status:** Zaakceptowano (wzorzec — przykładowa implementacja usunięta)
 - **Data:** 2026-06-22
 
 ## Kontekst
@@ -12,18 +12,20 @@ pozostały ograniczone niezależnie od rozmiaru zbioru danych.
 
 ## Decyzja
 
-Łączymy dwie uzupełniające się techniki:
+To jest **rekomendowany wzorzec** — scaffold nie dołącza już przykładowej
+implementacji ani zależności wirtualizacji. Gdy dodajesz dużą listę, łączysz
+dwie uzupełniające się techniki:
 
-- **Wirtualizacja wierszy** z **@tanstack/react-virtual** w `ItemsTable`, więc
-  liczba zamontowanych węzłów wiersza jest **O(viewport)**, a nie O(zbioru
-  danych). W DOM jest tylko widoczne okno (plus niewielki overscan).
-- **Paginacja po stronie serwera** w zapytaniu: `page`/`pageSize` są częścią
-  walidowanego przez Zod `ItemsQuery` (zob.
+- **Wirtualizacja wierszy** z **@tanstack/react-virtual** (instalujesz ją
+  wtedy), więc liczba zamontowanych węzłów wiersza jest **O(viewport)**, a nie
+  O(zbioru danych). W DOM jest tylko widoczne okno (plus niewielki overscan).
+- **Paginacja po stronie serwera** w zapytaniu: generyczny, walidowany przez
+  Zod `listQuerySchema` niesie już `page`/`pageSize` (zob.
   [ADR 0008](0008-zod-total-parsing-of-search-params.md)), więc każde żądanie
   pobiera jedną ograniczoną stronę, cache'owaną per-argument przez RTK Query.
 
-Te dwie łączą się z listenerem **prefetchu następnej strony**
-([ADR 0009](0009-reselect-and-listener-middleware.md)), więc paginacja jest
+Te dwie można połączyć z listenerem **prefetchu następnej strony**
+([ADR 0009](0009-reselect-and-listener-middleware.md)), by paginacja była
 natychmiastowa.
 
 ## Konsekwencje

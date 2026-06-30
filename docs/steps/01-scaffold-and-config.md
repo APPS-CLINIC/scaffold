@@ -1,6 +1,5 @@
 # Krok 01 — Scaffold i konfiguracja
 
-> **Gałąź:** `docs/scaffold-and-config`
 > **Cel:** ustanowić toolchain, konfigurację języka, bramki jakości oraz proces
 > projektowy — fundament, na którym buduje każdy kolejny krok.
 

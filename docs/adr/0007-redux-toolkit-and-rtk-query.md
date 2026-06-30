@@ -22,17 +22,18 @@ Używamy **Redux Toolkit** dla store i **RTK Query** dla stanu serwera.
 - **Jedna instancja API RTK Query**, [`baseApi`](../../src/api/baseApi.ts),
   posiada `reducerPath: 'api'`, współdzielone `tagTypes` oraz
   `keepUnusedDataFor`. Funkcje **wstrzykują** swoje endpointy przez
-  `baseApi.injectEndpoints(...)`
-  ([`items.api.ts`](../../src/features/items/items.api.ts)), więc każda funkcja
-  jest samowystarczalna i podzielna na chunki.
+  `baseApi.injectEndpoints(...)`, więc każda funkcja jest samowystarczalna i
+  podzielna na chunki.
 - [`rootReducer`](../../src/app/rootReducer.ts) podpina `[baseApi.reducerPath]`
   i slice `urlState`.
 - Typowane hooki (`useAppSelector`, `useAppDispatch`, `useAppStore`) centralizują
   typy `RootState`/`AppDispatch`, więc komponenty nigdy nie importują surowych
   typów Redux.
 
-Unieważnianie cache jest oparte na tagach: `getItems` dostarcza tagi `Item` per
-wiersz plus tag `LIST`, więc przyszła mutacja może unieważniać precyzyjnie.
+Unieważnianie cache jest oparte na tagach. `baseApi.tagTypes` startuje pusty
+(`[]`); typy tagów rejestruje się centralnie w miarę, jak funkcje dodają
+endpointy. Przykładowo zapytanie listy mogłoby dostarczać tag per wiersz plus
+tag `LIST`, dzięki czemu przyszła mutacja unieważnia precyzyjnie.
 
 ## Konsekwencje
 

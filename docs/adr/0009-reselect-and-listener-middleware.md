@@ -22,10 +22,10 @@ Redux Toolkit do reaktywnych efektów ubocznych.
   ponownie.
 - **Listener middleware** jest skonfigurowane raz w
   [`listenerMiddleware.ts`](../../src/app/listenerMiddleware.ts) z typowanymi
-  helperami (`startAppListening` / `addAppListener`). Funkcje rejestrują
+  helperami (`startAppListening` / `addAppListener`). Funkcje rejestrują własne
   listenery przez **import z efektem ubocznym** w
-  [`store.ts`](../../src/app/store.ts) (`import '@/features/items/items.listeners'`).
-  Przykładowy listener **prefetchuje następną stronę** przy zmianie zapytania,
+  [`store.ts`](../../src/app/store.ts). Typowym wzorcem do dodania per funkcja
+  jest listener, który **prefetchuje następną stronę** przy zmianie zapytania,
   więc paginacja jest natychmiastowa.
 - Middleware jest **prepended** przed API middleware (zob.
   [ADR 0007](0007-redux-toolkit-and-rtk-query.md)), więc obserwuje akcje jako
@@ -37,8 +37,8 @@ Redux Toolkit do reaktywnych efektów ubocznych.
   porównania w `UrlStateSync` trzymają churn dispatch/render niski.
 - Efekty uboczne żyją w jednym idiomatycznym miejscu (listenery), a nie
   rozsiane jako thunki w komponentach — łatwiej znaleźć, testować, rozumować.
-- Prefetch-przy-zmianie daje natychmiastową paginację kosztem dodatkowych
-  żądań (ograniczonych cache'owaniem/dedup RTK Query).
+- Wzorzec prefetch-przy-zmianie daje natychmiastową paginację kosztem
+  dodatkowych żądań (ograniczonych cache'owaniem/dedup RTK Query).
 - Listenery rejestrują się przez import z efektem ubocznym, który musi pozostać
   w `store.ts`, by się podłączyły.
 

@@ -18,10 +18,10 @@ Używamy **React Router v7** z routerem przeglądarki zdefiniowanym w
 
 - Element `RootLayout` opakowuje wszystkie trasy i jest miejscem, gdzie
   [`UrlStateSync`](../../src/features/urlState/UrlStateSync.tsx) montuje się raz.
-- Trasy: indeks przekierowuje do `/items`, `items` renderuje stronę listy, a `*`
-  renderuje `NotFoundPage`.
+- Trasy: indeks renderuje `HomePage` (placeholder), a `*` renderuje
+  `NotFoundPage`.
 - Funkcje czytają/zapisują search params przez `useSearchParams` routera
-  (opakowane przez `useItemsUrlState`), co jest kręgosłupem wzorca stanu
+  (opakowane przez `useListQueryState`), co jest kręgosłupem wzorca stanu
   napędzanego URL-em.
 
 ## Konsekwencje

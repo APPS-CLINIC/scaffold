@@ -18,14 +18,14 @@ Czynimy **URL jedynym źródłem prawdy** dla odpytywalnego stanu widoku, ze śc
 
 ```
  zapis                                odczyt
- useItemsUrlState.setQuery(...)        useAppSelector(selectItemsQuery)
+ useListQueryState.setQuery(...)       useAppSelector(selectListQuery)
         │                                        ▲
         ▼                                        │
  setSearchParams ─▶ URL React Router ─▶ <UrlStateSync/> ─▶ slice urlState (lustro)
 ```
 
-- **Zapisy** przechodzą przez `useItemsUrlState().setQuery()`
-  ([`useItemsUrlState.ts`](../../src/features/urlState/useItemsUrlState.ts)),
+- **Zapisy** przechodzą przez `useListQueryState().setQuery()`
+  ([`useListQueryState.ts`](../../src/features/urlState/useListQueryState.ts)),
   który serializuje do search params przez `setSearchParams`.
 - Zmiana URL wraca przez
   [`UrlStateSync`](../../src/features/urlState/UrlStateSync.tsx) — zamontowany

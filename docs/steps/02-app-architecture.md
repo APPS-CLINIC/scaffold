@@ -1,6 +1,5 @@
 # Krok 02 — Architektura aplikacji
 
-> **Gałąź:** `docs/app-architecture` (zbudowana na `docs/scaffold-and-config`)
 > **Cel:** udokumentować architekturę runtime, która siedzi na warstwie
 > konfiguracji z [Kroku 01](01-scaffold-and-config.md).
 
@@ -12,10 +11,10 @@ pozostaje wymienialne. Każda sekcja linkuje do ADR-a zapisującego decyzję.
 
 ```
         zapis                              odczyt
- ┌──────────────────┐              ┌─────────────────────┐
- │ useItemsUrlState │  navigate →  │  React Router (URL)  │
- │   setQuery(...)  │              └──────────┬──────────┘
- └──────────────────┘                         │ zmiana search params
+ ┌───────────────────┐             ┌─────────────────────┐
+ │ useListQueryState │  navigate → │  React Router (URL)  │
+ │   setQuery(...)   │             └──────────┬──────────┘
+ └───────────────────┘                        │ zmiana search params
                                               ▼
                                    ┌─────────────────────┐
                                    │   <UrlStateSync/>    │  (URL → Redux, ze strażnikiem)
@@ -25,10 +24,10 @@ pozostaje wymienialne. Każda sekcja linkuje do ADR-a zapisującego decyzję.
                                               │
                   ┌───────────────────────────┼───────────────────────────┐
                   ▼                            ▼                           ▼
-        selectItemsQuery (reselect)   listener middleware           komponenty czytają
+        selectListQuery (reselect)    listener middleware           komponenty czytają
                   │                   (prefetch następnej strony)    przez useAppSelector
                   ▼
-        useGetItemsQuery(query)  →  cache RTK Query  →  render
+        useGetXQuery(query)  →  cache RTK Query  →  render
 ```
 
 **URL jest jedynym źródłem prawdy** dla odpytywalnego stanu widoku; Redux trzyma
@@ -50,7 +49,7 @@ komponentami.
 Zod parsuje search params **totalnie** (każde pole `.catch()` z domyślną), więc
 zły URL nigdy nie wyłoży widoku; domyślne są usuwane przy serializacji dla
 krótkich, udostępnialnych linków. `UrlStateSync` odzwierciedla URL→store
-jednokierunkowo; `useItemsUrlState` to strona zapisu.
+jednokierunkowo; `useListQueryState` to strona zapisu.
 → [ADR 0008](../adr/0008-zod-total-parsing-of-search-params.md),
 [ADR 0006](../adr/0006-url-as-single-source-of-truth.md)
 
@@ -61,11 +60,14 @@ listener middleware uruchamia reaktywne efekty uboczne — tutaj **prefetch
 następnej strony** przy zmianie zapytania — bez thunków w komponentach.
 → [ADR 0009](../adr/0009-reselect-and-listener-middleware.md)
 
-### 4. Przykładowa funkcja — `src/features/items`
+### 4. Dodawanie funkcji (feature)
 
-Lista data-heavy: `items.api.ts` wstrzykuje `getItems` (dostarcza wbudowany mock
-`queryFn`, wymienialny na prawdziwy `query` jedną linijką), unieważnianie cache
-oparte na tagach, wirtualizowaną `ItemsTable`, pasek narzędzi i paginację.
+Nową funkcję dodajesz jako folder w `src/features/<nazwa>/`. Funkcja
+**wstrzykuje** swój endpoint przez `baseApi.injectEndpoints(...)` (z
+unieważnianiem cache opartym na tagach), **czyta** stan zapytania z URL przez
+`selectListQuery` / `useListQueryState`, a jeśli renderuje dużą listę —
+opcjonalnie ją **wirtualizuje** (server-side paginacja niesiona przez
+`page`/`pageSize` w `listQuerySchema`).
 → [ADR 0010](../adr/0010-list-virtualization.md)
 
 ### 5. Szew UI — `src/ui`
@@ -87,9 +89,10 @@ miejsce montażu `RootLayout` dla `UrlStateSync`.
    `replace`), co resetuje `page` do 1 i wywołuje `setSearchParams`.
 2. URL się zmienia → `UrlStateSync` parsuje go i, jeśli różny (strażnik
    płytkiego porównania), dispatchuje do lustra `urlState`.
-3. `selectItemsQuery` przelicza ponownie; `useGetItemsQuery(query)` pobiera
-   (lub serwuje z cache); listener prefetchuje następną stronę.
-4. `ItemsTable` renderuje tylko widoczne wiersze.
+3. `selectListQuery` przelicza ponownie; query hook funkcji pobiera dane
+   (lub serwuje z cache); opcjonalny listener może prefetchować następną stronę.
+4. Komponent renderuje wyniki — przy dużych listach opcjonalnie tylko widoczne
+   wiersze (wirtualizacja).
 
 ## Weryfikacja kroku
 
@@ -97,7 +100,7 @@ Ponieważ architektura jest ćwiczona przez zestaw testów, te same bramki z
 [Kroku 01](01-scaffold-and-config.md) ją walidują:
 
 ```bash
-npm test          # parsowanie schematu, mock zapytania, interakcja paska, itd.
+npm test          # parsowanie schematu, synchronizacja URL→store, selektory, itd.
 npm run typecheck # typy od końca do końca: store, query, selektory
 npm run build     # build produkcyjny
 ```

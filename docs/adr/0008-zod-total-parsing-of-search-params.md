@@ -18,11 +18,10 @@ wartością domyślną**, w
 [`urlState.schema.ts`](../../src/features/urlState/urlState.schema.ts):
 
 ```ts
-export const itemsQuerySchema = z.object({
+export const listQuerySchema = z.object({
   q:        z.string().catch(''),
-  status:   z.enum(['all', 'active', 'inactive']).catch('all'),
-  sort:     z.enum(['name', 'value', 'createdAt']).catch('createdAt'),
-  dir:      z.enum(['asc', 'desc']).catch('desc'),
+  sort:     z.string().catch(''),
+  dir:      z.enum(['asc', 'desc']).catch('asc'),
   page:     z.coerce.number().int().min(1).catch(1),
   pageSize: z.coerce.number().int().min(10).max(200).catch(50),
 });
@@ -30,18 +29,18 @@ export const itemsQuerySchema = z.object({
 
 Wyprowadzone, bez duplikacji:
 
-- `defaultItemsQuery = itemsQuerySchema.parse({})` — domyślne pochodzą *ze*
+- `defaultListQuery = listQuerySchema.parse({})` — domyślne pochodzą *ze*
   schematu, więc jest jedno źródło prawdy.
-- `parseItemsQuery(params)` zamienia `URLSearchParams` w poprawne `ItemsQuery`.
-- `serializeItemsQuery(query)` zapisuje parametry z powrotem, **pomijając każdą
+- `parseListQuery(params)` zamienia `URLSearchParams` w poprawne `ListQuery`.
+- `serializeListQuery(query)` zapisuje parametry z powrotem, **pomijając każdą
   wartość równą domyślnej**, trzymając URL-e krótkimi i udostępnialnymi
-  (`/items` zamiast `/items?q=&status=all&page=1&...`).
+  (`/` zamiast `/?q=&dir=asc&page=1&...`).
 
 ## Konsekwencje
 
 - Zniekształcony lub nieaktualny URL **nigdy nie wyłoży** aplikacji — złe pola
   spadają do wartości domyślnych pole po polu.
-- `ItemsQuery` jest wyprowadzony ze schematu (`z.infer`), więc typ i walidacja
+- `ListQuery` jest wyprowadzony ze schematu (`z.infer`), więc typ i walidacja
   runtime nie mogą się rozjechać.
 - Kanoniczne, minimalne URL-e, bo domyślne są usuwane przy serializacji.
 - Koercja jest celowa (`z.coerce.number`) — parametry-stringi stają się

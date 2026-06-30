@@ -2,8 +2,8 @@
 
 Production-grade boilerplate for a **data-heavy React app** with **URL-driven
 state**. TypeScript (strict), Vite, Redux Toolkit + RTK Query + reselect,
-React Router v7, and list virtualization — wired together with performance and
-best practices in mind.
+React Router v7, and a recommended path to list virtualization — wired together
+with performance and best practices in mind.
 
 ## Stack
 
@@ -16,7 +16,7 @@ best practices in mind.
 | Routing            | **React Router v7**                                                                      |
 | URL ↔ state        | URL is the source of truth, mirrored into Redux via **listener-style sync** + middleware |
 | Validation         | **Zod** (total parsing of search params)                                                 |
-| Large lists        | **@tanstack/react-virtual**                                                              |
+| Large lists        | **Virtualization** — recommended pattern (`@tanstack/react-virtual`), not bundled        |
 | Testing            | **Vitest** + Testing Library                                                             |
 | Quality gates      | **ESLint** + **Prettier** + **Husky** + **lint-staged**                                  |
 | UI library         | **Not included** — see [`src/ui`](src/ui/README.md)                                      |
@@ -28,10 +28,10 @@ state (search, filters, sort, pagination):
 
 ```
         write                              read
- ┌──────────────────┐              ┌─────────────────────┐
- │ useItemsUrlState │  navigate →  │  React Router (URL)  │
- │   setQuery(...)  │              └──────────┬──────────┘
- └──────────────────┘                         │ search params change
+ ┌───────────────────┐             ┌─────────────────────┐
+ │ useListQueryState │  navigate → │  React Router (URL)  │
+ │   setQuery(...)   │             └──────────┬──────────┘
+ └───────────────────┘                        │ search params change
                                               ▼
                                    ┌─────────────────────┐
                                    │   <UrlStateSync/>    │  (URL → Redux, guarded)
@@ -41,10 +41,10 @@ state (search, filters, sort, pagination):
                                               │
                   ┌───────────────────────────┼───────────────────────────┐
                   ▼                            ▼                           ▼
-        selectItemsQuery (reselect)   listener middleware           components read
+        selectListQuery (reselect)    listener middleware           components read
                   │                   (prefetch next page)          via useAppSelector
                   ▼
-        useGetItemsQuery(query)  →  RTK Query cache  →  render
+        useGetXQuery(query)  →  RTK Query cache  →  render
 ```
 
 Why this shape:
@@ -63,8 +63,9 @@ Why this shape:
 
 ## Performance notes
 
-- **Row virtualization** (`ItemsTable`) keeps DOM size O(viewport) for large
-  pages; combined with **server-side pagination** in the query.
+- **Row virtualization** is a recommended pattern for large lists: add
+  `@tanstack/react-virtual` to keep DOM size O(viewport), combined with the
+  **server-side pagination** already carried by the query (`page`/`pageSize`).
 - **reselect** selectors return stable references → fewer re-renders.
 - **Shallow-equality guard** in `UrlStateSync` avoids redundant dispatches.
 - **RTK Query** dedupes/caches per query arg; the listener **prefetches** the
@@ -78,9 +79,8 @@ Why this shape:
 src/
 ├─ app/                 # store, typed hooks, listener middleware, root reducer
 ├─ api/                 # baseApi (RTK Query root)
-├─ features/
-│  ├─ urlState/         # Zod schema, slice mirror, selectors, sync, write hook
-│  └─ items/            # example data-heavy feature (api, mock, table, toolbar)
+├─ features/            # auth/, entities/, urlState/ — and your own features
+│  └─ urlState/         # generic Zod list-query schema, slice mirror, selectors, sync, write hook
 ├─ ui/                  # SEAM for your internal UI library (placeholders only)
 ├─ routes/              # router, layout, pages
 ├─ styles/              # global css
@@ -101,19 +101,22 @@ npm run build      # type-check + production build
 > Uses **npm** with a committed `package-lock.json`. The Node version is pinned
 > via `.nvmrc` and `engines.node`.
 
-## Swapping the mock for a real API
+## Adding a feature
 
-`src/features/items/items.api.ts` ships with an in-memory mock (`queryFn`).
-Switch to a real backend by replacing it with a `query`:
+Create `src/features/<name>/` and wire it into the existing seams:
 
 ```ts
-getItems: build.query<ItemsPage, ItemsQuery>({
-  query: (q) => ({ url: 'items', params: q }),
-  providesTags: /* unchanged */,
-}),
+// inject an endpoint onto the shared baseApi
+export const xApi = baseApi.injectEndpoints({
+  endpoints: (build) => ({
+    getX: build.query({ query: (q) => ({ url: 'x', params: q }) }),
+  }),
+});
 ```
 
-Set `VITE_API_BASE_URL` (see `.env.example`). Nothing else changes.
+Read the URL-driven query state via `selectListQuery` (selector) or
+`useListQueryState` (write hook), and set `VITE_API_BASE_URL` (see
+`.env.example`) to point at your backend.
 
 ## Plugging in your UI library
 
