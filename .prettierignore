@@ -2,3 +2,10 @@ dist
 coverage
 package-lock.json
 node_modules
+
+# Templated infra config (Maven/Helm @placeholder@ — not valid YAML/JSON,
+# Prettier cannot parse it). Keep these out of `prettier --write .`.
+conf-installer/
+**/resources/helm/
+**/*.tpl
+*.tpl
