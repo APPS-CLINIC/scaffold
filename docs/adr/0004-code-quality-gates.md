@@ -30,14 +30,25 @@ We layer four tools with clear, non-overlapping responsibilities:
     Prettier over formatting.
 - **Husky** manages Git hooks; [`.husky/pre-commit`](../../.husky/pre-commit)
   runs `npx lint-staged`. Hooks install via the `prepare` script.
-- **lint-staged** ([`package.json`](../../package.json)) runs `eslint --fix`,
-  then `prettier --write` on staged `*.{ts,tsx}`, and `prettier --write` on
-  staged `*.{json,css,md,html}` — i.e. only on files you touched.
+- **lint-staged** ([`package.json`](../../package.json)) runs, on staged
+  `*.{ts,tsx}` and in order: `eslint --fix`, then `prettier --write`, then
+  `vitest related --run --passWithNoTests` — which runs **only the tests that
+  import the staged files**, so the commit is verified without paying for the
+  whole suite. Staged `*.{json,css,md,html}` get `prettier --write`. Everything
+  runs only on the files you touched.
+- **Editor format-on-save** is configured in
+  [`.vscode/settings.json`](../../.vscode/settings.json): Prettier is the default
+  formatter with `editor.formatOnSave`, and ESLint auto-fixes via
+  `source.fixAll.eslint` on save. This shifts formatting/lint left, so the commit
+  hook rarely has anything left to fix. The
+  [`.vscode/extensions.json`](../../.vscode/extensions.json) recommendations
+  (`dbaeumer.vscode-eslint`, `esbenp.prettier-vscode`) provide the extensions it
+  relies on.
 
 ## Consequences
 
-- A commit is auto-fixed and formatted for staged files before it lands, so
-  local commits are already close to a green CI.
+- A commit is auto-fixed, formatted, and its related tests are run for staged
+  files before it lands, so local commits are already close to a green CI.
 - Each tool has one job, so they don't clash (especially ESLint vs Prettier).
 - The `pre-commit` hook is the only place to update when the package manager
   changes (see [ADR 0003](0003-package-manager-npm.md)).

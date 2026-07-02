@@ -83,8 +83,10 @@ npm run build       # typecheck + production build
 npm run format      # Prettier --write
 ```
 
-On `git commit`, lint-staged auto-fixes and formats only the staged files, so a
-green commit locally is most of the way to a green PR.
+On `git commit`, lint-staged auto-fixes, formats, and runs the tests related to
+only the staged files, so a green commit locally is most of the way to a green
+PR. Formatting and lint also run on save in the editor (see
+[`.vscode/settings.json`](.vscode/settings.json)).
 
 ## Pull Request checklist
 

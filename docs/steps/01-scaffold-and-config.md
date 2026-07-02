@@ -16,14 +16,14 @@ application architecture exists (that is [Step 02](02-app-architecture.md)).
 | Package manager      | `package.json`, `package-lock.json`, `.nvmrc`                                                   | [0003](../adr/0003-package-manager-npm.md)                  |
 | Quality gates        | `eslint.config.js`, `.prettierrc.json`, `.prettierignore`, `.editorconfig`, `.husky/pre-commit` | [0004](../adr/0004-code-quality-gates.md)                   |
 | Testing              | `vite.config.ts` (`test`), `vitest.setup.ts`                                                    | [0005](../adr/0005-testing-vitest-testing-library.md)       |
-| Environment / editor | `.env.example`, `.gitignore`, `.vscode/extensions.json`                                         | —                                                           |
+| Environment / editor | `.env.example`, `.gitignore`, `.vscode/extensions.json`, `.vscode/settings.json`                | —                                                           |
 | Process              | `CONTRIBUTING.md`                                                                               | —                                                           |
 
 ## How the pieces fit together
 
 ```
             ┌──────────────┐
-   git commit ─▶│ Husky hook │─▶ lint-staged ─▶ eslint --fix + prettier --write
+   git commit ─▶│ Husky hook │─▶ lint-staged ─▶ eslint --fix + prettier --write + vitest related
             └──────────────┘                      (staged files only)
 
    npm run dev   ─▶ Vite + SWC ──▶ HMR
@@ -37,7 +37,8 @@ application architecture exists (that is [Step 02](02-app-architecture.md)).
   projects under one `tsconfig.json`.
 - **ESLint + Prettier** have separate jobs (quality vs formatting) and do not
   fight thanks to applying `eslint-config-prettier` last.
-- **Husky + lint-staged** make staged-file checks automatic on commit.
+- **Husky + lint-staged** make staged-file checks automatic on commit — lint,
+  format, and the tests related to the staged files.
 - **npm** pins the toolchain (`package-lock.json`, `engines`, `.nvmrc`).
 
 The rationale for each choice lives in its ADR — this document is the map; the
