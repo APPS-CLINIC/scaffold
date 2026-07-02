@@ -1,46 +1,43 @@
-# ADR 0005 — Vitest + Testing Library do testów
+# ADR 0005 — Vitest + Testing Library for tests
 
-- **Status:** Zaakceptowano
-- **Data:** 2026-06-22
+- **Status:** Accepted
+- **Date:** 2026-06-22
 
-## Kontekst
+## Context
 
-Chcemy runnera testów, który dzieli konfigurację Vite z aplikacją (brak drugiego
-potoku build do synchronizowania), działa szybko i obsługuje zarówno czyste
-testy logiki (parsowanie schematu, mock zapytania), jak i testy
-komponentów/interakcji.
+We want a test runner that shares Vite's config with the app (no second build
+pipeline to keep in sync), runs fast, and handles both pure logic tests (schema
+parsing, query mocking) and component/interaction tests.
 
-## Decyzja
+## Decision
 
-Używamy **Vitest** z **@testing-library/react** + **user-event** oraz
+We use **Vitest** with **@testing-library/react** + **user-event** and
 **@testing-library/jest-dom**.
 
-Z bloku `test` w [`vite.config.ts`](../../vite.config.ts):
+From the `test` block in [`vite.config.ts`](../../vite.config.ts):
 
-- **`environment: 'jsdom'`** do testów komponentów opartych na DOM.
-- **`globals: true`**, więc `describe/it/expect` nie wymagają importów; pasujące
-  typy są podpięte przez `tsconfig.app.json` `types: ["vitest/globals", ...]`.
-- **`setupFiles: ['./vitest.setup.ts']`** rejestruje matchery jest-dom.
-- **`restoreMocks: true`** izoluje testy, automatycznie resetując mocki.
-- **Pokrycie** przez `@vitest/coverage-v8`, włączając `src/**` i wykluczając
-  testy, `main.tsx` oraz pliki `.d.ts`.
+- **`environment: 'jsdom'`** for DOM-based component tests.
+- **`globals: true`**, so `describe/it/expect` need no imports; matching types
+  are wired via `tsconfig.app.json` `types: ["vitest/globals", ...]`.
+- **`setupFiles: ['./vitest.setup.ts']`** registers the jest-dom matchers.
+- **`restoreMocks: true`** isolates tests by resetting mocks automatically.
+- **Coverage** via `@vitest/coverage-v8`, including `src/**` and excluding
+  tests, `main.tsx`, and `.d.ts` files.
 
-Testy żyją obok kodu, który pokrywają (`*.test.ts(x)`), a komponenty są
-renderowane przez wspólny helper, `src/test/renderWithProviders.tsx`, który
-podpina store Redux i router (zob.
-[Krok 02](../steps/02-app-architecture.md)).
+Tests live next to the code they cover (`*.test.ts(x)`), and components are
+rendered through a shared helper, `src/test/renderWithProviders.tsx`, which wires
+the Redux store and router (see [Step 02](../steps/02-app-architecture.md)).
 
-## Konsekwencje
+## Consequences
 
-- Jedna konfiguracja napędza dev, build i testy — brak równoległej konfiguracji
-  Jest/Babel.
-- Współlokalizowane testy trzymają pokrycie blisko kodu i łatwe do znalezienia.
-- Fabryka store (`makeStore`) czyni każdy test hermetycznym — świeży store na
-  test, opcjonalnie ze stanem wstępnym.
+- One config drives dev, build, and tests — no parallel Jest/Babel setup.
+- Co-located tests keep coverage close to the code and easy to find.
+- The store factory (`makeStore`) makes each test hermetic — a fresh store per
+  test, optionally with preloaded state.
 
-## Rozważane alternatywy
+## Alternatives considered
 
-- **Jest** — dojrzały, ale wymaga własnej transformacji/konfiguracji i jest
-  wolniejszy z Vite/ESM/TS; powiela to, co Vite już wie.
-- **Tylko Playwright/Cypress.** Świetne do end-to-end, ale zbyt ciężkie i wolne
-  jako główna warstwa unit/komponent; uzupełniające, nie zastępcze.
+- **Jest** — mature, but needs its own transform/config and is slower with
+  Vite/ESM/TS; it duplicates what Vite already knows.
+- **Playwright/Cypress only.** Great for end-to-end, but too heavy and slow as
+  the primary unit/component layer; complementary, not a replacement.

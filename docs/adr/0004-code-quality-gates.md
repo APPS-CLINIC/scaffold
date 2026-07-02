@@ -1,57 +1,54 @@
-# ADR 0004 — Bramki jakości: ESLint + Prettier + Husky + lint-staged
+# ADR 0004 — Quality gates: ESLint + Prettier + Husky + lint-staged
 
-- **Status:** Zaakceptowano
-- **Data:** 2026-06-22
+- **Status:** Accepted
+- **Date:** 2026-06-22
 
-## Kontekst
+## Context
 
-Konwencje jakości utrzymują się tylko wtedy, gdy są egzekwowane automatycznie.
-Chcemy, by **formatowanie** nie było tematem do dyskusji, **lint** łapał
-rzeczywiste problemy poprawności, i żeby o obu nie dało się zapomnieć — bez
-spowalniania każdego commita.
+Quality conventions only hold if they are enforced automatically. We want
+**formatting** to be a non-topic, **lint** to catch real correctness problems,
+and both to be impossible to forget — without slowing down every commit.
 
-## Decyzja
+## Decision
 
-Warstwujemy cztery narzędzia o jasnych, nienakładających się odpowiedzialnościach:
+We layer four tools with clear, non-overlapping responsibilities:
 
-- **Prettier** odpowiada wyłącznie za formatowanie. Konfiguracja w
-  [`.prettierrc.json`](../../.prettierrc.json): pojedyncze cudzysłowy, średniki,
-  przecinki końcowe, `printWidth: 100`, wcięcie 2 spacje. Zachowanie edytora
-  jest spójne dzięki [`.editorconfig`](../../.editorconfig).
-- **ESLint (flat config)** odpowiada za jakość kodu, w
-  [`eslint.config.js`](../../eslint.config.js): zalecane zestawy reguł JS +
-  `typescript-eslint`, plus:
-  - `react-hooks/rules-of-hooks` (error) i `exhaustive-deps` (warn),
-  - `react-refresh/only-export-components` dla bezpieczeństwa HMR,
-  - `@typescript-eslint/consistent-type-imports` (inline `import type`), co
-    egzekwuje dyscyplinę `verbatimModuleSyntax` z
+- **Prettier** owns formatting only. Config in
+  [`.prettierrc.json`](../../.prettierrc.json): single quotes, semicolons,
+  trailing commas, `printWidth: 100`, 2-space indent. Editor behavior is
+  consistent via [`.editorconfig`](../../.editorconfig).
+- **ESLint (flat config)** owns code quality, in
+  [`eslint.config.js`](../../eslint.config.js): recommended JS +
+  `typescript-eslint` rule sets, plus:
+  - `react-hooks/rules-of-hooks` (error) and `exhaustive-deps` (warn),
+  - `react-refresh/only-export-components` for HMR safety,
+  - `@typescript-eslint/consistent-type-imports` (inline `import type`), which
+    enforces the `verbatimModuleSyntax` discipline from
     [ADR 0002](0002-typescript-strict-and-project-config.md),
-  - `no-unused-vars` z furtką ignorowania `^_`.
-  - **`eslint-config-prettier` jest stosowany na końcu**, więc ESLint nigdy nie
-    walczy z Prettierem o formatowanie.
-- **Husky** zarządza hookami Git; [`.husky/pre-commit`](../../.husky/pre-commit)
-  uruchamia `npx lint-staged`. Hooki instalują się przez skrypt `prepare`.
-- **lint-staged** ([`package.json`](../../package.json)) uruchamia `eslint --fix`,
-  a potem `prettier --write` na zastagowanych `*.{ts,tsx}` oraz `prettier
-  --write` na zastagowanych `*.{json,css,md,html}` — czyli tylko na plikach,
-  których dotknąłeś.
+  - `no-unused-vars` with a `^_` ignore escape hatch.
+  - **`eslint-config-prettier` is applied last**, so ESLint never fights
+    Prettier over formatting.
+- **Husky** manages Git hooks; [`.husky/pre-commit`](../../.husky/pre-commit)
+  runs `npx lint-staged`. Hooks install via the `prepare` script.
+- **lint-staged** ([`package.json`](../../package.json)) runs `eslint --fix`,
+  then `prettier --write` on staged `*.{ts,tsx}`, and `prettier --write` on
+  staged `*.{json,css,md,html}` — i.e. only on files you touched.
 
-## Konsekwencje
+## Consequences
 
-- Commit jest auto-poprawiony i sformatowany dla zastagowanych plików, zanim
-  wyląduje, więc lokalne commity są już blisko zielonego CI.
-- Każde narzędzie ma jedno zadanie, więc się nie kłócą (zwłaszcza ESLint vs
-  Prettier).
-- Hook `pre-commit` to jedyne miejsce do aktualizacji, gdy zmienia się menedżer
-  pakietów (zob. [ADR 0003](0003-package-manager-npm.md)).
-- Hooki można obejść przez `--no-verify`; dlatego prawdziwą bramką wciąż jest CI
-  (powinien tam działać ten sam `npm run lint`/`typecheck`/`test`/`build`).
+- A commit is auto-fixed and formatted for staged files before it lands, so
+  local commits are already close to a green CI.
+- Each tool has one job, so they don't clash (especially ESLint vs Prettier).
+- The `pre-commit` hook is the only place to update when the package manager
+  changes (see [ADR 0003](0003-package-manager-npm.md)).
+- Hooks can be bypassed with `--no-verify`; that's why the real gate is still CI
+  (which should run the same `npm run lint`/`typecheck`/`test`/`build`).
 
-## Rozważane alternatywy
+## Alternatives considered
 
-- **ESLint również do formatowania.** Wolniej i więcej szumu; Prettier to
-  formatter stworzony do tego celu — stąd ścisły podział.
-- **Biome** (jedno szybkie narzędzie do lint+format) — kuszące, ale ekosystem
-  wtyczek ESLint dla TypeScript/React jest wciąż bogatszy dla scaffoldu.
-- **Brak hooka pre-commit, tylko CI.** Spycha trywialne błędy formatowania do CI
-  i spowalnia pętlę.
+- **ESLint for formatting too.** Slower and noisier; Prettier is a formatter
+  built for the job — hence the strict split.
+- **Biome** (one fast lint+format tool) — tempting, but the ESLint plugin
+  ecosystem for TypeScript/React is still richer for this scaffold.
+- **No pre-commit hook, CI only.** Pushes trivial formatting failures to CI and
+  slows the loop.

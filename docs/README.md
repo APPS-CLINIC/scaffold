@@ -1,44 +1,43 @@
-# Dokumentacja
+# Documentation
 
-Dokumentacja techniczna projektu Scaffold, zorganizowana jako **narracja
-budowy krok po kroku** oraz zestaw **rekordów decyzji architektonicznych
-(ADR — Architecture Decision Records)**.
+Technical documentation for the BIKS Scaffold project, organized as a
+**step-by-step build narrative** plus a set of **Architecture Decision Records
+(ADRs)**.
 
-Cel: każdy może przeczytać ten folder od góry do dołu i zrozumieć nie tylko
-*co* zawiera scaffold, ale i *dlaczego* każdy element ma taki, a nie inny
-kształt.
+Goal: anyone can read this folder top to bottom and understand not only _what_
+the scaffold contains, but _why_ each piece has the shape it does.
 
-## Jak zorganizowana jest dokumentacja
+## How the documentation is organized
 
 ```
 docs/
-├─ README.md            ← jesteś tutaj (spis treści)
-├─ steps/               ← budowa opowiedziana jako uporządkowane, samodzielne kroki
+├─ README.md            ← you are here (table of contents)
+├─ steps/               ← the build told as ordered, self-contained steps
 │  ├─ 01-scaffold-and-config.md
 │  ├─ 02-app-architecture.md
 │  └─ 03-scope-alignment.md
-└─ adr/                 ← „dlaczego": jedna decyzja na plik, niezmienna po akceptacji
+└─ adr/                 ← the "why": one decision per file, immutable once accepted
    ├─ README.md
    ├─ 0000-record-architecture-decisions.md
    └─ ...
 ```
 
-- **Kroki (steps)** to przewodnik. Czytaj po kolei, aby zbudować model mentalny.
-- **ADR-y** to trwały zapis pojedynczych decyzji — każdy z kontekstem, decyzją
-  i konsekwencjami. Są odnośnikowane z kroków.
+- **Steps** are the guide. Read them in order to build a mental model.
+- **ADRs** are the durable record of individual decisions — each with context,
+  decision, and consequences. They are cross-linked from the steps.
 
-## Kroki budowy
+## Build steps
 
-| Krok | Co ustanawia                                              |
-| ---- | --------------------------------------------------------- |
-| 01   | Narzędzia, konfiguracja języka, bramki jakości, proces.   |
-| 02   | Architektura runtime: stan, dane, stan widoku w URL, UI.  |
-| 03   | Dostrojenie do scope'u z discovery: IWA/PrimeReact, i18n. |
+| Step | What it establishes                                           |
+| ---- | ------------------------------------------------------------- |
+| 01   | Tooling, language config, quality gates, process.             |
+| 02   | Runtime architecture: state, data, URL-driven view state, UI. |
+| 03   | Alignment with the discovery scope: IWA/PrimeReact, i18n.     |
 
-> **Proces:** rozwój zgodnie z **GitHub Flow** — zob.
-> [`../CONTRIBUTING.md`](../CONTRIBUTING.md), gdzie opisano model gałęzi,
-> konwencję commitów i listę kontrolną PR.
+> **Process:** development follows **GitHub Flow** — see
+> [`../CONTRIBUTING.md`](../CONTRIBUTING.md) for the branch model, commit
+> convention, and PR checklist.
 
-## Rekordy decyzji architektonicznych
+## Architecture Decision Records
 
-Pełna, zindeksowana lista znajduje się w [`adr/README.md`](adr/README.md).
+The full, indexed list lives in [`adr/README.md`](adr/README.md).

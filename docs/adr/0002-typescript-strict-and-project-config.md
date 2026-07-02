@@ -1,57 +1,56 @@
-# ADR 0002 — Ścisły TypeScript z referencjami projektów
+# ADR 0002 — Strict TypeScript with project references
 
-- **Status:** Zaakceptowano
-- **Data:** 2026-06-22
+- **Status:** Accepted
+- **Date:** 2026-06-22
 
-## Kontekst
+## Context
 
-To aplikacja data-heavy, w której wiele błędów to błędy kształtu danych —
-niezdefiniowany wiersz, źle wpisane pole zapytania, nieaktualny enum. Chcemy,
-aby kompilator wyłapał jak najwięcej z tego, a sprawdzanie typów w
-edytorze/CLI było szybkie i obejmowało zarówno kod aplikacji (globalne DOM), jak
-i pliki konfiguracyjne Node (inne globalne).
+This is a data-heavy app where many bugs are data-shape bugs — an undefined row,
+a mistyped query field, a stale enum. We want the compiler to catch as many of
+these as possible, and we want type-checking in the editor/CLI to be fast and to
+cover both the application code (browser globals) and the Node config files
+(different globals).
 
-## Decyzja
+## Decision
 
-Uruchamiamy TypeScript w **trybie ścisłym plus dodatkowe flagi bezpieczeństwa**,
-podzielony przez **referencje projektów (project references)**.
+We run TypeScript in **strict mode plus extra safety flags**, split via
+**project references**.
 
-[`tsconfig.json`](../../tsconfig.json) to plik-rozwiązanie bez własnych źródeł;
-referuje dwa projekty liściowe:
+[`tsconfig.json`](../../tsconfig.json) is a solution file with no sources of its
+own; it references two leaf projects:
 
-- [`tsconfig.app.json`](../../tsconfig.app.json) — aplikacja `src`, `lib`
-  zawiera DOM, globalne przeglądarki.
-- [`tsconfig.node.json`](../../tsconfig.node.json) — `vite.config.ts`, biblioteki
-  i globalne Node.
+- [`tsconfig.app.json`](../../tsconfig.app.json) — the `src` application, `lib`
+  includes DOM, browser globals.
+- [`tsconfig.node.json`](../../tsconfig.node.json) — `vite.config.ts`, Node
+  libs and globals.
 
-Poza `"strict": true` projekt aplikacji włącza dodatkowo:
+Beyond `"strict": true`, the app project additionally enables:
 
-- **`noUncheckedIndexedAccess`** — `arr[i]` jest `T | undefined`. Kluczowe przy
-  dostępie do wierszy w wirtualizacji/paginacji.
-- **`noUnusedLocals` / `noUnusedParameters`** — martwy kod to błąd.
+- **`noUncheckedIndexedAccess`** — `arr[i]` is `T | undefined`. Crucial for row
+  access in virtualization/pagination.
+- **`noUnusedLocals` / `noUnusedParameters`** — dead code is an error.
 - **`noFallthroughCasesInSwitch`**, **`noImplicitOverride`**,
   **`noUncheckedSideEffectImports`**.
-- **`verbatimModuleSyntax`** — wymusza jawne `import type`, co nie pozwala
-  importom typów przeciekać do wyjścia JS i współgra z regułą ESLint
-  `consistent-type-imports` (zob. [ADR 0004](0004-code-quality-gates.md)).
-- **`moduleResolution: "bundler"`** + alias ścieżki `@/* → ./src/*`, zgodnie z
+- **`verbatimModuleSyntax`** — forces explicit `import type`, which keeps type
+  imports from leaking into the JS output and pairs with the ESLint rule
+  `consistent-type-imports` (see [ADR 0004](0004-code-quality-gates.md)).
+- **`moduleResolution: "bundler"`** + the path alias `@/* → ./src/*`, matching
   Vite.
 
-`npm run typecheck` to `tsc -b`, który buduje referowane projekty z przyrostowymi
-cache'ami `.tsbuildinfo`.
+`npm run typecheck` is `tsc -b`, which builds the referenced projects with
+incremental `.tsbuildinfo` caches.
 
-## Konsekwencje
+## Consequences
 
-- Duża klasa błędów runtime staje się błędem kompilacji.
-- `noUncheckedIndexedAccess` wymusza jawną obsługę „może brakować" — bardziej
-  rozwlekle, ale uczciwie, zwłaszcza wokół dostępu do list/wierszy.
-- Kod aplikacji i Node nie mogą przypadkiem użyć swoich globalnych.
-- Buildy przyrostowe utrzymują `typecheck` szybkim po pierwszym przebiegu.
+- A large class of runtime errors becomes a compile error.
+- `noUncheckedIndexedAccess` forces explicit "might be missing" handling — more
+  verbose, but honest, especially around list/row access.
+- App and Node code cannot accidentally use each other's globals.
+- Incremental builds keep `typecheck` fast after the first run.
 
-## Rozważane alternatywy
+## Alternatives considered
 
-- **Jeden luźny `tsconfig.json`.** Prostszy, ale miesza typy lib
-  przeglądarka/Node i rezygnuje z siatki bezpieczeństwa ścisłych flag.
-- **Sam `strict`, bez dodatkowych flag.** Pozostawia niesprawdzony dostęp
-  indeksowy i martwy kod — dokładnie te błędy, na które ta aplikacja jest
-  podatna.
+- **A single loose `tsconfig.json`.** Simpler, but mixes browser/Node lib types
+  and gives up the safety net of the strict flags.
+- **`strict` alone, without the extra flags.** Leaves unchecked index access and
+  dead code — exactly the bugs this app is prone to.

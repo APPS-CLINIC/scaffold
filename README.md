@@ -1,25 +1,25 @@
-# Scaffold
+# BIKS Scaffold
 
-Production-grade boilerplate for a **data-heavy React app** with **URL-driven
-state**. TypeScript (strict), Vite, Redux Toolkit + RTK Query + reselect,
+Production-grade boilerplate for the **BIKS** data-heavy React app with
+**URL-driven state**. TypeScript (strict), Vite, Redux Toolkit + RTK Query + reselect,
 React Router v7, and a recommended path to list virtualization — wired together
 with performance and best practices in mind.
 
 ## Stack
 
-| Concern            | Choice                                                                                   |
-| ------------------ | ---------------------------------------------------------------------------------------- |
-| Build / dev server | **Vite 6** (`@vitejs/plugin-react-swc`)                                                  |
-| Language           | **TypeScript** (strict, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`)              |
-| State              | **Redux Toolkit** + **reselect**                                                         |
-| Server state       | **RTK Query** (one `baseApi`, injected endpoints)                                        |
-| Routing            | **React Router v7**                                                                      |
-| URL ↔ state        | URL is the source of truth, mirrored into Redux via **listener-style sync** + middleware |
-| Validation         | **Zod** (total parsing of search params)                                                 |
-| Large lists        | **Virtualization** — recommended pattern (`@tanstack/react-virtual`), not bundled        |
-| Testing            | **Vitest** + Testing Library                                                             |
-| Quality gates      | **ESLint** + **Prettier** + **Husky** + **lint-staged**                                  |
-| UI library         | **Not included** — see [`src/ui`](src/ui/README.md)                                      |
+| Concern            | Choice                                                                                       |
+| ------------------ | -------------------------------------------------------------------------------------------- |
+| Build / dev server | **Vite 6** (`@vitejs/plugin-react-swc`)                                                      |
+| Language           | **TypeScript** (strict, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`)                  |
+| State              | **Redux Toolkit** + **reselect**                                                             |
+| Server state       | **RTK Query** (one `baseApi`, injected endpoints)                                            |
+| Routing            | **React Router v7**                                                                          |
+| URL ↔ state        | URL is the source of truth, mirrored into Redux via **listener-style sync** + middleware     |
+| Validation         | **Zod** (total parsing of search params)                                                     |
+| Large lists        | **Virtualization** — recommended pattern (`@tanstack/react-virtual`), not bundled            |
+| Testing            | **Vitest** + Testing Library                                                                 |
+| Quality gates      | **ESLint** + **Prettier** + **Husky** + **lint-staged**                                      |
+| UI library         | **IWA UI Components** (PrimeReact) behind the `@/ui` seam — see [`src/ui`](src/ui/README.md) |
 
 ## Architecture: URL-driven state
 
@@ -118,9 +118,11 @@ Read the URL-driven query state via `selectListQuery` (selector) or
 `useListQueryState` (write hook), and set `VITE_API_BASE_URL` (see
 `.env.example`) to point at your backend.
 
-## Plugging in your UI library
+## Plugging in the UI library
 
-This scaffold deliberately ships **no external UI library**. Everything imports
-from `@/ui`, a thin placeholder layer. Point those exports at your internal
-organization components (keeping the prop contracts) and the rest of the app is
-untouched. See [`src/ui/README.md`](src/ui/README.md).
+Everything imports from `@/ui`, a thin seam that currently ships placeholder
+primitives. The target is the organization's **IWA UI Components** (PrimeReact):
+point those exports at the IWA components (keeping the prop contracts) and the
+rest of the app is untouched. Where IWA lacks a component or needs a fix, we
+contribute it upstream. See [`src/ui/README.md`](src/ui/README.md) and
+[ADR 0013](docs/adr/0013-iwa-components-primereact.md).

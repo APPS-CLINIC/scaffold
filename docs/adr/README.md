@@ -1,48 +1,47 @@
-# Rekordy decyzji architektonicznych
+# Architecture Decision Records
 
-**Rekord decyzji architektonicznej (ADR — Architecture Decision Record)**
-opisuje pojedynczą, istotną architektonicznie decyzję: kontekst, który ją
-wymusił, podjętą decyzję oraz wynikające z niej konsekwencje. ADR-y są
-**tylko do dopisywania** — raz zaakceptowany ADR nie jest edytowany; jeśli
-decyzja się zmienia, nowy ADR zastępuje stary (a status starego zostaje
-zaktualizowany, by wskazywał na nowy).
+An **Architecture Decision Record (ADR)** captures a single, architecturally
+significant decision: the context that forced it, the decision taken, and the
+consequences that follow. ADRs are **append-only** — once accepted, an ADR is
+not edited; if a decision changes, a new ADR supersedes the old one (and the
+old one's status is updated to point at the new one).
 
-Zob. [ADR 0000](0000-record-architecture-decisions.md), aby zrozumieć, po co w
-ogóle prowadzimy ADR-y; użyj go też jako szablonu dla nowych rekordów.
+See [ADR 0000](0000-record-architecture-decisions.md) to understand why we keep
+ADRs at all; use it as the template for new records too.
 
-## Legenda statusów
+## Status legend
 
-- **Zaakceptowano** — obowiązuje; odzwierciedlone w kodzie.
-- **Proponowane** — w trakcie dyskusji.
-- **Zastąpione przez ADR-XXXX** — zastąpione późniejszą decyzją.
-- **Wycofane** — już nieaktualne.
+- **Accepted** — in force; reflected in the code.
+- **Proposed** — under discussion.
+- **Superseded by ADR-XXXX** — replaced by a later decision.
+- **Deprecated** — no longer relevant.
 
-## Spis
+## Index
 
-### Krok 01 — Scaffold i konfiguracja
+### Step 01 — Scaffold and configuration
 
-| ADR                                                      | Tytuł                                            | Status      |
-| -------------------------------------------------------- | ------------------------------------------------ | ----------- |
-| [0000](0000-record-architecture-decisions.md)            | Prowadzenie rekordów decyzji architektonicznych  | Zaakceptowano |
-| [0001](0001-build-tooling-vite-swc.md)                   | Vite 6 + SWC jako narzędzia build i dev          | Zaakceptowano |
-| [0002](0002-typescript-strict-and-project-config.md)     | Ścisły TypeScript z referencjami projektów       | Zaakceptowano |
-| [0003](0003-package-manager-npm.md)                      | npm jako menedżer pakietów                        | Zaakceptowano |
-| [0004](0004-code-quality-gates.md)                       | Bramki jakości: ESLint + Prettier + Husky + lint-staged | Zaakceptowano |
-| [0005](0005-testing-vitest-testing-library.md)           | Vitest + Testing Library do testów               | Zaakceptowano |
+| ADR                                                  | Title                                                  | Status   |
+| ---------------------------------------------------- | ------------------------------------------------------ | -------- |
+| [0000](0000-record-architecture-decisions.md)        | Record architecture decisions                          | Accepted |
+| [0001](0001-build-tooling-vite-swc.md)               | Vite 6 + SWC as build and dev tooling                  | Accepted |
+| [0002](0002-typescript-strict-and-project-config.md) | Strict TypeScript with project references              | Accepted |
+| [0003](0003-package-manager-npm.md)                  | npm as the package manager                             | Accepted |
+| [0004](0004-code-quality-gates.md)                   | Quality gates: ESLint + Prettier + Husky + lint-staged | Accepted |
+| [0005](0005-testing-vitest-testing-library.md)       | Vitest + Testing Library for tests                     | Accepted |
 
-### Krok 02 — Architektura aplikacji
+### Step 02 — Application architecture
 
-| ADR                                                      | Tytuł                                            | Status      |
-| -------------------------------------------------------- | ------------------------------------------------ | ----------- |
-| [0006](0006-url-as-single-source-of-truth.md)            | URL jako jedyne źródło prawdy dla stanu widoku    | Zaakceptowano |
-| [0007](0007-redux-toolkit-and-rtk-query.md)              | Redux Toolkit + RTK Query do stanu i cache       | Zaakceptowano |
-| [0008](0008-zod-total-parsing-of-search-params.md)       | Totalne parsowanie search params przez Zod       | Zaakceptowano |
-| [0009](0009-reselect-and-listener-middleware.md)         | Selektory reselect + listener middleware         | Zaakceptowano |
-| [0012](0012-routing-react-router-v7.md)                  | Routing z React Router v7                        | Zaakceptowano |
+| ADR                                                | Title                                            | Status   |
+| -------------------------------------------------- | ------------------------------------------------ | -------- |
+| [0006](0006-url-as-single-source-of-truth.md)      | URL as the single source of truth for view state | Accepted |
+| [0007](0007-redux-toolkit-and-rtk-query.md)        | Redux Toolkit + RTK Query for state and cache    | Accepted |
+| [0008](0008-zod-total-parsing-of-search-params.md) | Total parsing of search params with Zod          | Accepted |
+| [0009](0009-reselect-and-listener-middleware.md)   | reselect selectors + listener middleware         | Accepted |
+| [0012](0012-routing-react-router-v7.md)            | Routing with React Router v7                     | Accepted |
 
-### Krok 03 — Dostrojenie do scope'u (discovery)
+### Step 03 — Scope alignment (discovery)
 
-| ADR                                                      | Tytuł                                            | Status      |
-| -------------------------------------------------------- | ------------------------------------------------ | ----------- |
-| [0013](0013-iwa-components-primereact.md)                | IWA Components (PrimeReact) za szwem `@/ui`       | Zaakceptowano |
-| [0014](0014-internationalization-i18n.md)                | Internacjonalizacja (i18n)                       | Zaakceptowano |
+| ADR                                       | Title                                    | Status   |
+| ----------------------------------------- | ---------------------------------------- | -------- |
+| [0013](0013-iwa-components-primereact.md) | IWA UI Components behind the `@/ui` seam | Accepted |
+| [0014](0014-internationalization-i18n.md) | Internationalization (i18n)              | Accepted |

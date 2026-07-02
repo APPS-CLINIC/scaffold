@@ -1,46 +1,42 @@
-# ADR 0003 — npm jako menedżer pakietów
+# ADR 0003 — npm as the package manager
 
-- **Status:** Zaakceptowano
-- **Data:** 2026-06-22
+- **Status:** Accepted
+- **Date:** 2026-06-22
 
-## Kontekst
+## Context
 
-Chcemy powtarzalnych instalacji, prostego i wszechobecnego narzędzia oraz
-jednego ustalonego menedżera pakietów, aby pliki blokad (lockfile) nie
-„migotały" między osobami i środowiskami CI.
+We want reproducible installs, a simple and ubiquitous tool, and a single agreed
+package manager so lockfiles don't "flicker" between people and CI environments.
 
-## Decyzja
+## Decision
 
-Używamy **npm** z zacommitowanym `package-lock.json`. Node jest przypięty przez
-[`.nvmrc`](../../.nvmrc) i pole `engines.node` w
+We use **npm** with a committed `package-lock.json`. Node is pinned via
+[`.nvmrc`](../../.nvmrc) and the `engines.node` field in
 [`package.json`](../../package.json) (`>=20.11`).
 
-- Skrypt `prepare` uruchamia `husky`, więc hooki instalują się przy
-  `npm install` (zob. [ADR 0004](0004-code-quality-gates.md)).
-- Pole **`overrides`** w `package.json` przypina `vite` do jednej wersji w całym
-  drzewie (`"vite": "$vite"` — npm wspiera referencję `$<nazwa>` do wersji z
-  własnych zależności). Dzięki temu wtyczka `@vitejs/plugin-react-swc` i aplikacja
-  używają tej samej instancji Vite — bez tego npm potrafi zainstalować dwie
-  wersje Vite, co skutkuje niezgodnością typów `Plugin`/`PluginOption`.
-- W CI używamy **`npm ci`** (deterministyczna instalacja ściśle z
+- The `prepare` script runs `husky`, so hooks install on `npm install` (see
+  [ADR 0004](0004-code-quality-gates.md)).
+- The **`overrides`** field in `package.json` pins `vite` to a single version
+  across the whole tree (`"vite": "$vite"` — npm supports the `$<name>`
+  reference to a version from its own dependencies). This makes the
+  `@vitejs/plugin-react-swc` plugin and the app use the same Vite instance —
+  without it, npm can install two Vite versions, producing a `Plugin`/`PluginOption`
+  type mismatch.
+- In CI we use **`npm ci`** (deterministic install strictly from
   `package-lock.json`).
 
-## Konsekwencje
+## Consequences
 
-- npm jest wszechobecny — brak dodatkowego narzędzia do zainstalowania; każdy
-  ma go z Node.
-- `package-lock.json` + `npm ci` dają powtarzalne, deterministyczne instalacje
-  w CI.
-- `engines.node` + `.nvmrc` czynią oczekiwaną wersję Node jawną.
-- `node_modules` jest płaskie i większe niż w pnpm (brak współdzielonego,
-  content-addressed store) — akceptowalny koszt za prostotę i brak zależności od
-  dodatkowego narzędzia.
-- Pole `overrides` trzeba utrzymać, gdy zmienia się wersja Vite.
+- npm is ubiquitous — no extra tool to install; everyone has it with Node.
+- `package-lock.json` + `npm ci` give reproducible, deterministic installs in CI.
+- `engines.node` + `.nvmrc` make the expected Node version explicit.
+- `node_modules` is flat and larger than pnpm's (no shared, content-addressed
+  store) — an acceptable cost for simplicity and one fewer tool dependency.
+- The `overrides` field must be maintained when the Vite version changes.
 
-## Rozważane alternatywy
+## Alternatives considered
 
-- **pnpm** — szybszy, content-addressed store i ścisłe `node_modules`, ale wnosi
-  dodatkowe narzędzie do zainstalowania/przypięcia. Tu wybieramy wszechobecność
-  npm.
-- **Yarn (Berry/PnP)** — sprawny, ale PnP wnosi tarcia w edytorze/narzędziach
-  dla scaffoldu, który ma być mało zaskakującym punktem startu.
+- **pnpm** — faster, content-addressed store and strict `node_modules`, but adds
+  another tool to install/pin. Here we choose npm's ubiquity.
+- **Yarn (Berry/PnP)** — capable, but PnP introduces editor/tooling friction for
+  a scaffold that is meant to be an unsurprising starting point.

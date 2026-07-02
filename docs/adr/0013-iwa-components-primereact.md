@@ -1,47 +1,39 @@
-# ADR 0013 — IWA Components (PrimeReact) jako biblioteka UI za szwem `@/ui`
+# ADR 0013 — IWA UI Components behind the `@/ui` seam
 
-- **Status:** Zaakceptowano (kierunek; szczegóły zależne od dostępu do repo IWA)
-- **Data:** 2026-06-22
+- **Status:** Accepted (direction; details depend on access to the IWA repo)
+- **Date:** 2026-06-22
 
-## Kontekst
+## Context
 
-Szew UI (`@/ui`) ustanowiono bez wskazania konkretnej biblioteki. Ze spotkania planistycznego wynika, że
-wewnętrzną biblioteką organizacji są **IWA Components** (ING), zbudowane na
-**PrimeReact** (+ PrimeIcons, PrimeFlex), w repozytorium z **Tailwind**,
-**React Router** i **Toastify** (notyfikacje).
+The UI seam (`@/ui`) was established without committing to a concrete library.
+The planning meeting made it clear that the organization's internal component
+library is **IWA UI Components** (ING), built on **PrimeReact**.
 
-Otwarta pozostaje kwestia, **co dokładnie dostarczy zespół IWA**: gotowe
-„organizmy" (całe formatki) czy tylko atomy/molekuły. Padła decyzja, że do czasu
-integracji będziemy komponenty **tymczasowo nadpisywać** („nawet brzydko, żeby
-działało, a później podepniemy pod normalną IWĘ").
+## Decision
 
-## Decyzja
+BIKS will use **IWA UI Components** behind the `@/ui` seam, and **we will
+contribute back** to them:
 
-Celem szwu `@/ui` są **IWA Components (PrimeReact)**:
+- `@/ui` prop contracts are designed so the exports become thin wrappers / re-exports
+  of IWA components, not generic placeholders.
+- Where BIKS needs a component that IWA does not yet provide (or needs a fix or
+  extension to an existing one), we **contribute it upstream** to IWA rather than
+  forking or building a parallel component locally.
+- Until we have access to the IWA repo, the current placeholders stay in place,
+  matching the target prop contracts; we swap the implementations in a single
+  folder once access is granted.
 
-- Kontrakty propsów w `@/ui` projektujemy tak, by docelowo były re-eksportami /
-  cienkimi wrapperami komponentów IWA, a nie generycznych zaślepek.
-- Pierwsze zadanie integracyjne: **„Hello World z IWĄ"** — renderowanie jednego
-  realnego komponentu IWA, by zweryfikować dostęp, proxy i build.
-- Dokładamy do szwu prymityw **Toast/Notification** (odpowiednik Toastify /
-  PrimeReact Toast).
-- Jeśli IWA wymaga **Tailwind**, włączamy Tailwind + `tailwind-merge`
-  (mamy już `src/ui/cx.ts` jako punkt zaczepienia).
-- Dopóki nie ma dostępu do repo IWA — zaślepki zostają zgodne z kontraktem; po
-  uzyskaniu dostępu podmieniamy implementacje w jednym folderze.
+## Consequences
 
-## Konsekwencje
+- The rest of the code (`features/**`, `routes/**`) stays independent of
+  PrimeReact — the swap to IWA happens only inside `@/ui`.
+- We need observer/contributor access to the IWA repo (a separate spike).
+- Contributing upstream keeps BIKS aligned with the organization's design system
+  and avoids duplicating components.
 
-- Reszta kodu (`features/**`, `routes/**`) pozostaje niezależna od PrimeReact —
-  wymiana zaślepek na IWA dzieje się w `@/ui`.
-- Trzeba uzyskać **dostęp obserwatora do repo CMS2/IWA** (osobny spike).
-- Ryzyko: jeśli IWA da tylko atomy/molekuły, część „organizmów" budujemy sami —
-  kontrakty `@/ui` muszą to wytrzymać.
-- Możliwe wymieszanie styli (Tailwind + PrimeFlex) — do zweryfikowania przy
-  integracji.
+## Alternatives considered
 
-## Rozważane alternatywy
-
-- **Własny design system.** Duplikuje IWA; niezgodne ze standardem organizacji.
-- **Bezpośredni import PrimeReact w funkcjach.** Łamie szew `@/ui` i wiąże
-  kod z konkretnym vendorem.
+- **A bespoke design system.** Duplicates IWA; diverges from the organization's
+  standard.
+- **Importing PrimeReact directly in features.** Breaks the `@/ui` seam and couples
+  code to a specific vendor.
