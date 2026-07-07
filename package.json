@@ -23,8 +23,8 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.5.0",
     "i18next": "^26.3.4",
-    "react": "19.2.7",
-    "react-dom": "19.2.7",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
     "react-i18next": "^17.0.8",
     "react-redux": "^9.2.0",
     "react-router-dom": "^6.30.3",
@@ -38,8 +38,8 @@
     "@testing-library/react": "^16.1.0",
     "@testing-library/user-event": "^14.5.2",
     "@types/node": "^26.0.0",
-    "@types/react": "^19.0.2",
-    "@types/react-dom": "^19.0.2",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
     "@vitejs/plugin-react-swc": "^3.7.2",
     "@vitest/coverage-v8": "^2.1.8",
     "eslint": "^9.17.0",
@@ -68,7 +68,7 @@
   },
   "overrides": {
     "vite": "$vite",
-    "react": "19.2.7",
-    "react-dom": "19.2.7"
+    "react": "19.1.0",
+    "react-dom": "19.1.0"
   }
 }
