@@ -1,5 +1,22 @@
 @import 'tailwindcss';
 
+/*
+ * Design tokens exposed to Tailwind. These mirror the CSS custom properties
+ * in :root below so utilities (bg-surface, text-muted, border-border,
+ * text-accent, ring-focus, ...) are generated from the same values used by
+ * the CSS Modules. Replace the hex values with the official BIKS brand
+ * palette when available.
+ */
+@theme {
+  --color-surface: #ffffff;
+  --color-surface-muted: #f5f7fa;
+  --color-border: #e1e5ea;
+  --color-border-subtle: #eef1f4;
+  --color-muted: #687280;
+  --color-accent: #2563eb;
+  --color-focus: #2563eb;
+}
+
 :root {
   --border: #e1e5ea;
   --border-subtle: #eef1f4;
