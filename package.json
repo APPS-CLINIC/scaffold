@@ -23,8 +23,12 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.5.0",
     "i18next": "^26.3.4",
+    "ing-react-icons": "^0.0.41",
+    "iwa-react-components": "^0.2.857",
+    "iwa-react-error-handling": "^1.0.105",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "react-hook-form": "^7.49.3",
     "react-i18next": "^17.0.8",
     "react-redux": "^9.2.0",
     "react-router-dom": "^6.30.3",
