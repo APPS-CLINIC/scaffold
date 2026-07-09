@@ -26,6 +26,8 @@
     "ing-react-icons": "^0.0.41",
     "iwa-react-components": "^0.2.857",
     "iwa-react-error-handling": "^1.0.105",
+    "primeicons": "^7.0.0",
+    "primereact": "^10.9.7",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hook-form": "^7.49.3",
