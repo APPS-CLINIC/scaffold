@@ -12,27 +12,37 @@ import react from '@vitejs/plugin-react-swc';
  *  (B) dev-server — pings server-side on every dev-server HTML request.
  *
  * The URL resolves to `${VITE_API_BASE_URL}/hello` (locally
- * http://localhost:8765/hello), or VITE_RENDER_PING_URL if set. When neither
- * is configured the plugin is a no-op.
+ * http://localhost:8765/hello), or VITE_RENDER_PING_URL if set. The plugin
+ * always registers and logs its state at dev-server start, so it is never
+ * silent: "enabled → GET <url>" or "disabled — set VITE_API_BASE_URL...".
  */
-function renderPingPlugin(url: string, method = 'GET'): Plugin {
-  const clientScript =
-    `fetch(${JSON.stringify(url)},{method:${JSON.stringify(method)}})` +
-    `.then(function(r){if(!r.ok)throw new Error('Status: '+r.status);` +
-    `console.log('Successful connection with BE');})` +
-    `.catch(function(e){console.error('Error during connection to BE.',e);});`;
+function renderPingPlugin(url: string | undefined, method = 'GET'): Plugin {
+  const clientScript = url
+    ? `fetch(${JSON.stringify(url)},{method:${JSON.stringify(method)}})` +
+      `.then(function(r){if(!r.ok)throw new Error('Status: '+r.status);` +
+      `console.log('Successful connection with BE');})` +
+      `.catch(function(e){console.error('Error during connection to BE.',e);});`
+    : '';
 
   return {
     name: 'render-ping',
     // (A) client-side connection test on every browser render/load
     transformIndexHtml() {
+      if (!url) return [];
       return [{ tag: 'script', children: clientScript, injectTo: 'body' }];
     },
     // (B) dev-server connection test on every HTML document request
     configureServer(server) {
       server.httpServer?.once('listening', () => {
-        server.config.logger.info(`[render-ping] enabled → ${method} ${url}`);
+        if (url) {
+          server.config.logger.info(`[render-ping] enabled → ${method} ${url}`);
+        } else {
+          server.config.logger.warn(
+            '[render-ping] disabled — set VITE_API_BASE_URL or VITE_RENDER_PING_URL',
+          );
+        }
       });
+      if (!url) return;
       server.middlewares.use((req, _res, next) => {
         // Fire on document navigations (/, /home, any route) — not on asset
         // requests — by keying off the browser's Accept header.
@@ -56,10 +66,10 @@ function renderPingPlugin(url: string, method = 'GET'): Plugin {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const apiBase = env.VITE_API_BASE_URL?.replace(/\/$/, '');
-  const pingUrl = env.VITE_RENDER_PING_URL || (apiBase ? `${apiBase}/hello` : '');
+  const pingUrl = env.VITE_RENDER_PING_URL || (apiBase ? `${apiBase}/hello` : undefined);
 
   return {
-    plugins: [react(), ...(pingUrl ? [renderPingPlugin(pingUrl)] : [])],
+    plugins: [react(), renderPingPlugin(pingUrl)],
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),
