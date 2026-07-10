@@ -28,11 +28,15 @@ function renderPingPlugin(url: string, method = 'GET'): Plugin {
     transformIndexHtml() {
       return [{ tag: 'script', children: clientScript, injectTo: 'body' }];
     },
-    // (B) dev-server connection test on every HTML request
+    // (B) dev-server connection test on every HTML document request
     configureServer(server) {
+      server.httpServer?.once('listening', () => {
+        server.config.logger.info(`[render-ping] enabled → ${method} ${url}`);
+      });
       server.middlewares.use((req, _res, next) => {
-        const path = (req.url ?? '').split('?')[0];
-        if (path === '/' || path.endsWith('.html')) {
+        // Fire on document navigations (/, /home, any route) — not on asset
+        // requests — by keying off the browser's Accept header.
+        if (req.headers.accept?.includes('text/html')) {
           fetch(url, { method })
             .then((r) => {
               if (!r.ok) throw new Error('Status: ' + r.status);
