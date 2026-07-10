@@ -4,34 +4,43 @@ import { loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 
 /**
- * Pings an endpoint whenever the app is rendered. Two triggers:
- *  (A) client-side — injects a <script> into index.html that fetches the
- *      endpoint on every browser load (works in dev AND the prod build).
- *  (B) dev-server — pings the endpoint server-side on every request that
- *      serves the HTML document (npm run dev only).
+ * Connection test: GET <url> whenever the app is rendered, logging success or
+ * failure — the same "Successful connection with BE" / "Error during
+ * connection to BE" check that used to live in a component. Two triggers:
+ *  (A) client-side — injects a <script> into index.html that runs on every
+ *      browser load (dev AND the prod build).
+ *  (B) dev-server — pings server-side on every dev-server HTML request.
  *
- * The endpoint comes from VITE_RENDER_PING_URL; when it is unset the plugin
- * is a no-op, so nothing is injected and no request is made.
+ * The URL resolves to `${VITE_API_BASE_URL}/hello` (locally
+ * http://localhost:8765/hello), or VITE_RENDER_PING_URL if set. When neither
+ * is configured the plugin is a no-op.
  */
-function renderPingPlugin(url: string, method = 'POST'): Plugin {
+function renderPingPlugin(url: string, method = 'GET'): Plugin {
+  const clientScript =
+    `fetch(${JSON.stringify(url)},{method:${JSON.stringify(method)}})` +
+    `.then(function(r){if(!r.ok)throw new Error('Status: '+r.status);` +
+    `console.log('Successful connection with BE');})` +
+    `.catch(function(e){console.error('Error during connection to BE.',e);});`;
+
   return {
     name: 'render-ping',
-    // (A) client-side ping on every browser render/load
+    // (A) client-side connection test on every browser render/load
     transformIndexHtml() {
-      return [
-        {
-          tag: 'script',
-          children: `fetch(${JSON.stringify(url)},{method:${JSON.stringify(method)},keepalive:true}).catch(()=>{});`,
-          injectTo: 'body',
-        },
-      ];
+      return [{ tag: 'script', children: clientScript, injectTo: 'body' }];
     },
-    // (B) dev-server ping when the HTML document is requested
+    // (B) dev-server connection test on every HTML request
     configureServer(server) {
       server.middlewares.use((req, _res, next) => {
         const path = (req.url ?? '').split('?')[0];
         if (path === '/' || path.endsWith('.html')) {
-          fetch(url, { method }).catch(() => {});
+          fetch(url, { method })
+            .then((r) => {
+              if (!r.ok) throw new Error('Status: ' + r.status);
+              server.config.logger.info('[render-ping] Successful connection with BE');
+            })
+            .catch((e) => {
+              server.config.logger.error(`[render-ping] Error during connection to BE. ${e}`);
+            });
         }
         next();
       });
@@ -42,7 +51,8 @@ function renderPingPlugin(url: string, method = 'POST'): Plugin {
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const pingUrl = env.VITE_RENDER_PING_URL;
+  const apiBase = env.VITE_API_BASE_URL?.replace(/\/$/, '');
+  const pingUrl = env.VITE_RENDER_PING_URL || (apiBase ? `${apiBase}/hello` : '');
 
   return {
     plugins: [react(), ...(pingUrl ? [renderPingPlugin(pingUrl)] : [])],
