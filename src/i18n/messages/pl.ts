@@ -31,6 +31,9 @@ export const pl = {
   'topbar.settings': 'Ustawienia',
   'topbar.logout': 'Wyloguj',
   'section.placeholder': 'Prosta podstrona — dodaj tu właściwą treść.',
+  'error.notFound': 'Ta strona nie istnieje.',
+  'error.forbidden': 'Nie masz uprawnień do tej strony.',
+  'error.goHome': 'Wróć na stronę główną',
   'footer.note': '© {{year}} Scaffold',
 } as const;
 

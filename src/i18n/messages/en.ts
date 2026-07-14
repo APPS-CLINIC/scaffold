@@ -29,5 +29,8 @@ export const en: Record<MessageKey, string> = {
   'topbar.settings': 'Settings',
   'topbar.logout': 'Log out',
   'section.placeholder': 'Simple subpage — add the real content here.',
+  'error.notFound': 'This page does not exist.',
+  'error.forbidden': 'You do not have permission to view this page.',
+  'error.goHome': 'Back to home page',
   'footer.note': '© {{year}} Scaffold',
 };

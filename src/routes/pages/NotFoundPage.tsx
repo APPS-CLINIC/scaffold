@@ -1,11 +1,5 @@
-import { Link } from 'react-router-dom';
+import { ErrorPage } from './ErrorPage';
 
 export function NotFoundPage() {
-  return (
-    <section>
-      <h1>404</h1>
-      <p>This page does not exist.</p>
-      <Link to="/">Go home</Link>
-    </section>
-  );
+  return <ErrorPage code={404} messageKey="error.notFound" />;
 }
