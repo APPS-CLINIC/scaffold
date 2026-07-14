@@ -27,22 +27,22 @@ export const TopBarCustom = () => {
       logo={<Logo />}
       onLogoClick={() => navigate('/')}
       items={[
-        // TODO: podmień ikony na właściwe z ing-react-icons (tu tylko te,
-        // których nazwy są potwierdzone: Hide/Settings/Logout).
+        // TODO: swap in the proper ing-react-icons glyphs (only the names
+        // confirmed to exist are used here: Hide/Settings/Logout).
         <TopBar.Item
-          key="ostatnio-przegladane"
+          key="recently-viewed"
           icon={<Hide className="text-fg-primary" />}
           label={t('topbar.recentlyViewed')}
           onClick={() => {}}
         />,
         <TopBar.Item
-          key="szybkie-wyszukiwanie"
+          key="quick-search"
           icon={<Settings className="text-fg-primary" />}
           label={t('topbar.quickSearch')}
           onClick={() => {}}
         />,
         <TopBar.Item
-          key="moj-profil"
+          key="my-profile"
           menu
           menuProps={{
             icon: <Settings />,

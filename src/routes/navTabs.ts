@@ -7,25 +7,25 @@ import type { MessageKey } from '@/i18n/messages/pl';
  * the only step needed to wire a new section.
  */
 export const navTabs = [
-  { key: 'start', path: '/', labelKey: 'nav.tab.start' },
-  { key: 'portfel', path: '/portfel', labelKey: 'nav.tab.portfolio' },
-  { key: 'klienci', path: '/klienci', labelKey: 'nav.tab.clients' },
-  { key: 'grupy', path: '/grupy', labelKey: 'nav.tab.groups' },
-  { key: 'targety', path: '/targety', labelKey: 'nav.tab.targets' },
+  { key: 'home', path: '/', labelKey: 'nav.tab.start' },
+  { key: 'portfolio', path: '/portfolio', labelKey: 'nav.tab.portfolio' },
+  { key: 'clients', path: '/clients', labelKey: 'nav.tab.clients' },
+  { key: 'groups', path: '/groups', labelKey: 'nav.tab.groups' },
+  { key: 'targets', path: '/targets', labelKey: 'nav.tab.targets' },
   { key: 'pipeline', path: '/pipeline', labelKey: 'nav.tab.pipeline' },
-  { key: 'zlecenia', path: '/zlecenia', labelKey: 'nav.tab.orders' },
-  { key: 'transakcje', path: '/transakcje', labelKey: 'nav.tab.transactions' },
-  { key: 'raporty-bi', path: '/raporty-bi', labelKey: 'nav.tab.reportsBi' },
-  { key: 'kalendarium', path: '/kalendarium', labelKey: 'nav.tab.calendar' },
+  { key: 'orders', path: '/orders', labelKey: 'nav.tab.orders' },
+  { key: 'transactions', path: '/transactions', labelKey: 'nav.tab.transactions' },
+  { key: 'bi-reports', path: '/bi-reports', labelKey: 'nav.tab.reportsBi' },
+  { key: 'calendar', path: '/calendar', labelKey: 'nav.tab.calendar' },
 ] as const satisfies readonly { key: string; path: string; labelKey: MessageKey }[];
 
 export type NavTabKey = (typeof navTabs)[number]['key'];
 
-export const defaultNavTabKey: NavTabKey = 'start';
+export const defaultNavTabKey: NavTabKey = 'home';
 
 /**
  * Derive the active tab from a pathname. Nested paths stay within their
- * section (`/klienci/42` -> `klienci`); unknown paths fall back to `start`
+ * section (`/clients/42` -> `clients`); unknown paths fall back to `home`
  * so the mirror is total, like the rest of the URL parsing.
  */
 export function parseActiveTab(pathname: string): NavTabKey {

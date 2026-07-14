@@ -9,15 +9,15 @@ describe('parseActiveTab', () => {
   });
 
   it('keeps nested paths within their section', () => {
-    expect(parseActiveTab('/klienci/42')).toBe('klienci');
-    expect(parseActiveTab('/raporty-bi/miesieczne/2026')).toBe('raporty-bi');
+    expect(parseActiveTab('/clients/42')).toBe('clients');
+    expect(parseActiveTab('/bi-reports/monthly/2026')).toBe('bi-reports');
   });
 
   it('does not match on a bare prefix (no separator)', () => {
-    expect(parseActiveTab('/klienci-archiwum')).toBe(defaultNavTabKey);
+    expect(parseActiveTab('/clients-archive')).toBe(defaultNavTabKey);
   });
 
   it('falls back to the default tab for unknown paths', () => {
-    expect(parseActiveTab('/nie-ma-takiej-strony')).toBe(defaultNavTabKey);
+    expect(parseActiveTab('/no-such-page')).toBe(defaultNavTabKey);
   });
 });
