@@ -1,4 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { defaultNavTabKey, type NavTabKey } from '@/routes/navTabs';
 import { defaultListQuery, type ListQuery } from './urlState.schema';
 
 /**
@@ -14,10 +15,13 @@ import { defaultListQuery, type ListQuery } from './urlState.schema';
  */
 export interface UrlState {
   list: ListQuery;
+  /** Top-bar tab derived from the pathname (see `parseActiveTab`). */
+  activeTab: NavTabKey;
 }
 
 const initialState: UrlState = {
   list: defaultListQuery,
+  activeTab: defaultNavTabKey,
 };
 
 const urlStateSlice = createSlice({
@@ -27,8 +31,11 @@ const urlStateSlice = createSlice({
     listQueryChanged(state, action: PayloadAction<ListQuery>) {
       state.list = action.payload;
     },
+    activeTabChanged(state, action: PayloadAction<NavTabKey>) {
+      state.activeTab = action.payload;
+    },
   },
 });
 
-export const { listQueryChanged } = urlStateSlice.actions;
+export const { listQueryChanged, activeTabChanged } = urlStateSlice.actions;
 export const urlStateReducer = urlStateSlice.reducer;

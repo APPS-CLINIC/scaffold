@@ -1,9 +1,18 @@
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '@/app/store';
+import { navTabs } from '@/routes/navTabs';
 import { defaultListQuery } from './urlState.schema';
 
 /** Base selector: the validated list query mirrored from the URL. */
 export const selectListQuery = (state: RootState) => state.urlState.list;
+
+/** Active top-bar tab, mirrored from the pathname. */
+export const selectActiveTab = (state: RootState) => state.urlState.activeTab;
+
+/** The active tab as a TabMenu `activeIndex` (position within `navTabs`). */
+export const selectActiveTabIndex = createSelector([selectActiveTab], (activeTab) =>
+  navTabs.findIndex((tab) => tab.key === activeTab),
+);
 
 /**
  * Memoized derived selectors (reselect). They only recompute when their inputs

@@ -1,5 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { TopBarCustom } from '@/components/TopBarCustom';
 import { UrlStateSync } from '@/features/urlState/UrlStateSync';
 
 const navLinkClass = ({ isActive }: { isActive: boolean }) =>
@@ -21,9 +22,8 @@ export function RootLayout() {
   return (
     <div className="grid h-dvh grid-rows-[auto_minmax(0,1fr)_auto]">
       <UrlStateSync />
-      <header className="flex items-baseline gap-3 border-b border-border bg-surface px-4 py-3">
-        <strong>{t('app.title')}</strong>
-        <span className="text-sm text-muted">React · Vite · Redux Toolkit · URL-driven state</span>
+      <header>
+        <TopBarCustom />
       </header>
       <div className="flex min-h-0">
         <aside className="w-56 shrink-0 overflow-y-auto border-r border-border bg-surface-muted p-3">
