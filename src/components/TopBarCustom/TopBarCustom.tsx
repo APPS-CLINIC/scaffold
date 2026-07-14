@@ -1,3 +1,4 @@
+import type { SetStateAction } from 'react';
 import { TabMenu, TopBar } from 'iwa-react-components';
 import { Hide, Logout, Settings } from 'ing-react-icons';
 import { useNavigate } from 'react-router-dom';
@@ -31,12 +32,14 @@ export const TopBarCustom = () => {
         // confirmed to exist are used here: Hide/Settings/Logout).
         <TopBar.Item
           key="recently-viewed"
+          menu={false}
           icon={<Hide className="text-fg-primary" />}
           label={t('topbar.recentlyViewed')}
           onClick={() => {}}
         />,
         <TopBar.Item
           key="quick-search"
+          menu={false}
           icon={<Settings className="text-fg-primary" />}
           label={t('topbar.quickSearch')}
           onClick={() => {}}
@@ -58,7 +61,10 @@ export const TopBarCustom = () => {
       <TabMenu
         activeIndex={activeIndex}
         items={navTabs.map((tab) => ({ label: t(tab.labelKey) }))}
-        onChangeActiveIndex={(index: number) => {
+        // The prop is typed as Dispatch<SetStateAction<number>>, so it must
+        // also accept an updater function; resolve it against the current index.
+        onChangeActiveIndex={(value: SetStateAction<number>) => {
+          const index = typeof value === 'function' ? value(activeIndex) : value;
           const tab = navTabs[index];
           if (tab) navigate(tab.path);
         }}
