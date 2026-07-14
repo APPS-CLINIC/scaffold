@@ -18,11 +18,12 @@ export const router = createBrowserRouter([
           path: tab.path,
           element: <SectionPage titleKey={tab.labelKey} />,
         })),
-      // Dedicated error routes (navigable directly, e.g. after an API 403),
-      // plus the catch-all that renders 404 for any unknown URL.
-      { path: '/403', element: <ForbiddenPage /> },
-      { path: '/404', element: <NotFoundPage /> },
-      { path: '*', element: <NotFoundPage /> },
     ],
   },
+  // Error routes live OUTSIDE RootLayout on purpose: no top bar, menu or
+  // footer. /403 and /404 are navigable directly (e.g. after an API 403),
+  // and the catch-all renders the 404 for any unknown URL.
+  { path: '/403', element: <ForbiddenPage /> },
+  { path: '/404', element: <NotFoundPage /> },
+  { path: '*', element: <NotFoundPage /> },
 ]);
