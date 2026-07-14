@@ -13,6 +13,9 @@ export const pl = {
   'common.empty': 'Brak danych',
   'common.results': '{{count}} wyników',
   'home.intro': 'Czysty scaffold — dodaj swoją pierwszą funkcję.',
+  'nav.title': 'Nawigacja',
+  'nav.home': 'Start',
+  'footer.note': '© {{year}} Scaffold',
 } as const;
 
 export type MessageKey = keyof typeof pl;

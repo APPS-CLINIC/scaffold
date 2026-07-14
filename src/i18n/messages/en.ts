@@ -11,4 +11,7 @@ export const en: Record<MessageKey, string> = {
   'common.empty': 'No data',
   'common.results': '{{count}} results',
   'home.intro': 'Clean scaffold — add your first feature.',
+  'nav.title': 'Navigation',
+  'nav.home': 'Home',
+  'footer.note': '© {{year}} Scaffold',
 };
