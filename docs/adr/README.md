@@ -21,28 +21,29 @@ ogóle prowadzimy ADR-y; użyj go też jako szablonu dla nowych rekordów.
 
 ### Krok 01 — Scaffold i konfiguracja
 
-| ADR                                                      | Tytuł                                            | Status      |
-| -------------------------------------------------------- | ------------------------------------------------ | ----------- |
-| [0000](0000-record-architecture-decisions.md)            | Prowadzenie rekordów decyzji architektonicznych  | Zaakceptowano |
-| [0001](0001-build-tooling-vite-swc.md)                   | Vite 6 + SWC jako narzędzia build i dev          | Zaakceptowano |
-| [0002](0002-typescript-strict-and-project-config.md)     | Ścisły TypeScript z referencjami projektów       | Zaakceptowano |
-| [0003](0003-package-manager-npm.md)                      | npm jako menedżer pakietów                        | Zaakceptowano |
-| [0004](0004-code-quality-gates.md)                       | Bramki jakości: ESLint + Prettier + Husky + lint-staged | Zaakceptowano |
-| [0005](0005-testing-vitest-testing-library.md)           | Vitest + Testing Library do testów               | Zaakceptowano |
+| ADR                                                  | Tytuł                                                   | Status        |
+| ---------------------------------------------------- | ------------------------------------------------------- | ------------- |
+| [0000](0000-record-architecture-decisions.md)        | Prowadzenie rekordów decyzji architektonicznych         | Zaakceptowano |
+| [0001](0001-build-tooling-vite-swc.md)               | Vite 6 + SWC jako narzędzia build i dev                 | Zaakceptowano |
+| [0002](0002-typescript-strict-and-project-config.md) | Ścisły TypeScript z referencjami projektów              | Zaakceptowano |
+| [0003](0003-package-manager-npm.md)                  | npm jako menedżer pakietów                              | Zaakceptowano |
+| [0004](0004-code-quality-gates.md)                   | Bramki jakości: ESLint + Prettier + Husky + lint-staged | Zaakceptowano |
+| [0005](0005-testing-vitest-testing-library.md)       | Vitest + Testing Library do testów                      | Zaakceptowano |
 
 ### Krok 02 — Architektura aplikacji
 
-| ADR                                                      | Tytuł                                            | Status      |
-| -------------------------------------------------------- | ------------------------------------------------ | ----------- |
-| [0006](0006-url-as-single-source-of-truth.md)            | URL jako jedyne źródło prawdy dla stanu widoku    | Zaakceptowano |
-| [0007](0007-redux-toolkit-and-rtk-query.md)              | Redux Toolkit + RTK Query do stanu i cache       | Zaakceptowano |
-| [0008](0008-zod-total-parsing-of-search-params.md)       | Totalne parsowanie search params przez Zod       | Zaakceptowano |
-| [0009](0009-reselect-and-listener-middleware.md)         | Selektory reselect + listener middleware         | Zaakceptowano |
-| [0012](0012-routing-react-router-v7.md)                  | Routing z React Router v7                        | Zaakceptowano |
+| ADR                                                | Tytuł                                          | Status        |
+| -------------------------------------------------- | ---------------------------------------------- | ------------- |
+| [0006](0006-url-as-single-source-of-truth.md)      | URL jako jedyne źródło prawdy dla stanu widoku | Zaakceptowano |
+| [0007](0007-redux-toolkit-and-rtk-query.md)        | Redux Toolkit + RTK Query do stanu i cache     | Zaakceptowano |
+| [0008](0008-zod-total-parsing-of-search-params.md) | Totalne parsowanie search params przez Zod     | Zaakceptowano |
+| [0009](0009-reselect-and-listener-middleware.md)   | Selektory reselect + listener middleware       | Zaakceptowano |
+| [0012](0012-routing-react-router-v7.md)            | Routing z React Router v7                      | Zaakceptowano |
 
 ### Krok 03 — Dostrojenie do scope'u (discovery)
 
-| ADR                                                      | Tytuł                                            | Status      |
-| -------------------------------------------------------- | ------------------------------------------------ | ----------- |
-| [0013](0013-iwa-components-primereact.md)                | IWA Components (PrimeReact) za szwem `@/ui`       | Zaakceptowano |
-| [0014](0014-internationalization-i18n.md)                | Internacjonalizacja (i18n)                       | Zaakceptowano |
+| ADR                                       | Tytuł                                        | Status        |
+| ----------------------------------------- | -------------------------------------------- | ------------- |
+| [0013](0013-iwa-components-primereact.md) | IWA Components (PrimeReact) za szwem `@/ui`  | Zaakceptowano |
+| [0014](0014-internationalization-i18n.md) | Internacjonalizacja (i18n)                   | Zaakceptowano |
+| [0019](0019-tailwind-utilities.md)        | Tailwind CSS v4 (utilities) obok CSS modules | Zaakceptowano |
