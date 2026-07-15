@@ -17,6 +17,7 @@ with performance and best practices in mind.
 | URL ↔ state        | URL is the source of truth, mirrored into Redux via **listener-style sync** + middleware |
 | Validation         | **Zod** (total parsing of search params)                                                 |
 | Large lists        | **Virtualization** — recommended pattern (`@tanstack/react-virtual`), not bundled        |
+| Styling            | CSS modules + **Tailwind CSS v4** utilities (no preflight; tokens as CSS variables)      |
 | Testing            | **Vitest** + Testing Library                                                             |
 | Quality gates      | **ESLint** + **Prettier** + **Husky** + **lint-staged**                                  |
 | UI library         | **Not included** — see [`src/ui`](src/ui/README.md)                                      |
@@ -81,7 +82,7 @@ src/
 ├─ api/                 # baseApi (RTK Query root)
 ├─ features/            # urlState/ — and your own features
 │  └─ urlState/         # generic Zod list-query schema, slice mirror, selectors, sync, write hook
-├─ ui/                  # SEAM for your internal UI library (placeholders only)
+├─ ui/                  # SEAM for your internal UI library (+ Icon/useCustomIcon primitives)
 ├─ routes/              # router, layout, pages
 ├─ styles/              # global css
 └─ test/                # renderWithProviders helper
@@ -124,3 +125,11 @@ This scaffold deliberately ships **no external UI library**. Everything imports
 from `@/ui`, a thin placeholder layer. Point those exports at your internal
 organization components (keeping the prop contracts) and the rest of the app is
 untouched. See [`src/ui/README.md`](src/ui/README.md).
+
+## AI agents
+
+Working with GitHub Copilot, Claude Code or another coding agent? The
+repository ships [`AGENTS.md`](AGENTS.md) — a distilled, agent-oriented guide
+(commands, architecture rules, conventions, docs map). Copilot additionally
+picks up [`.github/copilot-instructions.md`](.github/copilot-instructions.md),
+which points there.
