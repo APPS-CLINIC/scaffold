@@ -35,14 +35,14 @@ Zasady modelu:
 
 `<typ>/<krótkie-podsumowanie-kebab>` — to samo słownictwo `<typ>` co w commitach:
 
-| Typ         | Do czego                                            | Przykład                          |
-| ----------- | --------------------------------------------------- | --------------------------------- |
-| `feat/`     | funkcja widoczna dla użytkownika                    | `feat/items-csv-export`           |
-| `fix/`      | poprawka błędu                                      | `fix/pagination-off-by-one`       |
-| `chore/`    | narzędzia, zależności, konfiguracja, hydraulika     | `chore/bump-vite-6`               |
-| `docs/`     | wyłącznie dokumentacja                              | `docs/scaffold-and-config`        |
-| `refactor/` | zmiana kodu bez zmiany zachowania                   | `refactor/extract-url-state-hook` |
-| `test/`     | wyłącznie testy                                     | `test/items-toolbar`              |
+| Typ         | Do czego                                        | Przykład                          |
+| ----------- | ----------------------------------------------- | --------------------------------- |
+| `feat/`     | funkcja widoczna dla użytkownika                | `feat/items-csv-export`           |
+| `fix/`      | poprawka błędu                                  | `fix/pagination-off-by-one`       |
+| `chore/`    | narzędzia, zależności, konfiguracja, hydraulika | `chore/bump-vite-6`               |
+| `docs/`     | wyłącznie dokumentacja                          | `docs/scaffold-and-config`        |
+| `refactor/` | zmiana kodu bez zmiany zachowania               | `refactor/extract-url-state-hook` |
+| `test/`     | wyłącznie testy                                 | `test/items-toolbar`              |
 
 Trzymaj gałęzie **małe i jednocelowe** — gałąź powinna odpowiadać jednemu PR-owi
 i jednej recenzowalnej myśli.
@@ -69,6 +69,13 @@ chore: bump vite to 6.1 via overrides
 Typy: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `perf`, `build`,
 `ci`, `style`, `revert`. To słownictwo czyni historię łatwą do przeszukiwania
 (grep) i otwiera drogę do automatycznych changelogów/semver w przyszłości.
+
+### Język
+
+**Wiadomości commitów piszemy po angielsku** — tak samo jak cały kod:
+nazewnictwo (identyfikatory), komentarze, JSDoc i opisy testów są wyłącznie
+angielskie. Polski jest zarezerwowany dla prozy w `docs/` oraz komunikatów
+locale `pl` (`src/i18n/messages/pl.ts`).
 
 ## Lokalne bramki jakości
 

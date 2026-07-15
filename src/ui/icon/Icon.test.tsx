@@ -30,8 +30,8 @@ describe('Icon', () => {
   });
 
   it('exposes an accessible name when `label` is given', () => {
-    render(<Icon label="Historia zmian" />);
-    const icon = screen.getByRole('img', { name: 'Historia zmian' });
+    render(<Icon label="Change history" />);
+    const icon = screen.getByRole('img', { name: 'Change history' });
     expect(icon).not.toHaveAttribute('aria-hidden');
   });
 

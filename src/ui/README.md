@@ -35,12 +35,12 @@ as children. SVGs auto-scale to ~55% of the circle and inherit `currentColor`.
 import { Icon, useCustomIcon } from '@/ui';
 
 // One-off usage:
-<Icon size="lg" tone="outline" label="Historia zmian" className="text-orange-600">
+<Icon size="lg" tone="outline" label="Change history" className="text-orange-600">
   <HistorySvg />
 </Icon>;
 
 // Bind a glyph + defaults into a reusable component:
-const HistoryIcon = useCustomIcon(historyGlyph, { size: 'lg', label: 'Historia' });
+const HistoryIcon = useCustomIcon(historyGlyph, { size: 'lg', label: 'History' });
 // ...
 <HistoryIcon />                 // uses the bound defaults
 <HistoryIcon tone="accent" />   // per-usage props override them

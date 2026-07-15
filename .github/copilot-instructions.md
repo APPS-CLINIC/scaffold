@@ -49,7 +49,10 @@ architecture rules, docs map). Path-specific rules live in
 
 - GitHub Flow: short-lived branches off `main` named `<typ>/<kebab-summary>`
   (`feat/`, `fix/`, `chore/`, `docs/`, `refactor/`, `test/`); squash merge.
-- Commits follow **Conventional Commits written in Polish**, e.g.
-  `feat(ui): komponent Icon i hook useCustomIcon`.
+- Commits follow **Conventional Commits written in English**, e.g.
+  `feat(ui): add Icon component and useCustomIcon hook`.
+- **English-only code**: identifiers, comments, JSDoc and test descriptions
+  are always English; Polish is reserved for `docs/` prose and the `pl`
+  locale messages.
 - Tests are co-located `*.test.ts(x)`; assert behavior and ARIA semantics via
   Testing Library, not implementation details.

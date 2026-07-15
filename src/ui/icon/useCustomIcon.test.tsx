@@ -29,14 +29,14 @@ describe('useCustomIcon', () => {
   });
 
   it('applies option defaults and lets per-usage props override them', () => {
-    const { result } = setup({ size: 'lg', tone: 'accent', label: 'Historia' });
+    const { result } = setup({ size: 'lg', tone: 'accent', label: 'History' });
     const HistoryIcon = result.current;
 
     const { rerender } = render(<HistoryIcon data-testid="icon" />);
     const icon = screen.getByTestId('icon');
     expect(icon.className).toContain('size-12');
     expect(icon.className).toContain('bg-[var(--accent)]');
-    expect(icon).toHaveAttribute('aria-label', 'Historia');
+    expect(icon).toHaveAttribute('aria-label', 'History');
 
     rerender(<HistoryIcon data-testid="icon" size="sm" tone="neutral" />);
     expect(icon.className).toContain('size-6');

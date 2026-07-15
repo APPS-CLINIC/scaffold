@@ -5,6 +5,9 @@ applyTo: 'src/**/*.{ts,tsx}'
 
 # TypeScript & React conventions
 
+- **English only** in code: identifiers, comments, JSDoc and test
+  descriptions. Polish copy belongs exclusively in
+  `src/i18n/messages/pl.ts`.
 - TypeScript is strict with `verbatimModuleSyntax`: use `import type { ... }`
   for type-only imports, never mix types into value imports.
 - `noUncheckedIndexedAccess` is on: indexed access yields `T | undefined` —

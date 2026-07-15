@@ -140,8 +140,11 @@ Path alias: `@/` → `src/` (configured in `vite.config.ts` and tsconfig).
   squash merge. `main` is protected.
 - Branch names: `<typ>/<kebab-summary>` (`feat/`, `fix/`, `chore/`, `docs/`,
   `refactor/`, `test/`).
-- **Conventional Commits, written in Polish** (e.g.
-  `feat(ui): komponent Icon i hook useCustomIcon`). Body explains _why_.
+- **Conventional Commits, written in English** (e.g.
+  `feat(ui): add Icon component and useCustomIcon hook`). Body explains _why_.
+- **English-only code**: identifiers, comments, JSDoc, commit messages and
+  test descriptions are always English. Polish appears only in `docs/` prose
+  and in the `pl` locale messages (`src/i18n/messages/pl.ts`).
 - Architecture decisions are recorded as ADRs in `docs/adr/` (Polish,
   append-only — new decision supersedes, never edit an accepted ADR). The
   step-by-step build narrative lives in `docs/steps/`.
