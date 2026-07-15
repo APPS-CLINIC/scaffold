@@ -152,13 +152,12 @@ Path alias: `@/` → `src/` (configured in `vite.config.ts` and tsconfig).
 
 ## Docs map
 
-| Where                                       | What                                                                |
-| ------------------------------------------- | ------------------------------------------------------------------- |
-| `README.md`                                 | Stack, architecture diagram, getting started                        |
-| `CONTRIBUTING.md`                           | GitHub Flow, commit/branch conventions, PR checklist                |
-| `docs/steps/`                               | Build narrative, ordered steps                                      |
-| `docs/adr/`                                 | Architecture Decision Records, indexed in its README                |
-| `src/ui/README.md`                          | The UI seam contract and how to swap in the org library             |
-| `.github/copilot-instructions.md`           | Repository-wide Copilot instructions (points here)                  |
-| `.github/instructions/`                     | Path-specific Copilot rules (`applyTo` globs: src, ui, tests, docs) |
-| `.github/workflows/copilot-setup-steps.yml` | Pre-installs deps for the Copilot coding agent                      |
+| Where                             | What                                                                |
+| --------------------------------- | ------------------------------------------------------------------- |
+| `README.md`                       | Stack, architecture diagram, getting started                        |
+| `CONTRIBUTING.md`                 | GitHub Flow, commit/branch conventions, PR checklist                |
+| `docs/steps/`                     | Build narrative, ordered steps                                      |
+| `docs/adr/`                       | Architecture Decision Records, indexed in its README                |
+| `src/ui/README.md`                | The UI seam contract and how to swap in the org library             |
+| `.github/copilot-instructions.md` | Repository-wide Copilot instructions (points here)                  |
+| `.github/instructions/`           | Path-specific Copilot rules (`applyTo` globs: src, ui, tests, docs) |
