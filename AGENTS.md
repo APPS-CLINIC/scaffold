@@ -78,33 +78,18 @@ src/
 
 Path alias: `@/` → `src/` (configured in `vite.config.ts` and tsconfig).
 
-## Architecture rules (do not break these)
+## Where the rules live
 
-Operational one-liners; the reasoning behind each lives in the linked ADR:
+Nothing is repeated here — each topic has exactly one home:
 
-1. **URL → Redux is one-directional** — write query state only via
-   `useListQueryState().setQuery`; never write the `urlState` slice directly,
-   never sync store → URL. → [ADR 0006](docs/adr/0006-url-as-single-source-of-truth.md)
-2. **Search-param parsing stays total** — every `listQuerySchema` field keeps
-   a `.catch()` default; `page` is 1-based. → [ADR 0008](docs/adr/0008-zod-total-parsing-of-search-params.md)
-3. **One RTK Query api** — `injectEndpoints` onto `baseApi`, never a second
-   `createApi`. → [ADR 0007](docs/adr/0007-redux-toolkit-and-rtk-query.md)
-4. **UI only via the `@/ui` seam** — no direct vendor imports; keep exported
-   names and prop contracts stable. → [ADR 0013](docs/adr/0013-iwa-components-primereact.md)
-5. **Strict TS** — `import type` for type-only imports
-   (`verbatimModuleSyntax`); indexed access yields `T | undefined`
-   (`noUncheckedIndexedAccess`). → [ADR 0002](docs/adr/0002-typescript-strict-and-project-config.md)
-
-## Styling, UI primitives, testing — where the rules live
-
-To keep a single source of truth, the detailed rules are not repeated here:
-
-- **Styling** — [`.github/instructions/ui.instructions.md`](.github/instructions/ui.instructions.md)
-  (how) and [ADR 0019](docs/adr/0019-tailwind-utilities.md) (why).
-- **UI primitives** — contracts and usage examples in
+- **Architecture rules ("why" and "what not to break")** — the ADRs in
+  [`docs/adr/`](docs/adr/README.md) (see the top of this file).
+- **Per-path coding rules ("how")** —
+  [`.github/instructions/`](.github/instructions/): `src/**` (TypeScript/React),
+  `src/ui/**` (UI seam + styling), tests, `docs/**` (documentation + ADRs).
+- **UI primitive contracts and usage examples** —
   [`src/ui/README.md`](src/ui/README.md); everything is exported from
   `src/ui/index.ts` and imported via `@/ui`.
-- **Testing** — [`.github/instructions/tests.instructions.md`](.github/instructions/tests.instructions.md).
 
 ## Process / git conventions
 
