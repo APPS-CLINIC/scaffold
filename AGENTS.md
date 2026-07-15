@@ -9,14 +9,12 @@ this file distills what an agent needs to act correctly.
 
 All project documentation lives in **[`docs/`](docs/README.md)**:
 
-- **[`docs/adr/`](docs/adr/README.md)** — **Architecture Decision Records**:
-  one accepted decision per file, indexed in
-  [`docs/adr/README.md`](docs/adr/README.md). This is the authoritative "why"
-  behind the codebase. **Before changing anything architectural, check whether
-  an ADR already covers it; when you introduce a new architectural decision,
-  add a new ADR** (numbered, using ADR 0000 as the template) and register it
-  in the index. ADRs are append-only — never edit an accepted one; a new ADR
-  supersedes the old.
+- **[`docs/adr/`](docs/adr/README.md)** — **Architecture Decision Records**,
+  the authoritative "why" behind the codebase. **Before changing anything
+  architectural, check whether an ADR already covers it; a new architectural
+  decision requires a new ADR.** Authoring rules (template, numbering,
+  append-only, index) live in [`docs/adr/README.md`](docs/adr/README.md) and
+  [`docs.instructions.md`](.github/instructions/docs.instructions.md).
 - **[`docs/steps/`](docs/steps/)** — the build narrative: ordered,
   self-contained steps explaining how and why the scaffold was assembled.
   Read in order to build a mental model of the app.
@@ -49,16 +47,18 @@ time.
 
 ## Stack
 
-| Concern    | Choice                                                                                                                                                    |
-| ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Build      | Vite 6 + `@vitejs/plugin-react-swc`, TypeScript strict                                                                                                    |
-| State      | Redux Toolkit + reselect; server cache via RTK Query (single `baseApi`)                                                                                   |
-| Routing    | React Router v7                                                                                                                                           |
-| Validation | Zod — _total_ parsing of URL search params (`.catch()` per field)                                                                                         |
-| Styling    | CSS modules + **Tailwind v4 utilities** (theme+utilities layers only — preflight is deliberately not imported; `src/styles/global.css` is the base layer) |
-| i18n       | i18next + react-i18next (`src/i18n`, messages in `pl`/`en`)                                                                                               |
-| Testing    | Vitest + Testing Library (`src/test/renderWithProviders.tsx`)                                                                                             |
-| UI library | **None bundled** — `src/ui` is a seam for the org library (target: IWA Components / PrimeReact, see ADR 0013)                                             |
+Choices only — the rationale for each lives in its ADR:
+
+| Concern    | Choice                                                 | Decision                                                                                                        |
+| ---------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| Build      | Vite 6 + `@vitejs/plugin-react-swc`, strict TypeScript | [0001](docs/adr/0001-build-tooling-vite-swc.md), [0002](docs/adr/0002-typescript-strict-and-project-config.md)  |
+| State      | Redux Toolkit + reselect; RTK Query (single `baseApi`) | [0007](docs/adr/0007-redux-toolkit-and-rtk-query.md), [0009](docs/adr/0009-reselect-and-listener-middleware.md) |
+| Routing    | React Router v7                                        | [0012](docs/adr/0012-routing-react-router-v7.md)                                                                |
+| Validation | Zod for URL search params                              | [0008](docs/adr/0008-zod-total-parsing-of-search-params.md)                                                     |
+| Styling    | CSS modules + Tailwind v4 utilities                    | [0019](docs/adr/0019-tailwind-utilities.md)                                                                     |
+| i18n       | i18next + react-i18next (`pl`/`en`)                    | [0014](docs/adr/0014-internationalization-i18n.md)                                                              |
+| Testing    | Vitest + Testing Library                               | [0005](docs/adr/0005-testing-vitest-testing-library.md)                                                         |
+| UI library | None bundled — `src/ui` is a seam for the org library  | [0013](docs/adr/0013-iwa-components-primereact.md)                                                              |
 
 ## Layout
 
@@ -80,41 +80,31 @@ Path alias: `@/` → `src/` (configured in `vite.config.ts` and tsconfig).
 
 ## Architecture rules (do not break these)
 
-1. **URL → Redux is one-directional.** Writes go through `useListQueryState`'s
-   `setQuery` → `setSearchParams`; `<UrlStateSync/>` mirrors the URL back into
-   the `urlState` slice. Never write the slice directly from components and
-   never sync store → URL.
-2. **Search-param parsing is total.** Every field in `listQuerySchema` has a
-   `.catch()` default — a malformed URL must never crash the app. Keep this
-   property when extending the schema.
-3. **Pagination is 1-based** in queries (`page: min(1)`, default `1`). Convert
-   to 0-based at the API-client layer if a backend needs it.
-4. **All UI imports go through `@/ui`.** Feature/route code must not import a
-   vendor UI library directly; the seam exists so the org library (IWA /
-   PrimeReact) can be swapped in one folder. Keep exported names and prop
-   contracts stable.
-5. **One RTK Query api.** New endpoints are injected onto `baseApi`
-   (`injectEndpoints`), never created as a second `createApi`.
-6. **Strict TS everywhere** — `verbatimModuleSyntax` is on, so use
-   `import type { ... }` for type-only imports; `noUncheckedIndexedAccess`
-   means indexed access yields `T | undefined`.
+Operational one-liners; the reasoning behind each lives in the linked ADR:
+
+1. **URL → Redux is one-directional** — write query state only via
+   `useListQueryState().setQuery`; never write the `urlState` slice directly,
+   never sync store → URL. → [ADR 0006](docs/adr/0006-url-as-single-source-of-truth.md)
+2. **Search-param parsing stays total** — every `listQuerySchema` field keeps
+   a `.catch()` default; `page` is 1-based. → [ADR 0008](docs/adr/0008-zod-total-parsing-of-search-params.md)
+3. **One RTK Query api** — `injectEndpoints` onto `baseApi`, never a second
+   `createApi`. → [ADR 0007](docs/adr/0007-redux-toolkit-and-rtk-query.md)
+4. **UI only via the `@/ui` seam** — no direct vendor imports; keep exported
+   names and prop contracts stable. → [ADR 0013](docs/adr/0013-iwa-components-primereact.md)
+5. **Strict TS** — `import type` for type-only imports
+   (`verbatimModuleSyntax`); indexed access yields `T | undefined`
+   (`noUncheckedIndexedAccess`). → [ADR 0002](docs/adr/0002-typescript-strict-and-project-config.md)
 
 ## Styling, UI primitives, testing — where the rules live
 
-To keep a single source of truth, the detailed rules are NOT repeated here:
+To keep a single source of truth, the detailed rules are not repeated here:
 
 - **Styling** — [`.github/instructions/ui.instructions.md`](.github/instructions/ui.instructions.md)
-  and [ADR 0019](docs/adr/0019-tailwind-utilities.md). In short: Tailwind v4
-  utilities only (no preflight), design tokens as CSS variables from
-  `src/styles/global.css` (`bg-[var(--surface)]`), class names joined with
-  `cx()`, no CSS in feature code.
-- **UI primitives** (`Button`, `TextInput`, `Select`, Toast, `Icon`,
-  `useCustomIcon`) — contracts and usage examples in
+  (how) and [ADR 0019](docs/adr/0019-tailwind-utilities.md) (why).
+- **UI primitives** — contracts and usage examples in
   [`src/ui/README.md`](src/ui/README.md); everything is exported from
   `src/ui/index.ts` and imported via `@/ui`.
 - **Testing** — [`.github/instructions/tests.instructions.md`](.github/instructions/tests.instructions.md).
-  In short: Vitest + Testing Library (jsdom), co-located `*.test.ts(x)`,
-  `renderWithProviders` for connected components, assert behavior/ARIA.
 
 ## Process / git conventions
 
