@@ -5,6 +5,24 @@ trustworthy picture of this repository. Read it before making changes.
 Human-facing docs live in [`README.md`](README.md) and [`docs/`](docs/README.md);
 this file distills what an agent needs to act correctly.
 
+## Documentation & architecture decisions (read these first)
+
+All project documentation lives in **[`docs/`](docs/README.md)** (Polish):
+
+- **[`docs/adr/`](docs/adr/README.md)** — **Architecture Decision Records**:
+  one accepted decision per file, indexed in
+  [`docs/adr/README.md`](docs/adr/README.md). This is the authoritative "why"
+  behind the codebase. **Before changing anything architectural, check whether
+  an ADR already covers it; when you introduce a new architectural decision,
+  add a new ADR** (numbered, using ADR 0000 as the template) and register it
+  in the index. ADRs are append-only — never edit an accepted one; a new ADR
+  supersedes the old.
+- **[`docs/steps/`](docs/steps/)** — the build narrative: ordered,
+  self-contained steps explaining how and why the scaffold was assembled.
+  Read in order to build a mental model of the app.
+- **[`CONTRIBUTING.md`](CONTRIBUTING.md)** — process: GitHub Flow, branch and
+  commit conventions, PR checklist.
+
 ## What this project is
 
 A production-grade **React scaffold for data-heavy apps with URL-driven

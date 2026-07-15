@@ -4,6 +4,11 @@ Read [`AGENTS.md`](../AGENTS.md) in the repository root first — it is the
 canonical, always-current guide for AI agents working in this codebase
 (commands, architecture rules, conventions, docs map).
 
+Documentation lives in `docs/` — the build narrative in `docs/steps/` and
+**architecture decisions (ADRs) in `docs/adr/`** (indexed in
+`docs/adr/README.md`). Check the ADRs before architectural changes; record new
+architectural decisions as new ADRs.
+
 Non-negotiables, in short:
 
 - The **URL is the single source of truth** for list/view state; sync is
