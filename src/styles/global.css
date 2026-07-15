@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 :root {
   --border: #e1e5ea;
   --border-subtle: #eef1f4;
