@@ -1,54 +1,54 @@
-# ADR 0007 — Redux Toolkit + RTK Query do stanu i cache
+# ADR 0007 — Redux Toolkit + RTK Query for state and caching
 
-- **Status:** Zaakceptowano
-- **Data:** 2026-06-22
+- **Status:** Accepted
+- **Date:** 2026-06-22
 
-## Kontekst
+## Context
 
-Mamy dwa różne rodzaje stanu: niewielką ilość **stanu widoku po stronie klienta**
-(lustro URL) oraz **stan serwera** (paginowane elementy), który wymaga
-cache'owania, deduplikacji, unieważniania i prefetchu. Chcemy jednego spójnego
-store, typowanego od końca do końca, bez ręcznego pisania logiki fetch/cache.
+We have two distinct kinds of state: a small amount of **client-side view state**
+(the URL mirror) and **server state** (paginated items), which requires
+caching, deduplication, invalidation, and prefetching. We want a single coherent
+store, typed end to end, without hand-writing fetch/cache logic.
 
-## Decyzja
+## Decision
 
-Używamy **Redux Toolkit** dla store i **RTK Query** dla stanu serwera.
+We use **Redux Toolkit** for the store and **RTK Query** for server state.
 
-- Jedna fabryka store, [`makeStore`](../../src/app/store.ts), komponuje root
-  reducer i middleware. **Fabryka** (a nie tylko singleton) czyni testy
-  hermetycznymi i zostawia otwarte drzwi do SSR. Kolejność middleware jest
-  celowa: `listenerMiddleware` jest **prepended** (działa przed), a
-  `baseApi.middleware` jest dołączony przez concat.
-- **Jedna instancja API RTK Query**, [`baseApi`](../../src/api/baseApi.ts),
-  posiada `reducerPath: 'api'`, współdzielone `tagTypes` oraz
-  `keepUnusedDataFor`. Funkcje **wstrzykują** swoje endpointy przez
-  `baseApi.injectEndpoints(...)`, więc każda funkcja jest samowystarczalna i
-  podzielna na chunki.
-- [`rootReducer`](../../src/app/rootReducer.ts) podpina `[baseApi.reducerPath]`
-  i slice `urlState`.
-- Typowane hooki (`useAppSelector`, `useAppDispatch`, `useAppStore`) centralizują
-  typy `RootState`/`AppDispatch`, więc komponenty nigdy nie importują surowych
-  typów Redux.
+- A single store factory, [`makeStore`](../../src/app/store.ts), composes the root
+  reducer and middleware. A **factory** (rather than just a singleton) makes tests
+  hermetic and leaves the door open to SSR. The middleware order is
+  deliberate: `listenerMiddleware` is **prepended** (runs first), and
+  `baseApi.middleware` is appended via concat.
+- **A single RTK Query API instance**, [`baseApi`](../../src/api/baseApi.ts),
+  owns `reducerPath: 'api'`, shared `tagTypes`, and
+  `keepUnusedDataFor`. Features **inject** their endpoints via
+  `baseApi.injectEndpoints(...)`, so each feature is self-contained and
+  code-splittable.
+- [`rootReducer`](../../src/app/rootReducer.ts) wires up `[baseApi.reducerPath]`
+  and the `urlState` slice.
+- Typed hooks (`useAppSelector`, `useAppDispatch`, `useAppStore`) centralize
+  the `RootState`/`AppDispatch` types, so components never import raw
+  Redux types.
 
-Unieważnianie cache jest oparte na tagach. `baseApi.tagTypes` startuje pusty
-(`[]`); typy tagów rejestruje się centralnie w miarę, jak funkcje dodają
-endpointy. Przykładowo zapytanie listy mogłoby dostarczać tag per wiersz plus
-tag `LIST`, dzięki czemu przyszła mutacja unieważnia precyzyjnie.
+Cache invalidation is tag-based. `baseApi.tagTypes` starts empty
+(`[]`); tag types are registered centrally as features add
+endpoints. For example, a list query could provide a per-row tag plus
+a `LIST` tag, so a future mutation can invalidate precisely.
 
-## Konsekwencje
+## Consequences
 
-- Kwestie cache serwera (dedup, czas życia cache, refetch przy focus/reconnect
-  przez `setupListeners`, unieważnianie) obsługuje RTK Query, a nie kod własny.
-- Wstrzykiwane endpointy trzymają funkcje modularne i ładowalne leniwie.
-- Pojedynczy `baseApi` centralizuje koordynację tagów między funkcjami.
-- Trochę boilerplate/ceremoniału wokół typowania store — płacone raz, w
+- Server-cache concerns (dedup, cache lifetime, refetch on focus/reconnect
+  via `setupListeners`, invalidation) are handled by RTK Query, not custom code.
+- Injected endpoints keep features modular and lazy-loadable.
+- A single `baseApi` centralizes tag coordination across features.
+- Some boilerplate/ceremony around store typing — paid once, in
   `src/app`.
 
-## Rozważane alternatywy
+## Alternatives considered
 
-- **Rdzeń Redux + ręczne thunki/cache.** Wymyśla RTK Query od nowa, gorzej.
-- **React Query + Zustand/Context.** Znakomite połączenie, ale dwie biblioteki i
-  dwa modele mentalne; RTK Query daje cache *oraz* store Redux (potrzebny dla
-  lustra URL, selektorów i listener middleware) w jednym.
-- **Wiele instancji `createApi`.** Traci scentralizowaną koordynację
-  tagów/cache.
+- **Redux core + hand-rolled thunks/caching.** Reinvents RTK Query, worse.
+- **React Query + Zustand/Context.** An excellent combination, but two libraries and
+  two mental models; RTK Query gives us the cache _and_ a Redux store (needed for
+  the URL mirror, selectors, and listener middleware) in one.
+- **Multiple `createApi` instances.** Loses centralized tag/cache
+  coordination.

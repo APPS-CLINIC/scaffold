@@ -39,7 +39,7 @@ architecture rules, docs map). Path-specific rules live in
 
 ## Documentation and decisions
 
-- Docs live in `docs/` (Polish): build narrative in `docs/steps/`,
+- Docs live in `docs/`: build narrative in `docs/steps/`,
   **Architecture Decision Records in `docs/adr/`** (indexed in
   `docs/adr/README.md`). Consult the ADRs before architectural changes;
   record any new architectural decision as a new, numbered ADR and add it to
@@ -51,8 +51,8 @@ architecture rules, docs map). Path-specific rules live in
   (`feat/`, `fix/`, `chore/`, `docs/`, `refactor/`, `test/`); squash merge.
 - Commits follow **Conventional Commits written in English**, e.g.
   `feat(ui): add Icon component and useCustomIcon hook`.
-- **English-only code**: identifiers, comments, JSDoc and test descriptions
-  are always English; Polish is reserved for `docs/` prose and the `pl`
-  locale messages.
+- **English only, everywhere**: code (identifiers, comments, JSDoc, test
+  descriptions), commit messages and all documentation are English. Polish
+  appears only in the `pl` locale messages.
 - Tests are co-located `*.test.ts(x)`; assert behavior and ARIA semantics via
   Testing Library, not implementation details.

@@ -1,109 +1,110 @@
-# Krok 02 — Architektura aplikacji
+# Step 02 — Application architecture
 
-> **Cel:** udokumentować architekturę runtime, która siedzi na warstwie
-> konfiguracji z [Kroku 01](01-scaffold-and-config.md).
+> **Goal:** document the runtime architecture that sits on top of the
+> configuration layer from [Step 01](01-scaffold-and-config.md).
 
-Ten krok wyjaśnia, *jak aplikacja jest spięta w runtime*: gdzie żyje stan, jak
-URL napędza widok, jak dane serwera są pobierane i cache'owane oraz jak UI
-pozostaje wymienialne. Każda sekcja linkuje do ADR-a zapisującego decyzję.
+This step explains _how the application is wired at runtime_: where state
+lives, how the URL drives the view, how server data is fetched and cached, and
+how the UI stays swappable. Each section links to the ADR recording the
+decision.
 
-## Główna idea: URL napędza wszystko
+## Core idea: the URL drives everything
 
 ```
-        zapis                              odczyt
+        write                               read
  ┌───────────────────┐             ┌─────────────────────┐
  │ useListQueryState │  navigate → │  React Router (URL)  │
  │   setQuery(...)   │             └──────────┬──────────┘
- └───────────────────┘                        │ zmiana search params
+ └───────────────────┘                        │ search params change
                                               ▼
                                    ┌─────────────────────┐
-                                   │   <UrlStateSync/>    │  (URL → Redux, ze strażnikiem)
+                                   │   <UrlStateSync/>    │  (URL → Redux, with a guard)
                                    └──────────┬──────────┘
                                               ▼
-                                   slice urlState (lustro)
+                                   urlState slice (mirror)
                                               │
                   ┌───────────────────────────┼───────────────────────────┐
                   ▼                            ▼                           ▼
-        selectListQuery (reselect)    listener middleware           komponenty czytają
-                  │                   (prefetch następnej strony)    przez useAppSelector
+        selectListQuery (reselect)    listener middleware           components read
+                  │                   (prefetch of the next page)    via useAppSelector
                   ▼
-        useGetXQuery(query)  →  cache RTK Query  →  render
+        useGetXQuery(query)  →  RTK Query cache  →  render
 ```
 
-**URL jest jedynym źródłem prawdy** dla odpytywalnego stanu widoku; Redux trzyma
-jednokierunkowe **lustro** tego stanu. Zob.
+**The URL is the single source of truth** for queryable view state; Redux holds
+a one-way **mirror** of that state. See
 [ADR 0006](../adr/0006-url-as-single-source-of-truth.md).
 
-## Warstwa po warstwie
+## Layer by layer
 
-### 1. Store i warstwa danych — `src/app`, `src/api`
+### 1. Store and data layer — `src/app`, `src/api`
 
-Jedna fabryka store (`makeStore`) komponuje root reducer i middleware; jedna
-instancja `baseApi` RTK Query posiada cache stanu serwera, a funkcje wstrzykują
-do niej swoje endpointy. Typowane hooki ukrywają surowe typy Redux przed
-komponentami.
+A single store factory (`makeStore`) composes the root reducer and middleware;
+a single RTK Query `baseApi` instance owns the server-state cache, and features
+inject their endpoints into it. Typed hooks hide the raw Redux types from
+components.
 → [ADR 0007](../adr/0007-redux-toolkit-and-rtk-query.md)
 
-### 2. Stan URL — `src/features/urlState`
+### 2. URL state — `src/features/urlState`
 
-Zod parsuje search params **totalnie** (każde pole `.catch()` z domyślną), więc
-zły URL nigdy nie wyłoży widoku; domyślne są usuwane przy serializacji dla
-krótkich, udostępnialnych linków. `UrlStateSync` odzwierciedla URL→store
-jednokierunkowo; `useListQueryState` to strona zapisu.
+Zod parses the search params **totally** (every field `.catch()` with a
+default), so a bad URL never breaks the view; defaults are stripped at
+serialization for short, shareable links. `UrlStateSync` mirrors URL→store
+one-way; `useListQueryState` is the write side.
 → [ADR 0008](../adr/0008-zod-total-parsing-of-search-params.md),
 [ADR 0006](../adr/0006-url-as-single-source-of-truth.md)
 
-### 3. Odczyty wyprowadzone i efekty uboczne — selektory + listenery
+### 3. Derived reads and side effects — selectors + listeners
 
-Selektory reselect dają stabilne, memoizowane odczyty (mniej re-renderów);
-listener middleware uruchamia reaktywne efekty uboczne — tutaj **prefetch
-następnej strony** przy zmianie zapytania — bez thunków w komponentach.
+Reselect selectors provide stable, memoized reads (fewer re-renders); listener
+middleware runs reactive side effects — here, **prefetching the next page**
+when the query changes — without thunks in components.
 → [ADR 0009](../adr/0009-reselect-and-listener-middleware.md)
 
-### 4. Dodawanie funkcji (feature)
+### 4. Adding a feature
 
-Nową funkcję dodajesz jako folder w `src/features/<nazwa>/`. Funkcja
-**wstrzykuje** swój endpoint przez `baseApi.injectEndpoints(...)` (z
-unieważnianiem cache opartym na tagach), **czyta** stan zapytania z URL przez
-`selectListQuery` / `useListQueryState`, a jeśli renderuje dużą listę —
-opcjonalnie ją **wirtualizuje** (server-side paginacja niesiona przez
-`page`/`pageSize` w `listQuerySchema`).
+You add a new feature as a folder in `src/features/<name>/`. The feature
+**injects** its endpoint via `baseApi.injectEndpoints(...)` (with tag-based
+cache invalidation), **reads** query state from the URL via
+`selectListQuery` / `useListQueryState`, and if it renders a large list —
+optionally **virtualizes** it (server-side pagination carried by
+`page`/`pageSize` in `listQuerySchema`).
 
-### 5. Szew UI — `src/ui`
+### 5. UI seam — `src/ui`
 
-Wszystko importuje prymitywy UI z `@/ui`, cienkiej warstwy-zaślepki, więc
-wewnętrzną bibliotekę UI organizacji można podpiąć w jednym folderze bez
-dotykania kodu funkcji.
+Everything imports UI primitives from `@/ui`, a thin stub layer, so the
+organization's internal UI library can be plugged in within a single folder
+without touching feature code.
 
 ### 6. Routing — `src/routes`
 
-React Router v7 udostępnia URL/search params jako obserwowalny stan i zapewnia
-miejsce montażu `RootLayout` dla `UrlStateSync`.
+React Router v7 exposes the URL/search params as observable state and provides
+the `RootLayout` mount point for `UrlStateSync`.
 → [ADR 0012](../adr/0012-routing-react-router-v7.md)
 
-## Jak płynie pojedyncza interakcja
+## How a single interaction flows
 
-1. Użytkownik wpisuje w polu wyszukiwania → `setQuery({ q })` (debounce,
-   `replace`), co resetuje `page` do 1 i wywołuje `setSearchParams`.
-2. URL się zmienia → `UrlStateSync` parsuje go i, jeśli różny (strażnik
-   płytkiego porównania), dispatchuje do lustra `urlState`.
-3. `selectListQuery` przelicza ponownie; query hook funkcji pobiera dane
-   (lub serwuje z cache); opcjonalny listener może prefetchować następną stronę.
-4. Komponent renderuje wyniki — przy dużych listach opcjonalnie tylko widoczne
-   wiersze (wirtualizacja).
+1. The user types into the search field → `setQuery({ q })` (debounced,
+   `replace`), which resets `page` to 1 and calls `setSearchParams`.
+2. The URL changes → `UrlStateSync` parses it and, if different (a shallow
+   comparison guard), dispatches to the `urlState` mirror.
+3. `selectListQuery` recomputes; the feature's query hook fetches the data
+   (or serves it from cache); an optional listener may prefetch the next page.
+4. The component renders the results — for large lists, optionally only the
+   visible rows (virtualization).
 
-## Weryfikacja kroku
+## Verifying this step
 
-Ponieważ architektura jest ćwiczona przez zestaw testów, te same bramki z
-[Kroku 01](01-scaffold-and-config.md) ją walidują:
+Since the architecture is exercised by the test suite, the same gates from
+[Step 01](01-scaffold-and-config.md) validate it:
 
 ```bash
-npm test          # parsowanie schematu, synchronizacja URL→store, selektory, itd.
-npm run typecheck # typy od końca do końca: store, query, selektory
-npm run build     # build produkcyjny
+npm test          # schema parsing, URL→store sync, selectors, etc.
+npm run typecheck # end-to-end types: store, query, selectors
+npm run build     # production build
 ```
 
-## Proces
+## Process
 
-Ten krok ląduje jako gałąź `docs/app-architecture`, na szczycie Kroku 01, przez
-Pull Request — zob. [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md).
+This step lands as the `docs/app-architecture` branch, on top of Step 01, via a
+Pull Request — see [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md).

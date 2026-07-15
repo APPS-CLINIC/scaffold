@@ -1,46 +1,49 @@
-# Krok 03 — Dostrojenie do scope'u (z discovery)
+# Step 03 — Scope alignment (with discovery)
 
-> **Cel:** uzgodnić scaffold z zakresem aplikacji ustalonym na spotkaniach
-> (demo BIX + spotkanie planistyczne) i zarejestrować wynikające decyzje jako
-> ADR-y.
+> **Goal:** align the scaffold with the application scope agreed in the
+> meetings (BIX demo + planning meeting) and record the resulting decisions as
+> ADRs.
 
-Ten krok **nie zmienia rdzenia** architektury — potwierdza go i **dostraja** do
-realiów projektu (UI, języki, uwierzytelnianie, model encji, dostarczanie).
+This step **does not change the core** of the architecture — it confirms it and
+**tunes** it to the realities of the project (UI, languages, authentication,
+entity model, delivery).
 
-## Co potwierdziło discovery (bez zmian)
+## What discovery confirmed (no changes)
 
-Stack z [Kroku 01](01-scaffold-and-config.md) i [02](02-app-architecture.md)
-pokrywa się z ustaleniami zespołu: **Vite + testy**, **Redux Toolkit + RTK
-Query**, **reselect**, **React Router**, **URL jako źródło prawdy** (middleware
-synchronizujący URL→stan), **Husky per-commit + Prettier + ESLint**, **Vitest**,
-mock z opcją podmiany na realne API. **Wydajność** jest twardym wymogiem (stary
-BIX jest wolny) — adresują ją wirtualizacja, cache RTK Query, reselect i
-manualne chunki.
+The stack from [Step 01](01-scaffold-and-config.md) and
+[02](02-app-architecture.md) matches the team's agreements: **Vite + tests**,
+**Redux Toolkit + RTK Query**, **reselect**, **React Router**, **URL as the
+source of truth** (URL→state sync middleware), **Husky per-commit + Prettier +
+ESLint**, **Vitest**, a mock with the option to swap in the real API.
+**Performance** is a hard requirement (the old BIX is slow) — addressed by
+virtualization, the RTK Query cache, reselect, and manual chunks.
 
-## Co dostrajamy (nowe ADR-y)
+## What we are tuning (new ADRs)
 
-| ADR | Decyzja | Źródło |
-| --- | ------- | ------ |
-| [0013](../adr/0013-iwa-components-primereact.md) | Szew `@/ui` celuje w **IWA Components (PrimeReact)**; prymityw Toast; „Hello World z IWĄ" | demo + planowanie |
-| [0014](../adr/0014-internationalization-i18n.md) | **i18n** od tej fazy: klucze statyczne na froncie, dane z backendu (potencjalnie) przetłumaczone | demo BIX |
+| ADR                                              | Decision                                                                                         | Source          |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------ | --------------- |
+| [0013](../adr/0013-iwa-components-primereact.md) | The `@/ui` seam targets **IWA Components (PrimeReact)**; Toast primitive; "Hello World with IWA" | demo + planning |
+| [0014](../adr/0014-internationalization-i18n.md) | **i18n** from this phase on: static keys on the frontend, backend data (potentially) translated  | BIX demo        |
 
-## Wpływ na narzędzia i proces
+## Impact on tooling and process
 
-- **Backlog: Azure DevOps** (nie Jira). Hierarchia Epic → Feature → User Story →
-  Task, plus **Spike** i **Bug**.
-- **CI/CD: Azure Pipelines**, nie GitHub Actions.
-- **Spike'i** wynikające z discovery: DevOps (Docker/OKAPI/GCP/firewall), Entra
-  ID/SSO, dostęp i integracja IWA, codegen OpenAPI, przyszłość raportów Power BI.
+- **Backlog: Azure DevOps** (not Jira). Hierarchy Epic → Feature → User Story →
+  Task, plus **Spike** and **Bug**.
+- **CI/CD: Azure Pipelines**, not GitHub Actions.
+- **Spikes** arising from discovery: DevOps (Docker/OKAPI/GCP/firewall), Entra
+  ID/SSO, IWA access and integration, OpenAPI codegen, the future of Power BI
+  reports.
 
-## Decyzje otwarte (do potwierdzenia z zespołem/biznesem)
+## Open decisions (to be confirmed with the team/business)
 
-- RTK Query vs samo React Query (decyzja Pawła po demo BIX) — scaffold zakłada
-  RTK Query.
-- Zakres URL-state (które widoki; krótkie/zaszyte URL-e) — pytanie do biznesu.
-- Codegen OpenAPI: Kubb vs `@rtk-query/codegen-openapi`.
-- Tailwind tak/nie (zależne od IWA — [ADR 0013](../adr/0013-iwa-components-primereact.md)).
+- RTK Query vs plain React Query (Paweł's decision after the BIX demo) — the
+  scaffold assumes RTK Query.
+- URL-state scope (which views; short/encoded URLs) — a question for the
+  business.
+- OpenAPI codegen: Kubb vs `@rtk-query/codegen-openapi`.
+- Tailwind yes/no (dependent on IWA — [ADR 0013](../adr/0013-iwa-components-primereact.md)).
 
-## Proces
+## Process
 
-Krok ląduje jako gałąź `docs/scope-alignment`, na szczycie Kroku 02, przez
-Pull Request — zob. [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md).
+This step lands as the `docs/scope-alignment` branch, on top of Step 02, via a
+Pull Request — see [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md).

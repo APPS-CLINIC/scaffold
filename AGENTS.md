@@ -7,7 +7,7 @@ this file distills what an agent needs to act correctly.
 
 ## Documentation & architecture decisions (read these first)
 
-All project documentation lives in **[`docs/`](docs/README.md)** (Polish):
+All project documentation lives in **[`docs/`](docs/README.md)**:
 
 - **[`docs/adr/`](docs/adr/README.md)** — **Architecture Decision Records**:
   one accepted decision per file, indexed in
@@ -142,21 +142,22 @@ Path alias: `@/` → `src/` (configured in `vite.config.ts` and tsconfig).
   `refactor/`, `test/`).
 - **Conventional Commits, written in English** (e.g.
   `feat(ui): add Icon component and useCustomIcon hook`). Body explains _why_.
-- **English-only code**: identifiers, comments, JSDoc, commit messages and
-  test descriptions are always English. Polish appears only in `docs/` prose
-  and in the `pl` locale messages (`src/i18n/messages/pl.ts`).
-- Architecture decisions are recorded as ADRs in `docs/adr/` (Polish,
-  append-only — new decision supersedes, never edit an accepted ADR). The
-  step-by-step build narrative lives in `docs/steps/`.
+- **English only, everywhere**: code (identifiers, comments, JSDoc, test
+  descriptions), commit messages and all documentation are written in
+  English. Polish appears only in the `pl` locale messages
+  (`src/i18n/messages/pl.ts`).
+- Architecture decisions are recorded as ADRs in `docs/adr/` (append-only —
+  a new decision supersedes, never edit an accepted ADR). The step-by-step
+  build narrative lives in `docs/steps/`.
 
 ## Docs map
 
 | Where                                       | What                                                                |
 | ------------------------------------------- | ------------------------------------------------------------------- |
-| `README.md`                                 | Stack, architecture diagram, getting started (EN)                   |
-| `CONTRIBUTING.md`                           | GitHub Flow, commit/branch conventions, PR checklist (PL)           |
-| `docs/steps/`                               | Build narrative, ordered steps (PL)                                 |
-| `docs/adr/`                                 | Architecture Decision Records, indexed in its README (PL)           |
+| `README.md`                                 | Stack, architecture diagram, getting started                        |
+| `CONTRIBUTING.md`                           | GitHub Flow, commit/branch conventions, PR checklist                |
+| `docs/steps/`                               | Build narrative, ordered steps                                      |
+| `docs/adr/`                                 | Architecture Decision Records, indexed in its README                |
 | `src/ui/README.md`                          | The UI seam contract and how to swap in the org library             |
 | `.github/copilot-instructions.md`           | Repository-wide Copilot instructions (points here)                  |
 | `.github/instructions/`                     | Path-specific Copilot rules (`applyTo` globs: src, ui, tests, docs) |

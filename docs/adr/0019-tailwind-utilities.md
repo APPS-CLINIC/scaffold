@@ -1,49 +1,49 @@
-# ADR 0019 — Tailwind CSS v4 (warstwa utilities) obok CSS modules
+# ADR 0019 — Tailwind CSS v4 (utilities layer) alongside CSS modules
 
-- **Status:** Zaakceptowano
-- **Data:** 2026-07-15
+- **Status:** Accepted
+- **Date:** 2026-07-15
 
-## Kontekst
+## Context
 
-Warstwa `@/ui` była stylowana wyłącznie CSS modules jako tymczasowe zaślepki.
-[ADR 0013](0013-iwa-components-primereact.md) przewidział, że docelowa
-biblioteka **IWA Components (PrimeReact)** żyje w repozytorium z Tailwind
-i że „jeśli IWA wymaga Tailwind, włączamy Tailwind". Nowe prymitywy
-(`Icon` + `useCustomIcon`) są stylowane utility-first, co wymusiło decyzję:
-jak wprowadzić Tailwind, nie psując istniejących styli globalnych i tokenów.
+The `@/ui` layer was styled exclusively with CSS modules as temporary stubs.
+[ADR 0013](0013-iwa-components-primereact.md) anticipated that the target
+library, **IWA Components (PrimeReact)**, lives in a repository with Tailwind,
+and that "if IWA requires Tailwind, we enable Tailwind". The new primitives
+(`Icon` + `useCustomIcon`) are styled utility-first, which forced the decision:
+how to introduce Tailwind without breaking the existing global styles and tokens.
 
-## Decyzja
+## Decision
 
-Włączamy **Tailwind CSS v4** przez plugin `@tailwindcss/vite`, ale w trybie
-okrojonym:
+We enable **Tailwind CSS v4** via the `@tailwindcss/vite` plugin, but in a
+trimmed-down mode:
 
-- W `src/styles/global.css` importujemy **tylko warstwy `theme` i
-  `utilities`** (`@import 'tailwindcss/theme.css' / 'utilities.css'`).
-  **Preflight (reset bazowy) świadomie pomijamy** — ręcznie pisane style
-  globalne pozostają jedyną warstwą bazową, więc istniejące komponenty
-  wyglądają identycznie.
-- **Tokeny projektowe pozostają w CSS custom properties** (`--border`,
-  `--surface`, `--accent`, …). Z utilities odwołujemy się do nich przez
-  wartości arbitralne: `bg-[var(--surface)]`, `border-[var(--border)]`.
-- CSS modules i Tailwind **współistnieją** w `src/ui`: istniejące zaślepki
-  zostają na CSS modules, nowe prymitywy mogą być Tailwind-only. Kod
-  featurów nadal nie pisze własnego CSS.
+- In `src/styles/global.css` we import **only the `theme` and
+  `utilities` layers** (`@import 'tailwindcss/theme.css' / 'utilities.css'`).
+  **Preflight (the base reset) is deliberately omitted** — the hand-written
+  global styles remain the only base layer, so existing components
+  look identical.
+- **Design tokens stay in CSS custom properties** (`--border`,
+  `--surface`, `--accent`, …). From utilities we reference them via
+  arbitrary values: `bg-[var(--surface)]`, `border-[var(--border)]`.
+- CSS modules and Tailwind **coexist** in `src/ui`: existing stubs
+  stay on CSS modules, new primitives can be Tailwind-only. Feature
+  code still writes no CSS of its own.
 
-## Konsekwencje
+## Consequences
 
-- Zero zmian wizualnych w istniejącym UI (brak preflightu).
-- Nowe prymitywy (np. `Icon`) nie dodają plików CSS — łatwiej je podmienić
-  na komponenty IWA.
-- Ścieżka integracji z IWA/PrimeReact (Tailwind w ich repo) jest otwarta;
-  w razie potrzeby dołożymy `tailwind-merge` do `cx()`.
-- Klasy Tailwinda stają się częścią kontraktu wizualnego prymitywów — testy
-  mogą asertować kluczowe klasy (np. `rounded-full`).
+- Zero visual changes to the existing UI (no preflight).
+- New primitives (e.g. `Icon`) add no CSS files — easier to swap them
+  for IWA components.
+- The integration path with IWA/PrimeReact (Tailwind in their repo) stays open;
+  if needed we will add `tailwind-merge` to `cx()`.
+- Tailwind classes become part of the primitives' visual contract — tests
+  can assert on key classes (e.g. `rounded-full`).
 
-## Rozważane alternatywy
+## Alternatives considered
 
-- **Pełny Tailwind z preflightem.** Reset nadpisałby ręczne style globalne
-  i zmienił wygląd istniejących komponentów; niepotrzebne ryzyko.
-- **Dalej tylko CSS modules.** Rozjazd z ekosystemem IWA (Tailwind) i więcej
-  boilerplate'u przy prostych prymitywach.
-- **Tokeny w `@theme` Tailwinda.** Przeniesienie tokenów do składni Tailwinda
-  wiązałoby je z vendorem; CSS variables są neutralne i już używane.
+- **Full Tailwind with preflight.** The reset would override the hand-written global styles
+  and change the look of existing components; unnecessary risk.
+- **Sticking with CSS modules only.** Drifts away from the IWA ecosystem (Tailwind) and more
+  boilerplate for simple primitives.
+- **Tokens in Tailwind's `@theme`.** Moving the tokens into Tailwind syntax
+  would tie them to the vendor; CSS variables are neutral and already in use.

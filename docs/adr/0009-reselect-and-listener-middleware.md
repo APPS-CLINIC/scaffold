@@ -1,52 +1,52 @@
-# ADR 0009 — Selektory reselect + listener middleware
+# ADR 0009 — Reselect selectors + listener middleware
 
-- **Status:** Zaakceptowano
-- **Data:** 2026-06-22
+- **Status:** Accepted
+- **Date:** 2026-06-22
 
-## Kontekst
+## Context
 
-Dwie powracające potrzeby w aplikacji data-heavy: (1) wyprowadzać wartości ze
-stanu **bez powodowania dodatkowych re-renderów** oraz (2) uruchamiać
-**reaktywne efekty uboczne** (prefetch, analityka, koordynacja między slice'ami)
-**bez rozsiewania thunków po komponentach**.
+Two recurring needs in a data-heavy app: (1) derive values from
+state **without causing extra re-renders**, and (2) run
+**reactive side effects** (prefetching, analytics, cross-slice coordination)
+**without scattering thunks across components**.
 
-## Decyzja
+## Decision
 
-Używamy **reselect** do odczytów wyprowadzonych oraz **listener middleware** z
-Redux Toolkit do reaktywnych efektów ubocznych.
+We use **reselect** for derived reads and Redux Toolkit's **listener
+middleware** for reactive side effects.
 
-- Selektory **reselect** (`src/features/**/**.selectors.ts`) memoizują stan
-  wyprowadzony i zwracają **stabilne referencje**, więc subskrybenci selektorów
-  re-renderują się tylko wtedy, gdy ich wycinek stanu wyprowadzonego faktycznie
-  się zmieni. Komponenty czytają lustro URL przez nie, zamiast parsować
-  ponownie.
-- **Listener middleware** jest skonfigurowane raz w
-  [`listenerMiddleware.ts`](../../src/app/listenerMiddleware.ts) z typowanymi
-  helperami (`startAppListening` / `addAppListener`). Funkcje rejestrują własne
-  listenery przez **import z efektem ubocznym** w
-  [`store.ts`](../../src/app/store.ts). Typowym wzorcem do dodania per funkcja
-  jest listener, który **prefetchuje następną stronę** przy zmianie zapytania,
-  więc paginacja jest natychmiastowa.
-- Middleware jest **prepended** przed API middleware (zob.
-  [ADR 0007](0007-redux-toolkit-and-rtk-query.md)), więc obserwuje akcje jako
-  pierwsze.
+- **Reselect** selectors (`src/features/**/**.selectors.ts`) memoize derived
+  state and return **stable references**, so selector subscribers
+  re-render only when their slice of derived state actually
+  changes. Components read the URL mirror through them instead of
+  re-parsing.
+- The **listener middleware** is configured once in
+  [`listenerMiddleware.ts`](../../src/app/listenerMiddleware.ts) with typed
+  helpers (`startAppListening` / `addAppListener`). Features register their own
+  listeners via a **side-effect import** in
+  [`store.ts`](../../src/app/store.ts). A typical per-feature pattern to add
+  is a listener that **prefetches the next page** when the query changes,
+  so pagination is instant.
+- The middleware is **prepended** before the API middleware (see
+  [ADR 0007](0007-redux-toolkit-and-rtk-query.md)), so it observes actions
+  first.
 
-## Konsekwencje
+## Consequences
 
-- Mniej re-renderów: stabilne wyjścia selektorów + strażnik płytkiego
-  porównania w `UrlStateSync` trzymają churn dispatch/render niski.
-- Efekty uboczne żyją w jednym idiomatycznym miejscu (listenery), a nie
-  rozsiane jako thunki w komponentach — łatwiej znaleźć, testować, rozumować.
-- Wzorzec prefetch-przy-zmianie daje natychmiastową paginację kosztem
-  dodatkowych żądań (ograniczonych cache'owaniem/dedup RTK Query).
-- Listenery rejestrują się przez import z efektem ubocznym, który musi pozostać
-  w `store.ts`, by się podłączyły.
+- Fewer re-renders: stable selector outputs + the shallow-comparison
+  guard in `UrlStateSync` keep dispatch/render churn low.
+- Side effects live in one idiomatic place (listeners) rather than
+  scattered as thunks in components — easier to find, test, and reason about.
+- The prefetch-on-change pattern gives instant pagination at the cost of
+  extra requests (bounded by RTK Query caching/dedup).
+- Listeners register via a side-effect import that must remain
+  in `store.ts` for them to be wired up.
 
-## Rozważane alternatywy
+## Alternatives considered
 
-- **Inline `useMemo`/`useSelector` wyprowadzające w komponentach.** Zduplikowana
-  logika, niestabilne referencje, więcej re-renderów.
-- **Thunki / `useEffect` do efektów ubocznych.** Rozprasza logikę reaktywną po
-  drzewie komponentów; trudniej koordynować między slice'ami.
-- **Redux-Saga/Observable.** Potężne, ale zbyt ciężkie dla tej skali; listener
-  middleware to natywna dla RTK odpowiedź.
+- **Inline `useMemo`/`useSelector` derivations in components.** Duplicated
+  logic, unstable references, more re-renders.
+- **Thunks / `useEffect` for side effects.** Scatters reactive logic across
+  the component tree; harder to coordinate across slices.
+- **Redux-Saga/Observable.** Powerful, but too heavy at this scale; the listener
+  middleware is RTK's native answer.

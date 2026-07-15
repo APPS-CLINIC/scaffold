@@ -1,17 +1,17 @@
-# Współtworzenie (Contributing)
+# Contributing
 
-To repozytorium pracuje w modelu **GitHub Flow** — lekkim podejściu opartym na
-trunku, w którym `main` jest zawsze gotowy do wdrożenia, a cała praca odbywa się
-na krótko żyjących gałęziach, scalanych po review przez Pull Requesty.
+This repository follows the **GitHub Flow** model — a lightweight, trunk-based
+approach in which `main` is always ready to deploy and all work happens on
+short-lived branches merged after review via Pull Requests.
 
-> Nie znasz jeszcze architektury? Zacznij od [`docs/README.md`](docs/README.md).
-> Uzasadnienie decyzji projektowych znajdziesz w rekordach decyzji
-> architektonicznych w [`docs/adr/`](docs/adr/README.md).
+> New to the architecture? Start with [`docs/README.md`](docs/README.md).
+> The rationale behind design decisions lives in the architecture decision
+> records in [`docs/adr/`](docs/adr/README.md).
 
-## Model gałęzi (GitHub Flow)
+## Branching model (GitHub Flow)
 
 ```
- main  ──●─────────●─────────────●────────●──►   (zawsze zielony, zawsze wdrażalny)
+ main  ──●─────────●─────────────●────────●──►   (always green, always deployable)
           \         \             ▲        ▲
            \         \            │ PR     │ PR
             ●──●──●    ●──●──●─────┘        │
@@ -19,45 +19,45 @@ na krótko żyjących gałęziach, scalanych po review przez Pull Requesty.
                        feature/items-export┘
 ```
 
-Zasady modelu:
+Rules of the model:
 
-1. **`main` jest chroniony i zawsze gotowy do wydania.** Nigdy nie commituj
-   bezpośrednio na niego.
-2. **Każda zmiana zaczyna się od gałęzi** odbitej od najnowszego `main`.
-3. **Otwórz Pull Request wcześnie.** To miejsce na dyskusję i CI.
-4. **CI musi być zielone** (lint, typecheck, testy, build) przed scaleniem.
-5. **Co najmniej jedna akceptująca recenzja** przed scaleniem.
-6. **Scalaj przez squash**, żeby `main` miał jeden czytelny, semantyczny commit
-   na zmianę.
-7. **Usuń gałąź** po scaleniu. Gałęzie są tanie i krótko żyjące.
+1. **`main` is protected and always releasable.** Never commit to it
+   directly.
+2. **Every change starts on a branch** cut from the latest `main`.
+3. **Open a Pull Request early.** That is where discussion and CI happen.
+4. **CI must be green** (lint, typecheck, tests, build) before merging.
+5. **At least one approving review** before merging.
+6. **Merge via squash** so that `main` has one clean, semantic commit per
+   change.
+7. **Delete the branch** after merging. Branches are cheap and short-lived.
 
-### Nazewnictwo gałęzi
+### Branch naming
 
-`<typ>/<krótkie-podsumowanie-kebab>` — to samo słownictwo `<typ>` co w commitach:
+`<type>/<short-kebab-summary>` — the same `<type>` vocabulary as in commits:
 
-| Typ         | Do czego                                        | Przykład                          |
-| ----------- | ----------------------------------------------- | --------------------------------- |
-| `feat/`     | funkcja widoczna dla użytkownika                | `feat/items-csv-export`           |
-| `fix/`      | poprawka błędu                                  | `fix/pagination-off-by-one`       |
-| `chore/`    | narzędzia, zależności, konfiguracja, hydraulika | `chore/bump-vite-6`               |
-| `docs/`     | wyłącznie dokumentacja                          | `docs/scaffold-and-config`        |
-| `refactor/` | zmiana kodu bez zmiany zachowania               | `refactor/extract-url-state-hook` |
-| `test/`     | wyłącznie testy                                 | `test/items-toolbar`              |
+| Type        | What for                                       | Example                           |
+| ----------- | ---------------------------------------------- | --------------------------------- |
+| `feat/`     | user-facing feature                            | `feat/items-csv-export`           |
+| `fix/`      | bug fix                                        | `fix/pagination-off-by-one`       |
+| `chore/`    | tooling, dependencies, configuration, plumbing | `chore/bump-vite-6`               |
+| `docs/`     | documentation only                             | `docs/scaffold-and-config`        |
+| `refactor/` | code change without behavior change            | `refactor/extract-url-state-hook` |
+| `test/`     | tests only                                     | `test/items-toolbar`              |
 
-Trzymaj gałęzie **małe i jednocelowe** — gałąź powinna odpowiadać jednemu PR-owi
-i jednej recenzowalnej myśli.
+Keep branches **small and single-purpose** — a branch should map to one PR
+and one reviewable idea.
 
-## Konwencja commitów (Conventional Commits)
+## Commit convention (Conventional Commits)
 
 ```
-<typ>(<opcjonalny zakres>): <podsumowanie w trybie rozkazującym>
+<type>(<optional scope>): <summary in the imperative mood>
 
-<opcjonalne ciało — „dlaczego", zawijane ok. 72 kolumn>
+<optional body — the "why", wrapped at ~72 columns>
 
-<opcjonalna stopka — BREAKING CHANGE:, refs #123>
+<optional footer — BREAKING CHANGE:, refs #123>
 ```
 
-Przykłady:
+Examples:
 
 ```
 feat(items): add CSV export to the toolbar
@@ -66,42 +66,42 @@ docs(adr): record the URL-as-source-of-truth decision
 chore: bump vite to 6.1 via overrides
 ```
 
-Typy: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `perf`, `build`,
-`ci`, `style`, `revert`. To słownictwo czyni historię łatwą do przeszukiwania
-(grep) i otwiera drogę do automatycznych changelogów/semver w przyszłości.
+Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `perf`, `build`,
+`ci`, `style`, `revert`. This vocabulary makes the history easy to search
+(grep) and paves the way for automated changelogs/semver in the future.
 
-### Język
+### Language
 
-**Wiadomości commitów piszemy po angielsku** — tak samo jak cały kod:
-nazewnictwo (identyfikatory), komentarze, JSDoc i opisy testów są wyłącznie
-angielskie. Polski jest zarezerwowany dla prozy w `docs/` oraz komunikatów
-locale `pl` (`src/i18n/messages/pl.ts`).
+**The entire repository is written in English** — code, commits, and
+documentation alike: naming (identifiers), comments, JSDoc, and test
+descriptions are English-only. Polish appears only in the `pl` locale
+messages (`src/i18n/messages/pl.ts`).
 
-## Lokalne bramki jakości
+## Local quality gates
 
-Te same kontrole, które uruchamia CI, są dostępne lokalnie, a najważniejsze z
-nich odpalają się automatycznie przy commicie dzięki **Husky** + **lint-staged**
-(zob. [`docs/adr/0004-code-quality-gates.md`](docs/adr/0004-code-quality-gates.md)):
+The same checks that CI runs are available locally, and the most important
+ones fire automatically on commit thanks to **Husky** + **lint-staged**
+(see [`docs/adr/0004-code-quality-gates.md`](docs/adr/0004-code-quality-gates.md)):
 
 ```bash
-npm install         # raz, aby zainstalować zależności i hooki Git (prepare)
+npm install         # once, to install dependencies and Git hooks (prepare)
 npm run lint        # ESLint
-npm run typecheck   # tsc (build projektu, bez emisji)
+npm run typecheck   # tsc (project build, no emit)
 npm test            # Vitest
-npm run build       # typecheck + build produkcyjny
+npm run build       # typecheck + production build
 npm run format      # Prettier --write
 ```
 
-Przy `git commit` lint-staged auto-poprawia i formatuje wyłącznie zastagowane
-pliki, więc zielony commit lokalnie to już większość drogi do zielonego PR-a.
+On `git commit`, lint-staged auto-fixes and formats only the staged files, so
+a green commit locally is already most of the way to a green PR.
 
-## Lista kontrolna Pull Requesta
+## Pull Request checklist
 
-- [ ] Gałąź nazwana `<typ>/<podsumowanie>` i odbita od najnowszego `main`.
-- [ ] Commity zgodne z Conventional Commits.
-- [ ] `npm run lint && npm run typecheck && npm test && npm run build` — wszystko
-      przechodzi.
-- [ ] Zmiany zachowania są pokryte testami.
-- [ ] Istotne architektonicznie decyzje są zapisane jako
-      [ADR](docs/adr/README.md).
-- [ ] Opis PR-a wyjaśnia **dlaczego**, a nie tylko co.
+- [ ] Branch named `<type>/<summary>` and cut from the latest `main`.
+- [ ] Commits follow Conventional Commits.
+- [ ] `npm run lint && npm run typecheck && npm test && npm run build` — all
+      pass.
+- [ ] Behavior changes are covered by tests.
+- [ ] Architecturally significant decisions are recorded as
+      [ADRs](docs/adr/README.md).
+- [ ] The PR description explains the **why**, not just the what.
