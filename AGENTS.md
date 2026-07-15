@@ -20,8 +20,8 @@ All project documentation lives in **[`docs/`](docs/README.md)**:
 - **[`docs/steps/`](docs/steps/)** — the build narrative: ordered,
   self-contained steps explaining how and why the scaffold was assembled.
   Read in order to build a mental model of the app.
-- **[`CONTRIBUTING.md`](CONTRIBUTING.md)** — process: GitHub Flow, branch and
-  commit conventions, PR checklist.
+- **[`CONTRIBUTING.md`](CONTRIBUTING.md)** — process: the branching model
+  (`develop`/`main`), commit convention, PR checklist.
 
 ## What this project is
 
@@ -99,65 +99,44 @@ Path alias: `@/` → `src/` (configured in `vite.config.ts` and tsconfig).
    `import type { ... }` for type-only imports; `noUncheckedIndexedAccess`
    means indexed access yields `T | undefined`.
 
-## Styling
+## Styling, UI primitives, testing — where the rules live
 
-- Design tokens are CSS custom properties in `src/styles/global.css`
-  (`--border`, `--surface`, `--surface-muted`, `--muted`, `--accent`, …).
-- Tailwind v4 is wired via `@tailwindcss/vite`; only the **theme** and
-  **utilities** layers are imported — **no preflight**, so the hand-written
-  global styles stay the base. Reference tokens from utilities as
-  `bg-[var(--surface)]`, `border-[var(--border)]`, etc.
-- Older primitives use CSS modules (`ui.module.css`); newer ones (e.g. `Icon`)
-  are Tailwind-only. Either is acceptable in `src/ui`; features should not
-  need custom CSS.
-- `cx()` from `@/ui` joins class names (filters falsy values).
+To keep a single source of truth, the detailed rules are NOT repeated here:
 
-## UI primitives cheat-sheet
-
-- `Button`, `TextInput`, `Select` — thin placeholders, keep prop contracts.
-- `ToastProvider` + `useToast()` — imperative notifications.
-- `Icon` — circular (`rounded-full`) badge with a centered glyph. Props:
-  `size` (`sm|md|lg|xl`), `tone` (`outline|neutral|accent`), `label`
-  (accessible name; omitted ⇒ `aria-hidden`). SVG children auto-scale to ~55%
-  of the circle and inherit `currentColor`.
-- `useCustomIcon(icon, options?)` — binds a glyph + default options into a
-  reusable component: `const UserIcon = useCustomIcon(<UserSvg />, { size: 'lg' })`,
-  then `<UserIcon tone="accent" />`. Keep the icon element referentially
-  stable (hoist it) to preserve component identity.
-
-## Testing conventions
-
-- Component tests use Testing Library; wrap connected components with
-  `renderWithProviders` (`src/test/renderWithProviders.tsx`).
-- Pure UI (like `Icon`) uses plain `render` from `@testing-library/react`.
-- Tests live next to the code as `*.test.ts(x)`; jsdom environment, globals on.
-- Assert behavior/ARIA, not implementation; class-name assertions are used
-  only for Tailwind-styled primitives where classes _are_ the contract.
+- **Styling** — [`.github/instructions/ui.instructions.md`](.github/instructions/ui.instructions.md)
+  and [ADR 0019](docs/adr/0019-tailwind-utilities.md). In short: Tailwind v4
+  utilities only (no preflight), design tokens as CSS variables from
+  `src/styles/global.css` (`bg-[var(--surface)]`), class names joined with
+  `cx()`, no CSS in feature code.
+- **UI primitives** (`Button`, `TextInput`, `Select`, Toast, `Icon`,
+  `useCustomIcon`) — contracts and usage examples in
+  [`src/ui/README.md`](src/ui/README.md); everything is exported from
+  `src/ui/index.ts` and imported via `@/ui`.
+- **Testing** — [`.github/instructions/tests.instructions.md`](.github/instructions/tests.instructions.md).
+  In short: Vitest + Testing Library (jsdom), co-located `*.test.ts(x)`,
+  `renderWithProviders` for connected components, assert behavior/ARIA.
 
 ## Process / git conventions
 
-- **GitHub Flow**: short-lived branches off `main`, PR + green CI + review,
-  squash merge. `main` is protected.
-- Branch names: `<typ>/<kebab-summary>` (`feat/`, `fix/`, `chore/`, `docs/`,
-  `refactor/`, `test/`).
+The full process (branching model, commit convention, PR checklist) is
+defined once in [`CONTRIBUTING.md`](CONTRIBUTING.md). The essentials:
+
+- Two long-lived branches: **`develop`** (integration) and **`main`**
+  (release). Work on `<type>/<kebab-summary>` branches cut from `develop`,
+  PR back into `develop` (squash merge); a release is a PR
+  `develop` → `main`.
 - **Conventional Commits, written in English** (e.g.
   `feat(ui): add Icon component and useCustomIcon hook`). Body explains _why_.
-- **English only, everywhere**: code (identifiers, comments, JSDoc, test
-  descriptions), commit messages and all documentation are written in
-  English. Polish appears only in the `pl` locale messages
-  (`src/i18n/messages/pl.ts`).
-- Architecture decisions are recorded as ADRs in `docs/adr/` (append-only —
-  a new decision supersedes, never edit an accepted ADR). The step-by-step
-  build narrative lives in `docs/steps/`.
+- **English only, everywhere**: code, commits and documentation. Polish
+  appears only in the `pl` locale messages (`src/i18n/messages/pl.ts`).
 
 ## Docs map
 
+Beyond `docs/` and `CONTRIBUTING.md` (listed at the top of this file):
+
 | Where                             | What                                                                |
 | --------------------------------- | ------------------------------------------------------------------- |
-| `README.md`                       | Stack, architecture diagram, getting started                        |
-| `CONTRIBUTING.md`                 | GitHub Flow, commit/branch conventions, PR checklist                |
-| `docs/steps/`                     | Build narrative, ordered steps                                      |
-| `docs/adr/`                       | Architecture Decision Records, indexed in its README                |
+| `README.md`                       | Human landing page: stack, architecture diagram, getting started    |
 | `src/ui/README.md`                | The UI seam contract and how to swap in the org library             |
 | `.github/copilot-instructions.md` | Repository-wide Copilot instructions (points here)                  |
 | `.github/instructions/`           | Path-specific Copilot rules (`applyTo` globs: src, ui, tests, docs) |

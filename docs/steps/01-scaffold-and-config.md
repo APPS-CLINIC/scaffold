@@ -61,7 +61,8 @@ architecture](02-app-architecture.md) can build on it.
 
 ## Process
 
-Development follows **GitHub Flow**: `main` stays deployable at all times, and
-this step lands as the `docs/scaffold-and-config` branch via a Pull Request.
-The full branching model, commit convention, and PR checklist are in
+Work happens on short-lived branches merged via Pull Requests into the
+`develop` integration branch, with `main` reserved for releases; this step
+landed as the `docs/scaffold-and-config` branch. The full branching model,
+commit convention, and PR checklist are in
 [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md).

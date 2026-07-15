@@ -35,9 +35,9 @@ docs/
 | 02   | Runtime architecture: state, data, view state in the URL, UI. |
 | 03   | Alignment with the discovery scope: IWA/PrimeReact, i18n.     |
 
-> **Process:** development follows **GitHub Flow** — see
-> [`../CONTRIBUTING.md`](../CONTRIBUTING.md), which describes the branching
-> model, the commit convention, and the PR checklist.
+> **Process:** see [`../CONTRIBUTING.md`](../CONTRIBUTING.md) — the branching
+> model (`develop` = integration, `main` = release), the commit convention,
+> and the PR checklist.
 
 ## Architecture Decision Records
 

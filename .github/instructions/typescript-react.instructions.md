@@ -5,6 +5,9 @@ applyTo: 'src/**/*.{ts,tsx}'
 
 # TypeScript & React conventions
 
+Per-file coding rules; the architecture rules behind them are defined once
+in [`AGENTS.md`](../../AGENTS.md).
+
 - **English only** in code: identifiers, comments, JSDoc and test
   descriptions. Polish copy belongs exclusively in
   `src/i18n/messages/pl.ts`.

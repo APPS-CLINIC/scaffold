@@ -1,35 +1,45 @@
 # Contributing
 
-This repository follows the **GitHub Flow** model — a lightweight, trunk-based
-approach in which `main` is always ready to deploy and all work happens on
-short-lived branches merged after review via Pull Requests.
+This repository uses a lightweight branching model with two long-lived
+branches: **`develop`** (integration — day-to-day work lands here) and
+**`main`** (release — always production-ready). All work happens on
+short-lived branches cut from `develop` and merged back after review via
+Pull Requests.
 
 > New to the architecture? Start with [`docs/README.md`](docs/README.md).
 > The rationale behind design decisions lives in the architecture decision
 > records in [`docs/adr/`](docs/adr/README.md).
 
-## Branching model (GitHub Flow)
+## Branching model
 
 ```
- main  ──●─────────●─────────────●────────●──►   (always green, always deployable)
-          \         \             ▲        ▲
-           \         \            │ PR     │ PR
-            ●──●──●    ●──●──●─────┘        │
-        docs/scaffold-and-config           │
-                       feature/items-export┘
+ main    ──●──────────────────●─────────────────●──►  (release, always production-ready)
+            \                 ▲                 ▲
+             \                │ release PR      │ release PR
+ develop  ────●───●───────●───●────●────────●───●──►  (integration, always green)
+                   \       ▲        \        ▲
+                    \      │ PR      \       │ PR
+                     ●──●──┘          ●──●───┘
+              feat/items-csv-export   fix/pagination-off-by-one
 ```
 
 Rules of the model:
 
-1. **`main` is protected and always releasable.** Never commit to it
-   directly.
-2. **Every change starts on a branch** cut from the latest `main`.
-3. **Open a Pull Request early.** That is where discussion and CI happen.
-4. **CI must be green** (lint, typecheck, tests, build) before merging.
-5. **At least one approving review** before merging.
-6. **Merge via squash** so that `main` has one clean, semantic commit per
+1. **`main` is protected and always releasable.** Nothing lands on it except
+   release PRs from `develop`.
+2. **`develop` is the integration branch** — protected and kept green (CI)
+   at all times.
+3. **Every change starts on a branch** cut from the latest `develop` and
+   returns to `develop` via a Pull Request.
+4. **Open a Pull Request early.** That is where discussion and CI happen.
+5. **CI must be green** (lint, typecheck, tests, build) before merging.
+6. **At least one approving review** before merging.
+7. **Merge via squash** so `develop` has one clean, semantic commit per
    change.
-7. **Delete the branch** after merging. Branches are cheap and short-lived.
+8. **A release is a PR from `develop` to `main`**, merged without squash
+   (merge commit) so the released history stays intact and taggable.
+9. **Delete the feature branch** after merging. Branches are cheap and
+   short-lived.
 
 ### Branch naming
 
@@ -97,7 +107,7 @@ a green commit locally is already most of the way to a green PR.
 
 ## Pull Request checklist
 
-- [ ] Branch named `<type>/<summary>` and cut from the latest `main`.
+- [ ] Branch named `<type>/<summary>` and cut from the latest `develop`.
 - [ ] Commits follow Conventional Commits.
 - [ ] `npm run lint && npm run typecheck && npm test && npm run build` — all
       pass.
