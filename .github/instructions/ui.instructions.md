@@ -25,6 +25,6 @@ applyTo: 'src/ui/**'
   export explaining the contract.
 - Accessibility is part of the contract: decorative elements are hidden from
   assistive tech (`aria-hidden`), meaningful ones get a proper role and
-  accessible name (see `Icon`'s `label` prop for the pattern).
+  accessible name (see `useCustomIcon`'s `label` prop for the pattern).
 - Every primitive ships a co-located `*.test.tsx` covering rendering, a11y
   semantics, and prop contract (variants, className merging, overrides).

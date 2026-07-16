@@ -25,25 +25,21 @@ export type { ButtonProps } from '@my-org/ui';
 Keeping every UI import funneled through `@/ui` means the rest of the codebase
 never depends on a specific vendor — you can swap libraries in one folder.
 
-## `Icon` + `useCustomIcon`
+## `useCustomIcon`
 
-`Icon` renders a **circular badge** (`rounded-full`, Tailwind-only) with the
-glyph centered inside — pass any icon element (inline SVG, font glyph, emoji)
-as children. SVGs auto-scale to ~55% of the circle and inherit `currentColor`.
+`useCustomIcon(icon, options?)` binds any icon element (inline SVG, font
+glyph, emoji) into a ready-to-use component with **default circular styling
+built in**: a `rounded-full` badge (Tailwind-only) with the glyph centered
+inside. SVGs auto-scale to ~55% of the circle and inherit `currentColor`.
 
 ```tsx
-import { Icon, useCustomIcon } from '@/ui';
+import { useCustomIcon } from '@/ui';
 
-// One-off usage:
-<Icon size="lg" tone="outline" label="Change history" className="text-orange-600">
-  <HistorySvg />
-</Icon>;
-
-// Bind a glyph + defaults into a reusable component:
 const HistoryIcon = useCustomIcon(historyGlyph, { size: 'lg', label: 'History' });
 // ...
 <HistoryIcon />                 // uses the bound defaults
 <HistoryIcon tone="accent" />   // per-usage props override them
+<HistoryIcon className="text-orange-600" />  // tint the glyph
 ```
 
 - `size`: `sm | md | lg | xl` (default `md`); `tone`: `outline | neutral |
@@ -51,6 +47,6 @@ accent` (default `outline` — light surface with a subtle ring, colors come
   from the global CSS variables).
 - `label` sets `role="img"` + `aria-label`; without it the icon is
   `aria-hidden` (decorative).
-- `useCustomIcon` memoizes on the glyph element and options — keep them
+- The hook memoizes on the glyph element and options — keep them
   referentially stable (hoist the element out of render, like `historyGlyph`
   above) so the returned component keeps its identity across re-renders.

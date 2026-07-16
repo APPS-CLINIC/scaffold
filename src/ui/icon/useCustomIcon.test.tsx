@@ -18,7 +18,7 @@ function setup(options?: UseCustomIconOptions) {
 }
 
 describe('useCustomIcon', () => {
-  it('returns a component that renders the bound glyph in a circle', () => {
+  it('renders the bound glyph inside a circular container', () => {
     const { result } = setup();
     const HistoryIcon = result.current;
 
@@ -26,6 +26,38 @@ describe('useCustomIcon', () => {
     const icon = screen.getByTestId('icon');
     expect(icon).toContainElement(screen.getByTestId('glyph'));
     expect(icon.className).toContain('rounded-full');
+    expect(icon.className).toContain('items-center');
+    expect(icon.className).toContain('justify-center');
+  });
+
+  it('applies the default styles (md size, outline tone) when no options are given', () => {
+    const { result } = setup();
+    const HistoryIcon = result.current;
+
+    render(<HistoryIcon data-testid="icon" />);
+    const icon = screen.getByTestId('icon');
+    expect(icon.className).toContain('size-9');
+    expect(icon.className).toContain('border');
+    expect(icon.className).toContain('bg-[var(--surface)]');
+  });
+
+  it('is decorative (hidden from assistive tech) by default', () => {
+    const { result } = setup();
+    const HistoryIcon = result.current;
+
+    render(<HistoryIcon data-testid="icon" />);
+    const icon = screen.getByTestId('icon');
+    expect(icon).toHaveAttribute('aria-hidden', 'true');
+    expect(icon).not.toHaveAttribute('role');
+  });
+
+  it('exposes an accessible name when `label` is given', () => {
+    const { result } = setup({ label: 'Change history' });
+    const HistoryIcon = result.current;
+
+    render(<HistoryIcon />);
+    const icon = screen.getByRole('img', { name: 'Change history' });
+    expect(icon).not.toHaveAttribute('aria-hidden');
   });
 
   it('applies option defaults and lets per-usage props override them', () => {
@@ -51,6 +83,7 @@ describe('useCustomIcon', () => {
     const icon = screen.getByTestId('icon');
     expect(icon.className).toContain('text-orange-600');
     expect(icon.className).toContain('shadow');
+    expect(icon.className).toContain('rounded-full');
   });
 
   it('keeps a stable component identity across re-renders with the same inputs', () => {

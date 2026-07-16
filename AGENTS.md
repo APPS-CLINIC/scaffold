@@ -69,7 +69,7 @@ src/
 ├─ features/
 │  └─ urlState/  # Zod list-query schema (1-based `page`), Redux mirror of the URL,
 │                # selectors, <UrlStateSync/>, useListQueryState (write hook)
-├─ ui/           # UI seam: Button, TextInput, Select, Toast, Icon + useCustomIcon, cx()
+├─ ui/           # UI seam: Button, TextInput, Select, Toast, useCustomIcon, cx()
 ├─ routes/       # router.tsx, RootLayout, pages/
 ├─ styles/       # global.css (design tokens as CSS vars + Tailwind theme/utilities import)
 ├─ i18n/         # i18next setup + typed messages (pl/en)
