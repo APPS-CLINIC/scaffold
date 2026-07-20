@@ -14,6 +14,7 @@ export default {
       colors: {
         surface: 'var(--surface)',
         'surface-muted': 'var(--surface-muted)',
+        'content-surface': 'var(--content-surface)',
         border: 'var(--border)',
         'border-subtle': 'var(--border-subtle)',
         muted: 'var(--muted)',

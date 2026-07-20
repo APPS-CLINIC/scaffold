@@ -25,6 +25,7 @@ virtualization, the RTK Query cache, reselect, and manual chunks.
 | [0013](../adr/0013-iwa-components-primereact.md)         | The `@/ui` seam targets **IWA Components (PrimeReact)**; Toast primitive; "Hello World with IWA" | demo + planning |
 | [0014](../adr/0014-internationalization-i18n.md)         | **i18n** from this phase on: static keys on the frontend, backend data (potentially) translated  | BIX demo        |
 | [0021](../adr/0021-tailwind-v3-for-iwa-compatibility.md) | **Tailwind CSS v3** via PostCSS, aligned with the IWA stack                                      | IWA integration |
+| [0022](../adr/0022-typed-navigation-manifest.md)         | Typed static navigation manifest feeding IWA top and contextual menus                            | BIX demo        |
 
 ## Impact on tooling and process
 

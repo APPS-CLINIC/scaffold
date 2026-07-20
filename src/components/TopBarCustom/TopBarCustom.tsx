@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/app/hooks';
 import { selectActiveTabIndex } from '@/features/urlState/urlState.selectors';
 import { navTabs } from '@/routes/navTabs';
+import { getNavigationSectionDefaultPath } from '@/routes/navigation';
 import { Logo } from '@/components/Logo';
 
 /**
@@ -66,7 +67,7 @@ export const TopBarCustom = () => {
         onChangeActiveIndex={(value: SetStateAction<number>) => {
           const index = typeof value === 'function' ? value(activeIndex) : value;
           const tab = navTabs[index];
-          if (tab) navigate(tab.path);
+          if (tab) navigate(getNavigationSectionDefaultPath(tab));
         }}
       />
     </TopBar>

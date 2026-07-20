@@ -79,8 +79,11 @@ without touching feature code.
 ### 6. Routing — `src/routes`
 
 React Router v6 exposes the URL/search params as observable state and provides
-the `RootLayout` mount point for `UrlStateSync`.
-→ [ADR 0020](../adr/0020-routing-react-router-v6-for-iwa-compatibility.md)
+the `RootLayout` mount point for `UrlStateSync`. A typed frontend navigation
+manifest supplies the top tabs, contextual IWA menu, default redirects, and
+pathname matching without storing positional menu indexes.
+→ [ADR 0020](../adr/0020-routing-react-router-v6-for-iwa-compatibility.md),
+[ADR 0022](../adr/0022-typed-navigation-manifest.md)
 
 ## How a single interaction flows
 

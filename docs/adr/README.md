@@ -31,14 +31,15 @@ keep ADRs at all; use it as the template for new records.
 
 ### Step 02 — Application architecture
 
-| ADR                                                           | Title                                            | Status                 |
-| ------------------------------------------------------------- | ------------------------------------------------ | ---------------------- |
-| [0006](0006-url-as-single-source-of-truth.md)                 | URL as the single source of truth for view state | Accepted               |
-| [0007](0007-redux-toolkit-and-rtk-query.md)                   | Redux Toolkit + RTK Query for state and caching  | Accepted               |
-| [0008](0008-zod-total-parsing-of-search-params.md)            | Total parsing of search params with Zod          | Accepted               |
-| [0009](0009-reselect-and-listener-middleware.md)              | Reselect selectors + listener middleware         | Accepted               |
-| [0012](0012-routing-react-router-v7.md)                       | Routing with React Router v7                     | Superseded by ADR-0020 |
-| [0020](0020-routing-react-router-v6-for-iwa-compatibility.md) | React Router v6 for IWA compatibility            | Accepted               |
+| ADR                                                           | Title                                             | Status                 |
+| ------------------------------------------------------------- | ------------------------------------------------- | ---------------------- |
+| [0006](0006-url-as-single-source-of-truth.md)                 | URL as the single source of truth for view state  | Accepted               |
+| [0007](0007-redux-toolkit-and-rtk-query.md)                   | Redux Toolkit + RTK Query for state and caching   | Accepted               |
+| [0008](0008-zod-total-parsing-of-search-params.md)            | Total parsing of search params with Zod           | Accepted               |
+| [0009](0009-reselect-and-listener-middleware.md)              | Reselect selectors + listener middleware          | Accepted               |
+| [0012](0012-routing-react-router-v7.md)                       | Routing with React Router v7                      | Superseded by ADR-0020 |
+| [0020](0020-routing-react-router-v6-for-iwa-compatibility.md) | React Router v6 for IWA compatibility             | Accepted               |
+| [0022](0022-typed-navigation-manifest.md)                     | Typed frontend manifest for contextual navigation | Accepted               |
 
 ### Step 03 — Scope alignment (discovery)
 
