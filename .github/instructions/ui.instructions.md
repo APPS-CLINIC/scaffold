@@ -1,5 +1,5 @@
 ---
-description: 'Rules for the @/ui seam — placeholder primitives for the org UI library'
+description: 'Rules for the @/ui seam — local primitives and IWA wrappers'
 applyTo: 'src/ui/**'
 ---
 
@@ -12,12 +12,12 @@ applyTo: 'src/ui/**'
   them.
 - Every new primitive must be exported (with its prop types) from
   `src/ui/index.ts`. Feature/route code imports only from `@/ui`.
-- Style new primitives with Tailwind v4 utilities (see `docs/adr/0019`):
+- Style new primitives with Tailwind v3 utilities (see `docs/adr/0021`):
   no new CSS/CSS-module files. Colors come from the design tokens in
   `src/styles/global.css`, referenced as arbitrary values —
   `bg-[var(--surface)]`, `border-[var(--border)]`, `text-[var(--muted)]`.
-- Do not import Tailwind preflight or add global styles from this folder;
-  `src/styles/global.css` is the only base layer.
+- Do not add Tailwind directives or global styles from this folder;
+  `src/styles/global.css` is the only global base layer.
 - Join class names with `cx()` from `./cx` and always merge a caller-provided
   `className` last so callers can override styling.
 - Follow the established component shape: `forwardRef`, props interface

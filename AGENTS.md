@@ -53,12 +53,12 @@ Choices only — the rationale for each lives in its ADR:
 | ---------- | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
 | Build      | Vite 6 + `@vitejs/plugin-react-swc`, strict TypeScript | [0001](docs/adr/0001-build-tooling-vite-swc.md), [0002](docs/adr/0002-typescript-strict-and-project-config.md)  |
 | State      | Redux Toolkit + reselect; RTK Query (single `baseApi`) | [0007](docs/adr/0007-redux-toolkit-and-rtk-query.md), [0009](docs/adr/0009-reselect-and-listener-middleware.md) |
-| Routing    | React Router v7                                        | [0012](docs/adr/0012-routing-react-router-v7.md)                                                                |
+| Routing    | React Router v6 (IWA-compatible)                       | [0020](docs/adr/0020-routing-react-router-v6-for-iwa-compatibility.md)                                          |
 | Validation | Zod for URL search params                              | [0008](docs/adr/0008-zod-total-parsing-of-search-params.md)                                                     |
-| Styling    | CSS modules + Tailwind v4 utilities                    | [0019](docs/adr/0019-tailwind-utilities.md)                                                                     |
+| Styling    | CSS modules + Tailwind v3 utilities                    | [0021](docs/adr/0021-tailwind-v3-for-iwa-compatibility.md)                                                      |
 | i18n       | i18next + react-i18next (`pl`/`en`)                    | [0014](docs/adr/0014-internationalization-i18n.md)                                                              |
 | Testing    | Vitest + Testing Library                               | [0005](docs/adr/0005-testing-vitest-testing-library.md)                                                         |
-| UI library | None bundled — `src/ui` is a seam for the org library  | [0013](docs/adr/0013-iwa-components-primereact.md)                                                              |
+| UI library | IWA Components / PrimeReact behind the `src/ui` seam   | [0013](docs/adr/0013-iwa-components-primereact.md)                                                              |
 
 ## Layout
 
@@ -71,7 +71,7 @@ src/
 │                # selectors, <UrlStateSync/>, useListQueryState (write hook)
 ├─ ui/           # UI seam: Button, TextInput, Select, Toast, useCustomIcon, cx()
 ├─ routes/       # router.tsx, RootLayout, pages/
-├─ styles/       # global.css (design tokens as CSS vars + Tailwind theme/utilities import)
+├─ styles/       # global.css (design tokens as CSS vars + Tailwind layers via PostCSS)
 ├─ i18n/         # i18next setup + typed messages (pl/en)
 └─ test/         # renderWithProviders (store + router + i18n wrapper)
 ```
@@ -101,7 +101,7 @@ defined once in [`CONTRIBUTING.md`](CONTRIBUTING.md). The essentials:
   PR back into `develop` (squash merge); a release is a PR
   `develop` → `main`.
 - **Conventional Commits, written in English** (e.g.
-  `feat(ui): add Icon component and useCustomIcon hook`). Body explains _why_.
+  `feat(ui): add useCustomIcon hook`). Body explains _why_.
 - **English only, everywhere**: code, commits and documentation. Polish
   appears only in the `pl` locale messages (`src/i18n/messages/pl.ts`).
 

@@ -1,6 +1,6 @@
 # ADR 0019 — Tailwind CSS v4 (utilities layer) alongside CSS modules
 
-- **Status:** Accepted
+- **Status:** Superseded by ADR-0021
 - **Date:** 2026-07-15
 
 ## Context

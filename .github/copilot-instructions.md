@@ -1,8 +1,8 @@
 # Copilot repository instructions
 
 Production-grade React scaffold for data-heavy apps with **URL-driven state**:
-Vite 6 + TypeScript (strict), Redux Toolkit + RTK Query, React Router v7, Zod,
-i18next, Tailwind v4 utilities, Vitest + Testing Library.
+Vite 6 + TypeScript (strict), Redux Toolkit + RTK Query, React Router v6, Zod,
+i18next, Tailwind v3 utilities, Vitest + Testing Library.
 
 ## Single sources of truth
 

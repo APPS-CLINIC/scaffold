@@ -31,18 +31,20 @@ keep ADRs at all; use it as the template for new records.
 
 ### Step 02 — Application architecture
 
-| ADR                                                | Title                                            | Status   |
-| -------------------------------------------------- | ------------------------------------------------ | -------- |
-| [0006](0006-url-as-single-source-of-truth.md)      | URL as the single source of truth for view state | Accepted |
-| [0007](0007-redux-toolkit-and-rtk-query.md)        | Redux Toolkit + RTK Query for state and caching  | Accepted |
-| [0008](0008-zod-total-parsing-of-search-params.md) | Total parsing of search params with Zod          | Accepted |
-| [0009](0009-reselect-and-listener-middleware.md)   | Reselect selectors + listener middleware         | Accepted |
-| [0012](0012-routing-react-router-v7.md)            | Routing with React Router v7                     | Accepted |
+| ADR                                                           | Title                                            | Status                 |
+| ------------------------------------------------------------- | ------------------------------------------------ | ---------------------- |
+| [0006](0006-url-as-single-source-of-truth.md)                 | URL as the single source of truth for view state | Accepted               |
+| [0007](0007-redux-toolkit-and-rtk-query.md)                   | Redux Toolkit + RTK Query for state and caching  | Accepted               |
+| [0008](0008-zod-total-parsing-of-search-params.md)            | Total parsing of search params with Zod          | Accepted               |
+| [0009](0009-reselect-and-listener-middleware.md)              | Reselect selectors + listener middleware         | Accepted               |
+| [0012](0012-routing-react-router-v7.md)                       | Routing with React Router v7                     | Superseded by ADR-0020 |
+| [0020](0020-routing-react-router-v6-for-iwa-compatibility.md) | React Router v6 for IWA compatibility            | Accepted               |
 
 ### Step 03 — Scope alignment (discovery)
 
-| ADR                                       | Title                                                       | Status   |
-| ----------------------------------------- | ----------------------------------------------------------- | -------- |
-| [0013](0013-iwa-components-primereact.md) | IWA Components (PrimeReact) as the UI library behind `@/ui` | Accepted |
-| [0014](0014-internationalization-i18n.md) | Internationalization (i18n)                                 | Accepted |
-| [0019](0019-tailwind-utilities.md)        | Tailwind CSS v4 (utilities layer) alongside CSS modules     | Accepted |
+| ADR                                               | Title                                                       | Status                 |
+| ------------------------------------------------- | ----------------------------------------------------------- | ---------------------- |
+| [0013](0013-iwa-components-primereact.md)         | IWA Components (PrimeReact) as the UI library behind `@/ui` | Accepted               |
+| [0014](0014-internationalization-i18n.md)         | Internationalization (i18n)                                 | Accepted               |
+| [0019](0019-tailwind-utilities.md)                | Tailwind CSS v4 (utilities layer) alongside CSS modules     | Superseded by ADR-0021 |
+| [0021](0021-tailwind-v3-for-iwa-compatibility.md) | Tailwind CSS v3 for IWA compatibility                       | Accepted               |

@@ -78,9 +78,9 @@ without touching feature code.
 
 ### 6. Routing — `src/routes`
 
-React Router v7 exposes the URL/search params as observable state and provides
+React Router v6 exposes the URL/search params as observable state and provides
 the `RootLayout` mount point for `UrlStateSync`.
-→ [ADR 0012](../adr/0012-routing-react-router-v7.md)
+→ [ADR 0020](../adr/0020-routing-react-router-v6-for-iwa-compatibility.md)
 
 ## How a single interaction flows
 

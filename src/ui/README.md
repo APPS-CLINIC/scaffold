@@ -1,10 +1,10 @@
 # `src/ui` — UI seam
 
-This folder is a **placeholder layer**, not a design system. The app was
-scaffolded to use your **internal / organization UI library**, which is
-intentionally **not** included here.
+This folder is the stable application-facing **UI seam**, not a design system.
+The repository includes the IWA Components / PrimeReact dependency stack, while
+local primitives stay here until they are replaced with thin IWA wrappers.
 
-## How to plug in your library
+## How to evolve the seam
 
 1. Replace the implementations of `Button`, `TextInput`, `Select`, etc. with
    re-exports (or thin wrappers) of your org components.
@@ -35,11 +35,11 @@ inside. SVGs auto-scale to ~55% of the circle and inherit `currentColor`.
 ```tsx
 import { useCustomIcon } from '@/ui';
 
-const HistoryIcon = useCustomIcon(historyGlyph, { size: 'lg', label: 'History' });
-// ...
-<HistoryIcon />                 // uses the bound defaults
-<HistoryIcon tone="accent" />   // per-usage props override them
-<HistoryIcon className="text-orange-600" />  // tint the glyph
+function HistoryButton() {
+  const HistoryIcon = useCustomIcon(historyGlyph, { size: 'lg', label: 'History' });
+
+  return <HistoryIcon tone="accent" className="text-orange-600" />;
+}
 ```
 
 - `size`: `sm | md | lg | xl` (default `md`); `tone`: `outline | neutral |

@@ -54,10 +54,12 @@ export type CustomIconComponent = ForwardRefExoticComponent<
  * up `currentColor`, so tint via `text-*` utilities or the `tone` prop.
  *
  * ```tsx
- * const UserIcon = useCustomIcon(<UserSvg />, { size: 'lg', label: 'User' });
- * // ...
- * <UserIcon />                // defaults from the options above
- * <UserIcon tone="accent" />  // per-usage props override the defaults
+ * const userGlyph = <UserSvg />;
+ *
+ * function UserAvatar() {
+ *   const UserIcon = useCustomIcon(userGlyph, { size: 'lg', label: 'User' });
+ *   return <UserIcon tone="accent" />;
+ * }
  * ```
  *
  * The returned component is memoized on the glyph element and options, so

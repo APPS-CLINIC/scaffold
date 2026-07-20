@@ -1,9 +1,6 @@
-/*
- * Tailwind v4: theme + utilities only. Preflight (base reset) is deliberately
- * skipped so the hand-written global styles below stay the single base layer.
- */
-@import 'tailwindcss/theme.css' layer(theme);
-@import 'tailwindcss/utilities.css' layer(utilities);
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --border: #e1e5ea;

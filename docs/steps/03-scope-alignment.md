@@ -20,10 +20,11 @@ virtualization, the RTK Query cache, reselect, and manual chunks.
 
 ## What we are tuning (new ADRs)
 
-| ADR                                              | Decision                                                                                         | Source          |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------ | --------------- |
-| [0013](../adr/0013-iwa-components-primereact.md) | The `@/ui` seam targets **IWA Components (PrimeReact)**; Toast primitive; "Hello World with IWA" | demo + planning |
-| [0014](../adr/0014-internationalization-i18n.md) | **i18n** from this phase on: static keys on the frontend, backend data (potentially) translated  | BIX demo        |
+| ADR                                                      | Decision                                                                                         | Source          |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | --------------- |
+| [0013](../adr/0013-iwa-components-primereact.md)         | The `@/ui` seam targets **IWA Components (PrimeReact)**; Toast primitive; "Hello World with IWA" | demo + planning |
+| [0014](../adr/0014-internationalization-i18n.md)         | **i18n** from this phase on: static keys on the frontend, backend data (potentially) translated  | BIX demo        |
+| [0021](../adr/0021-tailwind-v3-for-iwa-compatibility.md) | **Tailwind CSS v3** via PostCSS, aligned with the IWA stack                                      | IWA integration |
 
 ## Impact on tooling and process
 
@@ -41,7 +42,6 @@ virtualization, the RTK Query cache, reselect, and manual chunks.
 - URL-state scope (which views; short/encoded URLs) — a question for the
   business.
 - OpenAPI codegen: Kubb vs `@rtk-query/codegen-openapi`.
-- Tailwind yes/no (dependent on IWA — [ADR 0013](../adr/0013-iwa-components-primereact.md)).
 
 ## Process
 

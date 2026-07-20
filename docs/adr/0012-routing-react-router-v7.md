@@ -1,6 +1,6 @@
 # ADR 0012 — Routing with React Router v7
 
-- **Status:** Accepted
+- **Status:** Superseded by ADR-0020
 - **Date:** 2026-06-22
 
 ## Context
