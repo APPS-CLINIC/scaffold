@@ -1,61 +1,60 @@
-# ADR 0000 — Prowadzenie rekordów decyzji architektonicznych
+# ADR 0000 — Record architecture decisions
 
-- **Status:** Zaakceptowano
-- **Data:** 2026-06-22
+- **Status:** Accepted
+- **Date:** 2026-06-22
 
-## Kontekst
+## Context
 
-Scaffold to z definicji stos decyzji podjętych za kogoś: które narzędzie build,
-jak ścisły jest system typów, gdzie żyje stan, jak URL ma się do UI. Gdy te
-decyzje są niewidoczne, każdy nowy współtwórca rozważa je od nowa, a na pytanie
-„dlaczego to tak działa?" nie ma innej odpowiedzi niż `git blame`.
+A scaffold is, by definition, a stack of decisions made on someone else's behalf: which build tool, how strict the type system is, where state lives, how the URL relates to the UI. When these decisions are invisible, every new contributor reconsiders them from scratch, and the only answer to "why does it work this way?" is `git blame`.
 
-Chcemy, aby *uzasadnienie* było trwałym artefaktem pierwszej klasy — nie
-zakopanym w czatach, wątkach PR-ów czy czyjejś pamięci.
+We want the _rationale_ to be a durable, first-class artifact — not buried in chats, PR threads, or someone's memory.
 
-## Decyzja
+## Decision
 
-Prowadzimy **rekordy decyzji architektonicznych** w `docs/adr/`, jeden plik
-Markdown na decyzję, numerowane kolejno (`0001`, `0002`, …).
+We keep **architecture decision records** in `docs/adr/`, one Markdown file per decision, numbered sequentially (`0001`, `0002`, …).
 
-Każdy ADR korzysta z tego lekkiego szablonu:
+Each ADR uses this lightweight template:
 
 ```markdown
-# ADR NNNN — <krótki tytuł>
+# ADR NNNN — <short title>
 
-- **Status:** Proponowane | Zaakceptowano | Zastąpione przez ADR-XXXX | Wycofane
-- **Data:** RRRR-MM-DD
+- **Status:** Proposed | Accepted | Superseded by ADR-XXXX | Deprecated
+- **Date:** YYYY-MM-DD
 
-## Kontekst
-Co wymusza tę decyzję? Ograniczenia, wymagania, kompromisy w grze.
+## Context
 
-## Decyzja
-Co postanowiliśmy, powiedziane wprost.
+What forces this decision? Constraints, requirements, trade-offs in play.
 
-## Konsekwencje
-Co staje się łatwiejsze, co trudniejsze, z czym musimy teraz żyć.
+## Decision
 
-## Rozważane alternatywy
-Co jeszcze rozważaliśmy i dlaczego tego nie wybraliśmy.
+What we decided, stated plainly.
+
+## Consequences
+
+What becomes easier, what becomes harder, what we now have to live with.
+
+## Alternatives considered
+
+What else we considered and why we didn't choose it.
 ```
 
-Konwencje:
+Conventions:
 
-- ADR-y są **niezmienne po zaakceptowaniu.** Aby zmienić decyzję, napisz nowy
-  ADR i ustaw status starego na *Zastąpione przez ADR-XXXX*.
-- Istotne decyzje powinny być linkowane z odpowiedniego dokumentu w
+- ADRs are **immutable once accepted.** To change a decision, write a new
+  ADR and set the old one's status to _Superseded by ADR-XXXX_.
+- Significant decisions should be linked from the relevant document in
   [`docs/steps/`](../steps/).
 
-## Konsekwencje
+## Consequences
 
-- Nowi współtwórcy mogą przeczytać *dlaczego*, zamiast je odtwarzać.
-- PR-y zmieniające architekturę powinny dodawać lub zastępować ADR, co utrzymuje
-  zapis aktualnym.
-- Niewielki narzut na każdą istotną decyzję — akceptowany jako tania polisa.
+- New contributors can read the _why_ instead of reconstructing it.
+- PRs that change the architecture should add or supersede an ADR, which keeps
+  the record current.
+- A small overhead for every significant decision — accepted as cheap insurance.
 
-## Rozważane alternatywy
+## Alternatives considered
 
-- **Jeden plik `ARCHITECTURE.md`.** Rozrasta się w nierecenzowalnego molocha i
-  traci kontekst/status pojedynczych decyzji.
-- **Tylko komunikaty commitów / opisy PR-ów.** Nieodkrywalne; przywiązane do
-  platformy hostującej; łatwe do zgubienia.
+- **A single `ARCHITECTURE.md` file.** Grows into an unreviewable behemoth and
+  loses the context/status of individual decisions.
+- **Commit messages / PR descriptions only.** Undiscoverable; tied to the
+  hosting platform; easy to lose.

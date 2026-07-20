@@ -1,10 +1,10 @@
 # `src/ui` — UI seam
 
-This folder is a **placeholder layer**, not a design system. The app was
-scaffolded to use your **internal / organization UI library**, which is
-intentionally **not** included here.
+This folder is the stable application-facing **UI seam**, not a design system.
+The repository includes the IWA Components / PrimeReact dependency stack, while
+local primitives stay here until they are replaced with thin IWA wrappers.
 
-## How to plug in your library
+## How to evolve the seam
 
 1. Replace the implementations of `Button`, `TextInput`, `Select`, etc. with
    re-exports (or thin wrappers) of your org components.
@@ -24,3 +24,29 @@ export type { ButtonProps } from '@my-org/ui';
 
 Keeping every UI import funneled through `@/ui` means the rest of the codebase
 never depends on a specific vendor — you can swap libraries in one folder.
+
+## `useCustomIcon`
+
+`useCustomIcon(icon, options?)` binds any icon element (inline SVG, font
+glyph, emoji) into a ready-to-use component with **default circular styling
+built in**: a `rounded-full` badge (Tailwind-only) with the glyph centered
+inside. SVGs auto-scale to ~55% of the circle and inherit `currentColor`.
+
+```tsx
+import { useCustomIcon } from '@/ui';
+
+function HistoryButton() {
+  const HistoryIcon = useCustomIcon(historyGlyph, { size: 'lg', label: 'History' });
+
+  return <HistoryIcon tone="accent" className="text-orange-600" />;
+}
+```
+
+- `size`: `sm | md | lg | xl` (default `md`); `tone`: `outline | neutral |
+accent` (default `outline` — light surface with a subtle ring, colors come
+  from the global CSS variables).
+- `label` sets `role="img"` + `aria-label`; without it the icon is
+  `aria-hidden` (decorative).
+- The hook memoizes on the glyph element and options — keep them
+  referentially stable (hoist the element out of render, like `historyGlyph`
+  above) so the returned component keeps its identity across re-renders.

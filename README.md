@@ -2,7 +2,7 @@
 
 Production-grade boilerplate for a **data-heavy React app** with **URL-driven
 state**. TypeScript (strict), Vite, Redux Toolkit + RTK Query + reselect,
-React Router v7, and a recommended path to list virtualization — wired together
+React Router v6, and a recommended path to list virtualization — wired together
 with performance and best practices in mind.
 
 ## Stack
@@ -13,13 +13,14 @@ with performance and best practices in mind.
 | Language           | **TypeScript** (strict, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`)              |
 | State              | **Redux Toolkit** + **reselect**                                                         |
 | Server state       | **RTK Query** (one `baseApi`, injected endpoints)                                        |
-| Routing            | **React Router v7**                                                                      |
-| URL ↔ state        | URL is the source of truth, mirrored into Redux via **listener-style sync** + middleware |
+| Routing            | **React Router v6** (aligned with IWA peer dependencies)                                 |
+| URL ↔ state       | URL is the source of truth, mirrored into Redux via **listener-style sync** + middleware |
 | Validation         | **Zod** (total parsing of search params)                                                 |
 | Large lists        | **Virtualization** — recommended pattern (`@tanstack/react-virtual`), not bundled        |
+| Styling            | CSS modules + **Tailwind CSS v3** via PostCSS (tokens mapped from CSS variables)         |
 | Testing            | **Vitest** + Testing Library                                                             |
 | Quality gates      | **ESLint** + **Prettier** + **Husky** + **lint-staged**                                  |
-| UI library         | **Not included** — see [`src/ui`](src/ui/README.md)                                      |
+| UI library         | **IWA Components / PrimeReact** + the [`@/ui` seam](src/ui/README.md)                    |
 
 ## Architecture: URL-driven state
 
@@ -81,7 +82,7 @@ src/
 ├─ api/                 # baseApi (RTK Query root)
 ├─ features/            # urlState/ — and your own features
 │  └─ urlState/         # generic Zod list-query schema, slice mirror, selectors, sync, write hook
-├─ ui/                  # SEAM for your internal UI library (placeholders only)
+├─ ui/                  # stable UI seam for local primitives and IWA wrappers
 ├─ routes/              # router, layout, pages
 ├─ styles/              # global css
 └─ test/                # renderWithProviders helper
@@ -118,9 +119,17 @@ Read the URL-driven query state via `selectListQuery` (selector) or
 `useListQueryState` (write hook), and set `VITE_API_BASE_URL` (see
 `.env.example`) to point at your backend.
 
-## Plugging in your UI library
+## UI layer
 
-This scaffold deliberately ships **no external UI library**. Everything imports
-from `@/ui`, a thin placeholder layer. Point those exports at your internal
-organization components (keeping the prop contracts) and the rest of the app is
-untouched. See [`src/ui/README.md`](src/ui/README.md).
+The scaffold includes the IWA Components / PrimeReact dependency stack while
+keeping application-facing primitives behind `@/ui`. Evolve those exports into
+thin IWA wrappers while preserving their prop contracts so feature code remains
+decoupled from the vendor. See [`src/ui/README.md`](src/ui/README.md).
+
+## AI agents
+
+Working with GitHub Copilot, Claude Code or another coding agent? The
+repository ships [`AGENTS.md`](AGENTS.md) — a distilled, agent-oriented guide
+(commands, architecture rules, conventions, docs map). Copilot additionally
+picks up [`.github/copilot-instructions.md`](.github/copilot-instructions.md),
+which points there.

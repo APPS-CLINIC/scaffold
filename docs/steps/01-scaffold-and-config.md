@@ -1,67 +1,68 @@
-# Krok 01 — Scaffold i konfiguracja
+# Step 01 — Scaffold and configuration
 
-> **Cel:** ustanowić toolchain, konfigurację języka, bramki jakości oraz proces
-> projektowy — fundament, na którym buduje każdy kolejny krok.
+> **Goal:** establish the toolchain, language configuration, quality gates, and
+> project process — the foundation that every subsequent step builds on.
 
-Ten krok dokumentuje *warstwę konfiguracji* scaffoldu: wszystko, co rządzi tym,
-jak kod jest budowany, typowany, sprawdzany, testowany i współtworzony — zanim
-powstanie jakakolwiek architektura aplikacji (to [Krok 02](02-app-architecture.md)).
+This step documents the _configuration layer_ of the scaffold: everything that
+governs how code is built, typed, linted, tested, and contributed — before any
+application architecture exists (that is [Step 02](02-app-architecture.md)).
 
-## Co ustanawia ten krok
+## What this step establishes
 
-| Obszar             | Pliki                                                                  | ADR |
-| ------------------ | --------------------------------------------------------------------- | --- |
-| Build / dev / HMR  | `vite.config.ts`, `index.html`                                        | [0001](../adr/0001-build-tooling-vite-swc.md) |
-| Konfiguracja języka| `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`           | [0002](../adr/0002-typescript-strict-and-project-config.md) |
-| Menedżer pakietów  | `package.json`, `package-lock.json`, `.nvmrc`                        | [0003](../adr/0003-package-manager-npm.md) |
-| Bramki jakości     | `eslint.config.js`, `.prettierrc.json`, `.prettierignore`, `.editorconfig`, `.husky/pre-commit` | [0004](../adr/0004-code-quality-gates.md) |
-| Testy              | `vite.config.ts` (`test`), `vitest.setup.ts`                         | [0005](../adr/0005-testing-vitest-testing-library.md) |
-| Środowisko / edytor| `.env.example`, `.gitignore`, `.vscode/extensions.json`              | —   |
-| Proces             | `CONTRIBUTING.md`                                                     | —   |
+| Area                   | Files                                                                                           | ADR                                                         |
+| ---------------------- | ----------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Build / dev / HMR      | `vite.config.ts`, `index.html`                                                                  | [0001](../adr/0001-build-tooling-vite-swc.md)               |
+| Language configuration | `tsconfig.json`, `tsconfig.app.json`, `tsconfig.node.json`                                      | [0002](../adr/0002-typescript-strict-and-project-config.md) |
+| Package manager        | `package.json`, `package-lock.json`, `.nvmrc`                                                   | [0003](../adr/0003-package-manager-npm.md)                  |
+| Quality gates          | `eslint.config.js`, `.prettierrc.json`, `.prettierignore`, `.editorconfig`, `.husky/pre-commit` | [0004](../adr/0004-code-quality-gates.md)                   |
+| Testing                | `vite.config.ts` (`test`), `vitest.setup.ts`                                                    | [0005](../adr/0005-testing-vitest-testing-library.md)       |
+| Environment / editor   | `.env.example`, `.gitignore`, `.vscode/extensions.json`                                         | —                                                           |
+| Process                | `CONTRIBUTING.md`                                                                               | —                                                           |
 
-## Jak elementy do siebie pasują
+## How the pieces fit together
 
 ```
             ┌──────────────┐
-   git commit ─▶│ hook Husky │─▶ lint-staged ─▶ eslint --fix + prettier --write
-            └──────────────┘                      (tylko zastagowane pliki)
+   git commit ─▶│ Husky hook │─▶ lint-staged ─▶ eslint --fix + prettier --write
+            └──────────────┘                      (staged files only)
 
    npm run dev   ─▶ Vite + SWC ──▶ HMR
-   npm run build ─▶ tsc -b (typecheck) ─▶ vite build ─▶ dist/ (chunki vendora)
+   npm run build ─▶ tsc -b (typecheck) ─▶ vite build ─▶ dist/ (vendor chunks)
    npm test      ─▶ Vitest (jsdom) ─▶ Testing Library
 ```
 
-- **Vite** to jeden silnik serwera dev, buildu produkcyjnego *oraz* (przez
-  `vitest/config`) runnera testów — jedna konfiguracja, brak rozjazdu.
-- **TypeScript** działa ściśle, podzielony na projekty `app` (przeglądarka) i
-  `node` (konfiguracja) pod jednym `tsconfig.json`.
-- **ESLint + Prettier** mają osobne zadania (jakość vs formatowanie) i nie
-  walczą ze sobą dzięki zastosowaniu `eslint-config-prettier` na końcu.
-- **Husky + lint-staged** czynią kontrole zastagowanych plików automatycznymi
-  przy commicie.
-- **npm** przypina toolchain (`package-lock.json`, `engines`, `.nvmrc`).
+- **Vite** is a single engine for the dev server, the production build, _and_
+  (via `vitest/config`) the test runner — one configuration, no drift.
+- **TypeScript** runs strict, split into `app` (browser) and `node`
+  (configuration) projects under a single `tsconfig.json`.
+- **ESLint + Prettier** have separate jobs (quality vs formatting) and do not
+  fight each other thanks to `eslint-config-prettier` applied last.
+- **Husky + lint-staged** make checks on staged files automatic at commit
+  time.
+- **npm** pins the toolchain (`package-lock.json`, `engines`, `.nvmrc`).
 
-Uzasadnienie każdego wyboru żyje w jego ADR — ten dokument jest mapą; ADR-y są
-terenem.
+The rationale for each choice lives in its ADR — this document is the map; the
+ADRs are the territory.
 
-## Weryfikacja kroku
+## Verifying this step
 
-Czysty checkout powinien przejść każdą bramkę:
+A clean checkout should pass every gate:
 
 ```bash
-npm install       # instaluje zależności + hooki Git (prepare → husky)
-npm run lint      # ESLint, bez błędów
-npm run typecheck # tsc -b, bez błędów
-npm test          # Vitest, zielono
-npm run build     # typecheck + build produkcyjny do dist/
+npm install       # installs dependencies + Git hooks (prepare → husky)
+npm run lint      # ESLint, no errors
+npm run typecheck # tsc -b, no errors
+npm test          # Vitest, green
+npm run build     # typecheck + production build to dist/
 ```
 
-Jeśli wszystkie pięć przejdzie, fundament jest solidny i [Krok 02 — Architektura
-aplikacji](02-app-architecture.md) może na nim budować.
+If all five pass, the foundation is solid and [Step 02 — Application
+architecture](02-app-architecture.md) can build on it.
 
-## Proces
+## Process
 
-Rozwój zgodnie z **GitHub Flow**: `main` pozostaje zawsze wdrażalny, a ten krok
-ląduje jako gałąź `docs/scaffold-and-config` przez Pull Request. Pełny model
-gałęzi, konwencja commitów i lista kontrolna PR są w
+Work happens on short-lived branches merged via Pull Requests into the
+`develop` integration branch, with `main` reserved for releases; this step
+landed as the `docs/scaffold-and-config` branch. The full branching model,
+commit convention, and PR checklist are in
 [`../../CONTRIBUTING.md`](../../CONTRIBUTING.md).

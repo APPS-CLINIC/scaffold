@@ -1,51 +1,51 @@
-# ADR 0014 — Internacjonalizacja (i18n)
+# ADR 0014 — Internationalization (i18n)
 
-- **Status:** Zaakceptowano
-- **Data:** 2026-06-22
+- **Status:** Accepted
+- **Date:** 2026-06-22
 
-## Kontekst
+## Context
 
-Stary BIX **nie ma wersji językowej** — część interfejsu jest po polsku, część
-po angielsku. W banku pojawiają się osoby anglojęzyczne, więc nowy BIX
-**ma mieć wersję EN/PL**. Na spotkaniu padło wprost, że strukturę i18n trzeba
-przygotować **już na tej fazie**, bo wpływa na sposób budowy komponentów.
+The legacy BIX **has no language versioning** — part of the interface is in Polish, part
+in English. English-speaking staff are joining the bank, so the new BIX
+**is to ship with EN/PL versions**. It was stated explicitly in the meeting that the i18n structure must be
+prepared **in this phase already**, because it affects how components are built.
 
-Rozróżnienie z dyskusji:
+A distinction from the discussion:
 
-- **Statyczne UI** (nazwy kolumn, tytuły, etykiety) — klucze trzymane **na
-  froncie**.
-- **Dane z backendu** — potencjalnie przychodzą **już przetłumaczone**
-  (np. nazwy spółek, dane bankowe nie podlegają tłumaczeniu; opisówki typu
-  „facility" — do rozważenia po stronie backendu).
+- **Static UI** (column names, titles, labels) — keys kept **on the
+  frontend**.
+- **Backend data** — potentially arrives **already translated**
+  (e.g. company names and banking data are not subject to translation; descriptive
+  labels like "facility" — to be considered on the backend side).
 
-## Decyzja
+## Decision
 
-Wprowadzamy warstwę i18n od początku, na bibliotece **`react-i18next`** (na
+We introduce an i18n layer from the start, based on **`react-i18next`** (on top of
 `i18next`):
 
-- Katalog `src/i18n` z konfiguracją i18next i plikami tłumaczeń (`pl`, `en`);
-  domyślny język `pl`, `fallbackLng: 'pl'`. Komponenty tłumaczą przez
+- A `src/i18n` directory with the i18next configuration and translation files (`pl`, `en`);
+  default language `pl`, `fallbackLng: 'pl'`. Components translate via
   `useTranslation()`.
-- **Klucze płaskie, kropkowane** (`keySeparator: false`), interpolacja `{{var}}`.
-  Type-safety kluczy przez augmentację `src/i18n/i18next.d.ts` (literówka =
-  błąd kompilacji).
-- **Statyczne teksty UI przez klucze** (żadnych literałów w komponentach).
-- Dla **danych z backendu** zakładamy, że backend zwraca treść w języku
-  użytkownika; front nie tłumaczy danych domenowych.
+- **Flat, dot-separated keys** (`keySeparator: false`), `{{var}}` interpolation.
+  Key type-safety via the `src/i18n/i18next.d.ts` augmentation (a typo =
+  a compile error).
+- **Static UI text goes through keys** (no literals in components).
+- For **backend data** we assume the backend returns content in the user's
+  language; the frontend does not translate domain data.
 
-## Konsekwencje
+## Consequences
 
-- Komponenty od startu używają kluczy, więc dołożenie EN nie wymaga refaktoru.
-- Trzeba ustalić kontrakt z backendem: **które pola przychodzą przetłumaczone**.
-- Niewielki narzut na każdą etykietę (klucz zamiast literału) — akceptowany.
+- Components use keys from the start, so adding EN requires no refactor.
+- A contract with the backend must be agreed: **which fields arrive translated**.
+- A small overhead per label (a key instead of a literal) — accepted.
 
-## Rozważane alternatywy
+## Alternatives considered
 
-- **Własna, ręczna warstwa i18n.** Reinventing — react-i18next robi
-  interpolację, liczbę mnogą, detekcję języka i lazy-loading sprawdzonym kodem.
-- **formatjs / @lingui.** Dobre alternatywy; react-i18next wybrany jako
-  najpopularniejszy w ekosystemie React.
-- **i18n później.** Odrzucone — wymusiłoby przepisanie wszystkich widoków
-  (decyzja „trzeba na tej fazie").
-- **Tłumaczenie danych domenowych na froncie.** Kosztowne i kruche; dane lepiej
-  tłumaczyć u źródła.
+- **A custom, hand-rolled i18n layer.** Reinventing the wheel — react-i18next does
+  interpolation, pluralization, language detection, and lazy loading with proven code.
+- **formatjs / @lingui.** Good alternatives; react-i18next chosen as the
+  most popular in the React ecosystem.
+- **i18n later.** Rejected — it would force rewriting all views
+  (the "must happen in this phase" decision).
+- **Translating domain data on the frontend.** Costly and brittle; data is better
+  translated at the source.

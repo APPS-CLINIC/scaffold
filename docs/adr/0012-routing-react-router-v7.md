@@ -1,42 +1,42 @@
-# ADR 0012 — Routing z React Router v7
+# ADR 0012 — Routing with React Router v7
 
-- **Status:** Zaakceptowano
-- **Data:** 2026-06-22
+- **Status:** Superseded by ADR-0020
+- **Date:** 2026-06-22
 
-## Kontekst
+## Context
 
-Architektura „URL jako źródło prawdy"
-([ADR 0006](0006-url-as-single-source-of-truth.md)) zależy od routera, który
-udostępnia URL — zarówno ścieżkę, jak i **search params** — jako pierwszorzędny,
-obserwowalny stan z hookami. Chcemy też jednego miejsca na zamontowanie spraw
-przekrojowych (synchronizacja URL→store) oraz powłoki layoutu.
+The "URL as the source of truth" architecture
+([ADR 0006](0006-url-as-single-source-of-truth.md)) depends on a router that
+exposes the URL — both the path and the **search params** — as first-class,
+observable state with hooks. We also want a single place to mount cross-cutting
+concerns (URL→store synchronization) and the layout shell.
 
-## Decyzja
+## Decision
 
-Używamy **React Router v7** z routerem przeglądarki zdefiniowanym w
+We use **React Router v7** with a browser router defined in
 [`router.tsx`](../../src/routes/router.tsx):
 
-- Element `RootLayout` opakowuje wszystkie trasy i jest miejscem, gdzie
-  [`UrlStateSync`](../../src/features/urlState/UrlStateSync.tsx) montuje się raz.
-- Trasy: indeks renderuje `HomePage` (placeholder), a `*` renderuje
+- A `RootLayout` element wraps all routes and is where
+  [`UrlStateSync`](../../src/features/urlState/UrlStateSync.tsx) mounts once.
+- Routes: the index renders `HomePage` (a placeholder), and `*` renders
   `NotFoundPage`.
-- Funkcje czytają/zapisują search params przez `useSearchParams` routera
-  (opakowane przez `useListQueryState`), co jest kręgosłupem wzorca stanu
-  napędzanego URL-em.
+- Features read/write search params via the router's `useSearchParams`
+  (wrapped by `useListQueryState`), which is the backbone of the
+  URL-driven state pattern.
 
-## Konsekwencje
+## Consequences
 
-- Search params są obserwowalnym stanem React, umożliwiając jednokierunkową
-  synchronizację URL→store i udostępnialne linki.
-- `RootLayout` daje jedno miejsce montażu dla spraw ogólnoaplikacyjnych
-  (synchronizacja dziś; error boundaries, chrome itd. później).
-- Związane z API React Routera; helper testowy `renderWithProviders` podpina
-  router, więc komponenty używające hooków routera są testowalne.
+- Search params are observable React state, enabling one-way
+  URL→store synchronization and shareable links.
+- `RootLayout` provides a single mount point for app-wide concerns
+  (synchronization today; error boundaries, chrome, etc. later).
+- Coupled to the React Router API; the `renderWithProviders` test helper wires up
+  the router, so components using router hooks are testable.
 
-## Rozważane alternatywy
+## Alternatives considered
 
-- **TanStack Router.** Mocna, typowo-bezpieczna historia routingu/search params;
-  React Router v7 wybrano jako domyślną, mniej oporną i szeroko znaną opcję dla
-  tego scaffoldu.
-- **Brak routera / ręczne `history`.** Re-implementuje obserwację search params i
-  nawigację, które router już zapewnia.
+- **TanStack Router.** A strong, type-safe routing/search-params story;
+  React Router v7 was chosen as the default, lower-friction, widely known option for
+  this scaffold.
+- **No router / manual `history`.** Re-implements the search-param observation and
+  navigation that a router already provides.
