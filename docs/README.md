@@ -48,3 +48,9 @@ The full, indexed list lives in [`adr/README.md`](adr/README.md).
 - [Contextual sidebar navigation](contextual-sidebar-navigation.md) — typed
   configuration, URL behavior, IWA composition, icon selection, and extension
   guide.
+
+## Pull request delivery notes
+
+- [PR #4 — Configurable contextual sidebar navigation](pull-requests/0004-contextual-sidebar-navigation.md)
+  — delivered scope, rationale, recommended squash commit, extension
+  instructions, and validation.
