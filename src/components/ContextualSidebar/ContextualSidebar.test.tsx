@@ -11,7 +11,7 @@ interface MockMenuItem {
   text: string;
 }
 
-interface MockMenuListProps {
+interface MockMenuListAdapterProps {
   items: MockMenuItem[];
   selectedId?: string;
   onItemSelect?: (item: MockMenuItem) => void;
@@ -33,7 +33,12 @@ vi.mock('@/ui', () => ({
       {footer}
     </div>
   ),
-  MenuList: ({ items, selectedId, onItemSelect, 'aria-label': ariaLabel }: MockMenuListProps) => (
+  MenuListAdapter: ({
+    items,
+    selectedId,
+    onItemSelect,
+    'aria-label': ariaLabel,
+  }: MockMenuListAdapterProps) => (
     <div aria-label={ariaLabel}>
       {items.map((item) => (
         <button

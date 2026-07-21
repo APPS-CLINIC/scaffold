@@ -7,7 +7,7 @@ import {
   getNavigationItemPath,
   getVisibleNavigationItems,
 } from '@/routes/navigation';
-import { MenuList, NavigationIcon, NavigationPanel, cx } from '@/ui';
+import { MenuListAdapter, NavigationIcon, NavigationPanel, cx } from '@/ui';
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = 'scaffold.navigation.sidebar-collapsed';
 
@@ -64,7 +64,7 @@ export function ContextualSidebar() {
         <NavigationPanel
           title={isCollapsed ? '' : t('nav.title')}
           footer={
-            <MenuList
+            <MenuListAdapter
               aria-label={toggleLabel}
               items={[
                 {
@@ -78,7 +78,7 @@ export function ContextualSidebar() {
             />
           }
         >
-          <MenuList
+          <MenuListAdapter
             aria-label={t('nav.title')}
             items={menuItems}
             selectedId={activeItem?.id}

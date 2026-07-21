@@ -53,12 +53,12 @@ accent` (default `outline` — light surface with a subtle ring, colors come
 
 ## IWA navigation adapters
 
-`MenuList` and `NavigationPanel` are thin adapters over the corresponding IWA
-components. `MenuList` deliberately exposes stable item IDs instead of IWA's
-positional selection contract:
+`MenuListAdapter` and `NavigationPanel` are thin adapters over the corresponding
+IWA components. `MenuListAdapter` deliberately exposes stable item IDs instead
+of IWA's positional selection contract:
 
 ```tsx
-<MenuList
+<MenuListAdapter
   items={[
     { id: 'dashboard', text: 'Dashboard' },
     { id: 'clients', text: 'Clients' },

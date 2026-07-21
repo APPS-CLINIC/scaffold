@@ -37,7 +37,7 @@ Sections without known sidebar data retain their current section-root routes. Ad
 - **Utility navigation**: Existing recent-items, quick-search, profile, settings, and logout controls remain in the IWA top bar and outside the content hierarchy.
 - **Desktop navigation**: The sidebar is expanded by default and can collapse to an icon rail. There is no mobile navigation variant.
 
-The primary and secondary selections are derived from the pathname. IWA's numeric `selectedIndex` is an adapter detail and is never treated as application state.
+The primary and secondary selections are derived from the pathname. IWA's numeric `selectedIndex` is isolated inside `MenuListAdapter` and is never treated as application state.
 
 ## Content Hierarchy
 

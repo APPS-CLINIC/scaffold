@@ -36,16 +36,16 @@ The URL remains the source of truth. Selecting a top-level section navigates to 
 
 ## Component Inventory
 
-| Component              | Status         | Notes                                                                                                            |
-| ---------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------- |
-| `TopBarCustom`         | Modify         | Continue using IWA `TopBar` and `TabMenu`, but derive tabs and destinations from the shared manifest.            |
-| IWA `MenuList` adapter | New            | Translate stable item IDs and paths into IWA's index-based selection API; do not recreate its visuals.           |
-| IWA navigation shell   | Verify / reuse | Prefer `NavigationPanel` plus IWA controls if it composes cleanly with `MenuList`.                               |
-| `ContextualSidebar`    | New            | Presentation-free orchestration of configuration, URL matching, permissions, collapse state, and IWA components. |
-| `RootLayout`           | Modify         | Host the collapsible desktop sidebar and apply the content surface token.                                        |
-| Navigation manifest    | New            | Typed, declarative section and item definitions consumed by all navigation surfaces.                             |
-| Route access boundary  | New            | Hide unauthorized items and send direct unauthorized navigation to the existing 403 route.                       |
-| Existing error pages   | Exists         | Reuse `/403` and `/404` outside the main application shell.                                                      |
+| Component                            | Status         | Notes                                                                                                            |
+| ------------------------------------ | -------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `TopBarCustom`                       | Modify         | Continue using IWA `TopBar` and `TabMenu`, but derive tabs and destinations from the shared manifest.            |
+| `MenuListAdapter` for IWA `MenuList` | New            | Translate stable item IDs and paths into IWA's index-based selection API; do not recreate its visuals.           |
+| IWA navigation shell                 | Verify / reuse | Prefer `NavigationPanel` plus IWA controls if it composes cleanly with `MenuList`.                               |
+| `ContextualSidebar`                  | New            | Presentation-free orchestration of configuration, URL matching, permissions, collapse state, and IWA components. |
+| `RootLayout`                         | Modify         | Host the collapsible desktop sidebar and apply the content surface token.                                        |
+| Navigation manifest                  | New            | Typed, declarative section and item definitions consumed by all navigation surfaces.                             |
+| Route access boundary                | New            | Hide unauthorized items and send direct unauthorized navigation to the existing 403 route.                       |
+| Existing error pages                 | Exists         | Reuse `/403` and `/404` outside the main application shell.                                                      |
 
 ## Key Interactions
 

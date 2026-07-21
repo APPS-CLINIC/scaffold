@@ -1,7 +1,11 @@
 export { Button, type ButtonProps } from './Button';
 export { TextInput, type TextInputProps } from './TextInput';
 export { Select, type SelectProps } from './Select';
-export { MenuList, type MenuListItem, type MenuListProps } from './MenuList';
+export {
+  MenuListAdapter,
+  type MenuListAdapterItem,
+  type MenuListAdapterProps,
+} from './MenuListAdapter';
 export { NavigationPanel, type NavigationPanelProps } from './NavigationPanel';
 export {
   NavigationIcon,

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it, vi } from 'vitest';
-import { MenuList } from './MenuList';
+import { MenuListAdapter } from './MenuListAdapter';
 
 interface IwaItem {
   id: string;
@@ -34,7 +34,7 @@ vi.mock('iwa-react-components', () => ({
   ),
 }));
 
-describe('MenuList', () => {
+describe('MenuListAdapter', () => {
   it('adapts stable IDs to IWA selected indexes and returns the selected item', async () => {
     const user = userEvent.setup();
     const onItemSelect = vi.fn();
@@ -43,7 +43,7 @@ describe('MenuList', () => {
       { id: 'clients', text: 'Clients' },
     ];
 
-    render(<MenuList items={items} selectedId="clients" onItemSelect={onItemSelect} />);
+    render(<MenuListAdapter items={items} selectedId="clients" onItemSelect={onItemSelect} />);
 
     expect(screen.getByRole('button', { name: 'Clients' })).toHaveAttribute('aria-current', 'page');
     await user.click(screen.getByRole('button', { name: 'Dashboard' }));
@@ -51,7 +51,7 @@ describe('MenuList', () => {
   });
 
   it('merges a caller class name onto the adapter root', () => {
-    render(<MenuList items={[]} className="caller-class" aria-label="Example menu" />);
+    render(<MenuListAdapter items={[]} className="caller-class" aria-label="Example menu" />);
     expect(screen.getByLabelText('Example menu')).toHaveClass('caller-class');
   });
 });
