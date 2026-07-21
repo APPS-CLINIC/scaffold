@@ -97,6 +97,7 @@ export function ContextualSidebar() {
           }
         >
           <MenuListAdapter
+            key={`${section.key}:${isCollapsed ? 'icons' : 'labels'}`}
             aria-label={t('nav.title')}
             items={menuItems}
             selectedId={activeItem?.id}

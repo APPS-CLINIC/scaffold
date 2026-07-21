@@ -37,6 +37,11 @@ The sidebar composes IWA `NavigationPanel`, IWA `MenuList`, and icons from the
 IWA icon package. Local components are limited to routing, stable-ID adaptation,
 desktop layout, and shared icon presentation.
 
+The contextual `MenuList` is keyed by section and presentation mode. This
+remounts the vendor list when a top-menu click replaces its complete item model
+or when collapse mode replaces labels with an icon-only model. Collapse state
+itself remains owned by the sidebar and is not reset by that remount.
+
 The sidebar is desktop-only and can collapse to an icon rail. Its preference is
 stored in local storage because it is a UI preference, not shareable view state.
 The collapse action is an IWA `MenuList` control positioned at the start of the

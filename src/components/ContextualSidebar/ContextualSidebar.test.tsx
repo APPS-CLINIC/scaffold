@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import { ContextualSidebar } from './ContextualSidebar';
@@ -69,6 +69,15 @@ function LocationProbe() {
   return <output aria-label="Current path">{useLocation().pathname}</output>;
 }
 
+function SectionSwitcher() {
+  const navigate = useNavigate();
+  return (
+    <button type="button" onClick={() => navigate('/clients/all')}>
+      Open clients
+    </button>
+  );
+}
+
 describe('ContextualSidebar', () => {
   beforeEach(() => window.localStorage.clear());
 
@@ -88,6 +97,28 @@ describe('ContextualSidebar', () => {
     );
     await user.click(screen.getByRole('button', { name: 'Klienci w portfelu' }));
     expect(screen.getByLabelText('Current path')).toHaveTextContent('/portfolio/clients');
+  });
+
+  it('loads the contextual menu again when the top-level section URL changes', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(
+      <>
+        <ContextualSidebar />
+        <SectionSwitcher />
+      </>,
+      { initialEntries: ['/portfolio/dashboard'] },
+    );
+
+    expect(screen.getByRole('button', { name: 'Dashboard' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+    await user.click(screen.getByRole('button', { name: 'Open clients' }));
+    expect(screen.queryByRole('button', { name: 'Dashboard' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Wszyscy klienci' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
   });
 
   it('persists the desktop collapse preference', async () => {
