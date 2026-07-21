@@ -52,5 +52,4 @@ The full, indexed list lives in [`adr/README.md`](adr/README.md).
 ## Pull request delivery notes
 
 - [PR #4 — Configurable contextual sidebar navigation](pull-requests/0004-contextual-sidebar-navigation.md)
-  — delivered scope, rationale, recommended squash commit, extension
-  instructions, and validation.
+  — ready-to-use squash commit message.
