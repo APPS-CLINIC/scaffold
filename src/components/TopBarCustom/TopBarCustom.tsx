@@ -13,8 +13,8 @@ import { Logo } from '@/components/Logo';
  * Top bar with the primary tab navigation (IWA TopBar + TabMenu).
  *
  * The active tab is not local state: clicking a tab only navigates, the URL
- * is the source of truth. `UrlStateSync` mirrors the pathname into
- * `urlState.activeTab`, and `selectActiveTabIndex` feeds it back here — so
+ * is the source of truth. `UrlStateSync` mirrors the complete route identity,
+ * and `selectActiveTabIndex` derives the active tab from it — so
  * deep links, back/forward and programmatic navigation all highlight the
  * right tab.
  */

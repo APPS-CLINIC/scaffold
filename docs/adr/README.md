@@ -31,16 +31,17 @@ keep ADRs at all; use it as the template for new records.
 
 ### Step 02 — Application architecture
 
-| ADR                                                           | Title                                             | Status                 |
-| ------------------------------------------------------------- | ------------------------------------------------- | ---------------------- |
-| [0006](0006-url-as-single-source-of-truth.md)                 | URL as the single source of truth for view state  | Accepted               |
-| [0007](0007-redux-toolkit-and-rtk-query.md)                   | Redux Toolkit + RTK Query for state and caching   | Accepted               |
-| [0008](0008-zod-total-parsing-of-search-params.md)            | Total parsing of search params with Zod           | Accepted               |
-| [0009](0009-reselect-and-listener-middleware.md)              | Reselect selectors + listener middleware          | Accepted               |
-| [0012](0012-routing-react-router-v7.md)                       | Routing with React Router v7                      | Superseded by ADR-0020 |
-| [0020](0020-routing-react-router-v6-for-iwa-compatibility.md) | React Router v6 for IWA compatibility             | Accepted               |
-| [0022](0022-typed-navigation-manifest.md)                     | Typed frontend manifest for contextual navigation | Superseded by ADR-0023 |
-| [0023](0023-configurable-navigation-icon-components.md)       | Configurable and persistent contextual navigation | Accepted               |
+| ADR                                                           | Title                                               | Status                 |
+| ------------------------------------------------------------- | --------------------------------------------------- | ---------------------- |
+| [0006](0006-url-as-single-source-of-truth.md)                 | URL as the single source of truth for view state    | Accepted               |
+| [0007](0007-redux-toolkit-and-rtk-query.md)                   | Redux Toolkit + RTK Query for state and caching     | Accepted               |
+| [0008](0008-zod-total-parsing-of-search-params.md)            | Total parsing of search params with Zod             | Accepted               |
+| [0009](0009-reselect-and-listener-middleware.md)              | Reselect selectors + listener middleware            | Accepted               |
+| [0012](0012-routing-react-router-v7.md)                       | Routing with React Router v7                        | Superseded by ADR-0020 |
+| [0020](0020-routing-react-router-v6-for-iwa-compatibility.md) | React Router v6 for IWA compatibility               | Accepted               |
+| [0022](0022-typed-navigation-manifest.md)                     | Typed frontend manifest for contextual navigation   | Superseded by ADR-0023 |
+| [0023](0023-configurable-navigation-icon-components.md)       | Configurable and persistent contextual navigation   | Accepted               |
+| [0024](0024-canonical-route-transitions-in-redux.md)          | Canonical route transitions in the Redux URL mirror | Accepted               |
 
 ### Step 03 — Scope alignment (discovery)
 

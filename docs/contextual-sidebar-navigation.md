@@ -28,6 +28,12 @@ The pathname remains the source of truth. A direct link, reload, or browser
 back/forward action reconstructs both the active top tab and selected sidebar
 item. IWA's positional `selectedIndex` is not stored in React or Redux state.
 
+`UrlStateSync` also mirrors every distinct content pathname to Redux through a
+single `urlState/routeChanged` action. Its payload contains the exact pathname,
+active section key, and contextual item ID. Consequently, deeper routes under
+the same sidebar item remain independently observable by listener middleware
+without dispatching from navigation components.
+
 `MenuListAdapter` translates between the application's stable item IDs and the
 numeric index expected by IWA `MenuList`. It does not recreate the visual menu.
 
@@ -136,6 +142,10 @@ To add a new destination:
   — section and item declarations.
 - [`src/routes/navigation/navigation.ts`](../src/routes/navigation/navigation.ts)
   — path, matching, default, and permission helpers.
+- [`src/features/urlState/urlState.route.ts`](../src/features/urlState/urlState.route.ts)
+  — serializable route snapshot parsing.
+- [`src/features/urlState/UrlStateSync.tsx`](../src/features/urlState/UrlStateSync.tsx)
+  — the single URL-to-Redux writer.
 - [`src/components/ContextualSidebar/ContextualSidebar.tsx`](../src/components/ContextualSidebar/ContextualSidebar.tsx)
   — URL and desktop collapse orchestration.
 - [`src/ui/MenuListAdapter.tsx`](../src/ui/MenuListAdapter.tsx) — stable-ID
@@ -151,6 +161,7 @@ To add a new destination:
 - [ADR 0013 — IWA Components behind the UI seam](adr/0013-iwa-components-primereact.md)
 - [ADR 0020 — React Router v6 for IWA compatibility](adr/0020-routing-react-router-v6-for-iwa-compatibility.md)
 - [ADR 0023 — Configurable and persistent contextual navigation](adr/0023-configurable-navigation-icon-components.md)
+- [ADR 0024 — Canonical route transitions in the Redux URL mirror](adr/0024-canonical-route-transitions-in-redux.md)
 - [Design brief](../.design/contextual-sidebar-navigation/DESIGN_BRIEF.md)
 - [Information architecture](../.design/contextual-sidebar-navigation/INFORMATION_ARCHITECTURE.md)
 

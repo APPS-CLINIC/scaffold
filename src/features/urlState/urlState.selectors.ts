@@ -6,8 +6,15 @@ import { defaultListQuery } from './urlState.schema';
 /** Base selector: the validated list query mirrored from the URL. */
 export const selectListQuery = (state: RootState) => state.urlState.list;
 
-/** Active top-bar tab, mirrored from the pathname. */
-export const selectActiveTab = (state: RootState) => state.urlState.activeTab;
+/** Complete serializable route identity mirrored from the pathname. */
+export const selectRoute = (state: RootState) => state.urlState.route;
+
+/** Active top-bar tab derived from the canonical route mirror. */
+export const selectActiveTab = createSelector([selectRoute], (route) => route.sectionKey);
+
+export const selectActiveNavigationItemId = createSelector([selectRoute], (route) => route.itemId);
+
+export const selectPathname = createSelector([selectRoute], (route) => route.pathname);
 
 /** The active tab as a TabMenu `activeIndex` (position within `navTabs`). */
 export const selectActiveTabIndex = createSelector([selectActiveTab], (activeTab) =>

@@ -18,10 +18,10 @@ decision.
  └───────────────────┘                        │ search params change
                                               ▼
                                    ┌─────────────────────┐
-                                   │   <UrlStateSync/>    │  (URL → Redux, with a guard)
+                                   │   <UrlStateSync/>    │  (URL → Redux, with guards)
                                    └──────────┬──────────┘
                                               ▼
-                                   urlState slice (mirror)
+                                   urlState slice (route + query mirror)
                                               │
                   ┌───────────────────────────┼───────────────────────────┐
                   ▼                            ▼                           ▼
@@ -31,9 +31,11 @@ decision.
         useGetXQuery(query)  →  RTK Query cache  →  render
 ```
 
-**The URL is the single source of truth** for queryable view state; Redux holds
-a one-way **mirror** of that state. See
-[ADR 0006](../adr/0006-url-as-single-source-of-truth.md).
+**The URL is the single source of truth** for route and queryable view state;
+Redux holds a one-way **mirror** of that state. Every distinct content pathname
+emits `routeChanged`, while validated query changes use their feature-specific
+actions. See [ADR 0006](../adr/0006-url-as-single-source-of-truth.md) and
+[ADR 0024](../adr/0024-canonical-route-transitions-in-redux.md).
 
 ## Layer by layer
 
@@ -50,7 +52,8 @@ components.
 Zod parses the search params **totally** (every field `.catch()` with a
 default), so a bad URL never breaks the view; defaults are stripped at
 serialization for short, shareable links. `UrlStateSync` mirrors URL→store
-one-way; `useListQueryState` is the write side.
+one-way: `routeChanged` carries the full pathname plus derived section/item IDs,
+while `listQueryChanged` carries validated list parameters.
 → [ADR 0008](../adr/0008-zod-total-parsing-of-search-params.md),
 [ADR 0006](../adr/0006-url-as-single-source-of-truth.md)
 
@@ -83,14 +86,16 @@ the `RootLayout` mount point for `UrlStateSync`. A typed frontend navigation
 manifest supplies the top tabs, contextual IWA menu, default redirects, and
 pathname matching without storing positional menu indexes.
 → [ADR 0020](../adr/0020-routing-react-router-v6-for-iwa-compatibility.md),
-[ADR 0023](../adr/0023-configurable-navigation-icon-components.md)
+[ADR 0023](../adr/0023-configurable-navigation-icon-components.md),
+[ADR 0024](../adr/0024-canonical-route-transitions-in-redux.md)
 
 ## How a single interaction flows
 
 1. The user types into the search field → `setQuery({ q })` (debounced,
    `replace`), which resets `page` to 1 and calls `setSearchParams`.
-2. The URL changes → `UrlStateSync` parses it and, if different (a shallow
-   comparison guard), dispatches to the `urlState` mirror.
+2. The URL changes → `UrlStateSync` parses it and dispatches `routeChanged` for
+   a new pathname and/or the relevant typed query action for changed search
+   parameters.
 3. `selectListQuery` recomputes; the feature's query hook fetches the data
    (or serves it from cache); an optional listener may prefetch the next page.
 4. The component renders the results — for large lists, optionally only the

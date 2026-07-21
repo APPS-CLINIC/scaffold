@@ -74,7 +74,7 @@ The primary and secondary selections are derived from the pathname. IWA's numeri
 1. The user selects a sidebar item.
 2. The adapter resolves the IWA index to a stable configured item.
 3. React Router navigates to that item's path.
-4. URL synchronization updates the active section while the item index is recomputed from the pathname.
+4. URL synchronization dispatches one `routeChanged` action with the full pathname and semantic section/item IDs while the IWA index is recomputed from the pathname.
 
 ### Open a Deep Link
 
@@ -132,4 +132,5 @@ New flat items can be added without changing the IWA adapter. If a future requir
 - Dynamic segments: future entity identifiers may follow the view path, for example `/clients/all/:clientId`; matching can use an explicit prefix rule.
 - Query parameters: remain reserved for shareable page view state such as search, sorting, filters, and pagination.
 - Active navigation: derived from pathname; never encoded in query parameters or persisted as an IWA index.
+- Redux observability: every distinct content pathname emits `routeChanged`; query-only state retains its typed feature actions.
 - Unknown paths: render 404. Known but unauthorized paths: render 403.

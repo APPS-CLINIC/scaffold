@@ -8,8 +8,8 @@ import {
 /**
  * Single source of truth for the top-bar tabs: order (= TabMenu index),
  * route path and i18n label. Both the router and the TopBar render from this
- * list, and the URL mirror derives `activeTab` from it — adding a tab here is
- * the only step needed to wire a new section.
+ * list, and the URL route mirror derives its section from it — adding a tab
+ * here is the only step needed to wire a new section.
  */
 export const navTabs = navigationSections;
 
