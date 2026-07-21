@@ -17,6 +17,7 @@ export const pl = {
   'nav.home': 'Start',
   'nav.sidebar.collapse': 'Zwiń nawigację',
   'nav.sidebar.expand': 'Rozwiń nawigację',
+  'nav.sidebar.overview': 'Przegląd',
   'nav.tab.start': 'Start',
   'nav.tab.portfolio': 'Portfel',
   'nav.tab.clients': 'Klienci',

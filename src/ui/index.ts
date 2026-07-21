@@ -9,7 +9,7 @@ export {
 export { NavigationPanel, type NavigationPanelProps } from './NavigationPanel';
 export {
   NavigationIcon,
-  type NavigationIconName,
+  type NavigationIconComponent,
   type NavigationIconProps,
 } from './NavigationIcon';
 export {

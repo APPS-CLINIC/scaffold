@@ -9,6 +9,7 @@ import { ContextualSidebar } from './ContextualSidebar';
 interface MockMenuItem {
   id: string;
   text: string;
+  icon?: ReactNode;
 }
 
 interface MockMenuListAdapterProps {
@@ -20,15 +21,24 @@ interface MockMenuListAdapterProps {
 
 interface MockNavigationPanelProps {
   title: string;
+  headerAction?: ReactNode;
   footer?: ReactNode;
   children: ReactNode;
 }
 
+interface MockNavigationIconProps {
+  role?: string;
+  'aria-label'?: string;
+}
+
 vi.mock('@/ui', () => ({
   cx: (...values: Array<string | false | undefined>) => values.filter(Boolean).join(' '),
-  NavigationIcon: () => <span aria-hidden="true" />,
-  NavigationPanel: ({ title, footer, children }: MockNavigationPanelProps) => (
+  NavigationIcon: ({ role, 'aria-label': ariaLabel }: MockNavigationIconProps) => (
+    <span role={role} aria-label={ariaLabel} aria-hidden={ariaLabel ? undefined : 'true'} />
+  ),
+  NavigationPanel: ({ title, headerAction, footer, children }: MockNavigationPanelProps) => (
     <div data-title={title}>
+      {headerAction}
       {children}
       {footer}
     </div>
@@ -47,6 +57,7 @@ vi.mock('@/ui', () => ({
           aria-current={item.id === selectedId ? 'page' : undefined}
           onClick={() => onItemSelect?.(item)}
         >
+          {item.icon}
           {item.text}
         </button>
       ))}
@@ -87,11 +98,17 @@ describe('ContextualSidebar', () => {
     expect(navigation).toHaveAttribute('data-collapsed', 'false');
     await user.click(screen.getByRole('button', { name: 'Zwiń nawigację' }));
     expect(navigation).toHaveAttribute('data-collapsed', 'true');
+    expect(screen.queryByText('Wszyscy klienci')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Wszyscy klienci' })).toBeInTheDocument();
     expect(window.localStorage.getItem('scaffold.navigation.sidebar-collapsed')).toBe('true');
   });
 
-  it('omits the sidebar for a section without configured items', () => {
+  it('renders the default sidebar item for a section without dedicated items', () => {
     renderWithProviders(<ContextualSidebar />, { initialEntries: ['/groups'] });
-    expect(screen.queryByRole('complementary')).not.toBeInTheDocument();
+    expect(screen.getByRole('complementary', { name: 'Nawigacja' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Przegląd' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
   });
 });

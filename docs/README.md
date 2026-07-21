@@ -42,3 +42,9 @@ docs/
 ## Architecture Decision Records
 
 The full, indexed list lives in [`adr/README.md`](adr/README.md).
+
+## Feature implementation notes
+
+- [Contextual sidebar navigation](contextual-sidebar-navigation.md) — typed
+  configuration, URL behavior, IWA composition, icon selection, and extension
+  guide.

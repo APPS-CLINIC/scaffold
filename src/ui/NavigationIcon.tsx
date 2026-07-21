@@ -1,28 +1,21 @@
-import { forwardRef, type HTMLAttributes } from 'react';
-import { Hide, Settings } from 'ing-react-icons';
+import { forwardRef, type ComponentType, type HTMLAttributes } from 'react';
 import { cx } from './cx';
 
-export type NavigationIconName = 'default' | 'collapse' | 'expand';
+export type NavigationIconComponent = ComponentType<{ className?: string }>;
 
 export interface NavigationIconProps extends HTMLAttributes<HTMLSpanElement> {
-  name: NavigationIconName;
+  icon: NavigationIconComponent;
 }
 
-/**
- * Central IWA icon registry for navigation configuration. Replace mappings
- * here as the private icon catalog becomes available; menu declarations stay
- * unchanged.
- */
+/** Applies consistent navigation sizing and color to any configured IWA icon. */
 export const NavigationIcon = forwardRef<HTMLSpanElement, NavigationIconProps>(
-  function NavigationIcon({ name, className, ...rest }, ref) {
-    const Icon = name === 'default' ? Settings : Hide;
+  function NavigationIcon({ icon: Icon, className, ...rest }, ref) {
     return (
       <span
         ref={ref}
         aria-hidden="true"
         className={cx(
           'inline-flex h-6 w-6 shrink-0 items-center justify-center text-[var(--navigation-accent)]',
-          name === 'expand' && 'rotate-180',
           className,
         )}
         {...rest}

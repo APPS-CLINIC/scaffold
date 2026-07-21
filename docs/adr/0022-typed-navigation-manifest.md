@@ -1,6 +1,6 @@
 # ADR 0022 — Typed frontend manifest for contextual navigation
 
-- **Status:** Accepted
+- **Status:** Superseded by ADR-0023
 - **Date:** 2026-07-20
 
 ## Context

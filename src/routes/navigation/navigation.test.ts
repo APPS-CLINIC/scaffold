@@ -2,12 +2,15 @@ import { describe, expect, it } from 'vitest';
 import {
   getActiveNavigationItem,
   getActiveNavigationSection,
+  getContextualNavigationItems,
   getNavigationItemPath,
   getNavigationSectionDefaultPath,
   getVisibleNavigationItems,
   navigationSections,
   type NavigationSection,
 } from './index';
+
+const TestIcon = () => null;
 
 describe('navigation configuration', () => {
   it('keeps section keys and every generated route unique', () => {
@@ -36,6 +39,24 @@ describe('navigation configuration', () => {
     expect(clients && getNavigationSectionDefaultPath(clients)).toBe('/clients/all');
   });
 
+  it('provides a root-link fallback for sections without dedicated items', () => {
+    const groups = navigationSections.find((section) => section.key === 'groups');
+
+    expect(groups && getContextualNavigationItems(groups).map((item) => item.id)).toEqual([
+      'overview',
+    ]);
+    expect(groups && getNavigationItemPath(groups, getContextualNavigationItems(groups)[0]!)).toBe(
+      '/groups',
+    );
+    expect(groups && getActiveNavigationItem(groups, '/groups')?.id).toBe('overview');
+  });
+
+  it('keeps configured IWA icon components on contextual items', () => {
+    const portfolio = navigationSections.find((section) => section.key === 'portfolio');
+
+    expect(portfolio?.items.every((item) => item.icon)).toBe(true);
+  });
+
   it('matches section and item state from nested URLs', () => {
     const section = getActiveNavigationSection('/portfolio/clients/123');
 
@@ -52,11 +73,12 @@ describe('navigation configuration', () => {
       labelKey: 'nav.tab.clients',
       defaultItemId: 'public',
       items: [
-        { id: 'public', segment: 'public', labelKey: 'nav.clients.all' },
+        { id: 'public', segment: 'public', labelKey: 'nav.clients.all', icon: TestIcon },
         {
           id: 'restricted',
           segment: 'restricted',
           labelKey: 'nav.clients.advisors',
+          icon: TestIcon,
           requiredPermissions: ['clients:advisors'],
         },
       ],

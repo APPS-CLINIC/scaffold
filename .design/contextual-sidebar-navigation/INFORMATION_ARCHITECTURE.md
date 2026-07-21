@@ -28,14 +28,14 @@
 - Forbidden `/403`
 - Not found `/404`
 
-Sections without known sidebar data retain their current section-root routes. Adding contextual items later must not require changes to the sidebar component.
+Sections without known sidebar data retain their current section-root routes and use a shared Overview fallback item. Adding contextual items later must not require changes to the sidebar component.
 
 ## Navigation Model
 
 - **Primary navigation**: The existing IWA top tab menu. Its order, labels, root paths, and default destinations come from one typed manifest.
-- **Secondary navigation**: A flat IWA `MenuList` scoped to the active primary section. Portfolio and Clients have initial item sets; sections without items omit the sidebar.
+- **Secondary navigation**: A flat IWA `MenuList` scoped to the active primary section. Portfolio and Clients have initial item sets; sections without dedicated items use the shared Overview fallback.
 - **Utility navigation**: Existing recent-items, quick-search, profile, settings, and logout controls remain in the IWA top bar and outside the content hierarchy.
-- **Desktop navigation**: The sidebar is expanded by default and can collapse to an icon rail. There is no mobile navigation variant.
+- **Desktop navigation**: The sidebar is expanded by default and can collapse to an icon-only rail. The collapse control is located in the panel header before the title. There is no mobile navigation variant.
 
 The primary and secondary selections are derived from the pathname. IWA's numeric `selectedIndex` is isolated inside `MenuListAdapter` and is never treated as application state.
 
@@ -91,7 +91,7 @@ The primary and secondary selections are derived from the pathname. IWA's numeri
 ### Configure a New Sidebar Item
 
 1. A developer adds one item declaration under the target section.
-2. The declaration supplies a stable ID, relative path segment, i18n key, icon key, page reference, match rule, and optional permissions.
+2. The declaration supplies a stable ID, relative path segment, i18n key, IWA icon component, page reference, match rule, and optional permissions.
 3. The helper derives the full path and validates uniqueness.
 4. The router and sidebar consume the item without duplicated path or selection wiring.
 
@@ -103,20 +103,20 @@ The primary and secondary selections are derived from the pathname. IWA's numeri
 | Contextual navigation  | Navigation             | Localized through i18next.                                         |
 | Stable identifier      | `sectionId` / `itemId` | English kebab-case or typed string literals; never array indexes.  |
 | Route fragment         | `segment`              | Relative to the section root; the helper constructs the full path. |
-| Visual icon reference  | `iconKey`              | Serializable key mapped to an IWA icon in one registry.            |
+| Visual icon reference  | `icon`                 | Any configured IWA icon component that accepts `className`.        |
 | Default destination    | `defaultItemId`        | Must reference an item within the same section.                    |
 | Permission requirement | `requiredPermissions`  | Optional typed list evaluated by the access seam.                  |
 
 ## Component Reuse Map
 
-| Component                                 | Used on                         | Behavior differences                                                               |
-| ----------------------------------------- | ------------------------------- | ---------------------------------------------------------------------------------- |
-| IWA `TopBar` + `TabMenu`                  | All application routes          | Active index and destination come from the shared manifest.                        |
-| IWA `NavigationPanel`                     | Routes with contextual items    | Used as the shell only if the installed version supports the required composition. |
-| IWA `MenuList`                            | Portfolio and Clients initially | Items and selected index change with the active section.                           |
-| IWA collapse control, icons, and tooltips | Contextual sidebar              | Expanded mode shows labels; collapsed mode exposes icon affordances.               |
-| `RootLayout`                              | All non-error routes            | Sidebar is omitted for sections without configured items.                          |
-| `ErrorLayout`                             | `/403`, `/404`, catch-all       | No top or sidebar navigation.                                                      |
+| Component                                 | Used on                      | Behavior differences                                                                      |
+| ----------------------------------------- | ---------------------------- | ----------------------------------------------------------------------------------------- |
+| IWA `TopBar` + `TabMenu`                  | All application routes       | Active index and destination come from the shared manifest.                               |
+| IWA `NavigationPanel`                     | All application-shell routes | Provides the titled sidebar shell.                                                        |
+| IWA `MenuList`                            | All application-shell routes | Items and selected index change with the active section; empty sections use the fallback. |
+| IWA collapse control, icons, and tooltips | Contextual sidebar           | Header control toggles labels; collapsed mode exposes only icon affordances.              |
+| `RootLayout`                              | All non-error routes         | Always renders the sidebar; empty sections receive the shared fallback item.              |
+| `ErrorLayout`                             | `/403`, `/404`, catch-all    | No top or sidebar navigation.                                                             |
 
 ## Content Growth Plan
 
@@ -128,6 +128,7 @@ New flat items can be added without changing the IWA adapter. If a future requir
 
 - Pattern: `/<section>/<view>` for contextual views.
 - Section roots: redirect to the configured default item when items exist.
+- Empty sections: keep their root route and expose it through the shared Overview sidebar item.
 - Dynamic segments: future entity identifiers may follow the view path, for example `/clients/all/:clientId`; matching can use an explicit prefix rule.
 - Query parameters: remain reserved for shareable page view state such as search, sorting, filters, and pagination.
 - Active navigation: derived from pathname; never encoded in query parameters or persisted as an IWA index.

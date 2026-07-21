@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
+import { Hide } from 'ing-react-icons';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
   getActiveNavigationItem,
   getActiveNavigationSection,
+  getContextualNavigationItems,
   getNavigationItemPath,
-  getVisibleNavigationItems,
 } from '@/routes/navigation';
 import { MenuListAdapter, NavigationIcon, NavigationPanel, cx } from '@/ui';
 
@@ -40,16 +41,26 @@ export function ContextualSidebar() {
 
   if (!section) return null;
 
-  const visibleItems = getVisibleNavigationItems(section);
-  if (visibleItems.length === 0) return null;
+  const visibleItems = getContextualNavigationItems(section);
 
   const activeItem = getActiveNavigationItem(section, pathname);
   const menuItems = visibleItems.map((item) => ({
     id: item.id,
-    text: t(item.labelKey),
-    icon: <NavigationIcon name={item.iconKey ?? 'default'} />,
+    text: isCollapsed ? '' : t(item.labelKey),
+    icon: item.icon ? (
+      <NavigationIcon
+        icon={item.icon}
+        {...(isCollapsed
+          ? { role: 'img', 'aria-hidden': false, 'aria-label': t(item.labelKey) }
+          : {})}
+      />
+    ) : undefined,
   }));
   const toggleLabel = t(isCollapsed ? 'nav.sidebar.expand' : 'nav.sidebar.collapse');
+  const menuButtonClassName = cx(
+    'min-h-11 w-full !rounded-none text-left text-sm',
+    isCollapsed ? '!justify-center px-0' : '!justify-start px-5',
+  );
 
   return (
     <aside
@@ -60,20 +71,27 @@ export function ContextualSidebar() {
         isCollapsed ? 'w-16' : 'w-64',
       )}
     >
-      <div className="h-full w-64">
+      <div className={cx('h-full', isCollapsed ? 'w-16' : 'w-64')}>
         <NavigationPanel
           title={isCollapsed ? '' : t('nav.title')}
-          footer={
+          headerAction={
             <MenuListAdapter
               aria-label={toggleLabel}
               items={[
                 {
                   id: 'toggle-sidebar',
-                  text: toggleLabel,
-                  icon: <NavigationIcon name={isCollapsed ? 'expand' : 'collapse'} />,
+                  text: '',
+                  icon: (
+                    <NavigationIcon
+                      icon={Hide}
+                      role="img"
+                      aria-hidden={false}
+                      aria-label={toggleLabel}
+                    />
+                  ),
                 },
               ]}
-              buttonClassName="min-h-11 w-full !justify-start !rounded-none px-5 text-left text-sm"
+              buttonClassName="min-h-11 w-full !justify-center !rounded-none px-0 text-sm"
               onItemSelect={() => setIsCollapsed((current) => !current)}
             />
           }
@@ -82,7 +100,7 @@ export function ContextualSidebar() {
             aria-label={t('nav.title')}
             items={menuItems}
             selectedId={activeItem?.id}
-            buttonClassName="min-h-11 w-full !justify-start !rounded-none px-5 text-left text-sm"
+            buttonClassName={menuButtonClassName}
             onItemSelect={(item) => {
               const configuredItem = visibleItems.find((candidate) => candidate.id === item.id);
               if (configuredItem) navigate(getNavigationItemPath(section, configuredItem));

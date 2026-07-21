@@ -83,7 +83,7 @@ the `RootLayout` mount point for `UrlStateSync`. A typed frontend navigation
 manifest supplies the top tabs, contextual IWA menu, default redirects, and
 pathname matching without storing positional menu indexes.
 → [ADR 0020](../adr/0020-routing-react-router-v6-for-iwa-compatibility.md),
-[ADR 0022](../adr/0022-typed-navigation-manifest.md)
+[ADR 0023](../adr/0023-configurable-navigation-icon-components.md)
 
 ## How a single interaction flows
 

@@ -53,9 +53,9 @@ The URL remains the source of truth. Selecting a top-level section navigates to 
 2. The sidebar items change to the items declared for the active top section.
 3. Selecting an IWA `MenuList` item navigates to its configured path. The selected IWA index is computed from the pathname and is never persisted separately.
 4. Visiting a nested URL directly reconstructs the active top tab and sidebar item.
-5. The collapse control switches between the expanded sidebar and an icon rail. The control, icons, and tooltips are IWA components, and the preference is stored locally.
+5. The collapse control sits before the Navigation title in the panel header and switches between expanded labels and an icon-only rail. The control, icons, and tooltips are IWA components, and the preference is stored locally.
 6. Access filtering removes unauthorized items. Direct access to an unauthorized known route resolves to the existing forbidden experience.
-7. Sections without configured sidebar items continue to render their existing section page and omit the contextual sidebar until items are added.
+7. Sections without configured sidebar items continue to render their existing section page and show a shared Overview fallback that links to the section root.
 
 ## Responsive Behavior
 

@@ -1,7 +1,8 @@
 export {
+  defaultNavigationItem,
   navigationSections,
   type ConfiguredNavigationItem,
-  type NavigationIconKey,
+  type NavigationIconComponent,
   type NavigationItemConfig,
   type NavigationMatchMode,
   type NavigationSection,
@@ -11,6 +12,7 @@ export {
   defaultNavigationSectionKey,
   getActiveNavigationItem,
   getActiveNavigationSection,
+  getContextualNavigationItems,
   getNavigationItemPath,
   getNavigationSectionByKey,
   getNavigationSectionDefaultPath,

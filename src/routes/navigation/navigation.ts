@@ -1,4 +1,5 @@
 import {
+  defaultNavigationItem,
   navigationSections,
   type ConfiguredNavigationItem,
   type NavigationItemConfig,
@@ -12,6 +13,7 @@ export function getNavigationItemPath(
   section: Pick<NavigationSection, 'path'>,
   item: Pick<NavigationItemConfig, 'segment'>,
 ) {
+  if (!item.segment) return section.path;
   return `${section.path === '/' ? '' : section.path}/${item.segment}`;
 }
 
@@ -46,7 +48,9 @@ function matchesNavigationItem(
 }
 
 export function getActiveNavigationItem(section: NavigationSection, pathname: string) {
-  return section.items.find((item) => matchesNavigationItem(section, item, pathname));
+  return getContextualNavigationItems(section).find((item) =>
+    matchesNavigationItem(section, item, pathname),
+  );
 }
 
 export function getVisibleNavigationItems(
@@ -57,4 +61,12 @@ export function getVisibleNavigationItems(
     if (!item.requiredPermissions?.length || !grantedPermissions) return true;
     return item.requiredPermissions.every((permission) => grantedPermissions.has(permission));
   });
+}
+
+export function getContextualNavigationItems(
+  section: NavigationSection,
+  grantedPermissions?: ReadonlySet<string>,
+) {
+  const visibleItems = getVisibleNavigationItems(section, grantedPermissions);
+  return visibleItems.length > 0 ? visibleItems : [defaultNavigationItem];
 }

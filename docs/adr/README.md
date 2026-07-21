@@ -39,7 +39,8 @@ keep ADRs at all; use it as the template for new records.
 | [0009](0009-reselect-and-listener-middleware.md)              | Reselect selectors + listener middleware          | Accepted               |
 | [0012](0012-routing-react-router-v7.md)                       | Routing with React Router v7                      | Superseded by ADR-0020 |
 | [0020](0020-routing-react-router-v6-for-iwa-compatibility.md) | React Router v6 for IWA compatibility             | Accepted               |
-| [0022](0022-typed-navigation-manifest.md)                     | Typed frontend manifest for contextual navigation | Accepted               |
+| [0022](0022-typed-navigation-manifest.md)                     | Typed frontend manifest for contextual navigation | Superseded by ADR-0023 |
+| [0023](0023-configurable-navigation-icon-components.md)       | Configurable and persistent contextual navigation | Accepted               |
 
 ### Step 03 — Scope alignment (discovery)
 

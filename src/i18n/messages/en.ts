@@ -15,6 +15,7 @@ export const en: Record<MessageKey, string> = {
   'nav.home': 'Home',
   'nav.sidebar.collapse': 'Collapse navigation',
   'nav.sidebar.expand': 'Expand navigation',
+  'nav.sidebar.overview': 'Overview',
   'nav.tab.start': 'Home',
   'nav.tab.portfolio': 'Portfolio',
   'nav.tab.clients': 'Clients',

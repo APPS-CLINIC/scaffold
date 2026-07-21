@@ -19,15 +19,20 @@ vi.mock('iwa-react-components', () => ({
 }));
 
 describe('NavigationPanel', () => {
-  it('passes the title, content and footer to IWA', () => {
+  it('passes content to IWA and composes a header action', () => {
     render(
-      <NavigationPanel title="Navigation" footer={<span>Collapse</span>}>
+      <NavigationPanel
+        title="Navigation"
+        headerAction={<button type="button">Collapse</button>}
+        footer={<span>Footer</span>}
+      >
         <span>Items</span>
       </NavigationPanel>,
     );
 
     expect(screen.getByRole('region', { name: 'Navigation' })).toBeInTheDocument();
     expect(screen.getByText('Items')).toBeInTheDocument();
-    expect(screen.getByText('Collapse')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Collapse' })).toBeInTheDocument();
+    expect(screen.getByText('Footer')).toBeInTheDocument();
   });
 });
