@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/app/hooks';
 import { selectListQuery } from '@/features/urlState/urlState.selectors';
@@ -12,7 +12,7 @@ import {
   type GenericDataTablePageChange,
   type GenericDataTableSortChange,
 } from '@/ui';
-import { customerTableConfig } from './customerTable.config';
+import { customerTableConfig } from './customerTable';
 import { useGetCustomersQuery } from './customers.api';
 import {
   selectCustomerQuery,
@@ -36,11 +36,20 @@ const customerSectors = [
 ] as const;
 
 export function CustomersPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const listQuery = useAppSelector(selectListQuery);
   const customerQuery = useAppSelector(selectCustomerQuery);
   const { setQuery } = useListQueryState();
-  const { data, isLoading, isFetching, isError, refetch } = useGetCustomersQuery(customerQuery);
+  const { data, isLoading, isFetching, isError, fulfilledTimeStamp, refetch } =
+    useGetCustomersQuery(customerQuery);
+  const [filtersExpanded, setFiltersExpanded] = useState(() =>
+    Boolean(customerQuery.status || customerQuery.sector),
+  );
+  const [expandedRowKeys, setExpandedRowKeys] = useState<readonly string[]>([]);
+
+  useEffect(() => {
+    if (customerQuery.status || customerQuery.sector) setFiltersExpanded(true);
+  }, [customerQuery.sector, customerQuery.status]);
 
   const labels = useMemo<GenericDataTableLabels<Customer>>(
     () => ({
@@ -58,6 +67,8 @@ export function CustomersPage() {
         lastPage: t('common.pagination.last'),
         page: (page) => t('common.pagination.page', { page }),
         rowsPerPage: t('common.pagination.rowsPerPage'),
+        currentPageReport: (first, last, total) =>
+          t('common.pagination.report', { first, last, total }),
       },
     }),
     [t],
@@ -85,100 +96,161 @@ export function CustomersPage() {
   const customerFiltersActive = Boolean(
     listQuery.q || customerQuery.status || customerQuery.sector,
   );
+  const activeFilterCount =
+    Number(Boolean(customerQuery.status)) + Number(Boolean(customerQuery.sector));
+  const visibleRowKeys = useMemo(
+    () => (data?.content ?? []).map((customer) => String(customer.id)),
+    [data?.content],
+  );
+  const allVisibleRowsExpanded =
+    visibleRowKeys.length > 0 && visibleRowKeys.every((key) => expandedRowKeys.includes(key));
+  const dataAsOf = useMemo(
+    () =>
+      new Intl.DateTimeFormat(i18n.resolvedLanguage ?? i18n.language, {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+      }).format(new Date(fulfilledTimeStamp ?? Date.now())),
+    [fulfilledTimeStamp, i18n.language, i18n.resolvedLanguage],
+  );
 
   return (
     <section
       aria-labelledby="customers-title"
-      className="w-full min-w-0 max-w-full space-y-5 overflow-hidden"
+      className="w-full min-w-0 max-w-full space-y-4 overflow-hidden"
     >
-      <header className="space-y-1">
+      <header>
         <h1
           id="customers-title"
           className="text-2xl font-semibold tracking-tight text-[var(--navigation-accent)]"
         >
           {t('customers.title')}
         </h1>
-        <p className="text-sm text-[var(--muted)]">{t('customers.description')}</p>
+        <p className="sr-only">{t('customers.description')}</p>
       </header>
 
-      <div className="rounded-lg border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5">
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(16rem,1fr)_13rem_15rem_auto] lg:items-end">
-          <label className="block min-w-0">
-            <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-              {t('common.search')}
+      <div className="border-y border-[var(--border)] bg-[var(--surface-muted)] px-3 py-3">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--muted)]">
+          <span>{t('customers.dataAsOf')}</span>
+          <strong className="font-semibold text-[var(--text)] underline underline-offset-2">
+            {dataAsOf}
+          </strong>
+          <Button
+            variant="ghost"
+            className="min-h-8 !border-0 px-1.5 py-0 text-xs text-[var(--link)] underline underline-offset-2"
+            onClick={() => void refetch()}
+          >
+            <span
+              aria-hidden="true"
+              className="pi pi-refresh mr-1 text-[var(--navigation-accent)]"
+            />
+            {t('customers.actions.refresh')}
+          </Button>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <Button
+            aria-controls="customer-advanced-filters"
+            aria-expanded={filtersExpanded}
+            className="min-h-8 px-3 py-1 text-xs font-semibold"
+            onClick={() => setFiltersExpanded((current) => !current)}
+          >
+            <span aria-hidden="true" className="pi pi-sliders-h mr-1.5" />
+            {t('customers.actions.customizeFilters')}
+          </Button>
+          {activeFilterCount > 0 ? (
+            <span className="text-xs text-[var(--muted)]">
+              {t('customers.filters.activeCount', { count: activeFilterCount })}
             </span>
+          ) : null}
+        </div>
+
+        <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <label className="block min-w-0 flex-1 sm:max-w-md">
+            <span className="sr-only">{t('common.search')}</span>
             <span className="relative block">
               <TextInput
                 value={listQuery.q}
-                className="min-h-11 w-full pr-11 text-base"
+                className="min-h-9 w-full pr-9 text-base sm:text-sm"
                 placeholder={t('customers.search.placeholder')}
                 onChange={(event) => setQuery({ q: event.currentTarget.value }, { replace: true })}
               />
               <span
                 aria-hidden="true"
-                className="pi pi-search pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[var(--muted)]"
+                className="pi pi-search pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-[var(--navigation-accent)]"
               />
             </span>
           </label>
 
-          <label className="block min-w-0">
-            <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-              {t('customers.filters.status')}
-            </span>
-            <Select
-              value={customerQuery.status}
-              className="min-h-11 w-full text-base"
-              onChange={(event) =>
-                updateFilters({ status: event.currentTarget.value as CustomerFilters['status'] })
-              }
-            >
-              <option value="">{t('customers.filters.allStatuses')}</option>
-              <option value="active">{t('customers.filters.active')}</option>
-              <option value="inactive">{t('customers.filters.inactive')}</option>
-            </Select>
-          </label>
-
-          <label className="block min-w-0">
-            <span className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">
-              {t('customers.filters.sector')}
-            </span>
-            <Select
-              value={customerQuery.sector}
-              className="min-h-11 w-full text-base"
-              onChange={(event) => updateFilters({ sector: event.currentTarget.value })}
-            >
-              <option value="">{t('customers.filters.allSectors')}</option>
-              {customerSectors.map((sector) => (
-                <option key={sector} value={sector}>
-                  {sector}
-                </option>
-              ))}
-            </Select>
-          </label>
-
-          <Button
-            variant="ghost"
-            className="min-h-11 whitespace-nowrap px-4"
-            disabled={!customerFiltersActive}
-            onClick={clearFilters}
-          >
-            {t('customers.actions.clearFilters')}
-          </Button>
+          <div className="flex flex-wrap items-center justify-between gap-2 sm:justify-end">
+            {customerFiltersActive ? (
+              <Button
+                variant="ghost"
+                className="min-h-11 !border-0 px-2 text-xs text-[var(--link)] underline underline-offset-2"
+                onClick={clearFilters}
+              >
+                {t('customers.actions.clearFilters')}
+              </Button>
+            ) : null}
+            <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap text-xs">
+              <span>{t('customers.actions.expandAll')}</span>
+              <input
+                type="checkbox"
+                className="peer sr-only"
+                checked={allVisibleRowsExpanded}
+                disabled={visibleRowKeys.length === 0}
+                onChange={() => setExpandedRowKeys(allVisibleRowsExpanded ? [] : visibleRowKeys)}
+              />
+              <span className="relative h-4 w-8 rounded-full bg-[var(--inactive)] transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-3 after:w-3 after:rounded-full after:bg-white after:transition-transform peer-checked:bg-[var(--accent)] peer-checked:after:translate-x-4 peer-disabled:opacity-50 motion-reduce:transition-none motion-reduce:after:transition-none" />
+            </label>
+          </div>
         </div>
 
-        <div className="mt-4 flex flex-col gap-3 border-t border-[var(--border-subtle)] pt-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm font-medium" role="status" aria-live="polite">
-            {t('common.results', { count: data?.page.totalElements ?? 0 })}
-          </p>
-          <Button
-            variant="ghost"
-            className="min-h-11 self-start px-4 sm:self-auto"
-            onClick={() => void refetch()}
+        {filtersExpanded ? (
+          <div
+            id="customer-advanced-filters"
+            className="mt-3 grid grid-cols-1 gap-3 border-t border-[var(--border)] pt-3 sm:grid-cols-2"
           >
-            <span aria-hidden="true" className="pi pi-refresh mr-2" />
-            {t('customers.actions.refresh')}
-          </Button>
-        </div>
+            <label className="block min-w-0">
+              <span className="mb-1 block text-xs font-semibold text-[var(--muted)]">
+                {t('customers.filters.status')}
+              </span>
+              <Select
+                value={customerQuery.status}
+                className="min-h-9 w-full text-base sm:text-sm"
+                onChange={(event) =>
+                  updateFilters({ status: event.currentTarget.value as CustomerFilters['status'] })
+                }
+              >
+                <option value="">{t('customers.filters.allStatuses')}</option>
+                <option value="active">{t('customers.filters.active')}</option>
+                <option value="inactive">{t('customers.filters.inactive')}</option>
+              </Select>
+            </label>
+
+            <label className="block min-w-0">
+              <span className="mb-1 block text-xs font-semibold text-[var(--muted)]">
+                {t('customers.filters.sector')}
+              </span>
+              <Select
+                value={customerQuery.sector}
+                className="min-h-9 w-full text-base sm:text-sm"
+                onChange={(event) => updateFilters({ sector: event.currentTarget.value })}
+              >
+                <option value="">{t('customers.filters.allSectors')}</option>
+                {customerSectors.map((sector) => (
+                  <option key={sector} value={sector}>
+                    {sector}
+                  </option>
+                ))}
+              </Select>
+            </label>
+          </div>
+        ) : null}
+
+        <span className="sr-only" role="status" aria-live="polite">
+          {t('common.results', { count: data?.page.totalElements ?? 0 })}
+        </span>
       </div>
 
       <GenericDataTable
@@ -193,6 +265,8 @@ export function CustomersPage() {
         loading={isLoading || isFetching}
         error={isError ? t('customers.table.error') : undefined}
         labels={labels}
+        expandedRowKeys={expandedRowKeys}
+        onExpandedRowKeysChange={setExpandedRowKeys}
         onPageChange={handlePageChange}
         onSortChange={handleSortChange}
         aria-busy={isLoading || isFetching}

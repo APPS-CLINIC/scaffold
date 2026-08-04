@@ -1,0 +1,1 @@
+export { customerTableConfig } from './config';

@@ -37,8 +37,15 @@ field. Header and detail label keys are typed against the i18n catalog and are
 translated inside the seam, so the config remains static when the language
 changes.
 
+Reusable, domain-neutral cell components live with the table seam, one public
+cell per file. Features compose `TextCell`, `UnderlinedTextCell`, `DateCell`,
+`ActiveInactiveStatusCell`, or `ValidityStatusCell`; a feature-specific
+renderer is only needed when those building blocks cannot express the domain
+value.
+
 ```tsx
-import type { GenericDataTableCellProps, GenericDataTableConfig } from '@/ui';
+import { ActiveInactiveStatusCell, UnderlinedTextCell } from '@/ui';
+import type { GenericDataTableConfig } from '@/ui';
 
 interface Customer {
   id: number;
@@ -48,27 +55,19 @@ interface Customer {
   secretToken: string;
 }
 
-function CustomerName({ value }: GenericDataTableCellProps<Customer, 'name'>) {
-  return <strong>{value}</strong>;
-}
-
-function CustomerStatus({ value }: GenericDataTableCellProps<Customer, 'status'>) {
-  return <span>{value}</span>;
-}
-
 export const customerTableConfig = {
   dataKey: 'id',
   columns: [
     {
       field: 'name',
       headerKey: 'customers.table.column.name',
-      component: CustomerName,
+      component: UnderlinedTextCell,
       sortable: true,
     },
     {
       field: 'status',
       headerKey: 'customers.table.column.status',
-      component: CustomerStatus,
+      component: ActiveInactiveStatusCell,
     },
   ],
   detailFields: [
@@ -84,7 +83,10 @@ export const customerTableConfig = {
 because it exists in backend JSON. Primitive and null values have a safe
 default renderer; configured object values require their own typed component.
 Expansion is local interaction state and behaves as a single-row accordion by
-default (`singleRowExpansion: false` opts into multiple expanded rows).
+default (`singleRowExpansion: false` opts into multiple expanded rows). A
+feature can control it with `expandedRowKeys` and
+`onExpandedRowKeysChange`, for example to provide an external "expand all"
+control without moving presentation state into Redux or the URL.
 
 ## `useCustomIcon`
 

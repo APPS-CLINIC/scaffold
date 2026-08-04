@@ -37,11 +37,13 @@ beforeEach(async () => {
 
 describe('CustomersPage', () => {
   it('renders the customer view from the typed Polish catalog', async () => {
+    const user = userEvent.setup();
     await i18n.changeLanguage('pl');
     renderPage();
 
     expect(screen.getByRole('heading', { name: 'Klienci oraz ich doradcy' })).toBeInTheDocument();
     expect(await screen.findByRole('columnheader', { name: /nazwa klienta/i })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Dostosuj filtry' }));
     expect(screen.getByRole('combobox', { name: 'Status klienta' })).toBeInTheDocument();
   });
 
@@ -66,6 +68,7 @@ describe('CustomersPage', () => {
     const user = userEvent.setup();
     renderPage('/clients/all?page=2');
 
+    await user.click(screen.getByRole('button', { name: 'Customize filters' }));
     await user.selectOptions(screen.getByRole('combobox', { name: 'Customer status' }), 'inactive');
 
     await waitFor(() => {
@@ -95,5 +98,17 @@ describe('CustomersPage', () => {
       const search = screen.getByRole('status', { name: 'Current customer URL' }).textContent ?? '';
       expect(new URLSearchParams(search).get('page')).toBe('2');
     });
+  });
+
+  it('expands every visible customer through the toolbar control', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
+
+    const expandAll = screen.getByRole('checkbox', { name: 'Expand all' });
+    await user.click(expandAll);
+
+    expect(expandAll).toBeChecked();
+    expect(screen.getAllByRole('region', { name: /collapse details for/i })).toHaveLength(10);
   });
 });

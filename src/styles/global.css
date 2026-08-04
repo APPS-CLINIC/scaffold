@@ -11,11 +11,15 @@
   --navigation-surface: #ffffff;
   --navigation-accent: #d94c0b;
   --muted: #687280;
-  --accent: #2563eb;
-  --focus: #2563eb;
+  --accent: #262d62;
+  --link: #506579;
+  --focus: #3153a4;
+  --success: #16875a;
+  --inactive: #77808b;
+  --warning: #d94c0b;
 
   /* Accent used by UI primitives (e.g. Toast). */
-  --color-accent-blue: #2563eb;
+  --color-accent-blue: #262d62;
 
   color-scheme: light;
   font-family:

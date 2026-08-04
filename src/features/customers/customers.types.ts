@@ -1,5 +1,7 @@
 export type CustomerStatus = 'active' | 'inactive';
 
+export type CustomerPriceConditionStatus = 'valid' | 'expiring' | 'expired';
+
 export type SortDirection = 'asc' | 'desc';
 
 /**
@@ -26,7 +28,7 @@ export interface Customer {
   dateReview: string | null;
   ratingDt: string | null;
   tsPriceConditionEndDt: string | null;
-  tsPriceConditionStatus: string | null;
+  tsPriceConditionStatus: CustomerPriceConditionStatus | null;
   customerSector: string | null;
   customerStatus: CustomerStatus;
 }

@@ -9,6 +9,11 @@ export {
 export { NavigationPanel, type NavigationPanelProps } from './NavigationPanel';
 export {
   GenericDataTable,
+  ActiveInactiveStatusCell,
+  DateCell,
+  TextCell,
+  UnderlinedTextCell,
+  ValidityStatusCell,
   type GenericDataTableCellComponent,
   type GenericDataTableCellProps,
   type GenericDataTableColumn,
@@ -16,6 +21,7 @@ export {
   type GenericDataTableDataKey,
   type GenericDataTableDetailField,
   type GenericDataTableField,
+  type GenericDataTableFieldWithValue,
   type GenericDataTableLabels,
   type GenericDataTablePageChange,
   type GenericDataTablePaginatorActionLabels,
