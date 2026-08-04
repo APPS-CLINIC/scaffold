@@ -3,7 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { PrimeReactProvider } from 'primereact/api';
 import { RouterProvider } from 'react-router-dom';
-import { store } from '@/app/store';
+import { makeStore } from '@/app/store';
+import { createUrlState } from '@/features/urlState/urlState.slice';
 import '@/i18n';
 import { ToastProvider } from '@/ui';
 import { router } from '@/routes/router';
@@ -16,6 +17,10 @@ import '@/styles/global.css';
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Root element #root not found');
+
+const store = makeStore({
+  urlState: createUrlState(window.location.pathname, window.location.search),
+});
 
 createRoot(container).render(
   <StrictMode>

@@ -1,4 +1,5 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom';
+import { CustomersPage } from '@/features/customers/CustomersPage';
 import { ErrorLayout } from './ErrorLayout';
 import { RootLayout } from './RootLayout';
 import { navTabs } from './navTabs';
@@ -30,7 +31,12 @@ export const router = createBrowserRouter([
           },
           ...section.items.map((item) => ({
             path: getNavigationItemPath(section, item),
-            element: <SectionPage titleKey={item.labelKey} />,
+            element:
+              section.key === 'clients' && item.id === 'all-clients' ? (
+                <CustomersPage />
+              ) : (
+                <SectionPage titleKey={item.labelKey} />
+              ),
           })),
         ]),
     ],

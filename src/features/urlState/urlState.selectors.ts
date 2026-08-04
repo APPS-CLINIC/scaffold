@@ -33,5 +33,5 @@ export const selectListSortDescriptor = createSelector([selectListQuery], (query
 
 export const selectListIsFiltered = createSelector(
   [selectListQuery],
-  (query) => query.q !== defaultListQuery.q,
+  (query) => query.q !== defaultListQuery.q || Object.keys(query.filters).length > 0,
 );

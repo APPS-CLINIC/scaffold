@@ -73,13 +73,36 @@ cache invalidation), **reads** query state from the URL via
 optionally **virtualizes** it (server-side pagination carried by
 `page`/`pageSize` in `listQuerySchema`).
 
-### 5. UI seam — `src/ui`
+For configuration-driven tables, the feature container turns the validated URL
+mirror into endpoint arguments, passes the RTK Query result to the table, and
+handles search, filter, sort, and pagination callbacks through the URL-state
+write API. Mock JSON and later backend responses share one data-only endpoint
+contract; neither carries rendering instructions.
+
+Feature filters use readable `filter.<key>` search parameters. The shared URL
+layer validates their generic syntax, and the owning feature validates its
+domain values with Zod before deriving RTK Query arguments.
+→ [ADR 0026](../adr/0026-extensible-feature-filters-in-list-urls.md)
+
+### 5. Generic data tables
+
+The generic table exported from `@/ui` is a presentational, vendor-neutral
+contract implemented with PrimeReact behind the seam. Static typed frontend
+configuration assigns a component to every primary cell and declares translated
+headings. Expandable row details render only an ordered allowlist of typed row
+fields with translated labels; response fields are never discovered or exposed
+implicitly. Search, filters, sorting, and pagination stay in the URL, server
+state stays in RTK Query, and transient expanded-row state stays local to the
+table.
+→ [ADR 0025](../adr/0025-configuration-driven-generic-data-tables.md)
+
+### 6. UI seam — `src/ui`
 
 Everything imports UI primitives from `@/ui`, a thin stub layer, so the
 organization's internal UI library can be plugged in within a single folder
 without touching feature code.
 
-### 6. Routing — `src/routes`
+### 7. Routing — `src/routes`
 
 React Router v6 exposes the URL/search params as observable state and provides
 the `RootLayout` mount point for `UrlStateSync`. A typed frontend navigation

@@ -8,6 +8,23 @@ export {
 } from './MenuListAdapter';
 export { NavigationPanel, type NavigationPanelProps } from './NavigationPanel';
 export {
+  GenericDataTable,
+  type GenericDataTableCellComponent,
+  type GenericDataTableCellProps,
+  type GenericDataTableColumn,
+  type GenericDataTableConfig,
+  type GenericDataTableDataKey,
+  type GenericDataTableDetailField,
+  type GenericDataTableField,
+  type GenericDataTableLabels,
+  type GenericDataTablePageChange,
+  type GenericDataTablePaginatorActionLabels,
+  type GenericDataTablePrimitive,
+  type GenericDataTableProps,
+  type GenericDataTableSortChange,
+  type GenericDataTableSortOrder,
+} from './GenericDataTable';
+export {
   NavigationIcon,
   type NavigationIconComponent,
   type NavigationIconProps,

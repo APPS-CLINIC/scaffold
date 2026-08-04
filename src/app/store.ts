@@ -35,8 +35,6 @@ export const makeStore = (preloadedState?: Partial<RootState>) => {
   return store;
 };
 
-export const store = makeStore();
-
 export type AppStore = ReturnType<typeof makeStore>;
 export type AppDispatch = AppStore['dispatch'];
 export type { RootState };

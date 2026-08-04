@@ -25,6 +25,67 @@ export type { ButtonProps } from '@my-org/ui';
 Keeping every UI import funneled through `@/ui` means the rest of the codebase
 never depends on a specific vendor — you can swap libraries in one folder.
 
+## `GenericDataTable`
+
+`GenericDataTable<T>` is the lazy, server-driven table seam. The caller owns
+fetching and URL state; the table receives rows plus controlled pagination and
+sort values, then reports user intent through `onPageChange` and
+`onSortChange`. Its public `page` value is always **1-based**.
+
+The static config keeps every primary cell component correlated with its row
+field. Header and detail label keys are typed against the i18n catalog and are
+translated inside the seam, so the config remains static when the language
+changes.
+
+```tsx
+import type { GenericDataTableCellProps, GenericDataTableConfig } from '@/ui';
+
+interface Customer {
+  id: number;
+  name: string;
+  status: 'active' | 'inactive';
+  internalNote: string | null;
+  secretToken: string;
+}
+
+function CustomerName({ value }: GenericDataTableCellProps<Customer, 'name'>) {
+  return <strong>{value}</strong>;
+}
+
+function CustomerStatus({ value }: GenericDataTableCellProps<Customer, 'status'>) {
+  return <span>{value}</span>;
+}
+
+export const customerTableConfig = {
+  dataKey: 'id',
+  columns: [
+    {
+      field: 'name',
+      headerKey: 'customers.table.column.name',
+      component: CustomerName,
+      sortable: true,
+    },
+    {
+      field: 'status',
+      headerKey: 'customers.table.column.status',
+      component: CustomerStatus,
+    },
+  ],
+  detailFields: [
+    {
+      field: 'internalNote',
+      labelKey: 'customers.table.detail.reviewExtension',
+    },
+  ],
+} as const satisfies GenericDataTableConfig<Customer>;
+```
+
+`detailFields` is an explicit allowlist: `secretToken` is never rendered just
+because it exists in backend JSON. Primitive and null values have a safe
+default renderer; configured object values require their own typed component.
+Expansion is local interaction state and behaves as a single-row accordion by
+default (`singleRowExpansion: false` opts into multiple expanded rows).
+
 ## `useCustomIcon`
 
 `useCustomIcon(icon, options?)` binds any icon element (inline SVG, font

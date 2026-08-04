@@ -1,6 +1,6 @@
 # ADR 0008 — Total parsing of search params with Zod
 
-- **Status:** Accepted
+- **Status:** Superseded by ADR-0026
 - **Date:** 2026-06-22
 
 ## Context

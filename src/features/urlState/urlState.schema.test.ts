@@ -12,9 +12,12 @@ describe('listQuery schema', () => {
   });
 
   it('coerces and validates raw params', () => {
-    const params = new URLSearchParams('q=abc&page=3&pageSize=100&sort=name&dir=asc');
+    const params = new URLSearchParams(
+      'q=abc&filter.status=active&filter.sector=Corporate&page=3&pageSize=100&sort=name&dir=asc',
+    );
     expect(parseListQuery(params)).toEqual({
       q: 'abc',
+      filters: { status: 'active', sector: 'Corporate' },
       sort: 'name',
       dir: 'asc',
       page: 3,
@@ -29,13 +32,41 @@ describe('listQuery schema', () => {
     expect(query.dir).toBe(defaultListQuery.dir); // invalid enum
   });
 
+  it('ignores malformed generic filter keys', () => {
+    const query = parseListQuery(
+      new URLSearchParams('filter.valid-key=value&filter.Invalid.key=hidden'),
+    );
+    expect(query.filters).toEqual({ 'valid-key': 'value' });
+  });
+
   it('omits defaults when serializing (short URLs)', () => {
     const query: ListQuery = { ...defaultListQuery, q: 'hello', page: 2 };
     expect(serializeListQuery(query)).toEqual({ q: 'hello', page: '2' });
   });
 
+  it('omits malformed filter entries when serializing', () => {
+    const query: ListQuery = {
+      ...defaultListQuery,
+      filters: {
+        'valid-key': 'visible',
+        'Invalid.key': 'hidden',
+        empty: '',
+        oversized: 'x'.repeat(201),
+      },
+    };
+
+    expect(serializeListQuery(query)).toEqual({ 'filter.valid-key': 'visible' });
+  });
+
   it('round-trips a non-default query', () => {
-    const query: ListQuery = { q: 'x', sort: 'name', dir: 'desc', page: 4, pageSize: 25 };
+    const query: ListQuery = {
+      q: 'x',
+      filters: { status: 'inactive', sector: 'Public' },
+      sort: 'name',
+      dir: 'desc',
+      page: 4,
+      pageSize: 25,
+    };
     expect(parseListQuery(new URLSearchParams(serializeListQuery(query)))).toEqual(query);
   });
 });
