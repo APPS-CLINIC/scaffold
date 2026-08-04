@@ -276,9 +276,13 @@ describe('GenericDataTable', () => {
     expect(screen.queryByText('No test customers')).not.toBeInTheDocument();
   });
 
-  it('merges the caller className last on the seam root', () => {
-    const { container } = renderTable({ className: 'custom-root' });
+  it('merges conflicting caller classes with the caller overrides taking precedence', () => {
+    const { container } = renderTable({
+      className: 'min-w-full overflow-visible custom-root',
+    });
+    const root = container.firstElementChild;
 
-    expect(container.firstElementChild).toHaveClass('min-w-0', 'custom-root');
+    expect(root).toHaveClass('min-w-full', 'overflow-visible', 'custom-root');
+    expect(root).not.toHaveClass('min-w-0', 'overflow-hidden');
   });
 });

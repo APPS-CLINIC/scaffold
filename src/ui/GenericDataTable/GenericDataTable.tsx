@@ -7,9 +7,9 @@ import {
   type RefAttributes,
 } from 'react';
 import { useTranslation } from 'react-i18next';
+import { twMerge } from 'iwa-react-components';
 import { Column } from 'primereact/column';
 import { DataTable } from 'primereact/datatable';
-import { cx } from '@/ui/cx';
 import { ExpandedRowContent, PrimaryCell, RowExpansionButton } from './components';
 import {
   createDataTablePassThrough,
@@ -87,7 +87,11 @@ function GenericDataTableInner<T extends object>(
   const getDetailsId = (row: T) => `${tableId}-details-${encodeURIComponent(getRowKey(row))}`;
 
   return (
-    <div ref={ref} className={cx('w-full min-w-0 max-w-full overflow-hidden', className)} {...rest}>
+    <div
+      ref={ref}
+      className={twMerge('w-full min-w-0 max-w-full overflow-hidden', className)}
+      {...rest}
+    >
       {loading ? (
         <span className="sr-only" role="status" aria-live="polite">
           {labels.loading}
@@ -160,8 +164,8 @@ function GenericDataTableInner<T extends object>(
             header={t(column.headerKey)}
             sortable={column.sortable}
             sortField={column.sortField ?? String(column.field)}
-            headerClassName={cx('whitespace-normal', column.headerClassName)}
-            bodyClassName={cx('whitespace-nowrap', column.cellClassName)}
+            headerClassName={twMerge('whitespace-normal', column.headerClassName)}
+            bodyClassName={twMerge('whitespace-nowrap', column.cellClassName)}
             body={(primeRow: PrimeDataTableRow, options: PrimeColumnBodyOptions) => (
               <PrimaryCell
                 column={column}

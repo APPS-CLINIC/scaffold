@@ -1,4 +1,4 @@
-import { cx } from '@/ui/cx';
+import { twMerge } from 'iwa-react-components';
 import type { GenericDataTableLabels } from '../GenericDataTable.types';
 
 interface RowExpansionButtonProps<T extends object> {
@@ -28,7 +28,7 @@ export function RowExpansionButton<T extends object>({
     >
       <span
         aria-hidden="true"
-        className={cx(
+        className={twMerge(
           'pi pi-chevron-down text-xs transition-transform motion-reduce:transition-none',
           expanded && 'rotate-180',
         )}

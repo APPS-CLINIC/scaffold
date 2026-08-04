@@ -1,7 +1,7 @@
 import { cloneElement, createElement, type ReactElement } from 'react';
+import { twMerge } from 'iwa-react-components';
 import type { DataTablePassThroughOptions } from 'primereact/datatable';
 import type { PaginatorTemplate } from 'primereact/paginator';
-import { cx } from '@/ui/cx';
 import type {
   GenericDataTablePageChange,
   GenericDataTablePaginatorActionLabels,
@@ -117,7 +117,7 @@ export function createDataTablePassThrough(
         className: 'min-h-11 min-w-11 rounded-full sm:min-h-8 sm:min-w-8',
       },
       pageButton: (options) => ({
-        className: cx(
+        className: twMerge(
           'min-h-11 min-w-11 rounded-full text-xs sm:min-h-8 sm:min-w-8',
           options?.context.active && '!bg-[var(--accent)] !text-white',
         ),
