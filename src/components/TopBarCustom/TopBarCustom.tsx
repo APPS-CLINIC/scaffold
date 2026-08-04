@@ -6,14 +6,15 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/app/hooks';
 import { selectActiveTabIndex } from '@/features/urlState/urlState.selectors';
 import { navTabs } from '@/routes/navTabs';
+import { getNavigationSectionDefaultPath } from '@/routes/navigation';
 import { Logo } from '@/components/Logo';
 
 /**
  * Top bar with the primary tab navigation (IWA TopBar + TabMenu).
  *
  * The active tab is not local state: clicking a tab only navigates, the URL
- * is the source of truth. `UrlStateSync` mirrors the pathname into
- * `urlState.activeTab`, and `selectActiveTabIndex` feeds it back here — so
+ * is the source of truth. `UrlStateSync` mirrors the complete route identity,
+ * and `selectActiveTabIndex` derives the active tab from it — so
  * deep links, back/forward and programmatic navigation all highlight the
  * right tab.
  */
@@ -66,7 +67,7 @@ export const TopBarCustom = () => {
         onChangeActiveIndex={(value: SetStateAction<number>) => {
           const index = typeof value === 'function' ? value(activeIndex) : value;
           const tab = navTabs[index];
-          if (tab) navigate(tab.path);
+          if (tab) navigate(getNavigationSectionDefaultPath(tab));
         }}
       />
     </TopBar>

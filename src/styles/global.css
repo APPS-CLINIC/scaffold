@@ -7,6 +7,9 @@
   --border-subtle: #eef1f4;
   --surface: #ffffff;
   --surface-muted: #f5f7fa;
+  --content-surface: #f0f0f0;
+  --navigation-surface: #ffffff;
+  --navigation-accent: #d94c0b;
   --muted: #687280;
   --accent: #2563eb;
   --focus: #2563eb;
@@ -42,6 +45,13 @@ body,
 
 body {
   background: #fff;
+}
+
+.app-navigation [aria-current='page'],
+.app-navigation [aria-selected='true'],
+.app-navigation [data-p-highlight='true'],
+.app-navigation .p-highlight {
+  background: var(--content-surface) !important;
 }
 
 a {

@@ -1,27 +1,21 @@
-import type { MessageKey } from '@/i18n/messages/pl';
+import {
+  defaultNavigationSectionKey,
+  getActiveNavigationSection,
+  navigationSections,
+  type NavigationSectionKey,
+} from './navigation';
 
 /**
  * Single source of truth for the top-bar tabs: order (= TabMenu index),
  * route path and i18n label. Both the router and the TopBar render from this
- * list, and the URL mirror derives `activeTab` from it — adding a tab here is
- * the only step needed to wire a new section.
+ * list, and the URL route mirror derives its section from it — adding a tab
+ * here is the only step needed to wire a new section.
  */
-export const navTabs = [
-  { key: 'home', path: '/', labelKey: 'nav.tab.start' },
-  { key: 'portfolio', path: '/portfolio', labelKey: 'nav.tab.portfolio' },
-  { key: 'clients', path: '/clients', labelKey: 'nav.tab.clients' },
-  { key: 'groups', path: '/groups', labelKey: 'nav.tab.groups' },
-  { key: 'targets', path: '/targets', labelKey: 'nav.tab.targets' },
-  { key: 'pipeline', path: '/pipeline', labelKey: 'nav.tab.pipeline' },
-  { key: 'orders', path: '/orders', labelKey: 'nav.tab.orders' },
-  { key: 'transactions', path: '/transactions', labelKey: 'nav.tab.transactions' },
-  { key: 'bi-reports', path: '/bi-reports', labelKey: 'nav.tab.reportsBi' },
-  { key: 'calendar', path: '/calendar', labelKey: 'nav.tab.calendar' },
-] as const satisfies readonly { key: string; path: string; labelKey: MessageKey }[];
+export const navTabs = navigationSections;
 
-export type NavTabKey = (typeof navTabs)[number]['key'];
+export type NavTabKey = NavigationSectionKey;
 
-export const defaultNavTabKey: NavTabKey = 'home';
+export const defaultNavTabKey: NavTabKey = defaultNavigationSectionKey;
 
 /**
  * Derive the active tab from a pathname. Nested paths stay within their
@@ -29,8 +23,6 @@ export const defaultNavTabKey: NavTabKey = 'home';
  * so the mirror is total, like the rest of the URL parsing.
  */
 export function parseActiveTab(pathname: string): NavTabKey {
-  const match = navTabs.find(
-    (tab) => tab.path !== '/' && (pathname === tab.path || pathname.startsWith(`${tab.path}/`)),
-  );
+  const match = getActiveNavigationSection(pathname);
   return match?.key ?? defaultNavTabKey;
 }

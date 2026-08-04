@@ -50,3 +50,23 @@ accent` (default `outline` — light surface with a subtle ring, colors come
 - The hook memoizes on the glyph element and options — keep them
   referentially stable (hoist the element out of render, like `historyGlyph`
   above) so the returned component keeps its identity across re-renders.
+
+## IWA navigation adapters
+
+`MenuListAdapter` and `NavigationPanel` are thin adapters over the corresponding
+IWA components. `MenuListAdapter` deliberately exposes stable item IDs instead
+of IWA's positional selection contract:
+
+```tsx
+<MenuListAdapter
+  items={[
+    { id: 'dashboard', text: 'Dashboard' },
+    { id: 'clients', text: 'Clients' },
+  ]}
+  selectedId="dashboard"
+  onItemSelect={(item) => navigate(item.id)}
+/>
+```
+
+Route code maps the selected ID to a configured path. Do not store
+`selectedIndex`, and do not serialize React icon nodes into navigation JSON.

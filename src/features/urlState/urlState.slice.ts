@@ -1,5 +1,5 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { defaultNavTabKey, type NavTabKey } from '@/routes/navTabs';
+import { defaultUrlRouteState, type UrlRouteState } from './urlState.route';
 import { defaultListQuery, type ListQuery } from './urlState.schema';
 
 /**
@@ -10,18 +10,18 @@ import { defaultListQuery, type ListQuery } from './urlState.schema';
  * react to URL changes (e.g. prefetch).
  *
  * Writes never happen here directly — the URL is the source of truth. The
- * `UrlStateSync` component dispatches `listQueryChanged` whenever the URL
- * changes, keeping this mirror in sync one-directionally (URL -> store).
+ * `UrlStateSync` dispatches `routeChanged` for every distinct pathname and
+ * `listQueryChanged` for validated query changes, keeping this mirror in sync
+ * one-directionally (URL -> store).
  */
 export interface UrlState {
   list: ListQuery;
-  /** Top-bar tab derived from the pathname (see `parseActiveTab`). */
-  activeTab: NavTabKey;
+  route: UrlRouteState;
 }
 
 const initialState: UrlState = {
   list: defaultListQuery,
-  activeTab: defaultNavTabKey,
+  route: defaultUrlRouteState,
 };
 
 const urlStateSlice = createSlice({
@@ -31,11 +31,11 @@ const urlStateSlice = createSlice({
     listQueryChanged(state, action: PayloadAction<ListQuery>) {
       state.list = action.payload;
     },
-    activeTabChanged(state, action: PayloadAction<NavTabKey>) {
-      state.activeTab = action.payload;
+    routeChanged(state, action: PayloadAction<UrlRouteState>) {
+      state.route = action.payload;
     },
   },
 });
 
-export const { listQueryChanged, activeTabChanged } = urlStateSlice.actions;
+export const { listQueryChanged, routeChanged } = urlStateSlice.actions;
 export const urlStateReducer = urlStateSlice.reducer;
