@@ -1,9 +1,9 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom';
-import { CustomersPage } from '@/features/customers/CustomersPage';
 import { ErrorLayout } from './ErrorLayout';
 import { RootLayout } from './RootLayout';
 import { navTabs } from './navTabs';
 import { getNavigationItemPath, getNavigationSectionDefaultPath } from './navigation';
+import { CustomersPage } from './pages/CustomersPage';
 import { ForbiddenPage } from './pages/ForbiddenPage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';

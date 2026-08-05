@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UrlStateSync } from '@/features/urlState/UrlStateSync';
 import i18n from '@/i18n';
 import { renderWithProviders } from '@/test/renderWithProviders';
-import { CustomersPage } from './CustomersPage';
+import { CustomersView } from './CustomersView';
 import { customersApi } from './customers.api';
 import { selectCustomerQuery } from './customers.filters';
 
@@ -20,7 +20,7 @@ function renderPage(initialEntry = '/clients/all') {
   return renderWithProviders(
     <>
       <UrlStateSync />
-      <CustomersPage />
+      <CustomersView />
       <LocationProbe />
     </>,
     { initialEntries: [initialEntry] },
@@ -35,7 +35,7 @@ beforeEach(async () => {
   await i18n.changeLanguage('en');
 });
 
-describe('CustomersPage', () => {
+describe('CustomersView', () => {
   it('renders the customer view from the typed Polish catalog', async () => {
     const user = userEvent.setup();
     await i18n.changeLanguage('pl');

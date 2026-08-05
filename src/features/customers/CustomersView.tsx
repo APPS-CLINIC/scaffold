@@ -23,7 +23,7 @@ import type { Customer } from './customers.types';
 
 const customerTypes = ['Corporate'] as const;
 
-export function CustomersPage() {
+export function CustomersView() {
   const { t, i18n } = useTranslation();
   const listQuery = useAppSelector(selectListQuery);
   const customerQuery = useAppSelector(selectCustomerQuery);
