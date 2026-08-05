@@ -21,19 +21,7 @@ import {
 } from './customers.filters';
 import type { Customer } from './customers.types';
 
-const customerSectors = [
-  'Business Services',
-  'Consumer Goods',
-  'Energy',
-  'Financial Services',
-  'Healthcare',
-  'Manufacturing',
-  'Real Estate',
-  'Retail',
-  'Technology',
-  'Telecommunications',
-  'Transport',
-] as const;
+const customerTypes = ['Corporate'] as const;
 
 export function CustomersPage() {
   const { t, i18n } = useTranslation();
@@ -43,13 +31,13 @@ export function CustomersPage() {
   const { data, isLoading, isFetching, isError, fulfilledTimeStamp, refetch } =
     useGetCustomersQuery(customerQuery);
   const [filtersExpanded, setFiltersExpanded] = useState(() =>
-    Boolean(customerQuery.status || customerQuery.sector),
+    Boolean(customerQuery.status || customerQuery.type),
   );
   const [expandedRowKeys, setExpandedRowKeys] = useState<readonly string[]>([]);
 
   useEffect(() => {
-    if (customerQuery.status || customerQuery.sector) setFiltersExpanded(true);
-  }, [customerQuery.sector, customerQuery.status]);
+    if (customerQuery.status || customerQuery.type) setFiltersExpanded(true);
+  }, [customerQuery.status, customerQuery.type]);
 
   const labels = useMemo<GenericDataTableLabels<Customer>>(
     () => ({
@@ -58,8 +46,8 @@ export function CustomersPage() {
       empty: t('customers.table.empty'),
       pagination: t('customers.table.pagination'),
       notAvailable: t('customers.value.notAvailable'),
-      expandRow: (row) => t('customers.table.expandRow', { name: row.customerFullName }),
-      collapseRow: (row) => t('customers.table.collapseRow', { name: row.customerFullName }),
+      expandRow: (row) => t('customers.table.expandRow', { name: row.fullName }),
+      collapseRow: (row) => t('customers.table.collapseRow', { name: row.fullName }),
       paginatorActions: {
         firstPage: t('common.pagination.first'),
         previousPage: t('common.pagination.previous'),
@@ -81,7 +69,7 @@ export function CustomersPage() {
   const clearFilters = () => {
     setQuery({
       q: '',
-      filters: updateCustomerUrlFilters(listQuery.filters, { status: '', sector: '' }),
+      filters: updateCustomerUrlFilters(listQuery.filters, { status: '', type: '' }),
     });
   };
 
@@ -93,11 +81,9 @@ export function CustomersPage() {
     setQuery({ sort: field, dir: order });
   };
 
-  const customerFiltersActive = Boolean(
-    listQuery.q || customerQuery.status || customerQuery.sector,
-  );
+  const customerFiltersActive = Boolean(listQuery.q || customerQuery.status || customerQuery.type);
   const activeFilterCount =
-    Number(Boolean(customerQuery.status)) + Number(Boolean(customerQuery.sector));
+    Number(Boolean(customerQuery.status)) + Number(Boolean(customerQuery.type));
   const visibleRowKeys = useMemo(
     () => (data?.content ?? []).map((customer) => String(customer.id)),
     [data?.content],
@@ -230,17 +216,17 @@ export function CustomersPage() {
 
             <label className="block min-w-0">
               <span className="mb-1 block text-xs font-semibold text-[var(--muted)]">
-                {t('customers.filters.sector')}
+                {t('customers.filters.type')}
               </span>
               <Select
-                value={customerQuery.sector}
+                value={customerQuery.type}
                 className="min-h-9 w-full text-base sm:text-sm"
-                onChange={(event) => updateFilters({ sector: event.currentTarget.value })}
+                onChange={(event) => updateFilters({ type: event.currentTarget.value })}
               >
-                <option value="">{t('customers.filters.allSectors')}</option>
-                {customerSectors.map((sector) => (
-                  <option key={sector} value={sector}>
-                    {sector}
+                <option value="">{t('customers.filters.allTypes')}</option>
+                {customerTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
                   </option>
                 ))}
               </Select>

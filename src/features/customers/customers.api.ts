@@ -1,9 +1,12 @@
 import { baseApi } from '@/api/baseApi';
 import customersMock from './customers.mock.json';
+import { mapCustomerResponse } from './customers.adapter';
 import type {
   Customer,
   CustomerBackendParams,
+  CustomerContentResponse,
   CustomerQuery,
+  CustomerResponse,
   PageResponse,
 } from './customers.types';
 
@@ -11,8 +14,8 @@ const DEFAULT_PAGE_SIZE = 10;
 
 const customerSortFields = new Set<keyof Customer>([
   'id',
-  'customerFullName',
-  'customerShortName',
+  'fullName',
+  'shortName',
   'grid',
   'corporateGroupId',
   'corporateGroupName',
@@ -21,34 +24,52 @@ const customerSortFields = new Set<keyof Customer>([
   'internalGroupName',
   'kkf',
   'krs',
-  'taxID',
+  'taxId',
   'regon',
   'rmAdvisor',
-  'dateReviewExtension',
-  'dateReview',
-  'ratingDt',
-  'tsPriceConditionEndDt',
+  'lendingAdvisor',
+  'sfAdvisor',
+  'pcmAdvisor',
+  'fmAdvisor',
+  'tsAdvisor',
+  'ebdAdvisor',
+  'implementationAdvisor',
+  'customerServiceAdvisor',
+  'extensionReviewDate',
+  'lendingReviewDate',
+  'lendingRatingDate',
+  'lendingRatingReviewDate',
+  'tsPriceConditionEndDate',
   'tsPriceConditionStatus',
-  'customerSector',
-  'customerStatus',
+  'type',
+  'status',
 ]);
 
 const searchableFields: readonly (keyof Customer)[] = [
-  'customerFullName',
-  'customerShortName',
+  'fullName',
+  'shortName',
   'grid',
   'corporateGroupName',
   'corporateGroupGRID',
   'internalGroupName',
   'kkf',
   'krs',
-  'taxID',
+  'taxId',
   'regon',
   'rmAdvisor',
-  'customerSector',
+  'lendingAdvisor',
+  'sfAdvisor',
+  'pcmAdvisor',
+  'fmAdvisor',
+  'tsAdvisor',
+  'ebdAdvisor',
+  'implementationAdvisor',
+  'customerServiceAdvisor',
+  'type',
 ];
 
-const mockCustomers = customersMock as Customer[];
+const mockResponse: CustomerContentResponse<CustomerResponse> = customersMock;
+const mockCustomers = mockResponse.content.map(mapCustomerResponse);
 
 function toPositiveInteger(value: number, fallback: number): number {
   return Number.isFinite(value) ? Math.max(1, Math.trunc(value)) : fallback;
@@ -89,7 +110,7 @@ export function toCustomerBackendParams(query: CustomerQuery): CustomerBackendPa
   const sortField = isCustomerSortField(requestedSortField) ? requestedSortField : 'id';
   const sortDirection = query.dir === 'desc' ? 'DESC' : 'ASC';
   const q = query.q.trim();
-  const sector = query.sector.trim();
+  const type = query.type.trim();
 
   return {
     page,
@@ -97,7 +118,7 @@ export function toCustomerBackendParams(query: CustomerQuery): CustomerBackendPa
     sort: `${sortField},${sortDirection}`,
     ...(q ? { q } : {}),
     ...(query.status ? { status: query.status } : {}),
-    ...(sector ? { sector } : {}),
+    ...(type ? { type } : {}),
   };
 }
 
@@ -113,7 +134,7 @@ export function customerBackendParamsToSearchParams(
 
   if (params.q) searchParams.set('q', params.q);
   if (params.status) searchParams.set('status', params.status);
-  if (params.sector) searchParams.set('sector', params.sector);
+  if (params.type) searchParams.set('type', params.type);
 
   return searchParams;
 }
@@ -128,17 +149,14 @@ export function queryMockCustomers(
 ): PageResponse<Customer> {
   const backendParams = toCustomerBackendParams(query);
   const normalizedQuery = normalizeSearchValue(backendParams.q ?? '');
-  const normalizedSector = normalizeSearchValue(backendParams.sector ?? '');
+  const normalizedType = normalizeSearchValue(backendParams.type ?? '');
   const [requestedSortField = 'id'] = backendParams.sort.split(',');
   const sortField = isCustomerSortField(requestedSortField) ? requestedSortField : 'id';
   const direction = query.dir === 'desc' ? -1 : 1;
 
   const filtered = source.filter((customer) => {
-    if (backendParams.status && customer.customerStatus !== backendParams.status) return false;
-    if (
-      normalizedSector &&
-      normalizeSearchValue(customer.customerSector ?? '') !== normalizedSector
-    ) {
+    if (backendParams.status && customer.status !== backendParams.status) return false;
+    if (normalizedType && normalizeSearchValue(customer.type ?? '') !== normalizedType) {
       return false;
     }
     if (!normalizedQuery) return true;

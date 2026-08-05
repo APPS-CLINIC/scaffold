@@ -10,19 +10,19 @@ import {
 
 describe('customer URL filters', () => {
   it('validates feature values without leaking them into the generic URL schema', () => {
-    expect(parseCustomerFilters({ status: 'unsupported', sector: 'Energy' })).toEqual({
+    expect(parseCustomerFilters({ status: 'unsupported', type: 'Corporate' })).toEqual({
       status: '',
-      sector: 'Energy',
+      type: 'Corporate',
     });
   });
 
   it('updates customer keys and preserves unrelated generic filters', () => {
     expect(
       updateCustomerUrlFilters(
-        { owner: 'mine', status: 'active', sector: 'Energy' },
-        { status: '', sector: 'Technology' },
+        { owner: 'mine', status: 'active', type: 'Corporate' },
+        { status: '', type: 'Institutional' },
       ),
-    ).toEqual({ owner: 'mine', sector: 'Technology' });
+    ).toEqual({ owner: 'mine', type: 'Institutional' });
   });
 
   it('derives endpoint arguments from the Redux URL mirror', () => {
@@ -31,7 +31,7 @@ describe('customer URL filters', () => {
       listQueryChanged({
         ...defaultListQuery,
         q: 'bank',
-        filters: { status: 'inactive', sector: 'Manufacturing' },
+        filters: { status: 'inactive', type: 'Corporate' },
         page: 2,
       }),
     );
@@ -39,7 +39,7 @@ describe('customer URL filters', () => {
     expect(selectCustomerQuery(store.getState())).toMatchObject({
       q: 'bank',
       status: 'inactive',
-      sector: 'Manufacturing',
+      type: 'Corporate',
       page: 2,
     });
   });

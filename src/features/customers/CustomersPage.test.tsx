@@ -90,7 +90,7 @@ describe('CustomersPage', () => {
     await user.click(screen.getByRole('columnheader', { name: /customer name/i }));
     await waitFor(() => {
       const search = screen.getByRole('status', { name: 'Current customer URL' }).textContent ?? '';
-      expect(new URLSearchParams(search).get('sort')).toBe('customerFullName');
+      expect(new URLSearchParams(search).get('sort')).toBe('fullName');
     });
 
     await user.click(screen.getByRole('button', { name: 'Next page' }));
@@ -110,5 +110,6 @@ describe('CustomersPage', () => {
 
     expect(expandAll).toBeChecked();
     expect(screen.getAllByRole('region', { name: /collapse details for/i })).toHaveLength(10);
+    expect(screen.getByText('Drewniak Dariusz')).toBeInTheDocument();
   });
 });

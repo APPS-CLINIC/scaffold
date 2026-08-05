@@ -13,7 +13,7 @@ export const customerTableConfig = {
   singleRowExpansion: true,
   columns: [
     {
-      field: 'customerFullName',
+      field: 'fullName',
       headerKey: 'customers.table.column.name',
       component: UnderlinedTextCell,
       sortable: true,
@@ -28,7 +28,7 @@ export const customerTableConfig = {
       headerClassName: 'w-24 min-w-24 max-w-24',
     },
     {
-      field: 'customerStatus',
+      field: 'status',
       headerKey: 'customers.table.column.status',
       component: ActiveInactiveStatusCell,
       sortable: true,
@@ -43,25 +43,25 @@ export const customerTableConfig = {
       cellClassName: 'w-40 min-w-40 max-w-40 whitespace-normal',
     },
     {
-      field: 'customerSector',
-      headerKey: 'customers.table.column.sector',
+      field: 'type',
+      headerKey: 'customers.table.column.type',
       component: TextCell,
       sortable: true,
       headerClassName: 'w-32 min-w-32 max-w-32',
     },
     {
-      field: 'dateReview',
+      field: 'lendingRatingReviewDate',
       headerKey: 'customers.table.column.reviewDate',
       component: DateCell,
       sortable: true,
       headerClassName: 'w-36 min-w-36 max-w-36',
     },
     {
-      field: 'ratingDt',
-      headerKey: 'customers.table.column.ratingDate',
+      field: 'tsPriceConditionEndDate',
+      headerKey: 'customers.table.column.priceConditionEndDate',
       component: DateCell,
       sortable: true,
-      headerClassName: 'w-36 min-w-36 max-w-36',
+      headerClassName: 'w-40 min-w-40 max-w-40',
     },
     {
       field: 'tsPriceConditionStatus',
@@ -71,8 +71,8 @@ export const customerTableConfig = {
       headerClassName: 'w-44 min-w-44 max-w-44',
     },
     {
-      field: 'tsPriceConditionEndDt',
-      headerKey: 'customers.table.column.priceConditionEndDate',
+      field: 'lendingReviewDate',
+      headerKey: 'customers.table.column.lendingReviewDate',
       component: DateCell,
       sortable: true,
       headerClassName: 'w-40 min-w-40 max-w-40',
@@ -81,11 +81,25 @@ export const customerTableConfig = {
   detailFields: [
     { field: 'kkf', labelKey: 'customers.table.detail.kkf' },
     { field: 'krs', labelKey: 'customers.table.detail.krs' },
-    { field: 'taxID', labelKey: 'customers.table.detail.taxId' },
+    { field: 'taxId', labelKey: 'customers.table.detail.taxId' },
     { field: 'regon', labelKey: 'customers.table.detail.regon' },
-    { field: 'customerShortName', labelKey: 'customers.table.detail.shortName' },
+    { field: 'shortName', labelKey: 'customers.table.detail.shortName' },
     { field: 'rmAdvisor', labelKey: 'customers.table.detail.rmAdvisor' },
     { field: 'corporateGroupGRID', labelKey: 'customers.table.detail.corporateGroupGrid' },
     { field: 'internalGroupName', labelKey: 'customers.table.detail.internalGroupName' },
+    { field: 'lendingAdvisor', labelKey: 'customers.table.detail.lendingAdvisor' },
+    { field: 'sfAdvisor', labelKey: 'customers.table.detail.sfAdvisor' },
+    { field: 'pcmAdvisor', labelKey: 'customers.table.detail.pcmAdvisor' },
+    { field: 'fmAdvisor', labelKey: 'customers.table.detail.fmAdvisor' },
+    { field: 'tsAdvisor', labelKey: 'customers.table.detail.tsAdvisor' },
+    { field: 'ebdAdvisor', labelKey: 'customers.table.detail.ebdAdvisor' },
+    {
+      field: 'implementationAdvisor',
+      labelKey: 'customers.table.detail.implementationAdvisor',
+    },
+    {
+      field: 'customerServiceAdvisor',
+      labelKey: 'customers.table.detail.customerServiceAdvisor',
+    },
   ],
 } satisfies GenericDataTableConfig<Customer>;

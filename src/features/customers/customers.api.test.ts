@@ -15,18 +15,18 @@ const makeQuery = (overrides: Partial<CustomerQuery> = {}): CustomerQuery => ({
   sort: 'id',
   dir: 'asc',
   status: '',
-  sector: '',
+  type: '',
   ...overrides,
 });
 
 const makeCustomer = (
   id: number,
-  customerFullName: string,
+  fullName: string,
   overrides: Partial<Customer> = {},
 ): Customer => ({
   id,
-  customerFullName,
-  customerShortName: customerFullName,
+  fullName,
+  shortName: fullName,
   grid: String(id),
   corporateGroupId: null,
   corporateGroupName: null,
@@ -35,32 +35,49 @@ const makeCustomer = (
   internalGroupName: null,
   kkf: null,
   krs: null,
-  taxID: null,
+  taxId: null,
   regon: null,
   rmAdvisor: null,
-  dateReviewExtension: null,
-  dateReview: null,
-  ratingDt: null,
-  tsPriceConditionEndDt: null,
+  lendingAdvisor: null,
+  sfAdvisor: null,
+  pcmAdvisor: null,
+  fmAdvisor: null,
+  tsAdvisor: null,
+  ebdAdvisor: null,
+  implementationAdvisor: null,
+  customerServiceAdvisor: null,
+  extensionReviewDate: null,
+  lendingReviewDate: null,
+  lendingRatingDate: null,
+  lendingRatingReviewDate: null,
+  tsPriceConditionEndDate: null,
   tsPriceConditionStatus: null,
-  customerSector: null,
-  customerStatus: 'active',
+  type: null,
+  status: 'active',
   ...overrides,
 });
 
 describe('customer API contract', () => {
   it('maps app page 1 to backend page 0 and builds Spring query parameters', () => {
-    const backendParams = toCustomerBackendParams(makeQuery());
+    const backendParams = toCustomerBackendParams(
+      makeQuery({ q: 'bank', status: 'active', type: 'Corporate' }),
+    );
 
     expect(backendParams).toEqual({
       page: 0,
       size: 10,
       sort: 'id,ASC',
+      q: 'bank',
+      status: 'active',
+      type: 'Corporate',
     });
     expect([...customerBackendParamsToSearchParams(backendParams).entries()]).toEqual([
       ['page', '0'],
       ['size', '10'],
       ['sort', 'id,ASC'],
+      ['q', 'bank'],
+      ['status', 'active'],
+      ['type', 'Corporate'],
     ]);
   });
 
@@ -72,44 +89,42 @@ describe('customer API contract', () => {
     const source = [
       makeCustomer(1, 'Zulu Energy', {
         corporateGroupName: 'Priority Group',
-        customerSector: 'Energy',
+        type: 'Corporate',
       }),
       makeCustomer(2, 'Retail Priority', {
         corporateGroupName: 'Priority Group',
-        customerSector: 'Retail',
+        type: 'Institutional',
       }),
       makeCustomer(3, 'Beta Energy', {
         corporateGroupName: 'Priority Group',
-        customerSector: 'Energy',
+        type: 'Corporate',
       }),
       makeCustomer(4, 'Inactive Energy', {
         corporateGroupName: 'Priority Group',
-        customerSector: 'Energy',
-        customerStatus: 'inactive',
+        type: 'Corporate',
+        status: 'inactive',
       }),
       makeCustomer(5, 'Alpha Energy', {
         corporateGroupName: 'Priority Group',
-        customerSector: 'Energy',
+        type: 'Corporate',
       }),
       makeCustomer(6, 'Other Energy', {
         corporateGroupName: 'Secondary Group',
-        customerSector: 'Energy',
+        type: 'Corporate',
       }),
     ];
     const query = makeQuery({
       q: 'priority',
       status: 'active',
-      sector: 'energy',
-      sort: 'customerFullName',
+      type: 'corporate',
+      sort: 'fullName',
       page: 2,
       pageSize: 1,
     });
 
     const response = queryMockCustomers(query, source);
 
-    expect(response.content.map(({ customerFullName }) => customerFullName)).toEqual([
-      'Beta Energy',
-    ]);
+    expect(response.content.map(({ fullName }) => fullName)).toEqual(['Beta Energy']);
     expect(response.page).toEqual({
       size: 1,
       number: 1,
@@ -139,9 +154,7 @@ describe('customer API contract', () => {
     const response = await subscription.unwrap();
     const cached = customersApi.endpoints.getCustomers.select(query)(store.getState());
 
-    expect(response.content.map(({ customerShortName }) => customerShortName)).toEqual([
-      'CARREFOUR POLAND',
-    ]);
+    expect(response.content.map(({ shortName }) => shortName)).toEqual(['CARREFOUR POLAND']);
     expect(cached.status).toBe('fulfilled');
     expect(cached.data).toEqual(response);
 

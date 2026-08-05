@@ -4,15 +4,15 @@ import { customerTableConfig } from './config';
 describe('customerTableConfig', () => {
   it('keeps the reference column order explicit', () => {
     expect(customerTableConfig.columns.map(({ field }) => field)).toEqual([
-      'customerFullName',
+      'fullName',
       'grid',
-      'customerStatus',
+      'status',
       'corporateGroupName',
-      'customerSector',
-      'dateReview',
-      'ratingDt',
+      'type',
+      'lendingRatingReviewDate',
+      'tsPriceConditionEndDate',
       'tsPriceConditionStatus',
-      'tsPriceConditionEndDt',
+      'lendingReviewDate',
     ]);
   });
 
@@ -20,12 +20,20 @@ describe('customerTableConfig', () => {
     expect(customerTableConfig.detailFields.map(({ field }) => field)).toEqual([
       'kkf',
       'krs',
-      'taxID',
+      'taxId',
       'regon',
-      'customerShortName',
+      'shortName',
       'rmAdvisor',
       'corporateGroupGRID',
       'internalGroupName',
+      'lendingAdvisor',
+      'sfAdvisor',
+      'pcmAdvisor',
+      'fmAdvisor',
+      'tsAdvisor',
+      'ebdAdvisor',
+      'implementationAdvisor',
+      'customerServiceAdvisor',
     ]);
   });
 });

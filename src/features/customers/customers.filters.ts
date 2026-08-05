@@ -5,7 +5,7 @@ import type { CustomerQuery } from './customers.types';
 
 export const customerFiltersSchema = z.object({
   status: z.enum(['active', 'inactive']).or(z.literal('')).catch(''),
-  sector: z.string().max(200).catch(''),
+  type: z.string().max(200).catch(''),
 });
 
 export type CustomerFilters = z.infer<typeof customerFiltersSchema>;
@@ -26,9 +26,9 @@ export function updateCustomerUrlFilters(
     else delete next.status;
   }
 
-  if (patch.sector !== undefined) {
-    if (patch.sector) next.sector = patch.sector;
-    else delete next.sector;
+  if (patch.type !== undefined) {
+    if (patch.type) next.type = patch.type;
+    else delete next.type;
   }
 
   return next;
