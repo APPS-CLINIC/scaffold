@@ -51,8 +51,9 @@ export const defaultNavigationItem = {
 
 /**
  * Declarative source of truth for top tabs, contextual menu items and paths.
- * Route components stay in `router.tsx`; navigation metadata is configured once
- * here and consumed by the router, TopBar and contextual sidebar.
+ * Page loaders stay in section-scoped `pageRoutes` modules; navigation
+ * metadata is configured once here and consumed by the router, TopBar and
+ * contextual sidebar.
  */
 export const navigationSections = [
   defineNavigationSection({

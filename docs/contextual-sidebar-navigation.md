@@ -133,8 +133,15 @@ To add a new destination:
 
 1. Add one item to the target section in `navigation.config.ts`.
 2. Add the new label key to both PL and EN catalogs.
-3. Replace the generated placeholder route element when the real page exists.
-4. Add permissions only when the identity integration can evaluate them.
+3. Add the route-level component under `src/routes/pages/<section>/` when the
+   real page exists.
+4. Register its lazy loader in the section's
+   `src/routes/pageRoutes/<section>.pageRoutes.ts` module. The mapping is
+   checked against stable item IDs, while the URL remains derived from this
+   manifest.
+5. Add the section module once to the composition root in
+   `pageRouteRegistry.ts` if it is not registered yet.
+6. Add permissions only when the identity integration can evaluate them.
 
 ## Relevant files
 
@@ -142,6 +149,10 @@ To add a new destination:
   — section and item declarations.
 - [`src/routes/navigation/navigation.ts`](../src/routes/navigation/navigation.ts)
   — path, matching, default, and permission helpers.
+- [`src/routes/pageRoutes/pageRouteRegistry.ts`](../src/routes/pageRoutes/pageRouteRegistry.ts)
+  — small composition root for section-scoped route modules.
+- [`src/routes/pageRoutes/clients.pageRoutes.ts`](../src/routes/pageRoutes/clients.pageRoutes.ts)
+  — lazy page mappings owned by one navigation section.
 - [`src/features/urlState/urlState.route.ts`](../src/features/urlState/urlState.route.ts)
   — serializable route snapshot parsing.
 - [`src/features/urlState/UrlStateSync.tsx`](../src/features/urlState/UrlStateSync.tsx)
@@ -162,6 +173,7 @@ To add a new destination:
 - [ADR 0020 — React Router v6 for IWA compatibility](adr/0020-routing-react-router-v6-for-iwa-compatibility.md)
 - [ADR 0023 — Configurable and persistent contextual navigation](adr/0023-configurable-navigation-icon-components.md)
 - [ADR 0024 — Canonical route transitions in the Redux URL mirror](adr/0024-canonical-route-transitions-in-redux.md)
+- [ADR 0027 — Section-scoped lazy page route modules](adr/0027-section-scoped-lazy-page-route-modules.md)
 - [Design brief](../.design/contextual-sidebar-navigation/DESIGN_BRIEF.md)
 - [Information architecture](../.design/contextual-sidebar-navigation/INFORMATION_ARCHITECTURE.md)
 

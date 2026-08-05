@@ -44,6 +44,7 @@ keep ADRs at all; use it as the template for new records.
 | [0024](0024-canonical-route-transitions-in-redux.md)          | Canonical route transitions in the Redux URL mirror | Accepted               |
 | [0025](0025-configuration-driven-generic-data-tables.md)      | Configuration-driven generic data tables            | Accepted               |
 | [0026](0026-extensible-feature-filters-in-list-urls.md)       | Extensible feature filters in list URLs             | Accepted               |
+| [0027](0027-section-scoped-lazy-page-route-modules.md)        | Section-scoped lazy page route modules              | Accepted               |
 
 ### Step 03 — Scope alignment (discovery)
 

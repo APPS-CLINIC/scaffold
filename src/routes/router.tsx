@@ -3,11 +3,11 @@ import { ErrorLayout } from './ErrorLayout';
 import { RootLayout } from './RootLayout';
 import { navTabs } from './navTabs';
 import { getNavigationItemPath, getNavigationSectionDefaultPath } from './navigation';
-import { CustomersPage } from './pages/CustomersPage';
 import { ForbiddenPage } from './pages/ForbiddenPage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { SectionPage } from './pages/SectionPage';
+import { getPageRouteLoader } from './pageRoutes/pageRouteRegistry';
 
 export const router = createBrowserRouter([
   {
@@ -15,8 +15,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       // Navigation metadata is configured once. Sections with contextual
-      // items redirect to their default destination and generate placeholder
-      // routes until a real feature page replaces the SectionPage element.
+      // items redirect to their default destination; destinations without an
+      // implemented page module keep the shared SectionPage fallback.
       ...navTabs
         .filter((section) => section.path !== '/')
         .flatMap((section) => [
@@ -29,15 +29,14 @@ export const router = createBrowserRouter([
                 <SectionPage titleKey={section.labelKey} />
               ),
           },
-          ...section.items.map((item) => ({
-            path: getNavigationItemPath(section, item),
-            element:
-              section.key === 'clients' && item.id === 'all-clients' ? (
-                <CustomersPage />
-              ) : (
-                <SectionPage titleKey={item.labelKey} />
-              ),
-          })),
+          ...section.items.map((item) => {
+            const path = getNavigationItemPath(section, item);
+            const lazy = getPageRouteLoader(section.key, item.id);
+
+            return lazy
+              ? { path, lazy }
+              : { path, element: <SectionPage titleKey={item.labelKey} /> };
+          }),
         ]),
     ],
   },

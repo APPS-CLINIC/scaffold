@@ -107,10 +107,13 @@ without touching feature code.
 React Router v6 exposes the URL/search params as observable state and provides
 the `RootLayout` mount point for `UrlStateSync`. A typed frontend navigation
 manifest supplies the top tabs, contextual IWA menu, default redirects, and
-pathname matching without storing positional menu indexes.
+pathname matching without storing positional menu indexes. Implemented
+destinations are composed from section-scoped, type-checked route modules and
+loaded lazily through React Router while their paths remain manifest-derived.
 → [ADR 0020](../adr/0020-routing-react-router-v6-for-iwa-compatibility.md),
 [ADR 0023](../adr/0023-configurable-navigation-icon-components.md),
-[ADR 0024](../adr/0024-canonical-route-transitions-in-redux.md)
+[ADR 0024](../adr/0024-canonical-route-transitions-in-redux.md),
+[ADR 0027](../adr/0027-section-scoped-lazy-page-route-modules.md)
 
 ## How a single interaction flows
 
