@@ -17,19 +17,31 @@ import '@/styles/global.css';
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Root element #root not found');
+const root = createRoot(container);
 
 const store = makeStore({
   urlState: createUrlState(window.location.pathname, window.location.search),
 });
 
-createRoot(container).render(
-  <StrictMode>
-    <PrimeReactProvider>
-      <Provider store={store}>
-        <ToastProvider>
-          <RouterProvider router={router} />
-        </ToastProvider>
-      </Provider>
-    </PrimeReactProvider>
-  </StrictMode>,
-);
+async function renderApplication() {
+  const previewDataProfile = import.meta.env.VITE_PREVIEW_DATA_PROFILE?.trim();
+
+  if (import.meta.env.DEV && import.meta.env.MODE !== 'test' && previewDataProfile) {
+    const { seedPreviewData } = await import('@/dev/previewData/previewData');
+    await seedPreviewData(store, previewDataProfile);
+  }
+
+  root.render(
+    <StrictMode>
+      <PrimeReactProvider>
+        <Provider store={store}>
+          <ToastProvider>
+            <RouterProvider router={router} />
+          </ToastProvider>
+        </Provider>
+      </PrimeReactProvider>
+    </StrictMode>,
+  );
+}
+
+void renderApplication();

@@ -46,7 +46,13 @@ a single RTK Query `baseApi` instance owns the server-state cache, and features
 inject their endpoints into it. Typed hooks hide the raw Redux types from
 components. Feature endpoints send list queries to the backend, which owns
 search, filtering, sorting, pagination, and page metadata.
-→ [ADR 0007](../adr/0007-redux-toolkit-and-rtk-query.md)
+
+An opt-in development preview may synchronously seed a transformed, default
+query result into that same cache before React mounts. It never replaces the
+endpoint or creates a parallel slice, and production builds exclude preview
+profiles and fixtures.
+→ [ADR 0007](../adr/0007-redux-toolkit-and-rtk-query.md),
+[ADR 0028](../adr/0028-development-preview-data-through-rtk-query.md)
 
 ### 2. URL state — `src/features/urlState`
 

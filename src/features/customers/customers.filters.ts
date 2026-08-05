@@ -1,6 +1,7 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { z } from 'zod';
 import { selectListQuery } from '@/features/urlState/urlState.selectors';
+import type { ListQuery } from '@/features/urlState/urlState.schema';
 import type { CustomerQuery } from './customers.types';
 
 export const customerFiltersSchema = z.object({
@@ -34,8 +35,11 @@ export function updateCustomerUrlFilters(
   return next;
 }
 
-/** Validated customer endpoint arguments derived from the Redux URL mirror. */
-export const selectCustomerQuery = createSelector([selectListQuery], (listQuery): CustomerQuery => {
+/** Convert generic, validated list state into customer endpoint arguments. */
+export function toCustomerQuery(listQuery: ListQuery): CustomerQuery {
   const { filters, ...baseQuery } = listQuery;
   return { ...baseQuery, ...parseCustomerFilters(filters) };
-});
+}
+
+/** Validated customer endpoint arguments derived from the Redux URL mirror. */
+export const selectCustomerQuery = createSelector([selectListQuery], toCustomerQuery);

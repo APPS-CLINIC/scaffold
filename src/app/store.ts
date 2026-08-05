@@ -12,6 +12,11 @@ import { rootReducer, type RootState } from './rootReducer';
  */
 const devLogger = import.meta.env.DEV && import.meta.env.MODE !== 'test' ? [loggerMiddleware] : [];
 
+// Keep RTK's batched notifications inside the Vitest microtask lifecycle;
+// requestAnimationFrame callbacks can otherwise outlive a torn-down jsdom window.
+const testEnhancerOptions =
+  import.meta.env.MODE === 'test' ? ({ autoBatch: { type: 'tick' } } as const) : undefined;
+
 /**
  * Store factory. Using a factory (instead of a singleton-only export) keeps
  * tests isolated — every test can spin up a fresh store, optionally with
@@ -27,6 +32,7 @@ export const makeStore = (preloadedState?: Partial<RootState>) => {
         .prepend(listenerMiddleware.middleware)
         .concat(baseApi.middleware)
         .concat(devLogger),
+    enhancers: (getDefaultEnhancers) => getDefaultEnhancers(testEnhancerOptions),
   });
 
   // Enables refetchOnFocus / refetchOnReconnect behaviors.

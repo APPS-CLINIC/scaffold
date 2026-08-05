@@ -66,6 +66,7 @@ Choices only — the rationale for each lives in its ADR:
 src/
 ├─ app/          # store, typed hooks (useAppSelector/Dispatch), listener middleware, rootReducer
 ├─ api/          # baseApi — the single RTK Query api; features inject endpoints
+├─ dev/          # opt-in dev-only preview data profiles; excluded from production bundles
 ├─ features/
 │  └─ urlState/  # Zod list-query schema (1-based `page`), Redux mirror of the URL,
 │                # selectors, <UrlStateSync/>, useListQueryState (write hook)

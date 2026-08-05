@@ -2,7 +2,10 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { makeStore, type AppStore } from '@/app/store';
+import { seedCustomerPreviewData } from '@/dev/previewData/customers.preview';
 import { UrlStateSync } from '@/features/urlState/UrlStateSync';
+import { createUrlState } from '@/features/urlState/urlState.slice';
 import i18n from '@/i18n';
 import { installCustomerApiTestTransport } from '@/test/customerApiTestTransport';
 import { renderWithProviders } from '@/test/renderWithProviders';
@@ -17,14 +20,14 @@ function LocationProbe() {
   return <output aria-label="Current customer URL">{search}</output>;
 }
 
-function renderPage(initialEntry = '/clients/all') {
+function renderPage(initialEntry = '/clients/all', store?: AppStore) {
   return renderWithProviders(
     <>
       <UrlStateSync />
       <CustomersView />
       <LocationProbe />
     </>,
-    { initialEntries: [initialEntry] },
+    { initialEntries: [initialEntry], store },
   );
 }
 
@@ -51,6 +54,18 @@ describe('CustomersView', () => {
     expect(await screen.findByRole('columnheader', { name: /nazwa klienta/i })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Dostosuj filtry' }));
     expect(screen.getByRole('combobox', { name: 'Status klienta' })).toBeInTheDocument();
+  });
+
+  it('renders the development preview cache without an HTTP request', async () => {
+    const fetchMock = vi.mocked(globalThis.fetch);
+    const store = makeStore({ urlState: createUrlState('/clients/all') });
+    seedCustomerPreviewData(store);
+
+    renderPage('/clients/all', store);
+
+    expect(await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.')).toBeInTheDocument();
+    expect(screen.getByText('15 results')).toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it('uses the deep-link query for the first and only initial RTK Query request', async () => {
