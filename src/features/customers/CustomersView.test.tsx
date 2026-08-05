@@ -1,9 +1,10 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useLocation } from 'react-router-dom';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { UrlStateSync } from '@/features/urlState/UrlStateSync';
 import i18n from '@/i18n';
+import { installCustomerApiTestTransport } from '@/test/customerApiTestTransport';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import { CustomersView } from './CustomersView';
 import { customersApi } from './customers.api';
@@ -28,11 +29,16 @@ function renderPage(initialEntry = '/clients/all') {
 }
 
 beforeEach(async () => {
+  installCustomerApiTestTransport();
   vi.spyOn(document.head, 'appendChild').mockImplementation(<T extends Node>(node: T): T => {
     if (node instanceof HTMLStyleElement) return node;
     return appendToHead(node) as T;
   });
   await i18n.changeLanguage('en');
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
 });
 
 describe('CustomersView', () => {

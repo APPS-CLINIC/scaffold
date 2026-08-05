@@ -58,7 +58,7 @@ export interface CustomerQuery {
   type: string;
 }
 
-/** Query parameters expected by the planned Spring endpoint. */
+/** Query parameters expected by the Spring customer endpoint. */
 export interface CustomerBackendParams {
   page: number;
   size: number;

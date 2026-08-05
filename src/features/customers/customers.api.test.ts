@@ -1,12 +1,13 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { makeStore } from '@/app/store';
+import { installCustomerApiTestTransport } from '@/test/customerApiTestTransport';
 import {
   customerBackendParamsToSearchParams,
   customersApi,
-  queryMockCustomers,
+  getCustomersRequest,
   toCustomerBackendParams,
 } from './customers.api';
-import type { Customer, CustomerQuery } from './customers.types';
+import type { CustomerQuery } from './customers.types';
 
 const makeQuery = (overrides: Partial<CustomerQuery> = {}): CustomerQuery => ({
   q: '',
@@ -19,42 +20,8 @@ const makeQuery = (overrides: Partial<CustomerQuery> = {}): CustomerQuery => ({
   ...overrides,
 });
 
-const makeCustomer = (
-  id: number,
-  fullName: string,
-  overrides: Partial<Customer> = {},
-): Customer => ({
-  id,
-  fullName,
-  shortName: fullName,
-  grid: String(id),
-  corporateGroupId: null,
-  corporateGroupName: null,
-  corporateGroupGRID: null,
-  internalGroupId: null,
-  internalGroupName: null,
-  kkf: null,
-  krs: null,
-  taxId: null,
-  regon: null,
-  rmAdvisor: null,
-  lendingAdvisor: null,
-  sfAdvisor: null,
-  pcmAdvisor: null,
-  fmAdvisor: null,
-  tsAdvisor: null,
-  ebdAdvisor: null,
-  implementationAdvisor: null,
-  customerServiceAdvisor: null,
-  extensionReviewDate: null,
-  lendingReviewDate: null,
-  lendingRatingDate: null,
-  lendingRatingReviewDate: null,
-  tsPriceConditionEndDate: null,
-  tsPriceConditionStatus: null,
-  type: null,
-  status: 'active',
-  ...overrides,
+afterEach(() => {
+  vi.unstubAllGlobals();
 });
 
 describe('customer API contract', () => {
@@ -85,76 +52,41 @@ describe('customer API contract', () => {
     expect(toCustomerBackendParams(makeQuery({ sort: 'unexpectedField' })).sort).toBe('id,ASC');
   });
 
-  it('filters and searches, then sorts before selecting a page', () => {
-    const source = [
-      makeCustomer(1, 'Zulu Energy', {
-        corporateGroupName: 'Priority Group',
-        type: 'Corporate',
-      }),
-      makeCustomer(2, 'Retail Priority', {
-        corporateGroupName: 'Priority Group',
-        type: 'Institutional',
-      }),
-      makeCustomer(3, 'Beta Energy', {
-        corporateGroupName: 'Priority Group',
-        type: 'Corporate',
-      }),
-      makeCustomer(4, 'Inactive Energy', {
-        corporateGroupName: 'Priority Group',
-        type: 'Corporate',
-        status: 'inactive',
-      }),
-      makeCustomer(5, 'Alpha Energy', {
-        corporateGroupName: 'Priority Group',
-        type: 'Corporate',
-      }),
-      makeCustomer(6, 'Other Energy', {
-        corporateGroupName: 'Secondary Group',
-        type: 'Corporate',
-      }),
-    ];
-    const query = makeQuery({
-      q: 'priority',
-      status: 'active',
-      type: 'corporate',
-      sort: 'fullName',
-      page: 2,
-      pageSize: 1,
-    });
-
-    const response = queryMockCustomers(query, source);
-
-    expect(response.content.map(({ fullName }) => fullName)).toEqual(['Beta Energy']);
-    expect(response.page).toEqual({
-      size: 1,
-      number: 1,
-      totalElements: 3,
-      totalPages: 3,
-    });
-    expect(queryMockCustomers(query, source)).toEqual(response);
-  });
-
-  it('returns consistent Spring page metadata for the full mock dataset', () => {
-    const response = queryMockCustomers(makeQuery({ page: 2, pageSize: 5 }));
-
-    expect(response.content).toHaveLength(5);
-    expect(response.page).toEqual({
-      size: 5,
-      number: 1,
-      totalElements: 15,
-      totalPages: 3,
+  it('builds the endpoint URL from the complete server query', () => {
+    expect(
+      getCustomersRequest(
+        makeQuery({
+          q: 'bank group',
+          page: 2,
+          pageSize: 25,
+          sort: 'fullName',
+          dir: 'desc',
+          status: 'active',
+          type: 'Corporate',
+        }),
+      ),
+    ).toEqual({
+      url: 'v1/customer?page=1&size=25&sort=fullName%2CDESC&q=bank+group&status=active&type=Corporate',
     });
   });
 
-  it('stores fulfilled endpoint data in the shared RTK Query cache', async () => {
+  it('requests one server page, maps its rows, and stores it in the RTK Query cache', async () => {
+    const fetchMock = installCustomerApiTestTransport();
     const store = makeStore();
     const query = makeQuery({ q: 'carrefour' });
     const subscription = store.dispatch(customersApi.endpoints.getCustomers.initiate(query));
 
     const response = await subscription.unwrap();
     const cached = customersApi.endpoints.getCustomers.select(query)(store.getState());
+    const request = fetchMock.mock.calls[0]?.[0];
 
+    expect(request).toBeInstanceOf(Request);
+    if (!(request instanceof Request)) throw new Error('Expected fetch to receive a Request');
+
+    expect(new URL(request.url).searchParams.get('q')).toBe('carrefour');
     expect(response.content.map(({ shortName }) => shortName)).toEqual(['CARREFOUR POLAND']);
+    expect(response.content[0]?.status).toBe('active');
+    expect(response.page.totalElements).toBe(1);
     expect(cached.status).toBe('fulfilled');
     expect(cached.data).toEqual(response);
 

@@ -237,9 +237,13 @@ describe('GenericDataTable', () => {
     const onPageChange = vi.fn();
     const onSortChange = vi.fn();
     renderTable({ onPageChange, onSortChange });
+    const renderedNames = () => screen.getAllByText(/:name:/).map((element) => element.textContent);
+
+    expect(renderedNames()).toEqual(['Alice:name:0', 'Bob:name:1']);
 
     await user.click(screen.getByRole('columnheader', { name: /customer name/i }));
     expect(onSortChange).toHaveBeenCalledWith({ field: 'displayName', order: 'asc' });
+    expect(renderedNames()).toEqual(['Alice:name:0', 'Bob:name:1']);
 
     await user.click(screen.getByRole('button', { name: 'Next customer page' }));
     expect(onPageChange).toHaveBeenCalledWith({ page: 2, pageSize: 10 });

@@ -14,7 +14,7 @@ with performance and best practices in mind.
 | State              | **Redux Toolkit** + **reselect**                                                         |
 | Server state       | **RTK Query** (one `baseApi`, injected endpoints)                                        |
 | Routing            | **React Router v6** (aligned with IWA peer dependencies)                                 |
-| URL ↔ state       | URL is the source of truth, mirrored into Redux via **listener-style sync** + middleware |
+| URL ↔ state        | URL is the source of truth, mirrored into Redux via **listener-style sync** + middleware |
 | Validation         | **Zod** (total parsing of search params)                                                 |
 | Large lists        | **Virtualization** — recommended pattern (`@tanstack/react-virtual`), not bundled        |
 | Styling            | CSS modules + **Tailwind CSS v3** via PostCSS (tokens mapped from CSS variables)         |
@@ -101,6 +101,11 @@ npm run build      # type-check + production build
 
 > Uses **npm** with a committed `package-lock.json`. The Node version is pinned
 > via `.nvmrc` and `engines.node`.
+
+During `npm run dev`, requests under `/api` are proxied to `API_PROXY_TARGET`
+(`http://localhost:8765` by default). The customer endpoint always uses the real
+HTTP backend; search, filtering, sorting, pagination, and page metadata are not
+computed in the browser.
 
 ## Adding a feature
 

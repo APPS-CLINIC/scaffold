@@ -44,7 +44,8 @@ actions. See [ADR 0006](../adr/0006-url-as-single-source-of-truth.md) and
 A single store factory (`makeStore`) composes the root reducer and middleware;
 a single RTK Query `baseApi` instance owns the server-state cache, and features
 inject their endpoints into it. Typed hooks hide the raw Redux types from
-components.
+components. Feature endpoints send list queries to the backend, which owns
+search, filtering, sorting, pagination, and page metadata.
 → [ADR 0007](../adr/0007-redux-toolkit-and-rtk-query.md)
 
 ### 2. URL state — `src/features/urlState`
@@ -76,8 +77,9 @@ optionally **virtualizes** it (server-side pagination carried by
 For configuration-driven tables, the feature container turns the validated URL
 mirror into endpoint arguments, passes the RTK Query result to the table, and
 handles search, filter, sort, and pagination callbacks through the URL-state
-write API. Mock JSON and later backend responses share one data-only endpoint
-contract; neither carries rendering instructions.
+write API. Backend responses use a data-only endpoint contract and never carry
+rendering instructions. The browser receives only the requested page and never
+processes the complete collection.
 
 Feature filters use readable `filter.<key>` search parameters. The shared URL
 layer validates their generic syntax, and the owning feature validates its
