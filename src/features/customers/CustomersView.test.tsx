@@ -46,14 +46,13 @@ afterEach(() => {
 
 describe('CustomersView', () => {
   it('renders the customer view from the typed Polish catalog', async () => {
-    const user = userEvent.setup();
     await i18n.changeLanguage('pl');
     renderPage();
 
     expect(screen.getByRole('heading', { name: 'Klienci oraz ich doradcy' })).toBeInTheDocument();
     expect(await screen.findByRole('columnheader', { name: /nazwa klienta/i })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Dostosuj filtry' }));
-    expect(screen.getByRole('combobox', { name: 'Status klienta' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Dostosuj filtry' })).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText('Szukaj na liście')).not.toBeInTheDocument();
   });
 
   it('renders the development preview cache without an HTTP request', async () => {
@@ -71,13 +70,14 @@ describe('CustomersView', () => {
   it('uses the deep-link query for the first and only initial RTK Query request', async () => {
     const { store } = renderPage('/clients/all?q=carrefour&filter.status=active&pageSize=10');
 
-    expect(screen.getByRole('textbox', { name: 'Search' })).toHaveValue('carrefour');
-    expect(screen.getByRole('combobox', { name: 'Customer status' })).toHaveValue('active');
+    expect(screen.queryByRole('textbox', { name: 'Search' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: 'Customer status' })).not.toBeInTheDocument();
     expect(await screen.findByText('CARREFOUR POLAND SP. Z O.O.')).toBeInTheDocument();
     expect(screen.getByText('1 results')).toBeInTheDocument();
 
     await waitFor(() => {
       const query = selectCustomerQuery(store.getState());
+      expect(query).toMatchObject({ q: 'carrefour', status: 'active', pageSize: 10 });
       expect(customersApi.endpoints.getCustomers.select(query)(store.getState()).status).toBe(
         'fulfilled',
       );
@@ -85,22 +85,17 @@ describe('CustomersView', () => {
     });
   });
 
-  it('stores a selected filter in the URL, resets the page, and refreshes Redux data', async () => {
-    const user = userEvent.setup();
-    renderPage('/clients/all?page=2');
-
-    await user.click(screen.getByRole('button', { name: 'Customize filters' }));
-    await user.selectOptions(screen.getByRole('combobox', { name: 'Customer status' }), 'inactive');
-
-    await waitFor(() => {
-      const search = screen.getByRole('status', { name: 'Current customer URL' }).textContent ?? '';
-      const params = new URLSearchParams(search);
-      expect(params.get('filter.status')).toBe('inactive');
-      expect(params.has('page')).toBe(false);
-    });
+  it('keeps deferred filters wired through deep links without rendering their controls', async () => {
+    const { store } = renderPage('/clients/all?filter.status=inactive');
 
     expect(await screen.findByText('OZAROW CEMENT S.A.')).toBeInTheDocument();
     expect(screen.getByText('4 results')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Customize filters' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: 'Customer status' })).not.toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(selectCustomerQuery(store.getState()).status).toBe('inactive');
+    });
   });
 
   it('writes table sorting and pagination back to the URL', async () => {
