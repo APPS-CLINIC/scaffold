@@ -19,7 +19,7 @@ export const defaultNavTabKey: NavTabKey = defaultNavigationSectionKey;
 
 /**
  * Derive the active tab from a pathname. Nested paths stay within their
- * section (`/clients/42` -> `clients`); unknown paths fall back to `home`
+ * section (`/customers/42` -> `customers`); unknown paths fall back to `home`
  * so the mirror is total, like the rest of the URL parsing.
  */
 export function parseActiveTab(pathname: string): NavTabKey {

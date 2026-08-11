@@ -15,9 +15,9 @@ function InitialLocationProbe() {
 describe('renderWithProviders', () => {
   it('seeds Redux from the same history entry that MemoryRouter renders first', () => {
     renderWithProviders(<InitialLocationProbe />, {
-      initialEntries: ['/clients/all?q=first', '/clients/advisors?q=last'],
+      initialEntries: ['/customers/all?q=first', '/portfolio/reviews?q=last'],
     });
 
-    expect(screen.getByRole('status')).toHaveTextContent('/clients/advisors:last');
+    expect(screen.getByRole('status')).toHaveTextContent('/portfolio/reviews:last');
   });
 });

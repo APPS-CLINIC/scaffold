@@ -4,9 +4,9 @@ import { createUrlState, routeChanged, urlStateReducer } from './urlState.slice'
 describe('urlState route mirror', () => {
   it('exposes one stable action for every pathname transition', () => {
     const action = routeChanged({
-      pathname: '/clients/all/123',
-      sectionKey: 'clients',
-      itemId: 'all-clients',
+      pathname: '/customers/all/123',
+      sectionKey: 'customers',
+      itemId: 'all-customers',
     });
 
     expect(action.type).toBe('urlState/routeChanged');
@@ -16,7 +16,7 @@ describe('urlState route mirror', () => {
   it('creates the initial Redux mirror from the browser URL', () => {
     expect(
       createUrlState(
-        '/clients/all',
+        '/customers/all',
         '?q=bank&filter.status=active&filter.sector=Corporate&page=3&pageSize=10',
       ),
     ).toMatchObject({
@@ -27,9 +27,9 @@ describe('urlState route mirror', () => {
         pageSize: 10,
       },
       route: {
-        pathname: '/clients/all',
-        sectionKey: 'clients',
-        itemId: 'all-clients',
+        pathname: '/customers/all',
+        sectionKey: 'customers',
+        itemId: 'all-customers',
       },
     });
   });

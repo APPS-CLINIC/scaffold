@@ -72,7 +72,7 @@ function LocationProbe() {
 function SectionSwitcher() {
   const navigate = useNavigate();
   return (
-    <button type="button" onClick={() => navigate('/clients/all')}>
+    <button type="button" onClick={() => navigate('/customers/all')}>
       Open clients
     </button>
   );
@@ -123,7 +123,7 @@ describe('ContextualSidebar', () => {
 
   it('persists the desktop collapse preference', async () => {
     const user = userEvent.setup();
-    renderWithProviders(<ContextualSidebar />, { initialEntries: ['/clients/all'] });
+    renderWithProviders(<ContextualSidebar />, { initialEntries: ['/customers/all'] });
 
     const navigation = screen.getByRole('complementary', { name: 'Nawigacja' });
     expect(navigation).toHaveAttribute('data-collapsed', 'false');

@@ -1,5 +1,5 @@
 import type { NavigationSectionKey } from '@/routes/navigation';
-import { clientsPageRoutes } from './clients.pageRoutes';
+import { customersPageRoutes } from './customers.pageRoutes';
 import type { PageRouteDefinitions, PageRouteLoader } from './pageRoutes.types';
 
 /**
@@ -7,7 +7,7 @@ import type { PageRouteDefinitions, PageRouteLoader } from './pageRoutes.types';
  * owns its page mappings in a separate module.
  */
 const pageRouteDefinitions = {
-  clients: clientsPageRoutes,
+  customers: customersPageRoutes,
 } satisfies PageRouteDefinitions;
 
 const pageRouteRegistry: Readonly<Record<string, Readonly<Record<string, PageRouteLoader>>>> =
