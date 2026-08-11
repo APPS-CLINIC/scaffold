@@ -6,7 +6,7 @@ import {
 import type { CustomerResponse, PageResponse } from '@/features/customers/customers.types';
 
 const NativeRequest = globalThis.Request;
-const CUSTOMER_API_PATH = '/api/v1/customer';
+const CUSTOMER_API_PATH = '/api/customers';
 const TEST_ORIGIN = 'https://app.test';
 
 class AbsoluteTestRequest extends NativeRequest {

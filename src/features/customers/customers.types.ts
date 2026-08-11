@@ -47,7 +47,13 @@ export interface Customer extends Omit<CustomerResponse, 'status' | 'tsPriceCond
   tsPriceConditionStatus: CustomerPriceConditionStatus | null;
 }
 
-/** App-facing list query. `page` is always 1-based at this boundary. */
+/**
+ * App-facing list query. `page` is always 1-based at this boundary. The
+ * optional `status`/`type` values are the customer-specific list filters
+ * (empty string means "no filter"); the backend transport shape (0-based
+ * page, Spring `sort` syntax) is derived from this single source in
+ * `toCustomerBackendParams`.
+ */
 export interface CustomerQuery {
   q: string;
   page: number;
@@ -58,27 +64,4 @@ export interface CustomerQuery {
   type: string;
 }
 
-/** Query parameters expected by the Spring customer endpoint. */
-export interface CustomerBackendParams {
-  page: number;
-  size: number;
-  sort: `${string},${'ASC' | 'DESC'}`;
-  q?: string;
-  status?: CustomerStatus;
-  type?: string;
-}
-
-/** Confirmed top-level portion of the photographed list response. */
-export interface CustomerContentResponse<T> {
-  content: T[];
-}
-
-/** Spring-style paginated response. `page.number` is backend-facing and 0-based. */
-export interface PageResponse<T> extends CustomerContentResponse<T> {
-  page: {
-    size: number;
-    number: number;
-    totalElements: number;
-    totalPages: number;
-  };
-}
+export type { PageResponse } from '@/api/pagination.types';

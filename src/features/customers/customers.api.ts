@@ -1,12 +1,6 @@
 import { baseApi } from '@/api/baseApi';
 import { mapCustomerResponse } from './customers.adapter';
-import type {
-  Customer,
-  CustomerBackendParams,
-  CustomerQuery,
-  CustomerResponse,
-  PageResponse,
-} from './customers.types';
+import type { Customer, CustomerQuery, CustomerResponse, PageResponse } from './customers.types';
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -52,26 +46,32 @@ function isCustomerSortField(field: string): field is keyof Customer {
 }
 
 /** Convert the app's 1-based page to the Spring service's 0-based contract. */
-export function toCustomerBackendParams(query: CustomerQuery): CustomerBackendParams {
+export function toCustomerBackendParams(query: CustomerQuery) {
   const page = toPositiveInteger(query.page, 1) - 1;
   const size = toPositiveInteger(query.pageSize, DEFAULT_PAGE_SIZE);
   const requestedSortField = query.sort.trim();
   const sortField = isCustomerSortField(requestedSortField) ? requestedSortField : 'id';
-  const sortDirection = query.dir === 'desc' ? 'DESC' : 'ASC';
+  const sortDirection: 'ASC' | 'DESC' = query.dir === 'desc' ? 'DESC' : 'ASC';
   const q = query.q.trim();
   const type = query.type.trim();
 
   return {
     page,
     size,
-    sort: `${sortField},${sortDirection}`,
+    sort: `${sortField},${sortDirection}` as const,
     ...(q ? { q } : {}),
     ...(query.status ? { status: query.status } : {}),
     ...(type ? { type } : {}),
   };
 }
 
-/** Build URL parameters for the `/api/v1/customer` endpoint. */
+/**
+ * The Spring transport shape, derived from the single conversion above so the
+ * query and its backend counterpart can never drift apart.
+ */
+export type CustomerBackendParams = ReturnType<typeof toCustomerBackendParams>;
+
+/** Build URL parameters for the `/api/customers` endpoint. */
 export function customerBackendParamsToSearchParams(
   params: CustomerBackendParams,
 ): URLSearchParams {
@@ -91,7 +91,7 @@ export function customerBackendParamsToSearchParams(
 export function getCustomersRequest(query: CustomerQuery): { url: string } {
   const searchParams = customerBackendParamsToSearchParams(toCustomerBackendParams(query));
   return {
-    url: `v1/customer?${searchParams.toString()}`,
+    url: `customers?${searchParams.toString()}`,
   };
 }
 

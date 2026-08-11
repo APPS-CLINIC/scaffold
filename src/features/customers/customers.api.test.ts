@@ -66,7 +66,7 @@ describe('customer API contract', () => {
         }),
       ),
     ).toEqual({
-      url: 'v1/customer?page=1&size=25&sort=fullName%2CDESC&q=bank+group&status=active&type=Corporate',
+      url: 'customers?page=1&size=25&sort=fullName%2CDESC&q=bank+group&status=active&type=Corporate',
     });
   });
 
