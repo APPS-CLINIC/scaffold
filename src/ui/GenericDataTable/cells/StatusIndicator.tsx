@@ -1,4 +1,4 @@
-import { twMerge } from 'iwa-react-components';
+import { twMerge } from '../../iwa';
 
 export type StatusIndicatorTone = 'success' | 'inactive' | 'warning';
 

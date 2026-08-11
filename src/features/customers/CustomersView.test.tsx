@@ -9,6 +9,7 @@ import { createUrlState } from '@/features/urlState/urlState.slice';
 import i18n from '@/i18n';
 import { installCustomerApiTestTransport } from '@/test/customerApiTestTransport';
 import { renderWithProviders } from '@/test/renderWithProviders';
+import { mockTableContainerWidth } from '@/test/tableLayout';
 import { CustomersView } from './CustomersView';
 import { customersApi } from './customers.api';
 import { selectCustomerQuery } from './customers.filters';
@@ -20,7 +21,7 @@ function LocationProbe() {
   return <output aria-label="Current customer URL">{search}</output>;
 }
 
-function renderPage(initialEntry = '/clients/all', store?: AppStore) {
+function renderPage(initialEntry = '/customers/all', store?: AppStore) {
   return renderWithProviders(
     <>
       <UrlStateSync />
@@ -32,6 +33,9 @@ function renderPage(initialEntry = '/clients/all', store?: AppStore) {
 }
 
 beforeEach(async () => {
+  // Wide enough for the nine reference columns; identifiers and advisors
+  // stay in the accordion, mirroring the desktop reference layout.
+  mockTableContainerWidth(1380);
   installCustomerApiTestTransport();
   vi.spyOn(document.head, 'appendChild').mockImplementation(<T extends Node>(node: T): T => {
     if (node instanceof HTMLStyleElement) return node;
@@ -57,10 +61,10 @@ describe('CustomersView', () => {
 
   it('renders the development preview cache without an HTTP request', async () => {
     const fetchMock = vi.mocked(globalThis.fetch);
-    const store = makeStore({ urlState: createUrlState('/clients/all') });
+    const store = makeStore({ urlState: createUrlState('/customers/all') });
     seedCustomerPreviewData(store);
 
-    renderPage('/clients/all', store);
+    renderPage('/customers/all', store);
 
     expect(await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.')).toBeInTheDocument();
     expect(screen.getByText('15 results')).toBeInTheDocument();
@@ -68,7 +72,7 @@ describe('CustomersView', () => {
   });
 
   it('uses the deep-link query for the first and only initial RTK Query request', async () => {
-    const { store } = renderPage('/clients/all?q=carrefour&filter.status=active&pageSize=10');
+    const { store } = renderPage('/customers/all?q=carrefour&filter.status=active&pageSize=10');
 
     expect(screen.queryByRole('textbox', { name: 'Search' })).not.toBeInTheDocument();
     expect(screen.queryByRole('combobox', { name: 'Customer status' })).not.toBeInTheDocument();
@@ -86,7 +90,7 @@ describe('CustomersView', () => {
   });
 
   it('keeps deferred filters wired through deep links without rendering their controls', async () => {
-    const { store } = renderPage('/clients/all?filter.status=inactive');
+    const { store } = renderPage('/customers/all?filter.status=inactive');
 
     expect(await screen.findByText('OZAROW CEMENT S.A.')).toBeInTheDocument();
     expect(screen.getByText('4 results')).toBeInTheDocument();

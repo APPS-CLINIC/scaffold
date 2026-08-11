@@ -32,10 +32,16 @@ fetching and URL state; the table receives rows plus controlled pagination and
 sort values, then reports user intent through `onPageChange` and
 `onSortChange`. Its public `page` value is always **1-based**.
 
-The static config keeps every primary cell component correlated with its row
-field. Header and detail label keys are typed against the i18n catalog and are
-translated inside the seam, so the config remains static when the language
-changes.
+The config is **one flat `fields` list** — every field can render as a column.
+At runtime the table measures its container and shows, in display order, as
+many columns as fit **without horizontal scrolling**; the remaining fields
+move to the expanded-row accordion. Each field carries the same config shape:
+a single `labelKey` (used for the column header and the accordion label
+alike), a pixel `width` the fit engine budgets with, an optional cell
+`component`, and `sortable`. `alwaysVisible: true` pins a field so it can
+never drop; `columnOrder` overrides the display (and therefore drop) order.
+When the currently sorted column drops into the accordion the table calls
+`onSortClear`, so the owner can reset the sort in its store/URL.
 
 Reusable, domain-neutral cell components live with the table seam, one public
 cell per file. Features compose `TextCell`, `UnderlinedTextCell`, `DateCell`,
@@ -57,36 +63,41 @@ interface Customer {
 
 export const customerTableConfig = {
   dataKey: 'id',
-  columns: [
+  fields: [
     {
       field: 'name',
-      headerKey: 'customers.table.column.name',
+      labelKey: 'customers.table.field.fullName',
       component: UnderlinedTextCell,
       sortable: true,
+      width: 192,
+      alwaysVisible: true,
     },
     {
       field: 'status',
-      headerKey: 'customers.table.column.status',
+      labelKey: 'customers.table.field.status',
       component: ActiveInactiveStatusCell,
+      width: 112,
     },
-  ],
-  detailFields: [
     {
       field: 'internalNote',
-      labelKey: 'customers.table.detail.reviewExtension',
+      labelKey: 'customers.table.field.kkf',
+      width: 128,
     },
   ],
 } as const satisfies GenericDataTableConfig<Customer>;
 ```
 
-`detailFields` is an explicit allowlist: `secretToken` is never rendered just
+`fields` is an explicit allowlist: `secretToken` is never rendered just
 because it exists in backend JSON. Primitive and null values have a safe
 default renderer; configured object values require their own typed component.
 Expansion is local interaction state and behaves as a single-row accordion by
 default (`singleRowExpansion: false` opts into multiple expanded rows). A
 feature can control it with `expandedRowKeys` and
 `onExpandedRowKeysChange`, for example to provide an external "expand all"
-control without moving presentation state into Redux or the URL.
+control without moving presentation state into Redux or the URL. The
+expansion toggle column renders only while at least one field is in the
+accordion. In jsdom tests use `mockTableContainerWidth` from
+`@/test/tableLayout` to give the fit engine a concrete width.
 
 ## `useCustomIcon`
 

@@ -3,6 +3,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
+import { mockTableContainerWidth, resizeTableContainer } from '@/test/tableLayout';
 import {
   GenericDataTable,
   type GenericDataTableCellProps,
@@ -50,31 +51,43 @@ const rows: readonly TestRow[] = [
   },
 ];
 
+/**
+ * Widths sum to 600. At WIDE_CONTAINER everything fits as columns; at
+ * NARROW_CONTAINER the budget is 400 - 44 (expander) - 160 (pinned name)
+ * = 196, so `status` (120) fits and `note`/`metadata` drop to the accordion.
+ */
+const WIDE_CONTAINER = 800;
+const NARROW_CONTAINER = 400;
+
 const config = {
   dataKey: 'id',
-  columns: [
+  fields: [
     {
       field: 'name',
-      headerKey: 'customers.table.column.name',
+      labelKey: 'customers.table.field.fullName',
       component: NameCell,
+      width: 160,
+      alwaysVisible: true,
       sortable: true,
       sortField: 'displayName',
     },
     {
       field: 'status',
-      headerKey: 'customers.table.column.status',
+      labelKey: 'customers.table.field.status',
       component: StatusCell,
+      width: 120,
+      sortable: true,
     },
-  ],
-  detailFields: [
     {
       field: 'note',
-      labelKey: 'customers.table.detail.reviewExtension',
+      labelKey: 'customers.table.field.kkf',
+      width: 140,
     },
     {
       field: 'metadata',
-      labelKey: 'customers.table.detail.internalGroupName',
+      labelKey: 'customers.table.field.internalGroupName',
       component: MetadataCell,
+      width: 180,
     },
   ],
 } as const satisfies GenericDataTableConfig<TestRow>;
@@ -128,42 +141,92 @@ beforeEach(async () => {
 });
 
 describe('GenericDataTable', () => {
-  it('renders translated headings and a required custom component for every primary cell', () => {
+  it('shows every configured field as a column when the container is wide enough', () => {
+    mockTableContainerWidth(WIDE_CONTAINER);
     renderTable();
 
     expect(screen.getByRole('columnheader', { name: /customer name/i })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: /status/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'KKF' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /internal group name/i })).toBeInTheDocument();
     expect(screen.getByText('Alice:name:0')).toBeInTheDocument();
-    expect(screen.getByText('Bob:name:1')).toBeInTheDocument();
     expect(screen.getByText('ACTIVE')).toBeInTheDocument();
-    expect(screen.getByText('INACTIVE')).toBeInTheDocument();
+    expect(screen.getByText('Custom metadata: gold')).toBeInTheDocument();
     expect(screen.getByText('Showing 1-10 of 22')).toBeInTheDocument();
 
-    const aliceRow = screen.getByText('Alice:name:0').closest('tr');
-    expect(aliceRow).not.toBeNull();
-    if (!aliceRow) return;
-    const cells = within(aliceRow).getAllByRole('cell');
-    const lastCell = cells.at(-1);
-    expect(lastCell).toBeDefined();
-    if (!lastCell) return;
-    expect(within(lastCell).getByRole('button', { name: 'Expand Alice details' })).toBeVisible();
+    // Everything fits, so there is nothing to expand.
+    expect(screen.queryByRole('button', { name: 'Expand Alice details' })).not.toBeInTheDocument();
+    // The unconfigured field never renders anywhere.
+    expect(screen.queryByText('alice-classified')).not.toBeInTheDocument();
   });
 
-  it('renders only whitelisted details and safely formats null and custom values', async () => {
+  it('moves fields that do not fit into the accordion and keeps column order', async () => {
+    mockTableContainerWidth(NARROW_CONTAINER);
     const user = userEvent.setup();
     renderTable();
+
+    expect(screen.getByRole('columnheader', { name: /customer name/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /status/i })).toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'KKF' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Custom metadata: gold')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Expand Alice details' }));
 
     const details = screen.getByRole('region', { name: 'Collapse Alice details' });
-    expect(within(details).getByText('Review extension')).toBeInTheDocument();
+    expect(within(details).getByText('KKF')).toBeInTheDocument();
     expect(within(details).getByText('Not available')).toBeInTheDocument();
     expect(within(details).getByText('Custom metadata: gold')).toBeInTheDocument();
     expect(screen.queryByText('alice-classified')).not.toBeInTheDocument();
     expect(screen.queryByText('bob-classified')).not.toBeInTheDocument();
   });
 
+  it('re-splits the columns when the container is resized', () => {
+    mockTableContainerWidth(WIDE_CONTAINER);
+    renderTable();
+
+    expect(screen.getByRole('columnheader', { name: 'KKF' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Expand Alice details' })).not.toBeInTheDocument();
+
+    resizeTableContainer(NARROW_CONTAINER);
+
+    expect(screen.queryByRole('columnheader', { name: 'KKF' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Expand Alice details' })).toBeInTheDocument();
+  });
+
+  it('renders columns in the configured columnOrder', () => {
+    mockTableContainerWidth(WIDE_CONTAINER);
+    renderTable({ config: { ...config, columnOrder: ['status', 'name'] } });
+
+    const headers = screen.getAllByRole('columnheader').map((header) => header.textContent);
+    expect(headers[0]).toMatch(/status/i);
+    expect(headers[1]).toMatch(/customer name/i);
+  });
+
+  it('asks the owner to clear sorting when the sorted column drops into the accordion', () => {
+    mockTableContainerWidth(WIDE_CONTAINER);
+    const onSortClear = vi.fn();
+    renderTable({ sortField: 'note', sortOrder: 'asc', onSortClear });
+
+    expect(onSortClear).not.toHaveBeenCalled();
+
+    resizeTableContainer(NARROW_CONTAINER);
+
+    expect(onSortClear).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps the sort untouched when the sorted column stays visible', () => {
+    mockTableContainerWidth(WIDE_CONTAINER);
+    const onSortClear = vi.fn();
+    renderTable({ sortField: 'displayName', sortOrder: 'desc', onSortClear });
+
+    resizeTableContainer(NARROW_CONTAINER);
+
+    // `name` is alwaysVisible, so its sort survives any width.
+    expect(onSortClear).not.toHaveBeenCalled();
+  });
+
   it('behaves as a single-row accordion by default', async () => {
+    mockTableContainerWidth(NARROW_CONTAINER);
     const user = userEvent.setup();
     renderTable();
 
@@ -185,6 +248,7 @@ describe('GenericDataTable', () => {
   });
 
   it('supports multiple expanded rows when configured', async () => {
+    mockTableContainerWidth(NARROW_CONTAINER);
     const user = userEvent.setup();
     renderTable({ config: { ...config, singleRowExpansion: false } });
 
@@ -196,6 +260,7 @@ describe('GenericDataTable', () => {
   });
 
   it('supports controlled expanded keys for an external expand-all control', async () => {
+    mockTableContainerWidth(NARROW_CONTAINER);
     const user = userEvent.setup();
     const onExpandedRowKeysChange = vi.fn();
     renderTable({ expandedRowKeys: ['1'], onExpandedRowKeysChange });
@@ -207,6 +272,7 @@ describe('GenericDataTable', () => {
   });
 
   it('notifies an uncontrolled expansion change once in StrictMode', async () => {
+    mockTableContainerWidth(NARROW_CONTAINER);
     const user = userEvent.setup();
     const onExpandedRowKeysChange = vi.fn();
 
@@ -233,6 +299,7 @@ describe('GenericDataTable', () => {
   });
 
   it('maps PrimeReact pagination and sorting events to the controlled server contract', async () => {
+    mockTableContainerWidth(WIDE_CONTAINER);
     const user = userEvent.setup();
     const onPageChange = vi.fn();
     const onSortChange = vi.fn();
@@ -249,7 +316,21 @@ describe('GenericDataTable', () => {
     expect(onPageChange).toHaveBeenCalledWith({ page: 2, pageSize: 10 });
   });
 
+  it('exposes first and last page controls in the paginator', async () => {
+    mockTableContainerWidth(WIDE_CONTAINER);
+    const user = userEvent.setup();
+    const onPageChange = vi.fn();
+    renderTable({ page: 2, onPageChange });
+
+    await user.click(screen.getByRole('button', { name: 'First customer page' }));
+    expect(onPageChange).toHaveBeenCalledWith({ page: 1, pageSize: 10 });
+
+    await user.click(screen.getByRole('button', { name: 'Last customer page' }));
+    expect(onPageChange).toHaveBeenCalledWith({ page: 3, pageSize: 10 });
+  });
+
   it('exposes accessible empty and error states', () => {
+    mockTableContainerWidth(WIDE_CONTAINER);
     const { rerender, props } = renderTable({ rows: [], totalRecords: 0 });
 
     expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
@@ -266,6 +347,7 @@ describe('GenericDataTable', () => {
   });
 
   it('announces loading, marks the table busy, and keeps row actions touch friendly', () => {
+    mockTableContainerWidth(NARROW_CONTAINER);
     renderTable({ loading: true });
 
     expect(screen.getByRole('status')).toHaveTextContent('Loading test customers');
@@ -281,6 +363,7 @@ describe('GenericDataTable', () => {
   });
 
   it('merges conflicting caller classes with the caller overrides taking precedence', () => {
+    mockTableContainerWidth(WIDE_CONTAINER);
     const { container } = renderTable({
       className: 'min-w-full overflow-visible custom-root',
     });

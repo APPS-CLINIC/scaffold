@@ -1,33 +1,20 @@
-import type { ReactNode } from 'react';
 import type {
   GenericDataTableCellComponent,
-  GenericDataTableDetailField,
   GenericDataTableField,
+  GenericDataTableFieldConfig,
   GenericDataTableLabels,
 } from '../GenericDataTable.types';
-
-function renderDefaultDetail(value: unknown, notAvailable: ReactNode): ReactNode {
-  if (value === null || value === undefined) return notAvailable;
-
-  switch (typeof value) {
-    case 'string':
-    case 'number':
-    case 'boolean':
-    case 'bigint':
-      return String(value);
-    default:
-      return notAvailable;
-  }
-}
+import { renderCellValue } from '../cells/cellValue';
 
 interface DetailValueProps<T extends object> {
-  detail: GenericDataTableDetailField<T>;
+  detail: GenericDataTableFieldConfig<T>;
   labels: GenericDataTableLabels<T>;
   locale: string;
   row: T;
   rowIndex: number;
 }
 
+/** Accordion value renderer: the field's cell component, or a primitive fallback. */
 export function DetailValue<T extends object>({
   detail,
   labels,
@@ -38,7 +25,7 @@ export function DetailValue<T extends object>({
   const field = detail.field;
   const value = row[field];
 
-  if (!detail.component) return renderDefaultDetail(value, labels.notAvailable);
+  if (!detail.component) return renderCellValue(value, labels.notAvailable);
 
   const Component = detail.component as unknown as GenericDataTableCellComponent<
     T,

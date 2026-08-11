@@ -1,12 +1,12 @@
 import { useTranslation } from 'react-i18next';
 import type {
-  GenericDataTableDetailField,
+  GenericDataTableFieldConfig,
   GenericDataTableLabels,
 } from '../GenericDataTable.types';
 import { DetailValue } from './DetailValue';
 
 interface ExpandedRowContentProps<T extends object> {
-  details: readonly GenericDataTableDetailField<T>[];
+  fields: readonly GenericDataTableFieldConfig<T>[];
   detailsId: string;
   labels: GenericDataTableLabels<T>;
   locale: string;
@@ -14,8 +14,9 @@ interface ExpandedRowContentProps<T extends object> {
   rowIndex: number;
 }
 
+/** The accordion body: every field that did not fit as a column, in order. */
 export function ExpandedRowContent<T extends object>({
-  details,
+  fields,
   detailsId,
   labels,
   locale,
@@ -28,20 +29,18 @@ export function ExpandedRowContent<T extends object>({
     <section
       id={detailsId}
       aria-labelledby={`${detailsId}-toggle`}
-      className="sticky left-0 w-[100cqw] bg-[var(--surface)] px-4 py-2 sm:px-6"
+      className="w-full bg-[var(--surface)] px-4 py-2 sm:px-6"
     >
       <dl className="mx-auto grid max-w-lg grid-cols-1 gap-y-1">
-        {details.map((detail) => (
+        {fields.map((field) => (
           <div
             className="grid min-w-0 grid-cols-1 items-baseline text-xs leading-5 sm:grid-cols-[minmax(9rem,auto)_minmax(0,1fr)] sm:gap-2"
-            key={String(detail.field)}
+            key={String(field.field)}
           >
-            <dt className="font-semibold text-[var(--muted)] sm:text-right">
-              {t(detail.labelKey)}
-            </dt>
+            <dt className="font-semibold text-[var(--muted)] sm:text-right">{t(field.labelKey)}</dt>
             <dd className="min-w-0 break-words">
               <DetailValue
-                detail={detail}
+                detail={field}
                 labels={labels}
                 locale={locale}
                 row={row}

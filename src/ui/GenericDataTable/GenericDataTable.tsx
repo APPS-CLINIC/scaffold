@@ -1,15 +1,17 @@
 import {
   forwardRef,
+  useCallback,
+  useEffect,
   useId,
   useMemo,
+  useRef,
   type ForwardedRef,
   type ReactElement,
   type RefAttributes,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import { twMerge } from 'iwa-react-components';
 import { Column } from 'primereact/column';
-import { DataTable } from 'primereact/datatable';
+import { PaginatorTable, twMerge } from '../iwa';
 import { ExpandedRowContent, PrimaryCell, RowExpansionButton } from './components';
 import {
   createDataTablePassThrough,
@@ -25,6 +27,7 @@ import {
 } from './GenericDataTable.prime';
 import type { GenericDataTableProps } from './GenericDataTable.types';
 import { useExpandedRows } from './useExpandedRows';
+import { useResponsiveFields } from './useResponsiveFields';
 
 interface GenericDataTableComponent {
   <T extends object>(
@@ -49,6 +52,7 @@ function GenericDataTableInner<T extends object>(
     onExpandedRowKeysChange,
     onPageChange,
     onSortChange,
+    onSortClear,
     className,
     ...rest
   }: GenericDataTableProps<T>,
@@ -58,11 +62,15 @@ function GenericDataTableInner<T extends object>(
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const tableId = useId();
   const singleRowExpansion = config.singleRowExpansion ?? true;
-  const hasDetails = config.detailFields.length > 0;
   const hasError = error !== null && error !== undefined && error !== false;
   const safePage = Math.max(1, Math.trunc(page));
   const safePageSize = Math.max(1, Math.trunc(pageSize));
   const tableRows = useMemo(() => rows.map((row) => row as unknown as PrimeDataTableRow), [rows]);
+  const { containerRef, containerWidth, visibleFields, accordionFields } = useResponsiveFields({
+    fields: config.fields,
+    columnOrder: config.columnOrder,
+  });
+  const hasDetails = accordionFields.length > 0;
   const paginatorTemplate = useMemo(
     () => createPaginatorTemplate(labels.paginatorActions),
     [labels.paginatorActions],
@@ -84,11 +92,40 @@ function GenericDataTableInner<T extends object>(
     onExpandedRowKeysChange,
   });
 
+  const setRootRef = useCallback(
+    (node: HTMLDivElement | null) => {
+      containerRef.current = node;
+      if (typeof ref === 'function') ref(node);
+      else if (ref) ref.current = node;
+    },
+    [containerRef, ref],
+  );
+
+  // When the sorted column drops into the accordion, ask the owner to clear
+  // the sort. Guarded by measurement so the pre-measure minimal split never
+  // wipes a valid sort, and by the last-cleared key so it fires once.
+  const visibleSortKeys = useMemo(
+    () => new Set(visibleFields.map((field) => field.sortField ?? String(field.field))),
+    [visibleFields],
+  );
+  const lastClearedSortRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!sortField || !onSortClear) return;
+    if (containerWidth === null || containerWidth <= 0) return;
+    if (visibleSortKeys.has(sortField)) {
+      lastClearedSortRef.current = null;
+      return;
+    }
+    if (lastClearedSortRef.current === sortField) return;
+    lastClearedSortRef.current = sortField;
+    onSortClear();
+  }, [containerWidth, onSortClear, sortField, visibleSortKeys]);
+
   const getDetailsId = (row: T) => `${tableId}-details-${encodeURIComponent(getRowKey(row))}`;
 
   return (
     <div
-      ref={ref}
+      ref={setRootRef}
       className={twMerge('w-full min-w-0 max-w-full overflow-hidden', className)}
       {...rest}
     >
@@ -107,7 +144,7 @@ function GenericDataTableInner<T extends object>(
         </div>
       ) : null}
 
-      <DataTable
+      <PaginatorTable
         value={tableRows}
         dataKey={String(config.dataKey)}
         lazy
@@ -134,7 +171,7 @@ function GenericDataTableInner<T extends object>(
 
           return (
             <ExpandedRowContent
-              details={config.detailFields}
+              fields={accordionFields}
               detailsId={getDetailsId(row)}
               labels={labels}
               locale={locale}
@@ -148,27 +185,27 @@ function GenericDataTableInner<T extends object>(
           const change = mapSortEvent(event);
           if (change) onSortChange(change);
         }}
-        scrollable
         size="small"
         className={DATA_TABLE_CLASS_NAME}
-        tableClassName="min-w-[82rem] table-fixed text-sm"
+        tableClassName="w-full table-fixed text-sm"
         paginatorClassName="border-t border-[var(--navigation-accent)] bg-[var(--surface)]"
         paginatorTemplate={paginatorTemplate}
         pt={dataTablePassThrough}
       >
-        {config.columns.map((column) => (
+        {visibleFields.map((field) => (
           <Column
-            key={String(column.field)}
-            columnKey={String(column.field)}
-            field={String(column.field)}
-            header={t(column.headerKey)}
-            sortable={column.sortable}
-            sortField={column.sortField ?? String(column.field)}
-            headerClassName={twMerge('whitespace-normal', column.headerClassName)}
-            bodyClassName={twMerge('whitespace-nowrap', column.cellClassName)}
+            key={String(field.field)}
+            columnKey={String(field.field)}
+            field={String(field.field)}
+            header={t(field.labelKey)}
+            sortable={field.sortable}
+            sortField={field.sortField ?? String(field.field)}
+            style={{ width: `${field.width}px` }}
+            headerClassName={twMerge('whitespace-normal', field.headerClassName)}
+            bodyClassName={twMerge('whitespace-nowrap', field.cellClassName)}
             body={(primeRow: PrimeDataTableRow, options: PrimeColumnBodyOptions) => (
               <PrimaryCell
-                column={column}
+                column={field}
                 locale={locale}
                 notAvailable={labels.notAvailable}
                 row={primeRow as unknown as T}
@@ -181,8 +218,8 @@ function GenericDataTableInner<T extends object>(
         {hasDetails ? (
           <Column
             columnKey="__row_details__"
-            headerClassName="sticky right-0 z-20 w-11 min-w-11 bg-[var(--surface)] p-0 sm:w-9 sm:min-w-9"
-            bodyClassName="sticky right-0 z-10 w-11 min-w-11 bg-[var(--surface)] p-0 text-center sm:w-9 sm:min-w-9"
+            headerClassName="w-11 min-w-11 bg-[var(--surface)] p-0 sm:w-9 sm:min-w-9"
+            bodyClassName="w-11 min-w-11 bg-[var(--surface)] p-0 text-center sm:w-9 sm:min-w-9"
             body={(primeRow: PrimeDataTableRow) => {
               const row = primeRow as unknown as T;
 
@@ -198,13 +235,16 @@ function GenericDataTableInner<T extends object>(
             }}
           />
         ) : null}
-      </DataTable>
+      </PaginatorTable>
     </div>
   );
 }
 
 /**
  * A typed, vendor-neutral table seam for lazy server data. Pagination is
- * 1-based at this public boundary; URL/Redux ownership remains with the caller.
+ * 1-based at this public boundary; URL/Redux ownership remains with the
+ * caller. Which configured fields render as columns is decided at runtime by
+ * `useResponsiveFields`, so the table never scrolls horizontally — overflow
+ * fields move to the expanded-row accordion.
  */
 export const GenericDataTable = forwardRef(GenericDataTableInner) as GenericDataTableComponent;

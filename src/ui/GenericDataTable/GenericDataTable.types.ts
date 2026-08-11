@@ -30,43 +30,47 @@ export type GenericDataTableCellComponent<
   K extends GenericDataTableField<T> = GenericDataTableField<T>,
 > = ComponentType<GenericDataTableCellProps<T, K>>;
 
-interface GenericDataTableColumnForField<T extends object, K extends GenericDataTableField<T>> {
+interface GenericDataTableFieldConfigBase<T extends object, K extends GenericDataTableField<T>> {
   field: K;
-  headerKey: MessageKey;
-  component: GenericDataTableCellComponent<T, K>;
+  /** Single label used for both the column header and the accordion row. */
+  labelKey: MessageKey;
+  /** Pixel width the field occupies as a column; the fit engine budgets with it. */
+  width: number;
+  /** Renders the value in the column cell and in the accordion alike. */
+  component?: GenericDataTableCellComponent<T, K>;
   sortable?: boolean;
+  /** Server-side sort key when it differs from `field`. */
   sortField?: string;
+  /** Never moved to the accordion, regardless of available width. */
+  alwaysVisible?: boolean;
   headerClassName?: string;
   cellClassName?: string;
 }
 
-/** A discriminated union that keeps each column's field and cell value correlated. */
-export type GenericDataTableColumn<T extends object> = {
-  [K in GenericDataTableField<T>]: GenericDataTableColumnForField<T, K>;
-}[GenericDataTableField<T>];
-
-interface GenericDataTableDetailFieldBase<T extends object, K extends GenericDataTableField<T>> {
-  field: K;
-  labelKey: MessageKey;
-  component?: GenericDataTableCellComponent<T, K>;
-}
-
 /**
- * An explicit expanded-row allowlist. Non-primitive values require a custom
- * component so an object can never be exposed accidentally as stringified data.
+ * Unified per-field configuration. Whether a field renders as a table column
+ * or inside the expanded-row accordion is decided at runtime from the
+ * available width — never by the config shape. Non-primitive values require a
+ * custom component so an object can never leak as stringified data.
  */
-export type GenericDataTableDetailField<T extends object> = {
+export type GenericDataTableFieldConfig<T extends object> = {
   [K in GenericDataTableField<T>]: T[K] extends GenericDataTablePrimitive
-    ? GenericDataTableDetailFieldBase<T, K>
-    : GenericDataTableDetailFieldBase<T, K> & {
+    ? GenericDataTableFieldConfigBase<T, K>
+    : GenericDataTableFieldConfigBase<T, K> & {
         component: GenericDataTableCellComponent<T, K>;
       };
 }[GenericDataTableField<T>];
 
 export interface GenericDataTableConfig<T extends object> {
   dataKey: GenericDataTableDataKey<T>;
-  columns: readonly GenericDataTableColumn<T>[];
-  detailFields: readonly GenericDataTableDetailField<T>[];
+  /** Every field the table can show — as a column when it fits, else in the accordion. */
+  fields: readonly GenericDataTableFieldConfig<T>[];
+  /**
+   * Display-order override. Listed fields render first, in this order; the
+   * remaining fields keep their `fields` order after them. Columns drop to
+   * the accordion from the end of the resolved order.
+   */
+  columnOrder?: readonly GenericDataTableField<T>[];
   singleRowExpansion?: boolean;
 }
 
@@ -122,4 +126,9 @@ export interface GenericDataTableProps<T extends object> extends Omit<
   onExpandedRowKeysChange?: (keys: readonly string[]) => void;
   onPageChange: (change: GenericDataTablePageChange) => void;
   onSortChange: (change: GenericDataTableSortChange) => void;
+  /**
+   * Called when the currently sorted column stops being visible (it dropped
+   * into the accordion), so the owner can clear the sort in its store/URL.
+   */
+  onSortClear?: () => void;
 }

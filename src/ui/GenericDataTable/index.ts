@@ -9,11 +9,10 @@ export {
 export type {
   GenericDataTableCellComponent,
   GenericDataTableCellProps,
-  GenericDataTableColumn,
   GenericDataTableConfig,
   GenericDataTableDataKey,
-  GenericDataTableDetailField,
   GenericDataTableField,
+  GenericDataTableFieldConfig,
   GenericDataTableFieldWithValue,
   GenericDataTableLabels,
   GenericDataTablePageChange,
