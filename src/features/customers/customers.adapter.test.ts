@@ -62,4 +62,14 @@ describe('customer response adapter', () => {
       }),
     ).toMatchObject({ status: null, tsPriceConditionStatus: null });
   });
+
+  it('rejects labels that collide with Object.prototype members', () => {
+    expect(
+      mapCustomerResponse({
+        ...response,
+        status: 'constructor',
+        tsPriceConditionStatus: ' __proto__ ',
+      }),
+    ).toMatchObject({ status: null, tsPriceConditionStatus: null });
+  });
 });

@@ -110,7 +110,13 @@ function GenericDataTableInner<T extends object>(
   );
   const lastClearedSortRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!sortField || !onSortClear) return;
+    if (!sortField || !onSortClear) {
+      // No active sort: forget the last cleared key, so the same sort can be
+      // cleared again if it is re-applied (deep link, browser back) while its
+      // column is still hidden.
+      lastClearedSortRef.current = null;
+      return;
+    }
     if (containerWidth === null || containerWidth <= 0) return;
     if (visibleSortKeys.has(sortField)) {
       lastClearedSortRef.current = null;
@@ -159,13 +165,17 @@ function GenericDataTableInner<T extends object>(
         removableSort={false}
         loading={loading}
         emptyMessage={
-          loading || hasError ? null : (
+          // A falsy value would fall back to PrimeReact's untranslated
+          // locale default, so suppression needs a real (hidden) node.
+          loading || hasError ? (
+            <span aria-hidden="true" className="hidden" />
+          ) : (
             <span className="inline-block py-6" role="status">
               {labels.empty}
             </span>
           )
         }
-        expandedRows={expandedRows}
+        expandedRows={hasDetails ? expandedRows : undefined}
         rowExpansionTemplate={(primeRow: PrimeDataTableRow, options: { index: number }) => {
           const row = primeRow as unknown as T;
 
@@ -218,6 +228,11 @@ function GenericDataTableInner<T extends object>(
         {hasDetails ? (
           <Column
             columnKey="__row_details__"
+            header={
+              labels.detailsColumn ? (
+                <span className="sr-only">{labels.detailsColumn}</span>
+              ) : undefined
+            }
             headerClassName="w-11 min-w-11 bg-[var(--surface)] p-0 sm:w-9 sm:min-w-9"
             bodyClassName="w-11 min-w-11 bg-[var(--surface)] p-0 text-center sm:w-9 sm:min-w-9"
             body={(primeRow: PrimeDataTableRow) => {

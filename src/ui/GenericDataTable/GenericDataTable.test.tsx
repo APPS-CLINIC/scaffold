@@ -98,6 +98,7 @@ const labels = {
   empty: 'No test customers',
   pagination: 'Test customer pagination',
   notAvailable: 'Not available',
+  detailsColumn: 'Row details',
   expandRow: (row: TestRow) => `Expand ${row.name} details`,
   collapseRow: (row: TestRow) => `Collapse ${row.name} details`,
   paginatorActions: {
@@ -202,7 +203,7 @@ describe('GenericDataTable', () => {
     expect(headers[1]).toMatch(/customer name/i);
   });
 
-  it('asks the owner to clear sorting when the sorted column drops into the accordion', () => {
+  it('asks the owner to clear sorting once when the sorted column drops into the accordion', () => {
     mockTableContainerWidth(WIDE_CONTAINER);
     const onSortClear = vi.fn();
     renderTable({ sortField: 'note', sortOrder: 'asc', onSortClear });
@@ -210,8 +211,104 @@ describe('GenericDataTable', () => {
     expect(onSortClear).not.toHaveBeenCalled();
 
     resizeTableContainer(NARROW_CONTAINER);
+    expect(onSortClear).toHaveBeenCalledTimes(1);
+
+    // Further layout changes must not re-fire while the same sort stays hidden.
+    resizeTableContainer(NARROW_CONTAINER - 10);
+    expect(onSortClear).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears a re-applied sort that returns while its column is still hidden', () => {
+    mockTableContainerWidth(NARROW_CONTAINER);
+    const onSortClear = vi.fn();
+    const { props, rerender } = renderTable({ sortField: 'note', sortOrder: 'asc', onSortClear });
 
     expect(onSortClear).toHaveBeenCalledTimes(1);
+
+    // The owner honors the clear (sort removed), then the user restores the
+    // same sort via browser back / deep link while the column is still hidden.
+    rerender(<GenericDataTable<TestRow> {...props} sortField={undefined} sortOrder={undefined} />);
+    rerender(<GenericDataTable<TestRow> {...props} sortField="note" sortOrder="asc" />);
+
+    expect(onSortClear).toHaveBeenCalledTimes(2);
+  });
+
+  it('drops every later optional field once one does not fit, preserving column order', () => {
+    mockTableContainerWidth(NARROW_CONTAINER);
+    // status is widened past the remaining budget; note (100px) would fit
+    // greedily, but must drop with it to keep the configured order intact.
+    const cascadeFields = config.fields.map((field) => {
+      if (field.field === 'status') return { ...field, width: 200 };
+      if (field.field === 'note') return { ...field, width: 100 };
+      return field;
+    });
+    renderTable({ config: { ...config, fields: cascadeFields } });
+
+    expect(screen.getByRole('columnheader', { name: /customer name/i })).toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: /status/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'KKF' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Expand Alice details' })).toBeInTheDocument();
+  });
+
+  it('reserves room for the expansion toggle when splitting columns', () => {
+    // 440px: name (160, pinned) + status (120) fit, and note (140) fits only
+    // if the 44px expander reservation is ignored — it must not.
+    mockTableContainerWidth(440);
+    renderTable();
+
+    expect(screen.getByRole('columnheader', { name: /status/i })).toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'KKF' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Expand Alice details' })).toBeInTheDocument();
+  });
+
+  it('collapses orphaned expansion rows when every field fits again', async () => {
+    mockTableContainerWidth(NARROW_CONTAINER);
+    const user = userEvent.setup();
+    const { container } = renderTable();
+
+    await user.click(screen.getByRole('button', { name: 'Expand Alice details' }));
+    expect(container.querySelector('.p-datatable-row-expansion')).not.toBeNull();
+
+    resizeTableContainer(WIDE_CONTAINER);
+
+    expect(container.querySelector('.p-datatable-row-expansion')).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: /collapse alice details/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('suppresses the vendor empty row during loading and error states', () => {
+    mockTableContainerWidth(WIDE_CONTAINER);
+    const { rerender, props } = renderTable({ rows: [], totalRecords: 0, loading: true });
+
+    expect(screen.queryByText('No available options')).not.toBeInTheDocument();
+
+    rerender(
+      <GenericDataTable<TestRow>
+        {...props}
+        rows={[]}
+        totalRecords={0}
+        loading={false}
+        error="Request failed"
+      />,
+    );
+
+    expect(screen.queryByText('No available options')).not.toBeInTheDocument();
+  });
+
+  it('names the expansion column and only references details that exist', async () => {
+    mockTableContainerWidth(NARROW_CONTAINER);
+    const user = userEvent.setup();
+    renderTable();
+
+    expect(screen.getByRole('columnheader', { name: 'Row details' })).toBeInTheDocument();
+
+    const toggle = screen.getByRole('button', { name: 'Expand Alice details' });
+    expect(toggle).not.toHaveAttribute('aria-controls');
+
+    await user.click(toggle);
+    const expandedToggle = screen.getByRole('button', { name: 'Collapse Alice details' });
+    expect(expandedToggle).toHaveAttribute('aria-controls');
   });
 
   it('keeps the sort untouched when the sorted column stays visible', () => {

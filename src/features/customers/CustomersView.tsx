@@ -32,6 +32,7 @@ export function CustomersView() {
       empty: t('customers.table.empty'),
       pagination: t('customers.table.pagination'),
       notAvailable: t('customers.value.notAvailable'),
+      detailsColumn: t('customers.table.detailsColumn'),
       expandRow: (row) => t('customers.table.expandRow', { name: row.fullName }),
       collapseRow: (row) => t('customers.table.collapseRow', { name: row.fullName }),
       paginatorActions: {

@@ -49,6 +49,7 @@ export const pl = {
   'customers.table.expandRow': 'Rozwiń szczegóły klienta {{name}}',
   'customers.table.collapseRow': 'Zwiń szczegóły klienta {{name}}',
   'customers.table.pagination': 'Stronicowanie klientów',
+  'customers.table.detailsColumn': 'Szczegóły wiersza',
   'customers.table.field.fullName': 'Nazwa klienta',
   'customers.table.field.grid': 'GRID',
   'customers.table.field.status': 'Status',

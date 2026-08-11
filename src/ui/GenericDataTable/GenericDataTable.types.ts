@@ -102,6 +102,8 @@ export interface GenericDataTableLabels<T extends object> {
   empty: string;
   pagination: string;
   notAvailable: ReactNode;
+  /** Screen-reader name for the expansion-toggle column. */
+  detailsColumn?: string;
   expandRow: (row: T) => string;
   collapseRow: (row: T) => string;
   paginatorActions?: GenericDataTablePaginatorActionLabels;

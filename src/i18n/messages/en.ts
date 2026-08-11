@@ -47,6 +47,7 @@ export const en: Record<MessageKey, string> = {
   'customers.table.expandRow': 'Expand details for {{name}}',
   'customers.table.collapseRow': 'Collapse details for {{name}}',
   'customers.table.pagination': 'Customer pagination',
+  'customers.table.detailsColumn': 'Row details',
   'customers.table.field.fullName': 'Customer name',
   'customers.table.field.grid': 'GRID',
   'customers.table.field.status': 'Status',
