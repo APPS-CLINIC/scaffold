@@ -44,8 +44,15 @@ actions. See [ADR 0006](../adr/0006-url-as-single-source-of-truth.md) and
 A single store factory (`makeStore`) composes the root reducer and middleware;
 a single RTK Query `baseApi` instance owns the server-state cache, and features
 inject their endpoints into it. Typed hooks hide the raw Redux types from
-components.
-→ [ADR 0007](../adr/0007-redux-toolkit-and-rtk-query.md)
+components. Feature endpoints send list queries to the backend, which owns
+search, filtering, sorting, pagination, and page metadata.
+
+An opt-in development preview may synchronously seed a transformed, default
+query result into that same cache before React mounts. It never replaces the
+endpoint or creates a parallel slice, and production builds exclude preview
+profiles and fixtures.
+→ [ADR 0007](../adr/0007-redux-toolkit-and-rtk-query.md),
+[ADR 0028](../adr/0028-development-preview-data-through-rtk-query.md)
 
 ### 2. URL state — `src/features/urlState`
 
@@ -73,21 +80,48 @@ cache invalidation), **reads** query state from the URL via
 optionally **virtualizes** it (server-side pagination carried by
 `page`/`pageSize` in `listQuerySchema`).
 
-### 5. UI seam — `src/ui`
+For configuration-driven tables, the feature container turns the validated URL
+mirror into endpoint arguments, passes the RTK Query result to the table, and
+handles search, filter, sort, and pagination callbacks through the URL-state
+write API. Backend responses use a data-only endpoint contract and never carry
+rendering instructions. The browser receives only the requested page and never
+processes the complete collection.
+
+Feature filters use readable `filter.<key>` search parameters. The shared URL
+layer validates their generic syntax, and the owning feature validates its
+domain values with Zod before deriving RTK Query arguments.
+→ [ADR 0026](../adr/0026-extensible-feature-filters-in-list-urls.md)
+
+### 5. Generic data tables
+
+The generic table exported from `@/ui` is a presentational, vendor-neutral
+contract implemented with PrimeReact behind the seam. Static typed frontend
+configuration assigns a component to every primary cell and declares translated
+headings. Expandable row details render only an ordered allowlist of typed row
+fields with translated labels; response fields are never discovered or exposed
+implicitly. Search, filters, sorting, and pagination stay in the URL, server
+state stays in RTK Query, and transient expanded-row state stays local to the
+table.
+→ [ADR 0025](../adr/0025-configuration-driven-generic-data-tables.md)
+
+### 6. UI seam — `src/ui`
 
 Everything imports UI primitives from `@/ui`, a thin stub layer, so the
 organization's internal UI library can be plugged in within a single folder
 without touching feature code.
 
-### 6. Routing — `src/routes`
+### 7. Routing — `src/routes`
 
 React Router v6 exposes the URL/search params as observable state and provides
 the `RootLayout` mount point for `UrlStateSync`. A typed frontend navigation
 manifest supplies the top tabs, contextual IWA menu, default redirects, and
-pathname matching without storing positional menu indexes.
+pathname matching without storing positional menu indexes. Implemented
+destinations are composed from section-scoped, type-checked route modules and
+loaded lazily through React Router while their paths remain manifest-derived.
 → [ADR 0020](../adr/0020-routing-react-router-v6-for-iwa-compatibility.md),
 [ADR 0023](../adr/0023-configurable-navigation-icon-components.md),
-[ADR 0024](../adr/0024-canonical-route-transitions-in-redux.md)
+[ADR 0024](../adr/0024-canonical-route-transitions-in-redux.md),
+[ADR 0027](../adr/0027-section-scoped-lazy-page-route-modules.md)
 
 ## How a single interaction flows
 

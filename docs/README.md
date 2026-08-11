@@ -48,6 +48,9 @@ The full, indexed list lives in [`adr/README.md`](adr/README.md).
 - [Contextual sidebar navigation](contextual-sidebar-navigation.md) — typed
   configuration, URL behavior, IWA composition, icon selection, and extension
   guide.
+- [Generic data table and customer list](generic-data-table-and-customer-list.md)
+  — typed per-cell configuration, expandable detail allowlists, server-driven
+  queries, URL state, RTK Query ownership, and development preview data.
 
 ## Pull request delivery notes
 

@@ -3,7 +3,8 @@ import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { PrimeReactProvider } from 'primereact/api';
 import { RouterProvider } from 'react-router-dom';
-import { store } from '@/app/store';
+import { makeStore } from '@/app/store';
+import { createUrlState } from '@/features/urlState/urlState.slice';
 import '@/i18n';
 import { ToastProvider } from '@/ui';
 import { router } from '@/routes/router';
@@ -16,15 +17,31 @@ import '@/styles/global.css';
 
 const container = document.getElementById('root');
 if (!container) throw new Error('Root element #root not found');
+const root = createRoot(container);
 
-createRoot(container).render(
-  <StrictMode>
-    <PrimeReactProvider>
-      <Provider store={store}>
-        <ToastProvider>
-          <RouterProvider router={router} />
-        </ToastProvider>
-      </Provider>
-    </PrimeReactProvider>
-  </StrictMode>,
-);
+const store = makeStore({
+  urlState: createUrlState(window.location.pathname, window.location.search),
+});
+
+async function renderApplication() {
+  const previewDataProfile = import.meta.env.VITE_PREVIEW_DATA_PROFILE?.trim();
+
+  if (import.meta.env.DEV && import.meta.env.MODE !== 'test' && previewDataProfile) {
+    const { seedPreviewData } = await import('@/dev/previewData/previewData');
+    await seedPreviewData(store, previewDataProfile);
+  }
+
+  root.render(
+    <StrictMode>
+      <PrimeReactProvider>
+        <Provider store={store}>
+          <ToastProvider>
+            <RouterProvider router={router} />
+          </ToastProvider>
+        </Provider>
+      </PrimeReactProvider>
+    </StrictMode>,
+  );
+}
+
+void renderApplication();

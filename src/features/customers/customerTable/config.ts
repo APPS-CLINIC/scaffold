@@ -1,0 +1,105 @@
+import type { Customer } from '@/features/customers/customers.types';
+import {
+  ActiveInactiveStatusCell,
+  DateCell,
+  TextCell,
+  UnderlinedTextCell,
+  ValidityStatusCell,
+} from '@/ui';
+import type { GenericDataTableConfig } from '@/ui';
+
+export const customerTableConfig = {
+  dataKey: 'id',
+  singleRowExpansion: true,
+  columns: [
+    {
+      field: 'fullName',
+      headerKey: 'customers.table.column.name',
+      component: UnderlinedTextCell,
+      sortable: true,
+      headerClassName: 'w-48 min-w-48 max-w-48',
+      cellClassName: 'w-48 min-w-48 max-w-48 whitespace-normal',
+    },
+    {
+      field: 'grid',
+      headerKey: 'customers.table.column.grid',
+      component: TextCell,
+      sortable: true,
+      headerClassName: 'w-24 min-w-24 max-w-24',
+    },
+    {
+      field: 'status',
+      headerKey: 'customers.table.column.status',
+      component: ActiveInactiveStatusCell,
+      sortable: true,
+      headerClassName: 'w-28 min-w-28 max-w-28',
+    },
+    {
+      field: 'corporateGroupName',
+      headerKey: 'customers.table.column.group',
+      component: UnderlinedTextCell,
+      sortable: true,
+      headerClassName: 'w-40 min-w-40 max-w-40',
+      cellClassName: 'w-40 min-w-40 max-w-40 whitespace-normal',
+    },
+    {
+      field: 'type',
+      headerKey: 'customers.table.column.type',
+      component: TextCell,
+      sortable: true,
+      headerClassName: 'w-32 min-w-32 max-w-32',
+    },
+    {
+      field: 'lendingRatingReviewDate',
+      headerKey: 'customers.table.column.reviewDate',
+      component: DateCell,
+      sortable: true,
+      headerClassName: 'w-36 min-w-36 max-w-36',
+    },
+    {
+      field: 'tsPriceConditionEndDate',
+      headerKey: 'customers.table.column.priceConditionEndDate',
+      component: DateCell,
+      sortable: true,
+      headerClassName: 'w-40 min-w-40 max-w-40',
+    },
+    {
+      field: 'tsPriceConditionStatus',
+      headerKey: 'customers.table.column.priceConditionStatus',
+      component: ValidityStatusCell,
+      sortable: true,
+      headerClassName: 'w-44 min-w-44 max-w-44',
+    },
+    {
+      field: 'lendingReviewDate',
+      headerKey: 'customers.table.column.lendingReviewDate',
+      component: DateCell,
+      sortable: true,
+      headerClassName: 'w-40 min-w-40 max-w-40',
+    },
+  ],
+  detailFields: [
+    { field: 'kkf', labelKey: 'customers.table.detail.kkf' },
+    { field: 'krs', labelKey: 'customers.table.detail.krs' },
+    { field: 'taxId', labelKey: 'customers.table.detail.taxId' },
+    { field: 'regon', labelKey: 'customers.table.detail.regon' },
+    { field: 'shortName', labelKey: 'customers.table.detail.shortName' },
+    { field: 'rmAdvisor', labelKey: 'customers.table.detail.rmAdvisor' },
+    { field: 'corporateGroupGRID', labelKey: 'customers.table.detail.corporateGroupGrid' },
+    { field: 'internalGroupName', labelKey: 'customers.table.detail.internalGroupName' },
+    { field: 'lendingAdvisor', labelKey: 'customers.table.detail.lendingAdvisor' },
+    { field: 'sfAdvisor', labelKey: 'customers.table.detail.sfAdvisor' },
+    { field: 'pcmAdvisor', labelKey: 'customers.table.detail.pcmAdvisor' },
+    { field: 'fmAdvisor', labelKey: 'customers.table.detail.fmAdvisor' },
+    { field: 'tsAdvisor', labelKey: 'customers.table.detail.tsAdvisor' },
+    { field: 'ebdAdvisor', labelKey: 'customers.table.detail.ebdAdvisor' },
+    {
+      field: 'implementationAdvisor',
+      labelKey: 'customers.table.detail.implementationAdvisor',
+    },
+    {
+      field: 'customerServiceAdvisor',
+      labelKey: 'customers.table.detail.customerServiceAdvisor',
+    },
+  ],
+} satisfies GenericDataTableConfig<Customer>;

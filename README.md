@@ -14,7 +14,7 @@ with performance and best practices in mind.
 | State              | **Redux Toolkit** + **reselect**                                                         |
 | Server state       | **RTK Query** (one `baseApi`, injected endpoints)                                        |
 | Routing            | **React Router v6** (aligned with IWA peer dependencies)                                 |
-| URL ↔ state       | URL is the source of truth, mirrored into Redux via **listener-style sync** + middleware |
+| URL ↔ state        | URL is the source of truth, mirrored into Redux via **listener-style sync** + middleware |
 | Validation         | **Zod** (total parsing of search params)                                                 |
 | Large lists        | **Virtualization** — recommended pattern (`@tanstack/react-virtual`), not bundled        |
 | Styling            | CSS modules + **Tailwind CSS v3** via PostCSS (tokens mapped from CSS variables)         |
@@ -80,6 +80,7 @@ Why this shape:
 src/
 ├─ app/                 # store, typed hooks, listener middleware, root reducer
 ├─ api/                 # baseApi (RTK Query root)
+├─ dev/                 # opt-in development preview data profiles
 ├─ features/            # urlState/ — and your own features
 │  └─ urlState/         # generic Zod list-query schema, slice mirror, selectors, sync, write hook
 ├─ ui/                  # stable UI seam for local primitives and IWA wrappers
@@ -101,6 +102,24 @@ npm run build      # type-check + production build
 
 > Uses **npm** with a committed `package-lock.json`. The Node version is pinned
 > via `.nvmrc` and `engines.node`.
+
+During `npm run dev`, requests under `/api` are proxied to `API_PROXY_TARGET`
+(`http://localhost:8765` by default). The customer endpoint always uses the real
+HTTP backend; search, filtering, sorting, pagination, and page metadata are not
+computed in the browser.
+
+To inspect only the initial customer view while that backend is unavailable,
+create `.env.development.local` and restart Vite:
+
+```env
+VITE_PREVIEW_DATA_PROFILE=customers
+```
+
+This development-only profile seeds the transformed RTK Query cache before
+React mounts and retains that default entry for the development session. It
+does not replace or intercept the endpoint: changing search, filters, sorting,
+pagination, or manually refreshing still calls the real backend. The preview
+module and fixture are removed from production builds.
 
 ## Adding a feature
 

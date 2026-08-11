@@ -3,7 +3,7 @@ import { shallowEqual } from 'react-redux';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { useAppDispatch, useAppStore } from '@/app/hooks';
 import { parseUrlRouteState } from './urlState.route';
-import { parseListQuery } from './urlState.schema';
+import { areListQueriesEqual, parseListQuery } from './urlState.schema';
 import { listQueryChanged, routeChanged } from './urlState.slice';
 
 /**
@@ -24,7 +24,7 @@ export function UrlStateSync() {
   useEffect(() => {
     const next = parseListQuery(searchParams);
     const current = store.getState().urlState.list;
-    if (!shallowEqual(next, current)) {
+    if (!areListQueriesEqual(next, current)) {
       dispatch(listQueryChanged(next));
     }
   }, [searchParams, dispatch, store]);

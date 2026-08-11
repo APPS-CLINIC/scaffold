@@ -1,6 +1,6 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
-import { defaultUrlRouteState, type UrlRouteState } from './urlState.route';
-import { defaultListQuery, type ListQuery } from './urlState.schema';
+import { parseUrlRouteState, type UrlRouteState } from './urlState.route';
+import { parseListQuery, type ListQuery } from './urlState.schema';
 
 /**
  * Read-only mirror of URL-derived state inside Redux.
@@ -19,10 +19,15 @@ export interface UrlState {
   route: UrlRouteState;
 }
 
-const initialState: UrlState = {
-  list: defaultListQuery,
-  route: defaultUrlRouteState,
-};
+/** Build the URL mirror before the first render, preventing a default-query request on deep links. */
+export function createUrlState(pathname = '/', search = ''): UrlState {
+  return {
+    list: parseListQuery(new URLSearchParams(search)),
+    route: parseUrlRouteState(pathname),
+  };
+}
+
+const initialState = createUrlState();
 
 const urlStateSlice = createSlice({
   name: 'urlState',

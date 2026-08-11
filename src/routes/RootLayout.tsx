@@ -15,14 +15,14 @@ import { UrlStateSync } from '@/features/urlState/UrlStateSync';
 export function RootLayout() {
   const { t } = useTranslation();
   return (
-    <div className="grid h-dvh grid-rows-[auto_minmax(0,1fr)_auto]">
+    <div className="grid h-dvh w-full min-w-0 max-w-full grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
       <UrlStateSync />
-      <header>
+      <header className="min-w-0 overflow-hidden">
         <TopBarCustom />
       </header>
-      <div className="flex min-h-0">
+      <div className="flex min-h-0 min-w-0 overflow-hidden">
         <ContextualSidebar />
-        <main className="min-w-0 flex-1 overflow-y-auto bg-[var(--content-surface)] p-6">
+        <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto bg-[var(--content-surface)] p-4 sm:p-6">
           <Outlet />
         </main>
       </div>

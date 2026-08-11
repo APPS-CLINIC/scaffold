@@ -58,8 +58,10 @@ export function ContextualSidebar() {
   }));
   const toggleLabel = t(isCollapsed ? 'nav.sidebar.expand' : 'nav.sidebar.collapse');
   const menuButtonClassName = cx(
-    'min-h-11 w-full !rounded-none text-left text-sm',
-    isCollapsed ? '!justify-center px-0' : '!justify-start px-5',
+    'min-h-11 w-full !rounded-none text-left',
+    isCollapsed
+      ? '!justify-center px-0 text-sm'
+      : '!justify-center px-0 text-[0px] md:!justify-start md:px-5 md:text-sm',
   );
 
   return (
@@ -68,32 +70,34 @@ export function ContextualSidebar() {
       data-collapsed={isCollapsed}
       className={cx(
         'app-navigation shrink-0 overflow-hidden border-r border-border bg-[var(--navigation-surface)] transition-[width] duration-150 ease-out',
-        isCollapsed ? 'w-16' : 'w-64',
+        isCollapsed ? 'w-16' : 'w-16 md:w-64',
       )}
     >
-      <div className={cx('h-full', isCollapsed ? 'w-16' : 'w-64')}>
+      <div className={cx('h-full', isCollapsed ? 'w-16' : 'w-16 md:w-64')}>
         <NavigationPanel
           title={isCollapsed ? '' : t('nav.title')}
           headerAction={
-            <MenuListAdapter
-              aria-label={toggleLabel}
-              items={[
-                {
-                  id: 'toggle-sidebar',
-                  text: '',
-                  icon: (
-                    <NavigationIcon
-                      icon={Hide}
-                      role="img"
-                      aria-hidden={false}
-                      aria-label={toggleLabel}
-                    />
-                  ),
-                },
-              ]}
-              buttonClassName="min-h-11 w-full !justify-center !rounded-none px-0 text-sm"
-              onItemSelect={() => setIsCollapsed((current) => !current)}
-            />
+            <div className="hidden md:block">
+              <MenuListAdapter
+                aria-label={toggleLabel}
+                items={[
+                  {
+                    id: 'toggle-sidebar',
+                    text: '',
+                    icon: (
+                      <NavigationIcon
+                        icon={Hide}
+                        role="img"
+                        aria-hidden={false}
+                        aria-label={toggleLabel}
+                      />
+                    ),
+                  },
+                ]}
+                buttonClassName="min-h-11 w-full !justify-center !rounded-none px-0 text-sm"
+                onItemSelect={() => setIsCollapsed((current) => !current)}
+              />
+            </div>
           }
         >
           <MenuListAdapter
