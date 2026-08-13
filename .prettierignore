@@ -9,3 +9,7 @@ conf-installer/
 **/resources/helm/
 **/*.tpl
 *.tpl
+
+# Self-contained kickoff doc with an inlined, minified Tailwind runtime —
+# formatting it would explode the embedded JS.
+docs/backend-kickoff.html
