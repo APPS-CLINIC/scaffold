@@ -55,8 +55,8 @@ describe('CustomersView', () => {
 
     expect(screen.getByRole('heading', { name: 'Klienci oraz ich doradcy' })).toBeInTheDocument();
     expect(await screen.findByRole('columnheader', { name: /nazwa klienta/i })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Dostosuj filtry' })).not.toBeInTheDocument();
-    expect(screen.queryByPlaceholderText('Szukaj na liście')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Dostosuj filtry' })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Szukaj na liście')).toBeInTheDocument();
   });
 
   it('renders the development preview cache without an HTTP request', async () => {
@@ -74,7 +74,9 @@ describe('CustomersView', () => {
   it('uses the deep-link query for the first and only initial RTK Query request', async () => {
     const { store } = renderPage('/customers/all?q=carrefour&filter.status=active&pageSize=10');
 
-    expect(screen.queryByRole('textbox', { name: 'Search' })).not.toBeInTheDocument();
+    // The search input renders but is not wired yet: a deep-linked q param
+    // must not populate it.
+    expect(screen.getByPlaceholderText('Search the list')).toHaveValue('');
     expect(screen.queryByRole('combobox', { name: 'Customer status' })).not.toBeInTheDocument();
     expect(await screen.findByText('CARREFOUR POLAND SP. Z O.O.')).toBeInTheDocument();
     expect(screen.getByText('1 results')).toBeInTheDocument();
@@ -89,17 +91,27 @@ describe('CustomersView', () => {
     });
   });
 
-  it('keeps deferred filters wired through deep links without rendering their controls', async () => {
+  it('keeps deep-linked filters working while the filter controls stay inert', async () => {
+    const user = userEvent.setup();
     const { store } = renderPage('/customers/all?filter.status=archival');
 
     expect(await screen.findByText('OZAROW CEMENT S.A.')).toBeInTheDocument();
     expect(screen.getByText('4 results')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Customize filters' })).not.toBeInTheDocument();
     expect(screen.queryByRole('combobox', { name: 'Customer status' })).not.toBeInTheDocument();
 
     await waitFor(() => {
       expect(selectCustomerQuery(store.getState()).status).toBe('archival');
     });
+
+    // The filter button and search input render, but neither is wired yet:
+    // interacting with them must not touch the URL or the query.
+    await user.click(screen.getByRole('button', { name: 'Customize filters' }));
+    await user.type(screen.getByPlaceholderText('Search the list'), 'orlen');
+
+    const search = screen.getByRole('status', { name: 'Current customer URL' }).textContent ?? '';
+    expect(new URLSearchParams(search).get('q')).toBeNull();
+    expect(selectCustomerQuery(store.getState()).status).toBe('archival');
+    expect(selectCustomerQuery(store.getState()).q).toBeFalsy();
   });
 
   it('writes table sorting and pagination back to the URL', async () => {

@@ -8,7 +8,9 @@ import {
   ActionLink,
   Card,
   GenericDataTable,
+  IconTextButton,
   ScreenHeading,
+  SearchWithAutocomplete,
   Switch,
   type GenericDataTableLabels,
   type GenericDataTablePageChange,
@@ -91,30 +93,42 @@ export function CustomersView() {
         <p className="sr-only">{t('customers.description')}</p>
       </header>
 
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--muted)]">
-        <span>{t('customers.dataAsOf')}</span>
-        <strong className="font-semibold text-[var(--text)]">{dataAsOf}</strong>
-        <ActionLink
-          className="text-xs"
-          icon={<span aria-hidden="true" className="pi pi-refresh text-xs" />}
-          label={t('customers.actions.refresh')}
-          onClick={async () => {
-            await refetch();
-          }}
-        />
-      </div>
-
       <Card>
-        <div className="mb-3 flex flex-wrap items-center justify-end gap-2 rounded bg-[var(--surface-muted)] px-3 py-2">
-          <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap text-xs text-[var(--muted)]">
-            <span>{t('customers.actions.expandAll')}</span>
-            <Switch
-              aria-label={t('customers.actions.expandAll')}
-              checked={allVisibleRowsExpanded}
-              disabled={visibleRowKeys.length === 0}
-              onChange={() => setExpandedRowKeys(allVisibleRowsExpanded ? [] : visibleRowKeys)}
+        <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[var(--muted)]">
+          <span>{t('customers.dataAsOf')}</span>
+          <strong className="font-bold text-[var(--text)]">{dataAsOf}</strong>
+          <ActionLink
+            icon={<span aria-hidden="true" className="pi pi-refresh text-sm" />}
+            label={t('customers.actions.refresh')}
+            onClick={async () => {
+              await refetch();
+            }}
+          />
+        </div>
+
+        {/* Filter section: controls only for now — no filtering or search
+            actions are wired yet (deferred with the rest of the filter model). */}
+        <div className="mb-4 flex flex-col items-start gap-3 rounded bg-[var(--surface-muted)] p-3">
+          <IconTextButton
+            secondary
+            icon={<span aria-hidden="true" className="pi pi-sliders-h text-sm" />}
+            label={t('customers.actions.customizeFilters')}
+          />
+          <div className="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2">
+            <SearchWithAutocomplete
+              className="w-full max-w-96"
+              placeholder={t('customers.search.placeholder')}
             />
-          </label>
+            <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap text-sm text-[var(--muted)]">
+              <span>{t('customers.actions.expandAll')}</span>
+              <Switch
+                aria-label={t('customers.actions.expandAll')}
+                checked={allVisibleRowsExpanded}
+                disabled={visibleRowKeys.length === 0}
+                onChange={() => setExpandedRowKeys(allVisibleRowsExpanded ? [] : visibleRowKeys)}
+              />
+            </label>
+          </div>
         </div>
 
         <span className="sr-only" role="status" aria-live="polite">
