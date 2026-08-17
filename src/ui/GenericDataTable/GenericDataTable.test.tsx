@@ -476,6 +476,34 @@ describe('GenericDataTable', () => {
     expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
   });
 
+  it('keeps the table mounted when initialLoading flips back after an errored first load', () => {
+    mockTableContainerWidth(WIDE_CONTAINER);
+    const { rerender, props } = renderTable({
+      rows: [],
+      totalRecords: 0,
+      loading: false,
+      initialLoading: false,
+      error: 'Request failed',
+    });
+
+    expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
+
+    // RTK Query's isLoading goes true again for the next cache entry when the
+    // first load errored (no retained data); the table must stay mounted.
+    rerender(
+      <GenericDataTable<TestRow>
+        {...props}
+        rows={[]}
+        totalRecords={0}
+        loading={true}
+        initialLoading={true}
+        error={undefined}
+      />,
+    );
+
+    expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
+  });
+
   it('keeps the table mounted during a refetch issued after an empty result', () => {
     mockTableContainerWidth(WIDE_CONTAINER);
     const { rerender, props } = renderTable({ rows: [], totalRecords: 0, loading: false });

@@ -21,7 +21,7 @@ export function UnderlinedTextCell<
   return (
     <InlineLink
       size="small"
-      className="max-w-full whitespace-normal break-words font-medium"
+      className="whitespace-normal break-words font-medium"
       label={renderCellValue(value, notAvailable)}
     />
   );

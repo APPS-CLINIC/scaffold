@@ -260,9 +260,16 @@ additional pages without adding feature-specific conditions to the router.
 
 ## Styling, translation, and accessibility
 
-- The table uses PrimeReact through `@/ui` and applies the existing semantic
-  design tokens rather than hard-coded product colors.
+- The table uses PrimeReact through `@/ui`. Table chrome (borders, header
+  rule, muted text) uses the semantic design tokens; the IWA components it
+  renders (`Status`, `InlineLink`, the skeleton) carry the IWA brand palette
+  internally, exactly as the real library does.
 - Tailwind classes are merged with IWA's `twMerge` utility.
+- `loading` drives the in-place loading overlay; the separate `initialLoading`
+  prop (true only while the very first load is in flight, e.g. RTK Query's
+  `isLoading`) swaps in the IWA table skeleton. Once the table has rendered,
+  the skeleton never returns — refetches must not unmount the table, so focus
+  and the overlay survive.
 - Field label keys are typed against the i18n catalog and resolved at render
   time, so switching language does not rebuild the static config.
 - Empty, loading, error, pagination, expansion, and unavailable-value text is

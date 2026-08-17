@@ -132,10 +132,17 @@ function GenericDataTableInner<T extends object>(
 
   // Only the owner knows whether this is the very first load (no retained
   // data) or a refetch; refetches must keep the table mounted so focus and
-  // the loading overlay survive, hence the dedicated prop.
-  const showSkeleton = initialLoading && !hasError;
+  // the loading overlay survive, hence the dedicated prop. The ref guards
+  // owners whose initialLoading signal can flip back to true (e.g. RTK
+  // Query's isLoading after an errored first load): once the table has
+  // rendered, the skeleton never returns.
+  const tableHasRenderedRef = useRef(false);
+  const showSkeleton = initialLoading && !hasError && !tableHasRenderedRef.current;
+  useEffect(() => {
+    if (!showSkeleton) tableHasRenderedRef.current = true;
+  });
   const skeletonColumns = useMemo(
-    () => visibleFields.map((field) => ({ width: `${field.width}px` })),
+    () => visibleFields.map((field) => ({ width: field.width })),
     [visibleFields],
   );
 

@@ -95,15 +95,18 @@ export function CustomersView() {
           className="text-xs"
           icon={<span aria-hidden="true" className="pi pi-refresh text-xs" />}
           label={t('customers.actions.refresh')}
-          onClick={() => void refetch()}
+          onClick={async () => {
+            await refetch();
+          }}
         />
       </div>
 
       <Card>
         <div className="mb-3 flex flex-wrap items-center justify-end gap-2 rounded bg-[var(--surface-muted)] px-3 py-2">
-          <label className="inline-flex min-h-8 cursor-pointer items-center gap-2 whitespace-nowrap text-xs text-[var(--muted)]">
+          <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap text-xs text-[var(--muted)]">
             <span>{t('customers.actions.expandAll')}</span>
             <Switch
+              aria-label={t('customers.actions.expandAll')}
               checked={allVisibleRowsExpanded}
               disabled={visibleRowKeys.length === 0}
               onChange={() => setExpandedRowKeys(allVisibleRowsExpanded ? [] : visibleRowKeys)}

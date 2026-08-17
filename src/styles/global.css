@@ -31,7 +31,7 @@
     Arial,
     sans-serif;
   line-height: 1.5;
-  color: #1f2933;
+  color: var(--text);
 }
 
 *,
