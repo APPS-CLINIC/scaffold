@@ -1,6 +1,12 @@
 import { baseApi } from '@/api/baseApi';
 import { mapCustomerResponse } from './customers.adapter';
-import type { Customer, CustomerQuery, CustomerResponse, PageResponse } from './customers.types';
+import {
+  CustomerStatus,
+  type Customer,
+  type CustomerQuery,
+  type CustomerResponse,
+  type PageResponse,
+} from './customers.types';
 
 const DEFAULT_PAGE_SIZE = 10;
 
@@ -54,13 +60,21 @@ export function toCustomerBackendParams(query: CustomerQuery) {
   const sortDirection: 'ASC' | 'DESC' = query.dir === 'desc' ? 'DESC' : 'ASC';
   const q = query.q.trim();
   const type = query.type.trim();
+  // The URL keeps the lowercase filter vocabulary; the service expects the
+  // uppercase status enum.
+  const status =
+    query.status === 'active'
+      ? CustomerStatus.Active
+      : query.status === 'archival'
+        ? CustomerStatus.Archival
+        : undefined;
 
   return {
     page,
     size,
     sort: `${sortField},${sortDirection}` as const,
     ...(q ? { q } : {}),
-    ...(query.status ? { status: query.status } : {}),
+    ...(status ? { status } : {}),
     ...(type ? { type } : {}),
   };
 }

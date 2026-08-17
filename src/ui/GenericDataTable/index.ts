@@ -1,6 +1,6 @@
 export { GenericDataTable } from './GenericDataTable';
 export {
-  ActiveInactiveStatusCell,
+  ActiveArchivalStatusCell,
   DateCell,
   TextCell,
   UnderlinedTextCell,

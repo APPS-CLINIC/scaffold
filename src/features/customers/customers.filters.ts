@@ -5,7 +5,7 @@ import type { ListQuery } from '@/features/urlState/urlState.schema';
 import type { CustomerQuery } from './customers.types';
 
 export const customerFiltersSchema = z.object({
-  status: z.enum(['active', 'inactive']).or(z.literal('')).catch(''),
+  status: z.enum(['active', 'archival']).or(z.literal('')).catch(''),
   type: z.string().max(200).catch(''),
 });
 

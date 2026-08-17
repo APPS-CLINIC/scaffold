@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it } from 'vitest';
 import i18n from '@/i18n';
 import type { GenericDataTableCellProps } from '../GenericDataTable.types';
-import { ActiveInactiveStatusCell } from './ActiveInactiveStatusCell';
+import { ActiveArchivalStatusCell } from './ActiveArchivalStatusCell';
 import { DateCell } from './DateCell';
 import { TextCell } from './TextCell';
 import { UnderlinedTextCell } from './UnderlinedTextCell';
@@ -12,7 +12,7 @@ interface TestRow {
   id: number;
   name: string | null;
   date: string | null;
-  status: 'active' | 'inactive' | null;
+  status: 'ACTIVE' | 'ARCHIVAL' | null;
   validity: 'valid' | 'expiring' | 'expired' | null;
 }
 
@@ -20,7 +20,7 @@ const row: TestRow = {
   id: 1,
   name: 'Example',
   date: '2026-01-15',
-  status: 'active',
+  status: 'ACTIVE',
   validity: 'valid',
 };
 
@@ -73,14 +73,14 @@ describe('GenericDataTable cells', () => {
     expect(screen.getByText('—')).toBeInTheDocument();
   });
 
-  it('renders active and inactive statuses as a dedicated cell component', () => {
-    const { rerender } = render(<ActiveInactiveStatusCell {...cellProps('status', 'active')} />);
+  it('renders active and archival statuses as a dedicated cell component', () => {
+    const { rerender } = render(<ActiveArchivalStatusCell {...cellProps('status', 'ACTIVE')} />);
     expect(screen.getByText('Active')).toBeInTheDocument();
 
-    rerender(<ActiveInactiveStatusCell {...cellProps('status', 'inactive')} />);
-    expect(screen.getByText('Inactive')).toBeInTheDocument();
+    rerender(<ActiveArchivalStatusCell {...cellProps('status', 'ARCHIVAL')} />);
+    expect(screen.getByText('Archival')).toBeInTheDocument();
 
-    rerender(<ActiveInactiveStatusCell {...cellProps('status', null)} />);
+    rerender(<ActiveArchivalStatusCell {...cellProps('status', null)} />);
     expect(screen.getByText('—')).toBeInTheDocument();
   });
 

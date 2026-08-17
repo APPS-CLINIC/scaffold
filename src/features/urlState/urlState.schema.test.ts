@@ -61,7 +61,7 @@ describe('listQuery schema', () => {
   it('round-trips a non-default query', () => {
     const query: ListQuery = {
       q: 'x',
-      filters: { status: 'inactive', sector: 'Public' },
+      filters: { status: 'archival', sector: 'Public' },
       sort: 'name',
       dir: 'desc',
       page: 4,

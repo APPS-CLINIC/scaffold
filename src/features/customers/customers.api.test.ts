@@ -35,7 +35,7 @@ describe('customer API contract', () => {
       size: 10,
       sort: 'id,ASC',
       q: 'bank',
-      status: 'active',
+      status: 'ACTIVE',
       type: 'Corporate',
     });
     expect([...customerBackendParamsToSearchParams(backendParams).entries()]).toEqual([
@@ -43,7 +43,7 @@ describe('customer API contract', () => {
       ['size', '10'],
       ['sort', 'id,ASC'],
       ['q', 'bank'],
-      ['status', 'active'],
+      ['status', 'ACTIVE'],
       ['type', 'Corporate'],
     ]);
   });
@@ -66,7 +66,7 @@ describe('customer API contract', () => {
         }),
       ),
     ).toEqual({
-      url: 'customers?page=1&size=25&sort=fullName%2CDESC&q=bank+group&status=active&type=Corporate',
+      url: 'customers?page=1&size=25&sort=fullName%2CDESC&q=bank+group&status=ACTIVE&type=Corporate',
     });
   });
 
@@ -85,7 +85,7 @@ describe('customer API contract', () => {
 
     expect(new URL(request.url).searchParams.get('q')).toBe('carrefour');
     expect(response.content.map(({ shortName }) => shortName)).toEqual(['CARREFOUR POLAND']);
-    expect(response.content[0]?.status).toBe('active');
+    expect(response.content[0]?.status).toBe('ACTIVE');
     expect(response.page.totalElements).toBe(1);
     expect(cached.status).toBe('fulfilled');
     expect(cached.data).toEqual(response);

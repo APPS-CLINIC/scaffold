@@ -1,6 +1,6 @@
 import type { Customer } from '@/features/customers/customers.types';
 import {
-  ActiveInactiveStatusCell,
+  ActiveArchivalStatusCell,
   DateCell,
   TextCell,
   UnderlinedTextCell,
@@ -36,7 +36,7 @@ export const customerTableConfig = {
     {
       field: 'status',
       labelKey: 'customers.table.field.status',
-      component: ActiveInactiveStatusCell,
+      component: ActiveArchivalStatusCell,
       sortable: true,
       width: 112,
     },

@@ -45,18 +45,18 @@ When the currently sorted column drops into the accordion the table calls
 
 Reusable, domain-neutral cell components live with the table seam, one public
 cell per file. Features compose `TextCell`, `UnderlinedTextCell`, `DateCell`,
-`ActiveInactiveStatusCell`, or `ValidityStatusCell`; a feature-specific
+`ActiveArchivalStatusCell`, or `ValidityStatusCell`; a feature-specific
 renderer is only needed when those building blocks cannot express the domain
 value.
 
 ```tsx
-import { ActiveInactiveStatusCell, UnderlinedTextCell } from '@/ui';
+import { ActiveArchivalStatusCell, UnderlinedTextCell } from '@/ui';
 import type { GenericDataTableConfig } from '@/ui';
 
 interface Customer {
   id: number;
   name: string;
-  status: 'active' | 'inactive';
+  status: 'ACTIVE' | 'ARCHIVAL';
   internalNote: string | null;
   secretToken: string;
 }
@@ -75,7 +75,7 @@ export const customerTableConfig = {
     {
       field: 'status',
       labelKey: 'customers.table.field.status',
-      component: ActiveInactiveStatusCell,
+      component: ActiveArchivalStatusCell,
       width: 112,
     },
     {

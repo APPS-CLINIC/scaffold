@@ -6,20 +6,20 @@ import type {
 import { renderCellValue } from './cellValue';
 import { StatusIndicator } from './StatusIndicator';
 
-type ActiveInactiveStatus = 'active' | 'inactive';
+type ActiveArchivalStatus = 'ACTIVE' | 'ARCHIVAL';
 
-export function ActiveInactiveStatusCell<
+export function ActiveArchivalStatusCell<
   T extends object,
-  K extends GenericDataTableFieldWithValue<T, ActiveInactiveStatus>,
+  K extends GenericDataTableFieldWithValue<T, ActiveArchivalStatus>,
 >({ value, notAvailable }: GenericDataTableCellProps<T, K>) {
   const { t } = useTranslation();
 
-  if (value === 'active') {
+  if (value === 'ACTIVE') {
     return <StatusIndicator label={t('common.status.active')} tone="success" />;
   }
 
-  if (value === 'inactive') {
-    return <StatusIndicator label={t('common.status.inactive')} tone="inactive" />;
+  if (value === 'ARCHIVAL') {
+    return <StatusIndicator label={t('common.status.archival')} tone="inactive" />;
   }
 
   return renderCellValue(value, notAvailable);

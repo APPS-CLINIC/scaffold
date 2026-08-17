@@ -1,4 +1,11 @@
-export type CustomerStatus = 'active' | 'inactive';
+/** Backend customer status contract — the only two values the service emits. */
+export enum CustomerStatus {
+  Active = 'ACTIVE',
+  Archival = 'ARCHIVAL',
+}
+
+/** Lowercase status vocabulary used in URLs and list filters. */
+export type CustomerStatusFilter = 'active' | 'archival';
 
 export type CustomerPriceConditionStatus = 'valid' | 'expiring' | 'expired';
 
@@ -60,7 +67,7 @@ export interface CustomerQuery {
   pageSize: number;
   sort: string;
   dir: SortDirection;
-  status: '' | CustomerStatus;
+  status: '' | CustomerStatusFilter;
   type: string;
 }
 

@@ -32,27 +32,38 @@ const response: CustomerResponse = {
   tsPriceConditionEndDate: null,
   tsPriceConditionStatus: null,
   type: 'Corporate',
-  status: 'aktywny',
+  status: 'ACTIVE',
 };
 
 describe('customer response adapter', () => {
-  it('normalizes backend status labels without renaming response fields', () => {
+  it('normalizes backend status values without renaming response fields', () => {
     expect(mapCustomerResponse(response)).toMatchObject({
       fullName: response.fullName,
       taxId: response.taxId,
-      status: 'active',
+      status: 'ACTIVE',
       tsPriceConditionStatus: null,
     });
   });
 
-  it('maps known inactive and pricing labels and rejects unknown labels safely', () => {
+  it('maps the archival status and pricing labels case-insensitively', () => {
     expect(
       mapCustomerResponse({
         ...response,
-        status: 'nieaktywny',
+        status: ' Archival ',
+        tsPriceConditionStatus: 'Expired',
+      }),
+    ).toMatchObject({ status: 'ARCHIVAL', tsPriceConditionStatus: 'expired' });
+  });
+
+  it('rejects labels outside the English-only contract', () => {
+    // Polish labels are no longer part of the backend contract.
+    expect(
+      mapCustomerResponse({
+        ...response,
+        status: 'aktywny',
         tsPriceConditionStatus: 'Wygasł',
       }),
-    ).toMatchObject({ status: 'inactive', tsPriceConditionStatus: 'expired' });
+    ).toMatchObject({ status: null, tsPriceConditionStatus: null });
 
     expect(
       mapCustomerResponse({
@@ -69,6 +80,16 @@ describe('customer response adapter', () => {
         ...response,
         status: 'constructor',
         tsPriceConditionStatus: ' __proto__ ',
+      }),
+    ).toMatchObject({ status: null, tsPriceConditionStatus: null });
+  });
+
+  it('degrades non-string payload values to null instead of crashing', () => {
+    expect(
+      mapCustomerResponse({
+        ...response,
+        status: 42 as unknown as string,
+        tsPriceConditionStatus: {} as unknown as string,
       }),
     ).toMatchObject({ status: null, tsPriceConditionStatus: null });
   });

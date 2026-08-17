@@ -31,14 +31,14 @@ describe('customer URL filters', () => {
       listQueryChanged({
         ...defaultListQuery,
         q: 'bank',
-        filters: { status: 'inactive', type: 'Corporate' },
+        filters: { status: 'archival', type: 'Corporate' },
         page: 2,
       }),
     );
 
     expect(selectCustomerQuery(store.getState())).toMatchObject({
       q: 'bank',
-      status: 'inactive',
+      status: 'archival',
       type: 'Corporate',
       page: 2,
     });

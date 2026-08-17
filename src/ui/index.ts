@@ -9,7 +9,7 @@ export {
 export { NavigationPanel, type NavigationPanelProps } from './NavigationPanel';
 export {
   GenericDataTable,
-  ActiveInactiveStatusCell,
+  ActiveArchivalStatusCell,
   DateCell,
   TextCell,
   UnderlinedTextCell,

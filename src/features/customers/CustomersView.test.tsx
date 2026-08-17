@@ -90,7 +90,7 @@ describe('CustomersView', () => {
   });
 
   it('keeps deferred filters wired through deep links without rendering their controls', async () => {
-    const { store } = renderPage('/customers/all?filter.status=inactive');
+    const { store } = renderPage('/customers/all?filter.status=archival');
 
     expect(await screen.findByText('OZAROW CEMENT S.A.')).toBeInTheDocument();
     expect(screen.getByText('4 results')).toBeInTheDocument();
@@ -98,7 +98,7 @@ describe('CustomersView', () => {
     expect(screen.queryByRole('combobox', { name: 'Customer status' })).not.toBeInTheDocument();
 
     await waitFor(() => {
-      expect(selectCustomerQuery(store.getState()).status).toBe('inactive');
+      expect(selectCustomerQuery(store.getState()).status).toBe('archival');
     });
   });
 

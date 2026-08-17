@@ -24,7 +24,7 @@ describe('preview data profiles', () => {
     const cached = customersApi.endpoints.getCustomers.select(query)(store.getState());
     expect(cached.status).toBe('fulfilled');
     expect(cached.data?.content[0]?.fullName).toBe('ARCELORMITTAL WARSAW SP. Z O.O.');
-    expect(cached.data?.content[0]?.status).toBe('active');
+    expect(cached.data?.content[0]?.status).toBe('ACTIVE');
     expect(cached.data?.page).toEqual({
       size: 10,
       number: 0,
