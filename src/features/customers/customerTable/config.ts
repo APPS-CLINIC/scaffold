@@ -35,6 +35,13 @@ export const customerTableConfig = {
     {
       field: 'status',
       labelKey: 'customers.table.field.status',
+      filter: {
+        type: 'select',
+        options: [
+          { value: 'active', labelKey: 'common.status.active' },
+          { value: 'archival', labelKey: 'common.status.archival' },
+        ],
+      },
       component: ActiveArchivalStatusCell,
       sortable: true,
       width: 112,
@@ -49,6 +56,10 @@ export const customerTableConfig = {
     {
       field: 'type',
       labelKey: 'customers.table.field.type',
+      filter: {
+        type: 'select',
+        options: [{ value: 'Corporate' }, { value: 'SME' }],
+      },
       component: TextCell,
       sortable: true,
       width: 128,
@@ -56,6 +67,7 @@ export const customerTableConfig = {
     {
       field: 'lendingRatingReviewDate',
       labelKey: 'customers.table.field.lendingRatingReviewDate',
+      filter: { type: 'dateRange' },
       component: DateCell,
       sortable: true,
       width: 144,
@@ -63,6 +75,7 @@ export const customerTableConfig = {
     {
       field: 'tsPriceConditionEndDate',
       labelKey: 'customers.table.field.tsPriceConditionEndDate',
+      filter: { type: 'dateRange' },
       component: DateCell,
       sortable: true,
       width: 160,
@@ -77,6 +90,7 @@ export const customerTableConfig = {
     {
       field: 'lendingReviewDate',
       labelKey: 'customers.table.field.lendingReviewDate',
+      filter: { type: 'dateRange' },
       component: DateCell,
       sortable: true,
       width: 160,

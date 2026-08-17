@@ -8,6 +8,8 @@ export {
 } from './cells';
 export type {
   GenericDataTableCellComponent,
+  GenericDataTableFilterConfig,
+  GenericDataTableFilterOption,
   GenericDataTableCellProps,
   GenericDataTableConfig,
   GenericDataTableDataKey,

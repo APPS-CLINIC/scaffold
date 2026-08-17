@@ -13,6 +13,12 @@ describe('customer URL filters', () => {
     expect(parseCustomerFilters({ status: 'unsupported', type: 'Corporate' })).toEqual({
       status: '',
       type: 'Corporate',
+      lendingRatingReviewDateFrom: '',
+      lendingRatingReviewDateTo: '',
+      tsPriceConditionEndDateFrom: '',
+      tsPriceConditionEndDateTo: '',
+      lendingReviewDateFrom: '',
+      lendingReviewDateTo: '',
     });
   });
 

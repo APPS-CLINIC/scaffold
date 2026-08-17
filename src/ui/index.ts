@@ -1,16 +1,20 @@
-export { Button, type ButtonProps } from './Button';
 // IWA design-system components consumed by the app, re-exported so feature
 // code imports them from '@/ui' like every other UI building block.
 export {
   ActionLink,
+  Button,
   Card,
+  Chip,
+  DatePicker,
   DefinitionList,
+  Dialog,
   IconTextButton,
   InlineLink,
   MenuList,
   PaginatorTable,
   ScreenHeading,
   SearchWithAutocomplete,
+  Select,
   SkeletonTable,
   Status,
   Switch,
@@ -20,13 +24,19 @@ export {
 } from 'iwa-react-components';
 export type {
   ActionLinkProps,
+  ButtonProps,
   CardProps,
+  ChipProps,
+  DatePickerProps,
   DefinitionListProps,
+  DialogProps,
   IconTextButtonProps,
   InlineLinkProps,
   PaginatorTableProps,
   ScreenHeadingProps,
   SearchWithAutocompleteProps,
+  SelectOption,
+  SelectProps,
   SkeletonTableColumn,
   SkeletonTableProps,
   StatusProps,
@@ -35,7 +45,6 @@ export type {
   TableProps,
 } from 'iwa-react-components';
 export { TextInput, type TextInputProps } from './TextInput';
-export { Select, type SelectProps } from './Select';
 export {
   MenuListAdapter,
   type MenuListAdapterItem,
@@ -55,6 +64,8 @@ export {
   type GenericDataTableDataKey,
   type GenericDataTableField,
   type GenericDataTableFieldConfig,
+  type GenericDataTableFilterConfig,
+  type GenericDataTableFilterOption,
   type GenericDataTableFieldWithValue,
   type GenericDataTableLabels,
   type GenericDataTablePageChange,
@@ -81,3 +92,11 @@ export { cx } from './cx';
 export { ToastProvider } from './toast/ToastProvider';
 export { useToast } from './toast/useToast';
 export type { Toast, ToastTone, ToastApi } from './toast/Toast.context';
+export {
+  TableFilterBar,
+  type TableFilterBarLabels,
+  type TableFilterBarProps,
+  type TableFilterValues,
+  type TableFilterValue,
+  type TableFilterDateRange,
+} from './TableFilterBar';

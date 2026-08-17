@@ -8,16 +8,22 @@ import {
   ActionLink,
   Card,
   GenericDataTable,
-  IconTextButton,
-  SearchWithAutocomplete,
   Switch,
+  TableFilterBar,
   type GenericDataTableLabels,
   type GenericDataTablePageChange,
   type GenericDataTableSortChange,
+  type TableFilterBarLabels,
 } from '@/ui';
 import { customerTableConfig } from './customerTable';
 import { useGetCustomersQuery } from './customers.api';
-import { selectCustomerQuery } from './customers.filters';
+import {
+  customerFiltersToTableValues,
+  parseCustomerFilters,
+  selectCustomerQuery,
+  tableValuesToCustomerFilterPatch,
+  updateCustomerUrlFilters,
+} from './customers.filters';
 import type { Customer } from './customers.types';
 
 export function CustomersView() {
@@ -51,6 +57,23 @@ export function CustomersView() {
       },
     }),
     [t],
+  );
+
+  const filterLabels = useMemo<TableFilterBarLabels>(
+    () => ({
+      customizeFilters: t('customers.actions.customizeFilters'),
+      clearFilters: t('customers.actions.clearFilters'),
+      dialogTitle: t('customers.filters.title'),
+      save: t('common.actions.save'),
+      cancel: t('common.actions.cancel'),
+      selectPlaceholder: t('common.select.placeholder'),
+      searchPlaceholder: t('customers.search.placeholder'),
+    }),
+    [t],
+  );
+  const filterValues = useMemo(
+    () => customerFiltersToTableValues(parseCustomerFilters(listQuery.filters)),
+    [listQuery.filters],
   );
 
   const handlePageChange = ({ page, pageSize }: GenericDataTablePageChange) => {
@@ -110,29 +133,32 @@ export function CustomersView() {
           />
         </div>
 
-        {/* Filter section: controls only for now — no filtering or search
-            actions are wired yet (deferred with the rest of the filter model). */}
-        <div className="mb-4 flex flex-col items-start gap-8 rounded bg-[var(--surface-muted)] p-3">
-          <IconTextButton
-            secondary
-            icon={<span aria-hidden="true" className="pi pi-sliders-h text-sm" />}
-            label={t('customers.actions.customizeFilters')}
+        <div className="mb-4">
+          <TableFilterBar<Customer>
+            fields={customerTableConfig.fields}
+            values={filterValues}
+            labels={filterLabels}
+            locale={i18n.resolvedLanguage ?? i18n.language}
+            onChange={(values) =>
+              setQuery({
+                filters: updateCustomerUrlFilters(
+                  listQuery.filters,
+                  tableValuesToCustomerFilterPatch(values),
+                ),
+              })
+            }
+            endSlot={
+              <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap text-sm text-[var(--muted)]">
+                <span>{t('customers.actions.expandAll')}</span>
+                <Switch
+                  aria-label={t('customers.actions.expandAll')}
+                  checked={allVisibleRowsExpanded}
+                  disabled={visibleRowKeys.length === 0}
+                  onChange={() => setExpandedRowKeys(allVisibleRowsExpanded ? [] : visibleRowKeys)}
+                />
+              </label>
+            }
           />
-          <div className="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2">
-            <SearchWithAutocomplete
-              className="w-full max-w-96"
-              placeholder={t('customers.search.placeholder')}
-            />
-            <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap text-sm text-[var(--muted)]">
-              <span>{t('customers.actions.expandAll')}</span>
-              <Switch
-                aria-label={t('customers.actions.expandAll')}
-                checked={allVisibleRowsExpanded}
-                disabled={visibleRowKeys.length === 0}
-                onChange={() => setExpandedRowKeys(allVisibleRowsExpanded ? [] : visibleRowKeys)}
-              />
-            </label>
-          </div>
         </div>
 
         <span className="sr-only" role="status" aria-live="polite">

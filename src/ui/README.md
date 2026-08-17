@@ -6,8 +6,9 @@ local primitives stay here until they are replaced with thin IWA wrappers.
 
 ## How to evolve the seam
 
-1. Replace the implementations of `Button`, `TextInput`, `Select`, etc. with
-   re-exports (or thin wrappers) of your org components.
+1. Replace the implementations of local primitives with re-exports (or thin
+   wrappers) of your org components — `Button` and `Select` already come from
+   IWA; `TextInput` is still a local placeholder.
 2. **Keep the exported names and prop contracts** from `index.ts`. Everything
    in `src/features/**` and `src/routes/**` imports from `@/ui`, so as long as
    the contracts hold, no feature code changes.
@@ -16,10 +17,8 @@ local primitives stay here until they are replaced with thin IWA wrappers.
 Example wrapper:
 
 ```tsx
-// src/ui/Button.tsx
-import { Button as OrgButton } from '@my-org/ui';
-export const Button = OrgButton;
-export type { ButtonProps } from '@my-org/ui';
+// src/ui/index.ts
+export { Button, type ButtonProps } from 'iwa-react-components';
 ```
 
 Keeping every UI import funneled through `@/ui` means the rest of the codebase

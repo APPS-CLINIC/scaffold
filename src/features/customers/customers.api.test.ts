@@ -17,6 +17,12 @@ const makeQuery = (overrides: Partial<CustomerQuery> = {}): CustomerQuery => ({
   dir: 'asc',
   status: '',
   type: '',
+  lendingRatingReviewDateFrom: '',
+  lendingRatingReviewDateTo: '',
+  tsPriceConditionEndDateFrom: '',
+  tsPriceConditionEndDateTo: '',
+  lendingReviewDateFrom: '',
+  lendingReviewDateTo: '',
   ...overrides,
 });
 

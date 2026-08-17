@@ -66,6 +66,12 @@ export interface CustomerQuery {
   dir: SortDirection;
   status: '' | CustomerStatusFilter;
   type: string;
+  lendingRatingReviewDateFrom: string;
+  lendingRatingReviewDateTo: string;
+  tsPriceConditionEndDateFrom: string;
+  tsPriceConditionEndDateTo: string;
+  lendingReviewDateFrom: string;
+  lendingReviewDateTo: string;
 }
 
 export type { PageResponse } from '@/api/pagination.types';

@@ -60,6 +60,14 @@ export function toCustomerBackendParams(query: CustomerQuery) {
   const sortDirection: 'ASC' | 'DESC' = query.dir === 'desc' ? 'DESC' : 'ASC';
   const q = query.q.trim();
   const type = query.type.trim();
+  const dateRanges = {
+    lendingRatingReviewDateFrom: query.lendingRatingReviewDateFrom,
+    lendingRatingReviewDateTo: query.lendingRatingReviewDateTo,
+    tsPriceConditionEndDateFrom: query.tsPriceConditionEndDateFrom,
+    tsPriceConditionEndDateTo: query.tsPriceConditionEndDateTo,
+    lendingReviewDateFrom: query.lendingReviewDateFrom,
+    lendingReviewDateTo: query.lendingReviewDateTo,
+  };
   // The URL keeps the lowercase filter vocabulary; the service expects the
   // uppercase status values.
   const status: CustomerStatus | undefined =
@@ -72,6 +80,7 @@ export function toCustomerBackendParams(query: CustomerQuery) {
     ...(q ? { q } : {}),
     ...(status ? { status } : {}),
     ...(type ? { type } : {}),
+    ...Object.fromEntries(Object.entries(dateRanges).filter(([, value]) => value)),
   };
 }
 
@@ -94,6 +103,17 @@ export function customerBackendParamsToSearchParams(
   if (params.q) searchParams.set('q', params.q);
   if (params.status) searchParams.set('status', params.status);
   if (params.type) searchParams.set('type', params.type);
+  for (const key of [
+    'lendingRatingReviewDateFrom',
+    'lendingRatingReviewDateTo',
+    'tsPriceConditionEndDateFrom',
+    'tsPriceConditionEndDateTo',
+    'lendingReviewDateFrom',
+    'lendingReviewDateTo',
+  ] as const) {
+    const value = (params as Partial<Record<typeof key, string>>)[key];
+    if (value) searchParams.set(key, value);
+  }
 
   return searchParams;
 }
