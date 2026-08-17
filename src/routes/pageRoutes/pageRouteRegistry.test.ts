@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { getPageRouteLoader } from './pageRouteRegistry';
 
 describe('page route registry', () => {
-  it('resolves a lazy page module by stable navigation identity', async () => {
+  // The lazy page import compiles the whole CustomersPage graph on first
+  // load; on cold/slow machines that can exceed the default 5s timeout.
+  it('resolves a lazy page module by stable navigation identity', { timeout: 15_000 }, async () => {
     const loader = getPageRouteLoader('customers', 'all-customers');
 
     expect(loader).toBeTypeOf('function');
