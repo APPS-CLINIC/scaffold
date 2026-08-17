@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Column } from 'primereact/column';
-import { PaginatorTable, SkeletonTable, twMerge } from '../iwa';
+import { PaginatorTable, SkeletonTable, twMerge } from 'iwa-react-components';
 import { ExpandedRowContent, PrimaryCell, RowExpansionButton } from './components';
 import {
   createDataTablePassThrough,

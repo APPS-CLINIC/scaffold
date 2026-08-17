@@ -130,10 +130,11 @@ genuinely domain-specific; a reusable renderer belongs beside the generic
 table.
 
 Small internal helpers, such as safe value handling, remain private to the
-table package; status presentation renders the shared IWA `Status` component
-re-exported through the `src/ui/iwa.ts` seam. Table classes are combined with
-IWA's `twMerge` (also re-exported through the seam), allowing feature-supplied
-Tailwind classes to override defaults without conflicting utilities.
+table package; status presentation renders the shared IWA `Status` component.
+IWA components are re-exported through the `@/ui` barrel for feature code,
+while modules inside `src/ui` import `iwa-react-components` directly. Table
+classes are combined with IWA's `twMerge`, allowing feature-supplied Tailwind
+classes to override defaults without conflicting utilities.
 
 ## Explicit expanded-row allowlist
 

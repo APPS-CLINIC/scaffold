@@ -1,5 +1,5 @@
 import { cloneElement, createElement, type ReactElement } from 'react';
-import { twMerge } from '../iwa';
+import { twMerge } from 'iwa-react-components';
 import type { DataTablePassThroughOptions } from 'primereact/datatable';
 import type { PaginatorTemplate } from 'primereact/paginator';
 import type {

@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { Status } from '../../iwa';
+import { Status } from 'iwa-react-components';
 import type {
   GenericDataTableCellProps,
   GenericDataTableFieldWithValue,

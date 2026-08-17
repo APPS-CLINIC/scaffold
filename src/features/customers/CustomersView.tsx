@@ -5,12 +5,15 @@ import { DATE_DMY_FORMAT_OPTIONS } from '@/i18n/dateFormats';
 import { selectListQuery } from '@/features/urlState/urlState.selectors';
 import { useListQueryState } from '@/features/urlState/useListQueryState';
 import {
+  ActionLink,
+  Card,
   GenericDataTable,
+  ScreenHeading,
+  Switch,
   type GenericDataTableLabels,
   type GenericDataTablePageChange,
   type GenericDataTableSortChange,
 } from '@/ui';
-import { ActionLink, Card, ScreenHeading, Switch } from '@/ui/iwa';
 import { customerTableConfig } from './customerTable';
 import { useGetCustomersQuery } from './customers.api';
 import { selectCustomerQuery } from './customers.filters';
