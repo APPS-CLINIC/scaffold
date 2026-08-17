@@ -89,7 +89,7 @@ export const customerTableConfig = {
     {
       field: 'status',
       labelKey: 'customers.table.field.status',
-      component: ActiveInactiveStatusCell,
+      component: ActiveArchivalStatusCell,
       sortable: true,
       width: 112,
     },
@@ -120,7 +120,7 @@ public cell component in its own file:
 - `TextCell` for ordinary primitive text;
 - `UnderlinedTextCell` for link-like primary values;
 - `DateCell` for locale-aware date formatting;
-- `ActiveInactiveStatusCell` for active/inactive status presentation;
+- `ActiveArchivalStatusCell` for ACTIVE/ARCHIVAL status presentation;
 - `ValidityStatusCell` for valid, expiring, and expired states.
 
 These cells are domain-neutral building blocks exported through `@/ui`. The
@@ -129,11 +129,11 @@ should add a renderer inside its own feature only when the presentation is
 genuinely domain-specific; a reusable renderer belongs beside the generic
 table.
 
-Small internal helpers, such as status presentation and safe value handling,
-remain private to the table package. Table classes are combined with IWA's
-`twMerge` (re-exported through the `src/ui/iwa.ts` seam), allowing
-feature-supplied Tailwind classes to override defaults without conflicting
-utilities.
+Small internal helpers, such as safe value handling, remain private to the
+table package; status presentation renders the shared IWA `Status` component
+re-exported through the `src/ui/iwa.ts` seam. Table classes are combined with
+IWA's `twMerge` (also re-exported through the seam), allowing feature-supplied
+Tailwind classes to override defaults without conflicting utilities.
 
 ## Explicit expanded-row allowlist
 

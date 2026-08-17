@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { DefinitionList } from '../../iwa';
 import type {
   GenericDataTableFieldConfig,
   GenericDataTableLabels,
@@ -31,25 +32,25 @@ export function ExpandedRowContent<T extends object>({
       aria-labelledby={`${detailsId}-toggle`}
       className="w-full bg-[var(--surface)] px-4 py-2 sm:px-6"
     >
-      <dl className="mx-auto grid max-w-lg grid-cols-1 gap-y-1">
+      <div className="mx-auto flex max-w-lg flex-col gap-y-1 [&_dl]:items-baseline [&_dl]:max-sm:flex-col [&_dl]:max-sm:gap-0 [&_dt]:max-sm:w-auto [&_dt]:max-sm:text-left">
         {fields.map((field) => (
-          <div
-            className="grid min-w-0 grid-cols-1 items-baseline text-xs leading-5 sm:grid-cols-[minmax(9rem,auto)_minmax(0,1fr)] sm:gap-2"
+          <DefinitionList
             key={String(field.field)}
-          >
-            <dt className="font-semibold text-[var(--muted)] sm:text-right">{t(field.labelKey)}</dt>
-            <dd className="min-w-0 break-words">
-              <DetailValue
-                detail={field}
-                labels={labels}
-                locale={locale}
-                row={row}
-                rowIndex={rowIndex}
-              />
-            </dd>
-          </div>
+            title={{ text: t(field.labelKey), bold: true }}
+            body={{
+              text: (
+                <DetailValue
+                  detail={field}
+                  labels={labels}
+                  locale={locale}
+                  row={row}
+                  rowIndex={rowIndex}
+                />
+              ),
+            }}
+          />
         ))}
-      </dl>
+      </div>
     </section>
   );
 }

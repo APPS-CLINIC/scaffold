@@ -122,6 +122,12 @@ export interface GenericDataTableProps<T extends object> extends Omit<
   sortField?: string;
   sortOrder?: GenericDataTableSortOrder;
   loading?: boolean;
+  /**
+   * True only while the very first load is in flight (no data retained yet).
+   * Renders the table skeleton instead of the table; later refetches keep the
+   * mounted table under its loading overlay.
+   */
+  initialLoading?: boolean;
   error?: ReactNode;
   labels: GenericDataTableLabels<T>;
   expandedRowKeys?: readonly string[];

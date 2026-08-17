@@ -142,7 +142,7 @@ export function createDataTablePassThrough(
     column: {
       headerCell: {
         className:
-          'whitespace-normal border-b border-[var(--navigation-accent)] bg-[var(--surface)] px-2 py-2 text-left text-[11px] font-semibold leading-4 text-[var(--muted)]',
+          'whitespace-normal border-b border-[var(--navigation-accent)] bg-[var(--surface)] px-2 py-2 text-left text-xs font-normal leading-4 text-[var(--text)]',
       },
       headerContent: { className: 'min-h-8 justify-start gap-1' },
       bodyCell: {

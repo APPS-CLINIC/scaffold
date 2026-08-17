@@ -5,11 +5,32 @@
  * feature code never depends on the vendor package directly.
  */
 export {
+  ActionLink,
+  Card,
+  DefinitionList,
+  InlineLink,
   MenuList,
   NavigationPanel,
   PaginatorTable,
+  ScreenHeading,
+  SkeletonTable,
+  Status,
+  Switch,
   TabMenu,
   TopBar,
   twMerge,
 } from 'iwa-react-components';
-export type { PaginatorTableProps, TableProps } from 'iwa-react-components';
+export type {
+  ActionLinkProps,
+  CardProps,
+  DefinitionListProps,
+  InlineLinkProps,
+  PaginatorTableProps,
+  ScreenHeadingProps,
+  SkeletonTableColumn,
+  SkeletonTableProps,
+  StatusProps,
+  StatusType,
+  SwitchProps,
+  TableProps,
+} from 'iwa-react-components';

@@ -459,6 +459,36 @@ describe('GenericDataTable', () => {
     expect(screen.queryByText('No test customers')).not.toBeInTheDocument();
   });
 
+  it('renders a table skeleton for the initial load and the real table once loaded', () => {
+    mockTableContainerWidth(WIDE_CONTAINER);
+    const { rerender, props } = renderTable({
+      rows: [],
+      totalRecords: 0,
+      loading: true,
+      initialLoading: true,
+    });
+
+    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Loading test customers');
+
+    rerender(<GenericDataTable<TestRow> {...props} loading={false} initialLoading={false} />);
+
+    expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
+  });
+
+  it('keeps the table mounted during a refetch issued after an empty result', () => {
+    mockTableContainerWidth(WIDE_CONTAINER);
+    const { rerender, props } = renderTable({ rows: [], totalRecords: 0, loading: false });
+
+    expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
+
+    // A sort or page-size change refetches while the retained result is empty;
+    // the table (and whatever holds focus inside it) must not unmount.
+    rerender(<GenericDataTable<TestRow> {...props} rows={[]} totalRecords={0} loading={true} />);
+
+    expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
+  });
+
   it('merges conflicting caller classes with the caller overrides taking precedence', () => {
     mockTableContainerWidth(WIDE_CONTAINER);
     const { container } = renderTable({

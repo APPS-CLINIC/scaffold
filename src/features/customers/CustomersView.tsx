@@ -5,12 +5,12 @@ import { DATE_DMY_FORMAT_OPTIONS } from '@/i18n/dateFormats';
 import { selectListQuery } from '@/features/urlState/urlState.selectors';
 import { useListQueryState } from '@/features/urlState/useListQueryState';
 import {
-  Button,
   GenericDataTable,
   type GenericDataTableLabels,
   type GenericDataTablePageChange,
   type GenericDataTableSortChange,
 } from '@/ui';
+import { ActionLink, Card, ScreenHeading, Switch } from '@/ui/iwa';
 import { customerTableConfig } from './customerTable';
 import { useGetCustomersQuery } from './customers.api';
 import { selectCustomerQuery } from './customers.filters';
@@ -80,76 +80,62 @@ export function CustomersView() {
 
   return (
     <section
-      aria-labelledby="customers-title"
+      aria-label={t('customers.title')}
       className="w-full min-w-0 max-w-full space-y-4 overflow-hidden"
     >
       <header>
-        <h1
-          id="customers-title"
-          className="text-2xl font-semibold tracking-tight text-[var(--navigation-accent)]"
-        >
-          {t('customers.title')}
-        </h1>
+        <ScreenHeading pageName={t('customers.title')} items={[]} />
         <p className="sr-only">{t('customers.description')}</p>
       </header>
 
-      <div className="border-y border-[var(--border)] bg-[var(--surface-muted)] px-3 py-3">
-        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--muted)]">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span>{t('customers.dataAsOf')}</span>
-            <strong className="font-semibold text-[var(--text)] underline underline-offset-2">
-              {dataAsOf}
-            </strong>
-            <Button
-              variant="ghost"
-              className="min-h-8 !border-0 px-1.5 py-0 text-xs text-[var(--link)] underline underline-offset-2"
-              onClick={() => void refetch()}
-            >
-              <span
-                aria-hidden="true"
-                className="pi pi-refresh mr-1 text-[var(--navigation-accent)]"
-              />
-              {t('customers.actions.refresh')}
-            </Button>
-          </div>
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[var(--muted)]">
+        <span>{t('customers.dataAsOf')}</span>
+        <strong className="font-semibold text-[var(--text)]">{dataAsOf}</strong>
+        <ActionLink
+          className="text-xs"
+          icon={<span aria-hidden="true" className="pi pi-refresh text-xs" />}
+          label={t('customers.actions.refresh')}
+          onClick={() => void refetch()}
+        />
+      </div>
 
-          <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap text-xs">
+      <Card>
+        <div className="mb-3 flex flex-wrap items-center justify-end gap-2 rounded bg-[var(--surface-muted)] px-3 py-2">
+          <label className="inline-flex min-h-8 cursor-pointer items-center gap-2 whitespace-nowrap text-xs text-[var(--muted)]">
             <span>{t('customers.actions.expandAll')}</span>
-            <input
-              type="checkbox"
-              className="peer sr-only"
+            <Switch
               checked={allVisibleRowsExpanded}
               disabled={visibleRowKeys.length === 0}
               onChange={() => setExpandedRowKeys(allVisibleRowsExpanded ? [] : visibleRowKeys)}
             />
-            <span className="relative h-4 w-8 rounded-full bg-[var(--inactive)] transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-3 after:w-3 after:rounded-full after:bg-white after:transition-transform peer-checked:bg-[var(--accent)] peer-checked:after:translate-x-4 peer-disabled:opacity-50 motion-reduce:transition-none motion-reduce:after:transition-none" />
           </label>
         </div>
 
         <span className="sr-only" role="status" aria-live="polite">
           {t('common.results', { count: data?.page.totalElements ?? 0 })}
         </span>
-      </div>
 
-      <GenericDataTable
-        rows={data?.content ?? []}
-        config={customerTableConfig}
-        totalRecords={data?.page.totalElements ?? 0}
-        page={listQuery.page}
-        pageSize={listQuery.pageSize}
-        pageSizeOptions={[10, 25, 50]}
-        sortField={listQuery.sort || undefined}
-        sortOrder={listQuery.sort ? listQuery.dir : undefined}
-        loading={isLoading || isFetching}
-        error={isError ? t('customers.table.error') : undefined}
-        labels={labels}
-        expandedRowKeys={expandedRowKeys}
-        onExpandedRowKeysChange={setExpandedRowKeys}
-        onPageChange={handlePageChange}
-        onSortChange={handleSortChange}
-        onSortClear={handleSortClear}
-        aria-busy={isLoading || isFetching}
-      />
+        <GenericDataTable
+          rows={data?.content ?? []}
+          config={customerTableConfig}
+          totalRecords={data?.page.totalElements ?? 0}
+          page={listQuery.page}
+          pageSize={listQuery.pageSize}
+          pageSizeOptions={[10, 25, 50]}
+          sortField={listQuery.sort || undefined}
+          sortOrder={listQuery.sort ? listQuery.dir : undefined}
+          loading={isLoading || isFetching}
+          initialLoading={isLoading}
+          error={isError ? t('customers.table.error') : undefined}
+          labels={labels}
+          expandedRowKeys={expandedRowKeys}
+          onExpandedRowKeysChange={setExpandedRowKeys}
+          onPageChange={handlePageChange}
+          onSortChange={handleSortChange}
+          onSortClear={handleSortClear}
+          aria-busy={isLoading || isFetching}
+        />
+      </Card>
     </section>
   );
 }

@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next';
+import { Status } from '../../iwa';
 import type {
   GenericDataTableCellProps,
   GenericDataTableFieldWithValue,
 } from '../GenericDataTable.types';
 import { renderCellValue } from './cellValue';
-import { StatusIndicator } from './StatusIndicator';
 
 type ActiveArchivalStatus = 'ACTIVE' | 'ARCHIVAL';
 
@@ -15,11 +15,11 @@ export function ActiveArchivalStatusCell<
   const { t } = useTranslation();
 
   if (value === 'ACTIVE') {
-    return <StatusIndicator label={t('common.status.active')} tone="success" />;
+    return <Status type="active" label={t('common.status.active')} />;
   }
 
   if (value === 'ARCHIVAL') {
-    return <StatusIndicator label={t('common.status.archival')} tone="inactive" />;
+    return <Status type="disabled" label={t('common.status.archival')} />;
   }
 
   return renderCellValue(value, notAvailable);

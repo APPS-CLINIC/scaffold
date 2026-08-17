@@ -1,3 +1,4 @@
+import { InlineLink } from '../../iwa';
 import type { GenericDataTableCellProps, GenericDataTableField } from '../GenericDataTable.types';
 import { renderCellValue } from './cellValue';
 
@@ -18,8 +19,10 @@ export function UnderlinedTextCell<
   }
 
   return (
-    <span className="inline-block max-w-full whitespace-normal break-words font-medium text-[var(--link)] underline decoration-[var(--border)] underline-offset-2">
-      {renderCellValue(value, notAvailable)}
-    </span>
+    <InlineLink
+      size="small"
+      className="max-w-full whitespace-normal break-words font-medium"
+      label={renderCellValue(value, notAvailable)}
+    />
   );
 }

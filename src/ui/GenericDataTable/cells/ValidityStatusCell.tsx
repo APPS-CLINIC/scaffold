@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next';
+import { Status } from '../../iwa';
 import type {
   GenericDataTableCellProps,
   GenericDataTableFieldWithValue,
 } from '../GenericDataTable.types';
 import { renderCellValue } from './cellValue';
-import { StatusIndicator } from './StatusIndicator';
 
 type ValidityStatus = 'valid' | 'expiring' | 'expired';
 
@@ -16,11 +16,11 @@ export function ValidityStatusCell<
 
   switch (value) {
     case 'valid':
-      return <StatusIndicator label={t('common.status.valid')} tone="success" />;
+      return <Status type="active" label={t('common.status.valid')} />;
     case 'expiring':
-      return <StatusIndicator label={t('common.status.expiring')} tone="warning" />;
+      return <Status type="awaiting" label={t('common.status.expiring')} />;
     case 'expired':
-      return <StatusIndicator label={t('common.status.expired')} tone="warning" />;
+      return <Status type="incomplete" label={t('common.status.expired')} />;
     default:
       return renderCellValue(value, notAvailable);
   }

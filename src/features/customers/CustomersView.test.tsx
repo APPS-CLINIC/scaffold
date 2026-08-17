@@ -125,7 +125,7 @@ describe('CustomersView', () => {
     renderPage();
     await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
 
-    const expandAll = screen.getByRole('checkbox', { name: 'Expand all' });
+    const expandAll = screen.getByRole('switch', { name: 'Expand all' });
     await user.click(expandAll);
 
     expect(expandAll).toBeChecked();
