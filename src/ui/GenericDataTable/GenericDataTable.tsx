@@ -232,15 +232,20 @@ function GenericDataTableInner<T extends object>(
               sortField={field.sortField ?? String(field.field)}
               style={{ width: `${field.width}px` }}
               headerClassName={twMerge('whitespace-normal', field.headerClassName)}
-              bodyClassName={twMerge('whitespace-nowrap', field.cellClassName)}
+              bodyClassName={field.cellClassName}
               body={(primeRow: PrimeDataTableRow, options: PrimeColumnBodyOptions) => (
-                <PrimaryCell
-                  column={field}
-                  locale={locale}
-                  notAvailable={labels.notAvailable}
-                  row={primeRow as unknown as T}
-                  rowIndex={options.rowIndex}
-                />
+                // Figma: cell content clamps to two lines with an ellipsis;
+                // without the clamp, overflowing text bleeds into the next
+                // cell (the wrapper is not a scroll container).
+                <div className="line-clamp-2 break-words">
+                  <PrimaryCell
+                    column={field}
+                    locale={locale}
+                    notAvailable={labels.notAvailable}
+                    row={primeRow as unknown as T}
+                    rowIndex={options.rowIndex}
+                  />
+                </div>
               )}
             />
           ))}

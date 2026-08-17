@@ -24,7 +24,6 @@ export const customerTableConfig = {
       sortable: true,
       width: 192,
       alwaysVisible: true,
-      cellClassName: 'whitespace-normal',
     },
     {
       field: 'grid',
@@ -46,7 +45,6 @@ export const customerTableConfig = {
       component: UnderlinedTextCell,
       sortable: true,
       width: 160,
-      cellClassName: 'whitespace-normal',
     },
     {
       field: 'type',
