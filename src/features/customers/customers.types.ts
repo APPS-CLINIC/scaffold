@@ -1,8 +1,5 @@
 /** Backend customer status contract — the only two values the service emits. */
-export enum CustomerStatus {
-  Active = 'ACTIVE',
-  Archival = 'ARCHIVAL',
-}
+export type CustomerStatus = 'ACTIVE' | 'ARCHIVAL';
 
 /** Lowercase status vocabulary used in URLs and list filters. */
 export type CustomerStatusFilter = 'active' | 'archival';

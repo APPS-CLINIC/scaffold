@@ -1,15 +1,15 @@
 import { normalizeDomainValue, priceConditionStatusByDomainValue } from '@/i18n/domainValues';
-import {
+import type {
+  Customer,
+  CustomerPriceConditionStatus,
+  CustomerResponse,
   CustomerStatus,
-  type Customer,
-  type CustomerPriceConditionStatus,
-  type CustomerResponse,
 } from './customers.types';
 
-/** Keys are `normalizeDomainValue` outputs; values are the status enum. */
+/** Keys are `normalizeDomainValue` outputs; values are the status contract. */
 const customerStatusByDomainValue: Readonly<Record<string, CustomerStatus>> = {
-  active: CustomerStatus.Active,
-  archival: CustomerStatus.Archival,
+  active: 'ACTIVE',
+  archival: 'ARCHIVAL',
 };
 
 /**

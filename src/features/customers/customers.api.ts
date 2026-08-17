@@ -1,11 +1,11 @@
 import { baseApi } from '@/api/baseApi';
 import { mapCustomerResponse } from './customers.adapter';
-import {
+import type {
+  Customer,
+  CustomerQuery,
+  CustomerResponse,
   CustomerStatus,
-  type Customer,
-  type CustomerQuery,
-  type CustomerResponse,
-  type PageResponse,
+  PageResponse,
 } from './customers.types';
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -61,13 +61,9 @@ export function toCustomerBackendParams(query: CustomerQuery) {
   const q = query.q.trim();
   const type = query.type.trim();
   // The URL keeps the lowercase filter vocabulary; the service expects the
-  // uppercase status enum.
-  const status =
-    query.status === 'active'
-      ? CustomerStatus.Active
-      : query.status === 'archival'
-        ? CustomerStatus.Archival
-        : undefined;
+  // uppercase status values.
+  const status: CustomerStatus | undefined =
+    query.status === 'active' ? 'ACTIVE' : query.status === 'archival' ? 'ARCHIVAL' : undefined;
 
   return {
     page,
