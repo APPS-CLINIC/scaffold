@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Column } from 'primereact/column';
-import { PaginatorTable, SkeletonTable, twMerge } from '@/ui';
+import { PaginatorTable, twMerge } from '@/ui';
 import { ExpandedRowContent, PrimaryCell, RowExpansionButton } from './components';
 import {
   createDataTablePassThrough,
@@ -46,7 +46,6 @@ function GenericDataTableInner<T extends object>(
     sortField,
     sortOrder,
     loading = false,
-    initialLoading = false,
     error,
     labels,
     expandedRowKeys,
@@ -130,20 +129,18 @@ function GenericDataTableInner<T extends object>(
 
   const getDetailsId = (row: T) => `${tableId}-details-${encodeURIComponent(getRowKey(row))}`;
 
-  // Only the owner knows whether this is the very first load (no retained
-  // data) or a refetch; refetches must keep the table mounted so focus and
-  // the loading overlay survive, hence the dedicated prop. The ref guards
-  // owners whose initialLoading signal can flip back to true (e.g. RTK
-  // Query's isLoading after an errored first load): once the table has
-  // rendered, the skeleton never returns.
-  const tableHasRenderedRef = useRef(false);
-  const showSkeleton = initialLoading && !hasError && !tableHasRenderedRef.current;
-  useEffect(() => {
-    if (!showSkeleton) tableHasRenderedRef.current = true;
-  });
-  const skeletonColumns = useMemo(
-    () => visibleFields.map((field) => ({ width: field.width })),
-    [visibleFields],
+  // While loading, the real table keeps rendering (config-driven headers,
+  // sorting, paginator) and only the rows are placeholders with shimmer
+  // bars — one skeleton mechanism for both the first load and refetches,
+  // with no unmount and no vendor loading overlay.
+  const skeletonRowCount = Math.min(safePageSize, 10);
+  const skeletonRows = useMemo(
+    () =>
+      Array.from(
+        { length: skeletonRowCount },
+        (_, index) => ({ [String(config.dataKey)]: `__skeleton-${index}__` }) as PrimeDataTableRow,
+      ),
+    [config.dataKey, skeletonRowCount],
   );
 
   return (
@@ -167,73 +164,76 @@ function GenericDataTableInner<T extends object>(
         </div>
       ) : null}
 
-      {showSkeleton ? (
-        <SkeletonTable rowCount={Math.min(safePageSize, 10)} columns={skeletonColumns} />
-      ) : (
-        <PaginatorTable
-          value={tableRows}
-          dataKey={String(config.dataKey)}
-          lazy
-          paginator
-          alwaysShowPaginator
-          first={(safePage - 1) * safePageSize}
-          rows={safePageSize}
-          rowsPerPageOptions={[...pageSizeOptions]}
-          totalRecords={Math.max(0, totalRecords)}
-          sortField={sortField}
-          sortOrder={sortOrder === 'asc' ? 1 : sortOrder === 'desc' ? -1 : undefined}
-          removableSort={false}
-          loading={loading}
-          emptyMessage={
-            // A falsy value would fall back to PrimeReact's untranslated
-            // locale default, so suppression needs a real (hidden) node.
-            loading || hasError ? (
-              <span aria-hidden="true" className="hidden" />
-            ) : (
-              <span className="inline-block py-6" role="status">
-                {labels.empty}
-              </span>
-            )
-          }
-          expandedRows={hasDetails ? expandedRows : undefined}
-          rowExpansionTemplate={(primeRow: PrimeDataTableRow, options: { index: number }) => {
-            const row = primeRow as unknown as T;
+      <PaginatorTable
+        value={loading ? skeletonRows : tableRows}
+        dataKey={String(config.dataKey)}
+        lazy
+        paginator
+        alwaysShowPaginator
+        first={(safePage - 1) * safePageSize}
+        rows={safePageSize}
+        rowsPerPageOptions={[...pageSizeOptions]}
+        totalRecords={Math.max(0, totalRecords)}
+        sortField={sortField}
+        sortOrder={sortOrder === 'asc' ? 1 : sortOrder === 'desc' ? -1 : undefined}
+        removableSort={false}
+        emptyMessage={
+          // A falsy value would fall back to PrimeReact's untranslated
+          // locale default, so suppression needs a real (hidden) node.
+          loading || hasError ? (
+            <span aria-hidden="true" className="hidden" />
+          ) : (
+            <span className="inline-block py-6" role="status">
+              {labels.empty}
+            </span>
+          )
+        }
+        expandedRows={hasDetails && !loading ? expandedRows : undefined}
+        rowExpansionTemplate={(primeRow: PrimeDataTableRow, options: { index: number }) => {
+          const row = primeRow as unknown as T;
 
-            return (
-              <ExpandedRowContent
-                fields={accordionFields}
-                detailsId={getDetailsId(row)}
-                labels={labels}
-                locale={locale}
-                row={row}
-                rowIndex={options.index}
-              />
-            );
-          }}
-          onPage={(event: PrimePageEvent) => onPageChange(mapPageEvent(event))}
-          onSort={(event: PrimeSortEvent) => {
-            const change = mapSortEvent(event);
-            if (change) onSortChange(change);
-          }}
-          size="small"
-          className={DATA_TABLE_CLASS_NAME}
-          tableClassName="w-full table-fixed text-sm"
-          paginatorClassName="border-t border-[var(--navigation-accent)] bg-[var(--surface)]"
-          paginatorTemplate={paginatorTemplate}
-          pt={dataTablePassThrough}
-        >
-          {visibleFields.map((field) => (
-            <Column
-              key={String(field.field)}
-              columnKey={String(field.field)}
-              field={String(field.field)}
-              header={t(field.labelKey)}
-              sortable={field.sortable}
-              sortField={field.sortField ?? String(field.field)}
-              style={{ width: `${field.width}px` }}
-              headerClassName={twMerge('whitespace-normal', field.headerClassName)}
-              bodyClassName={field.cellClassName}
-              body={(primeRow: PrimeDataTableRow, options: PrimeColumnBodyOptions) => (
+          return (
+            <ExpandedRowContent
+              fields={accordionFields}
+              detailsId={getDetailsId(row)}
+              labels={labels}
+              locale={locale}
+              row={row}
+              rowIndex={options.index}
+            />
+          );
+        }}
+        onPage={(event: PrimePageEvent) => onPageChange(mapPageEvent(event))}
+        onSort={(event: PrimeSortEvent) => {
+          const change = mapSortEvent(event);
+          if (change) onSortChange(change);
+        }}
+        size="small"
+        className={DATA_TABLE_CLASS_NAME}
+        tableClassName="w-full table-fixed text-sm"
+        paginatorClassName="border-t border-[var(--navigation-accent)] bg-[var(--surface)]"
+        paginatorTemplate={paginatorTemplate}
+        pt={dataTablePassThrough}
+      >
+        {visibleFields.map((field) => (
+          <Column
+            key={String(field.field)}
+            columnKey={String(field.field)}
+            field={String(field.field)}
+            header={t(field.labelKey)}
+            sortable={field.sortable}
+            sortField={field.sortField ?? String(field.field)}
+            style={{ width: `${field.width}px` }}
+            headerClassName={twMerge('whitespace-normal', field.headerClassName)}
+            bodyClassName={field.cellClassName}
+            body={(primeRow: PrimeDataTableRow, options: PrimeColumnBodyOptions) =>
+              loading ? (
+                <span
+                  aria-hidden="true"
+                  className="block h-3 w-3/4 rounded bg-[#ededed] motion-safe:animate-pulse"
+                  style={{ animationDelay: `${options.rowIndex * 50}ms` }}
+                />
+              ) : (
                 // Figma: cell content clamps to two lines with an ellipsis;
                 // without the clamp, overflowing text bleeds into the next
                 // cell (the wrapper is not a scroll container).
@@ -246,37 +246,39 @@ function GenericDataTableInner<T extends object>(
                     rowIndex={options.rowIndex}
                   />
                 </div>
-              )}
-            />
-          ))}
+              )
+            }
+          />
+        ))}
 
-          {hasDetails ? (
-            <Column
-              columnKey="__row_details__"
-              header={
-                labels.detailsColumn ? (
-                  <span className="sr-only">{labels.detailsColumn}</span>
-                ) : undefined
-              }
-              headerClassName="w-11 min-w-11 bg-[var(--surface)] p-0 sm:w-9 sm:min-w-9"
-              bodyClassName="w-11 min-w-11 bg-[var(--surface)] p-0 text-center sm:w-9 sm:min-w-9"
-              body={(primeRow: PrimeDataTableRow) => {
-                const row = primeRow as unknown as T;
+        {hasDetails ? (
+          <Column
+            columnKey="__row_details__"
+            header={
+              labels.detailsColumn ? (
+                <span className="sr-only">{labels.detailsColumn}</span>
+              ) : undefined
+            }
+            headerClassName="w-11 min-w-11 bg-[var(--surface)] p-0 sm:w-9 sm:min-w-9"
+            bodyClassName="w-11 min-w-11 bg-[var(--surface)] p-0 text-center sm:w-9 sm:min-w-9"
+            body={(primeRow: PrimeDataTableRow) => {
+              // Placeholder rows have nothing to expand.
+              if (loading) return null;
+              const row = primeRow as unknown as T;
 
-                return (
-                  <RowExpansionButton
-                    detailsId={getDetailsId(row)}
-                    expanded={isExpanded(row)}
-                    labels={labels}
-                    row={row}
-                    onToggle={() => toggleRow(row)}
-                  />
-                );
-              }}
-            />
-          ) : null}
-        </PaginatorTable>
-      )}
+              return (
+                <RowExpansionButton
+                  detailsId={getDetailsId(row)}
+                  expanded={isExpanded(row)}
+                  labels={labels}
+                  row={row}
+                  onToggle={() => toggleRow(row)}
+                />
+              );
+            }}
+          />
+        ) : null}
+      </PaginatorTable>
     </div>
   );
 }

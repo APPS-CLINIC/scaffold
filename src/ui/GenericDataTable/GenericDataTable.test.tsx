@@ -443,7 +443,7 @@ describe('GenericDataTable', () => {
     expect(screen.queryByText('No test customers')).not.toBeInTheDocument();
   });
 
-  it('announces loading, marks the table busy, and keeps row actions touch friendly', () => {
+  it('announces loading and marks the table busy', () => {
     mockTableContainerWidth(NARROW_CONTAINER);
     renderTable({ loading: true });
 
@@ -452,67 +452,72 @@ describe('GenericDataTable', () => {
       'aria-busy',
       'true',
     );
+    expect(screen.queryByText('No test customers')).not.toBeInTheDocument();
+  });
+
+  it('keeps row actions touch friendly', () => {
+    mockTableContainerWidth(NARROW_CONTAINER);
+    renderTable();
+
     expect(screen.getByRole('button', { name: 'Expand Alice details' })).toHaveClass(
       'min-h-11',
       'min-w-11',
     );
-    expect(screen.queryByText('No test customers')).not.toBeInTheDocument();
   });
 
-  it('renders a table skeleton for the initial load and the real table once loaded', () => {
+  it('renders config-driven headers with skeleton rows while loading, then real rows', () => {
     mockTableContainerWidth(WIDE_CONTAINER);
-    const { rerender, props } = renderTable({
-      rows: [],
-      totalRecords: 0,
-      loading: true,
-      initialLoading: true,
-    });
+    const { rerender, props } = renderTable({ rows: [], totalRecords: 0, loading: true });
 
-    expect(screen.queryByRole('table')).not.toBeInTheDocument();
+    // The real table stays mounted: headers come straight from the config
+    // while the body rows are placeholders.
+    expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /customer name/i })).toBeInTheDocument();
+    expect(screen.queryByText('Alice')).not.toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('Loading test customers');
 
-    rerender(<GenericDataTable<TestRow> {...props} loading={false} initialLoading={false} />);
+    rerender(
+      <GenericDataTable<TestRow> {...props} rows={rows} totalRecords={22} loading={false} />,
+    );
 
-    expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
+    expect(screen.getByText('Alice:name:0')).toBeInTheDocument();
   });
 
-  it('keeps the table mounted when initialLoading flips back after an errored first load', () => {
+  it('replaces rows with skeletons during a refetch without unmounting the table', () => {
+    mockTableContainerWidth(WIDE_CONTAINER);
+    const { rerender, props } = renderTable({ loading: false });
+
+    expect(screen.getByText('Alice:name:0')).toBeInTheDocument();
+
+    rerender(<GenericDataTable<TestRow> {...props} loading={true} />);
+
+    // Same table element, no vendor loading mask, rows swapped for skeletons.
+    expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
+    expect(screen.queryByText('Alice:name:0')).not.toBeInTheDocument();
+    expect(document.querySelector('.p-datatable-loading-overlay')).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Expand Alice details' })).not.toBeInTheDocument();
+  });
+
+  it('keeps the table mounted when loading resumes after an errored first load', () => {
     mockTableContainerWidth(WIDE_CONTAINER);
     const { rerender, props } = renderTable({
       rows: [],
       totalRecords: 0,
       loading: false,
-      initialLoading: false,
       error: 'Request failed',
     });
 
     expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
 
-    // RTK Query's isLoading goes true again for the next cache entry when the
-    // first load errored (no retained data); the table must stay mounted.
     rerender(
       <GenericDataTable<TestRow>
         {...props}
         rows={[]}
         totalRecords={0}
         loading={true}
-        initialLoading={true}
         error={undefined}
       />,
     );
-
-    expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
-  });
-
-  it('keeps the table mounted during a refetch issued after an empty result', () => {
-    mockTableContainerWidth(WIDE_CONTAINER);
-    const { rerender, props } = renderTable({ rows: [], totalRecords: 0, loading: false });
-
-    expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
-
-    // A sort or page-size change refetches while the retained result is empty;
-    // the table (and whatever holds focus inside it) must not unmount.
-    rerender(<GenericDataTable<TestRow> {...props} rows={[]} totalRecords={0} loading={true} />);
 
     expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
   });

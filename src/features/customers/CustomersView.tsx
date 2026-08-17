@@ -149,7 +149,6 @@ export function CustomersView() {
           sortField={listQuery.sort || undefined}
           sortOrder={listQuery.sort ? listQuery.dir : undefined}
           loading={isLoading || isFetching}
-          initialLoading={isLoading}
           error={isError ? t('customers.table.error') : undefined}
           labels={labels}
           expandedRowKeys={expandedRowKeys}
