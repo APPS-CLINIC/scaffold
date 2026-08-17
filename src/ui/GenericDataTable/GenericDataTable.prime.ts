@@ -1,5 +1,5 @@
 import { cloneElement, createElement, type ReactElement } from 'react';
-import { twMerge } from 'iwa-react-components';
+import { twMerge } from '../iwa';
 import type { DataTablePassThroughOptions } from 'primereact/datatable';
 import type { PaginatorTemplate } from 'primereact/paginator';
 import type {
@@ -45,7 +45,8 @@ export function createPaginatorTemplate(
   if (!labels) return undefined;
 
   return {
-    layout: 'RowsPerPageDropdown CurrentPageReport PrevPageLink PageLinks NextPageLink',
+    layout:
+      'RowsPerPageDropdown CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink',
     RowsPerPageDropdown: (options) =>
       createElement(
         'span',

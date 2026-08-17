@@ -6,7 +6,7 @@ import {
 import type { CustomerResponse, PageResponse } from '@/features/customers/customers.types';
 
 const NativeRequest = globalThis.Request;
-const CUSTOMER_API_PATH = '/api/v1/customer';
+const CUSTOMER_API_PATH = '/api/customers';
 const TEST_ORIGIN = 'https://app.test';
 
 class AbsoluteTestRequest extends NativeRequest {
@@ -25,19 +25,19 @@ const carrefourPage: PageResponse<CustomerResponse> = {
   page: { size: 10, number: 0, totalElements: 1, totalPages: 1 },
 };
 
-const inactivePage: PageResponse<CustomerResponse> = {
+const archivalPage: PageResponse<CustomerResponse> = {
   content: [
-    createCustomerResponseFixture(25788, 'OZAROW CEMENT S.A.', { status: 'nieaktywny' }),
-    createCustomerResponseFixture(35106, 'INACTIVE CUSTOMER TWO', { status: 'nieaktywny' }),
-    createCustomerResponseFixture(36107, 'INACTIVE CUSTOMER THREE', { status: 'nieaktywny' }),
-    createCustomerResponseFixture(37108, 'INACTIVE CUSTOMER FOUR', { status: 'nieaktywny' }),
+    createCustomerResponseFixture(25788, 'OZAROW CEMENT S.A.', { status: 'ARCHIVAL' }),
+    createCustomerResponseFixture(35106, 'ARCHIVAL CUSTOMER TWO', { status: 'ARCHIVAL' }),
+    createCustomerResponseFixture(36107, 'ARCHIVAL CUSTOMER THREE', { status: 'ARCHIVAL' }),
+    createCustomerResponseFixture(37108, 'ARCHIVAL CUSTOMER FOUR', { status: 'ARCHIVAL' }),
   ],
   page: { size: 10, number: 0, totalElements: 4, totalPages: 1 },
 };
 
 function getTestResponse(searchParams: URLSearchParams): PageResponse<CustomerResponse> {
   if (searchParams.get('q') === 'carrefour') return carrefourPage;
-  if (searchParams.get('status') === 'inactive') return inactivePage;
+  if (searchParams.get('status') === 'ARCHIVAL') return archivalPage;
   return customerFirstPageResponse;
 }
 

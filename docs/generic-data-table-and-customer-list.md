@@ -8,17 +8,25 @@ documents their concrete implementation.
 
 ## Outcome
 
-The change provides a reusable `GenericDataTable<T>` built on PrimeReact and a
-first integration for customers. The table is generic over the row type, but it
-does not attempt to infer presentation from backend JSON. A typed TypeScript
-configuration explicitly defines:
+The change provides a reusable `GenericDataTable<T>` built on the IWA
+`PaginatorTable` (PrimeReact underneath) and a first integration for
+customers. The table is generic over the row type, but it does not attempt to
+infer presentation from backend JSON. A typed TypeScript configuration
+declares **one flat `fields` list** — every field can render as a column —
+and explicitly defines:
 
-- which fields appear as primary columns;
-- which React component renders every primary cell;
-- which columns can be sorted and which backend sort field they use;
-- which translated label belongs to every column and detail value;
-- which fields are allowed to appear in the expanded row;
+- which React component renders every cell (column and accordion alike);
+- which fields can be sorted and which backend sort field they use;
+- the single translated label per field (`labelKey`);
+- the pixel `width` each field occupies as a column;
+- which fields are pinned (`alwaysVisible`) and the optional `columnOrder`;
 - whether expansion behaves as a single-row accordion.
+
+Which fields render as columns is decided **at runtime**: the table measures
+its container and shows, in display order, as many columns as fit without
+horizontal scrolling; the remaining fields drop into the expanded-row
+accordion (last column drops first). When the currently sorted column drops,
+the table raises `onSortClear` so the owner can reset the sort in the URL.
 
 The result keeps the reusable behavior in one place while allowing each list
 feature to decide how its domain values should look.
@@ -61,31 +69,32 @@ endpoint, or mutate the URL itself.
 
 ## Typed configuration per cell
 
-The public configuration is generic over the complete row type. A primary
-column correlates its `field` with the `value` accepted by its cell component,
-so incompatible combinations fail during TypeScript compilation.
+The public configuration is generic over the complete row type. Every field
+correlates its `field` with the `value` accepted by its cell component, so
+incompatible combinations fail during TypeScript compilation.
 
 ```tsx
 export const customerTableConfig = {
   dataKey: 'id',
   singleRowExpansion: true,
-  columns: [
+  fields: [
     {
       field: 'fullName',
-      headerKey: 'customers.table.column.name',
+      labelKey: 'customers.table.field.fullName',
       component: UnderlinedTextCell,
       sortable: true,
+      width: 192,
+      alwaysVisible: true,
     },
     {
       field: 'status',
-      headerKey: 'customers.table.column.status',
+      labelKey: 'customers.table.field.status',
       component: ActiveInactiveStatusCell,
       sortable: true,
+      width: 112,
     },
-  ],
-  detailFields: [
-    { field: 'taxId', labelKey: 'customers.table.detail.taxId' },
-    { field: 'rmAdvisor', labelKey: 'customers.table.detail.rmAdvisor' },
+    { field: 'taxId', labelKey: 'customers.table.field.taxId', sortable: true, width: 128 },
+    { field: 'rmAdvisor', labelKey: 'customers.table.field.rmAdvisor', sortable: true, width: 176 },
   ],
 } satisfies GenericDataTableConfig<Customer>;
 ```
@@ -121,16 +130,20 @@ genuinely domain-specific; a reusable renderer belongs beside the generic
 table.
 
 Small internal helpers, such as status presentation and safe value handling,
-remain private to the table package. Table classes are combined with
-`twMerge` from `iwa-react-components`, allowing feature-supplied Tailwind
-classes to override defaults without conflicting utilities.
+remain private to the table package. Table classes are combined with IWA's
+`twMerge` (re-exported through the `src/ui/iwa.ts` seam), allowing
+feature-supplied Tailwind classes to override defaults without conflicting
+utilities.
 
 ## Explicit expanded-row allowlist
 
-`detailFields` is an ordered allowlist, not a convenience list derived with
-`Object.keys(row)`. Only declared fields are rendered after expansion. This is
-important because a backend response may later gain internal or sensitive
-properties that must not appear automatically.
+`fields` is an ordered allowlist, not a convenience list derived with
+`Object.keys(row)`. Only declared fields are rendered anywhere — as columns
+or after expansion. This is important because a backend response may later
+gain internal or sensitive properties that must not appear automatically. The
+accordion content is not configured separately: it is exactly the ordered
+remainder of `fields` that did not fit as columns, and the expansion toggle
+column renders only while that remainder is non-empty.
 
 Primitive values receive a safe default renderer. A non-primitive field must
 declare a typed component, which prevents an object from being exposed through
@@ -159,7 +172,7 @@ converts them to the backend's 0-based Spring convention and creates requests
 such as:
 
 ```http
-GET /api/v1/customer?page=0&size=10&sort=id%2CASC
+GET /api/customers?page=0&size=10&sort=id%2CASC
 ```
 
 The response contract is represented explicitly:
@@ -238,8 +251,8 @@ but it does not emulate backend behavior in the browser.
 
 ## Routing and feature placement
 
-The router does not import the customer feature directly. The clients route
-registry lazy-loads `CustomersPage` from `src/routes/pages/clients`, and that
+The router does not import the customer feature directly. The customers route
+registry lazy-loads `CustomersPage` from `src/routes/pages/customers`, and that
 small route-level page renders `CustomersView` from the feature. This keeps
 route composition under `routes/pages` while customer data and presentation
 orchestration remain feature-owned. The section-scoped registry also scales to
@@ -250,14 +263,15 @@ additional pages without adding feature-specific conditions to the router.
 - The table uses PrimeReact through `@/ui` and applies the existing semantic
   design tokens rather than hard-coded product colors.
 - Tailwind classes are merged with IWA's `twMerge` utility.
-- Header and detail label keys are typed against the i18n catalog and resolved
-  at render time, so switching language does not rebuild the static config.
+- Field label keys are typed against the i18n catalog and resolved at render
+  time, so switching language does not rebuild the static config.
 - Empty, loading, error, pagination, expansion, and unavailable-value text is
   translated.
-- The table, paginator, loading state, expansion controls, and expanded regions
-  have accessible names or relationships.
-- Horizontal overflow stays inside the table wrapper, and the expansion control
-  remains reachable as a sticky trailing column on narrow screens.
+- The table, paginator, loading state, expansion controls (including the
+  screen-reader name of the toggle column), and expanded regions have
+  accessible names or relationships.
+- The table never scrolls horizontally: the responsive fit engine moves
+  columns that would overflow into the expanded-row accordion instead.
 
 ## Adding another list page
 
@@ -269,8 +283,8 @@ additional pages without adding feature-specific conditions to the router.
    and allowlist server sort fields in the feature adapter.
 4. Reuse cells exported by `@/ui`. Add one component per file under the generic
    table only for a new domain-neutral renderer.
-5. Create a typed feature table config with explicit primary columns and
-   expanded-detail allowlist.
+5. Create a typed feature table config: one flat `fields` allowlist with a
+   label, width, and (where needed) cell component per field.
 6. Connect the endpoint, URL callbacks, translated labels, and config in the
    feature view.
 7. Add a route-level page and register its lazy loader in the appropriate
@@ -298,7 +312,9 @@ additional pages without adding feature-specific conditions to the router.
   — customer-owned URL filter validation.
 - [`src/features/customers/CustomersView.tsx`](../src/features/customers/CustomersView.tsx)
   — feature integration.
-- [`src/routes/pages/clients/CustomersPage.tsx`](../src/routes/pages/clients/CustomersPage.tsx)
+- [`src/ui/GenericDataTable/useResponsiveFields.ts`](../src/ui/GenericDataTable/useResponsiveFields.ts)
+  — responsive column/accordion fit engine.
+- [`src/routes/pages/customers/CustomersPage.tsx`](../src/routes/pages/customers/CustomersPage.tsx)
   — route-level page boundary.
 - [`src/dev/previewData`](../src/dev/previewData)
   — opt-in development cache seed and fixture.

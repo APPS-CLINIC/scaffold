@@ -1,3 +1,4 @@
+import { normalizeDomainValue, priceConditionStatusByDomainValue } from '@/i18n/domainValues';
 import type {
   Customer,
   CustomerPriceConditionStatus,
@@ -5,44 +6,31 @@ import type {
   CustomerStatus,
 } from './customers.types';
 
-function normalizeDomainValue(value: string): string {
-  return value
-    .trim()
-    .toLocaleLowerCase('pl-PL')
-    .normalize('NFKD')
-    .replace(/\p{Diacritic}/gu, '');
+/** Keys are `normalizeDomainValue` outputs; values are the status contract. */
+const customerStatusByDomainValue: Readonly<Record<string, CustomerStatus>> = {
+  active: 'ACTIVE',
+  archival: 'ARCHIVAL',
+};
+
+/**
+ * Own-property lookup over a normalized key. Non-string input normalizes to
+ * an empty key (no match), and labels like "constructor" must not resolve
+ * via Object.prototype.
+ */
+function lookupDomainValue<V extends string>(
+  vocabulary: Readonly<Record<string, V>>,
+  rawValue: unknown,
+): V | null {
+  const key = normalizeDomainValue(rawValue);
+  return Object.hasOwn(vocabulary, key) ? (vocabulary[key] as V) : null;
 }
 
-function normalizeCustomerStatus(value: string): CustomerStatus | null {
-  switch (normalizeDomainValue(value)) {
-    case 'active':
-    case 'aktywny':
-      return 'active';
-    case 'inactive':
-    case 'nieaktywny':
-      return 'inactive';
-    default:
-      return null;
-  }
+function normalizeCustomerStatus(value: unknown): CustomerStatus | null {
+  return lookupDomainValue(customerStatusByDomainValue, value);
 }
 
-function normalizePriceConditionStatus(value: string | null): CustomerPriceConditionStatus | null {
-  if (value === null) return null;
-
-  switch (normalizeDomainValue(value)) {
-    case 'valid':
-    case 'wazny':
-      return 'valid';
-    case 'expiring':
-    case 'wkrotce wygasa':
-      return 'expiring';
-    case 'expired':
-    case 'wygasl':
-    case 'wygasł':
-      return 'expired';
-    default:
-      return null;
-  }
+function normalizePriceConditionStatus(value: unknown): CustomerPriceConditionStatus | null {
+  return lookupDomainValue(priceConditionStatusByDomainValue, value);
 }
 
 /** Keep transport vocabulary at the RTK Query boundary. */

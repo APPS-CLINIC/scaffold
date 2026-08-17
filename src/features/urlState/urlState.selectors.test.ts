@@ -13,16 +13,16 @@ describe('urlState route selectors', () => {
     const store = makeStore();
     store.dispatch(
       routeChanged({
-        pathname: '/clients/all/123',
-        sectionKey: 'clients',
-        itemId: 'all-clients',
+        pathname: '/customers/all/123',
+        sectionKey: 'customers',
+        itemId: 'all-customers',
       }),
     );
 
     const state = store.getState();
-    expect(selectPathname(state)).toBe('/clients/all/123');
-    expect(selectActiveTab(state)).toBe('clients');
-    expect(selectActiveNavigationItemId(state)).toBe('all-clients');
+    expect(selectPathname(state)).toBe('/customers/all/123');
+    expect(selectActiveTab(state)).toBe('customers');
+    expect(selectActiveNavigationItemId(state)).toBe('all-customers');
     expect(selectActiveTabIndex(state)).toBe(2);
   });
 });

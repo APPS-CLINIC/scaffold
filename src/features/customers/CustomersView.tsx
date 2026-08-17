@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/app/hooks';
+import { DATE_DMY_FORMAT_OPTIONS } from '@/i18n/dateFormats';
 import { selectListQuery } from '@/features/urlState/urlState.selectors';
 import { useListQueryState } from '@/features/urlState/useListQueryState';
 import {
@@ -31,6 +32,7 @@ export function CustomersView() {
       empty: t('customers.table.empty'),
       pagination: t('customers.table.pagination'),
       notAvailable: t('customers.value.notAvailable'),
+      detailsColumn: t('customers.table.detailsColumn'),
       expandRow: (row) => t('customers.table.expandRow', { name: row.fullName }),
       collapseRow: (row) => t('customers.table.collapseRow', { name: row.fullName }),
       paginatorActions: {
@@ -55,6 +57,12 @@ export function CustomersView() {
     setQuery({ sort: field, dir: order });
   };
 
+  // The sorted column dropped into the accordion — sorting by an invisible
+  // column would be confusing, so fall back to the backend's default order.
+  const handleSortClear = () => {
+    setQuery({ sort: '', dir: 'asc' }, { resetPage: false });
+  };
+
   const visibleRowKeys = useMemo(
     () => (data?.content ?? []).map((customer) => String(customer.id)),
     [data?.content],
@@ -63,11 +71,10 @@ export function CustomersView() {
     visibleRowKeys.length > 0 && visibleRowKeys.every((key) => expandedRowKeys.includes(key));
   const dataAsOf = useMemo(
     () =>
-      new Intl.DateTimeFormat(i18n.resolvedLanguage ?? i18n.language, {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-      }).format(new Date(fulfilledTimeStamp ?? Date.now())),
+      new Intl.DateTimeFormat(
+        i18n.resolvedLanguage ?? i18n.language,
+        DATE_DMY_FORMAT_OPTIONS,
+      ).format(new Date(fulfilledTimeStamp ?? Date.now())),
     [fulfilledTimeStamp, i18n.language, i18n.resolvedLanguage],
   );
 
@@ -140,6 +147,7 @@ export function CustomersView() {
         onExpandedRowKeysChange={setExpandedRowKeys}
         onPageChange={handlePageChange}
         onSortChange={handleSortChange}
+        onSortClear={handleSortClear}
         aria-busy={isLoading || isFetching}
       />
     </section>

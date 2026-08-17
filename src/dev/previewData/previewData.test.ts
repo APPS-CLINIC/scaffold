@@ -16,7 +16,7 @@ describe('preview data profiles', () => {
     vi.useFakeTimers();
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
-    const store = makeStore({ urlState: createUrlState('/clients/all') });
+    const store = makeStore({ urlState: createUrlState('/customers/all') });
 
     await seedPreviewData(store, 'customers');
 
@@ -24,7 +24,7 @@ describe('preview data profiles', () => {
     const cached = customersApi.endpoints.getCustomers.select(query)(store.getState());
     expect(cached.status).toBe('fulfilled');
     expect(cached.data?.content[0]?.fullName).toBe('ARCELORMITTAL WARSAW SP. Z O.O.');
-    expect(cached.data?.content[0]?.status).toBe('active');
+    expect(cached.data?.content[0]?.status).toBe('ACTIVE');
     expect(cached.data?.page).toEqual({
       size: 10,
       number: 0,
@@ -42,7 +42,7 @@ describe('preview data profiles', () => {
 
   it('uses the backend transport for non-default customer queries', async () => {
     const fetchMock = installCustomerApiTestTransport();
-    const store = makeStore({ urlState: createUrlState('/clients/all') });
+    const store = makeStore({ urlState: createUrlState('/customers/all') });
     await seedPreviewData(store, 'customers');
 
     const pageTwoQuery = { ...selectCustomerQuery(store.getState()), page: 2 };
@@ -56,7 +56,7 @@ describe('preview data profiles', () => {
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(vi.mocked(fetchMock).mock.calls[0]?.[0]).toEqual(
       expect.objectContaining({
-        url: expect.stringContaining('/api/v1/customer?page=1&size=10&sort=id%2CASC'),
+        url: expect.stringContaining('/api/customers?page=1&size=10&sort=id%2CASC'),
       }),
     );
     subscription.unsubscribe();

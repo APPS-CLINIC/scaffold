@@ -137,21 +137,15 @@ export const navigationSections = [
     ],
   }),
   defineNavigationSection({
-    key: 'clients',
-    path: '/clients',
-    labelKey: 'nav.tab.clients',
-    defaultItemId: 'all-clients',
+    key: 'customers',
+    path: '/customers',
+    labelKey: 'nav.tab.customers',
+    defaultItemId: 'all-customers',
     items: [
       {
-        id: 'all-clients',
+        id: 'all-customers',
         segment: 'all',
-        labelKey: 'nav.clients.all',
-        icon: Settings,
-      },
-      {
-        id: 'client-advisors',
-        segment: 'advisors',
-        labelKey: 'nav.clients.advisors',
+        labelKey: 'nav.customers.all',
         icon: Settings,
       },
     ],

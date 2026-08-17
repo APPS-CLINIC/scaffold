@@ -34,7 +34,7 @@ describe('useListQueryState', () => {
         <QueryControls />
         <LocationProbe />
       </>,
-      { initialEntries: ['/clients/all?page=3'] },
+      { initialEntries: ['/customers/all?page=3'] },
     );
 
     await user.click(screen.getByRole('button', { name: 'Show active' }));
@@ -52,7 +52,7 @@ describe('useListQueryState', () => {
         <QueryControls />
         <LocationProbe />
       </>,
-      { initialEntries: ['/clients/all?filter.status=active'] },
+      { initialEntries: ['/customers/all?filter.status=active'] },
     );
 
     await user.click(screen.getByRole('button', { name: 'Open page four' }));

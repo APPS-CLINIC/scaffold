@@ -1,3 +1,4 @@
+import { DATE_DMY_FORMAT_OPTIONS } from '@/i18n/dateFormats';
 import type { GenericDataTableCellProps, GenericDataTableField } from '../GenericDataTable.types';
 import { renderCellValue } from './cellValue';
 
@@ -11,9 +12,5 @@ export function DateCell<
   const date = new Date(`${value.slice(0, 10)}T12:00:00`);
   if (Number.isNaN(date.getTime())) return value;
 
-  return new Intl.DateTimeFormat(locale, {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  }).format(date);
+  return new Intl.DateTimeFormat(locale, DATE_DMY_FORMAT_OPTIONS).format(date);
 }

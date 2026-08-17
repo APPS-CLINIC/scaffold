@@ -1,4 +1,4 @@
-import { twMerge } from 'iwa-react-components';
+import { twMerge } from '../../iwa';
 import type { GenericDataTableLabels } from '../GenericDataTable.types';
 
 interface RowExpansionButtonProps<T extends object> {
@@ -21,7 +21,7 @@ export function RowExpansionButton<T extends object>({
       id={`${detailsId}-toggle`}
       type="button"
       className="inline-flex min-h-11 min-w-11 items-center justify-center text-[var(--muted)] transition-colors hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--focus)] motion-reduce:transition-none sm:min-h-8 sm:min-w-8"
-      aria-controls={detailsId}
+      aria-controls={expanded ? detailsId : undefined}
       aria-expanded={expanded}
       aria-label={expanded ? labels.collapseRow(row) : labels.expandRow(row)}
       onClick={onToggle}

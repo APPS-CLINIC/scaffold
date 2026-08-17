@@ -35,7 +35,7 @@ export function createCustomerResponseFixture(
     tsPriceConditionEndDate: null,
     tsPriceConditionStatus: null,
     type: 'Corporate',
-    status: 'aktywny',
+    status: 'ACTIVE',
     ...overrides,
   };
 }
@@ -51,7 +51,7 @@ export const customerFirstPageResponse: PageResponse<CustomerResponse> = {
     createCustomerResponseFixture(24554, 'ABB SP. Z O.O.'),
     createCustomerResponseFixture(24853, 'ENERGY RAIL SERVICES SP. Z O.O.'),
     createCustomerResponseFixture(26606, 'EMITEL S.A.'),
-    createCustomerResponseFixture(27994, 'CEFARM SP. Z O.O.'),
+    createCustomerResponseFixture(27994, 'CEFARM SP. Z O.O.', { status: 'ARCHIVAL' }),
     createCustomerResponseFixture(30101, 'NORDIC FOODS POLAND SP. Z O.O.'),
     createCustomerResponseFixture(31102, 'POLISH LOGISTICS S.A.'),
     createCustomerResponseFixture(32103, 'CENTRAL INDUSTRIES SP. Z O.O.'),

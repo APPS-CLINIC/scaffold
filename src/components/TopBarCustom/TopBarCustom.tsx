@@ -1,5 +1,5 @@
 import type { SetStateAction } from 'react';
-import { TabMenu, TopBar } from 'iwa-react-components';
+import { TabMenu, TopBar } from '@/ui/iwa';
 import { Hide, Logout, Settings } from 'ing-react-icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';

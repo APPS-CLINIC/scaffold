@@ -1,5 +1,5 @@
 import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
-import { MenuList as IwaMenuList } from 'iwa-react-components';
+import { MenuList as IwaMenuList } from './iwa';
 import { cx } from './cx';
 
 export interface MenuListAdapterItem {

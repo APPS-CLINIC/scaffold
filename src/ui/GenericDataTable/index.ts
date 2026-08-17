@@ -1,6 +1,6 @@
 export { GenericDataTable } from './GenericDataTable';
 export {
-  ActiveInactiveStatusCell,
+  ActiveArchivalStatusCell,
   DateCell,
   TextCell,
   UnderlinedTextCell,
@@ -9,11 +9,10 @@ export {
 export type {
   GenericDataTableCellComponent,
   GenericDataTableCellProps,
-  GenericDataTableColumn,
   GenericDataTableConfig,
   GenericDataTableDataKey,
-  GenericDataTableDetailField,
   GenericDataTableField,
+  GenericDataTableFieldConfig,
   GenericDataTableFieldWithValue,
   GenericDataTableLabels,
   GenericDataTablePageChange,

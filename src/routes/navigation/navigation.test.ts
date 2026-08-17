@@ -33,10 +33,10 @@ describe('navigation configuration', () => {
 
   it('derives default destinations without duplicating full item paths', () => {
     const portfolio = navigationSections.find((section) => section.key === 'portfolio');
-    const clients = navigationSections.find((section) => section.key === 'clients');
+    const customers = navigationSections.find((section) => section.key === 'customers');
 
     expect(portfolio && getNavigationSectionDefaultPath(portfolio)).toBe('/portfolio/dashboard');
-    expect(clients && getNavigationSectionDefaultPath(clients)).toBe('/clients/all');
+    expect(customers && getNavigationSectionDefaultPath(customers)).toBe('/customers/all');
   });
 
   it('provides a root-link fallback for sections without dedicated items', () => {
@@ -68,18 +68,18 @@ describe('navigation configuration', () => {
 
   it('filters configured items by permission without changing their IDs', () => {
     const section: NavigationSection = {
-      key: 'clients',
-      path: '/clients',
-      labelKey: 'nav.tab.clients',
+      key: 'customers',
+      path: '/customers',
+      labelKey: 'nav.tab.customers',
       defaultItemId: 'public',
       items: [
-        { id: 'public', segment: 'public', labelKey: 'nav.clients.all', icon: TestIcon },
+        { id: 'public', segment: 'public', labelKey: 'nav.customers.all', icon: TestIcon },
         {
           id: 'restricted',
           segment: 'restricted',
-          labelKey: 'nav.clients.advisors',
+          labelKey: 'nav.customers.all',
           icon: TestIcon,
-          requiredPermissions: ['clients:advisors'],
+          requiredPermissions: ['customers:advisors'],
         },
       ],
     };
@@ -88,7 +88,7 @@ describe('navigation configuration', () => {
       'public',
     ]);
     expect(
-      getVisibleNavigationItems(section, new Set(['clients:advisors'])).map((item) => item.id),
+      getVisibleNavigationItems(section, new Set(['customers:advisors'])).map((item) => item.id),
     ).toEqual(['public', 'restricted']);
   });
 });

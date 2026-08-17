@@ -9,12 +9,12 @@ describe('parseActiveTab', () => {
   });
 
   it('keeps nested paths within their section', () => {
-    expect(parseActiveTab('/clients/42')).toBe('clients');
+    expect(parseActiveTab('/customers/42')).toBe('customers');
     expect(parseActiveTab('/bi-reports/monthly/2026')).toBe('bi-reports');
   });
 
   it('does not match on a bare prefix (no separator)', () => {
-    expect(parseActiveTab('/clients-archive')).toBe(defaultNavTabKey);
+    expect(parseActiveTab('/customers-archive')).toBe(defaultNavTabKey);
   });
 
   it('falls back to the default tab for unknown paths', () => {

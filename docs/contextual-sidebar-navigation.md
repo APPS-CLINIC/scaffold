@@ -151,7 +151,7 @@ To add a new destination:
   — path, matching, default, and permission helpers.
 - [`src/routes/pageRoutes/pageRouteRegistry.ts`](../src/routes/pageRoutes/pageRouteRegistry.ts)
   — small composition root for section-scoped route modules.
-- [`src/routes/pageRoutes/clients.pageRoutes.ts`](../src/routes/pageRoutes/clients.pageRoutes.ts)
+- [`src/routes/pageRoutes/customers.pageRoutes.ts`](../src/routes/pageRoutes/customers.pageRoutes.ts)
   — lazy page mappings owned by one navigation section.
 - [`src/features/urlState/urlState.route.ts`](../src/features/urlState/urlState.route.ts)
   — serializable route snapshot parsing.

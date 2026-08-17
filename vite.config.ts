@@ -41,6 +41,13 @@ export default defineConfig(({ mode }) => {
       setupFiles: ['./vitest.setup.ts'],
       css: false,
       restoreMocks: true,
+      server: {
+        deps: {
+          // The IWA package ships untranspiled ESM with directory-style
+          // subpath imports; inlining lets Vite resolve them in tests.
+          inline: ['iwa-react-components'],
+        },
+      },
       coverage: {
         provider: 'v8',
         reporter: ['text', 'html'],

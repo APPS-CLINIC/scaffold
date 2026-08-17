@@ -1,5 +1,5 @@
 import { forwardRef, type HTMLAttributes, type ReactNode } from 'react';
-import { NavigationPanel as IwaNavigationPanel } from 'iwa-react-components';
+import { NavigationPanel as IwaNavigationPanel } from './iwa';
 import { cx } from './cx';
 
 export interface NavigationPanelProps extends HTMLAttributes<HTMLDivElement> {

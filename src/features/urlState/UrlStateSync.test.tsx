@@ -12,11 +12,11 @@ function RouteControls() {
 
   return (
     <>
-      <button type="button" onClick={() => navigate('/clients/all/123')}>
-        Open client
+      <button type="button" onClick={() => navigate('/customers/all/123')}>
+        Open customer
       </button>
-      <button type="button" onClick={() => navigate('/clients/advisors')}>
-        Open advisors
+      <button type="button" onClick={() => navigate('/portfolio/reviews')}>
+        Open reviews
       </button>
     </>
   );
@@ -33,39 +33,39 @@ describe('UrlStateSync route mirror', () => {
         <UrlStateSync />
         <RouteControls />
       </>,
-      { store, initialEntries: ['/clients/all'] },
+      { store, initialEntries: ['/customers/all'] },
     );
 
     await waitFor(() =>
       expect(dispatchSpy).toHaveBeenCalledWith(
         routeChanged({
-          pathname: '/clients/all',
-          sectionKey: 'clients',
-          itemId: 'all-clients',
+          pathname: '/customers/all',
+          sectionKey: 'customers',
+          itemId: 'all-customers',
         }),
       ),
     );
 
     dispatchSpy.mockClear();
-    await user.click(screen.getByRole('button', { name: 'Open client' }));
+    await user.click(screen.getByRole('button', { name: 'Open customer' }));
     await waitFor(() =>
       expect(dispatchSpy).toHaveBeenCalledWith(
         routeChanged({
-          pathname: '/clients/all/123',
-          sectionKey: 'clients',
-          itemId: 'all-clients',
+          pathname: '/customers/all/123',
+          sectionKey: 'customers',
+          itemId: 'all-customers',
         }),
       ),
     );
 
     dispatchSpy.mockClear();
-    await user.click(screen.getByRole('button', { name: 'Open advisors' }));
+    await user.click(screen.getByRole('button', { name: 'Open reviews' }));
     await waitFor(() =>
       expect(dispatchSpy).toHaveBeenCalledWith(
         routeChanged({
-          pathname: '/clients/advisors',
-          sectionKey: 'clients',
-          itemId: 'client-advisors',
+          pathname: '/portfolio/reviews',
+          sectionKey: 'portfolio',
+          itemId: 'reviews',
         }),
       ),
     );
