@@ -1,4 +1,4 @@
-import { twMerge } from 'iwa-react-components';
+import { twMerge } from '@/ui';
 import type { GenericDataTableLabels } from '../GenericDataTable.types';
 
 interface RowExpansionButtonProps<T extends object> {

@@ -1,4 +1,4 @@
-import { InlineLink } from 'iwa-react-components';
+import { InlineLink } from '@/ui';
 import type { GenericDataTableCellProps, GenericDataTableField } from '../GenericDataTable.types';
 import { renderCellValue } from './cellValue';
 

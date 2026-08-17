@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { DefinitionList } from 'iwa-react-components';
+import { DefinitionList } from '@/ui';
 import type {
   GenericDataTableFieldConfig,
   GenericDataTableLabels,
