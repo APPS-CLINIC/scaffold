@@ -9,7 +9,6 @@ import {
   Card,
   GenericDataTable,
   IconTextButton,
-  ScreenHeading,
   SearchWithAutocomplete,
   Switch,
   type GenericDataTableLabels,
@@ -89,7 +88,9 @@ export function CustomersView() {
       className="w-full min-w-0 max-w-full space-y-4 overflow-hidden"
     >
       <header>
-        <ScreenHeading pageName={t('customers.title')} items={[]} />
+        <h1 className="m-0 text-4xl font-bold leading-[48px] text-[var(--navigation-accent)]">
+          {t('customers.title')}
+        </h1>
         <p className="sr-only">{t('customers.description')}</p>
       </header>
 
@@ -108,7 +109,7 @@ export function CustomersView() {
 
         {/* Filter section: controls only for now — no filtering or search
             actions are wired yet (deferred with the rest of the filter model). */}
-        <div className="mb-4 flex flex-col items-start gap-3 rounded bg-[var(--surface-muted)] p-3">
+        <div className="mb-4 flex flex-col items-start gap-8 rounded bg-[var(--surface-muted)] p-3">
           <IconTextButton
             secondary
             icon={<span aria-hidden="true" className="pi pi-sliders-h text-sm" />}

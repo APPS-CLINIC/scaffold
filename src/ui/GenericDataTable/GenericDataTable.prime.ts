@@ -96,7 +96,11 @@ export function createDataTablePassThrough(
 ): DataTablePassThroughOptions {
   return {
     wrapper: {
-      className: 'touch-pan-x overflow-x-auto overscroll-x-contain [container-type:inline-size]',
+      // Not a scroll container: the responsive fit engine guarantees the
+      // columns fit, and fixed-layout subpixel distribution otherwise
+      // leaves a phantom 1px horizontal scrollbar. The important marker is
+      // required because PrimeReact sets overflow:auto as an inline style.
+      className: '!overflow-x-clip [container-type:inline-size]',
     },
     table: {
       'aria-label': tableLabel,
