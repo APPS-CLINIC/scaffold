@@ -94,7 +94,10 @@ export function CustomersView() {
         <p className="sr-only">{t('customers.description')}</p>
       </header>
 
-      <Card>
+      {/* The IWA Card stacks .p-card (12px) and .p-card-body (20px) padding;
+          the design wants exactly 16px per side, so zero the root and give
+          the body the full 16px. */}
+      <Card className="!p-0 [&_.p-card-body]:!p-4">
         <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[var(--muted)]">
           <span>{t('customers.dataAsOf')}</span>
           <strong className="font-bold text-[var(--text)]">{dataAsOf}</strong>
