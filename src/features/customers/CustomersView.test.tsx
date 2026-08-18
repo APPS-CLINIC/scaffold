@@ -114,6 +114,17 @@ describe('CustomersView', () => {
     expect(selectCustomerQuery(store.getState()).q).toBeFalsy();
   });
 
+  it('links each customer name to its details page in a new tab', async () => {
+    renderPage();
+
+    const nameLink = await screen.findByRole('link', {
+      name: 'ARCELORMITTAL WARSAW SP. Z O.O.',
+    });
+    expect(nameLink).toHaveAttribute('href', '/customers/23997');
+    expect(nameLink).toHaveAttribute('target', '_blank');
+    expect(nameLink).toHaveAttribute('rel', 'noreferrer');
+  });
+
   it('writes table sorting and pagination back to the URL', async () => {
     const user = userEvent.setup();
     renderPage();

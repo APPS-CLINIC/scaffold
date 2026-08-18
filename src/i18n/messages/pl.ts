@@ -27,6 +27,7 @@ export const pl = {
   'customers.title': 'Klienci oraz ich doradcy',
   'customers.description': 'Lista klientów z danymi relacyjnymi i terminami przeglądów.',
   'customers.dataAsOf': 'Stan na:',
+  'customers.details.title': 'Szczegóły klienta',
   'customers.search.placeholder': 'Szukaj na liście',
   'customers.filters.status': 'Status klienta',
   'customers.filters.type': 'Typ klienta',

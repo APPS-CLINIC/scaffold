@@ -1,6 +1,10 @@
 import type { NavigationSectionKey } from '@/routes/navigation';
-import { customersPageRoutes } from './customers.pageRoutes';
-import type { PageRouteDefinitions, PageRouteLoader } from './pageRoutes.types';
+import { customersDetailRoutes, customersPageRoutes } from './customers.pageRoutes';
+import type {
+  PageRouteDefinitions,
+  PageRouteLoader,
+  SectionDetailRoutes,
+} from './pageRoutes.types';
 
 /**
  * Route composition root. Add one entry per navigation section; each section
@@ -9,6 +13,15 @@ import type { PageRouteDefinitions, PageRouteLoader } from './pageRoutes.types';
 const pageRouteDefinitions = {
   customers: customersPageRoutes,
 } satisfies PageRouteDefinitions;
+
+const sectionDetailRouteDefinitions: Partial<Record<NavigationSectionKey, SectionDetailRoutes>> = {
+  customers: customersDetailRoutes,
+};
+
+/** Section-owned routes that are not navigation destinations (e.g. `:id`). */
+export function getSectionDetailRoutes(sectionKey: NavigationSectionKey): SectionDetailRoutes {
+  return sectionDetailRouteDefinitions[sectionKey] ?? [];
+}
 
 const pageRouteRegistry: Readonly<Record<string, Readonly<Record<string, PageRouteLoader>>>> =
   pageRouteDefinitions;

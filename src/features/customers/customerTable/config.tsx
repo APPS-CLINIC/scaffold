@@ -20,7 +20,10 @@ export const customerTableConfig = {
     {
       field: 'fullName',
       labelKey: 'customers.table.field.fullName',
-      component: UnderlinedTextCell,
+      component: (props) => (
+        <UnderlinedTextCell {...props} href={(row) => `/customers/${row.id}`} openInNewTab />
+      ),
+      clamp: false,
       sortable: true,
       width: 192,
       alwaysVisible: true,

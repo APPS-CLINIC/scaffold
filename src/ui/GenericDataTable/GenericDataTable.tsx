@@ -237,7 +237,7 @@ function GenericDataTableInner<T extends object>(
                 // Figma: cell content clamps to two lines with an ellipsis;
                 // without the clamp, overflowing text bleeds into the next
                 // cell (the wrapper is not a scroll container).
-                <div className="line-clamp-2 break-words">
+                <div className={field.clamp === false ? 'break-words' : 'line-clamp-2 break-words'}>
                   <PrimaryCell
                     column={field}
                     locale={locale}
