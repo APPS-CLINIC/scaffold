@@ -16,11 +16,29 @@ export function ValidityStatusCell<
 
   switch (value) {
     case 'valid':
-      return <Status type="active" label={t('common.status.valid')} />;
+      return (
+        <Status
+          type="active"
+          label={t('common.status.valid')}
+          className="[&_*]:!text-sm [&_*]:!leading-5"
+        />
+      );
     case 'expiring':
-      return <Status type="awaiting" label={t('common.status.expiring')} />;
+      return (
+        <Status
+          type="awaiting"
+          label={t('common.status.expiring')}
+          className="[&_*]:!text-sm [&_*]:!leading-5"
+        />
+      );
     case 'expired':
-      return <Status type="incomplete" label={t('common.status.expired')} />;
+      return (
+        <Status
+          type="incomplete"
+          label={t('common.status.expired')}
+          className="[&_*]:!text-sm [&_*]:!leading-5"
+        />
+      );
     default:
       return renderCellValue(value, notAvailable);
   }

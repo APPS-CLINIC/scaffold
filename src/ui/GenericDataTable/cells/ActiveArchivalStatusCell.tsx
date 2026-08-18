@@ -16,9 +16,21 @@ export function ActiveArchivalStatusCell<
 
   switch (value) {
     case 'ACTIVE':
-      return <Status type="active" label={t('common.status.active')} />;
+      return (
+        <Status
+          type="active"
+          label={t('common.status.active')}
+          className="[&_*]:!text-sm [&_*]:!leading-5"
+        />
+      );
     case 'ARCHIVAL':
-      return <Status type="disabled" label={t('common.status.archival')} />;
+      return (
+        <Status
+          type="disabled"
+          label={t('common.status.archival')}
+          className="[&_*]:!text-sm [&_*]:!leading-5"
+        />
+      );
     default:
       return renderCellValue(value, notAvailable);
   }

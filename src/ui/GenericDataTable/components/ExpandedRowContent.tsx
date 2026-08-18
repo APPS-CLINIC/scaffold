@@ -36,10 +36,12 @@ export function ExpandedRowContent<T extends object>({
       aria-labelledby={`${detailsId}-toggle`}
       className="w-full bg-[var(--surface)] px-4 py-2 sm:px-6"
     >
-      <dl className="mx-auto grid max-w-lg grid-cols-1 gap-y-1">
+      <dl className="m-0 grid grid-cols-1 gap-y-1">
         {fields.map((field) => (
           <div
-            className="grid min-w-0 grid-cols-1 items-baseline text-sm leading-5 sm:grid-cols-[minmax(9rem,auto)_minmax(0,1fr)] sm:gap-4"
+            // Figma: labels end right-aligned at the table midpoint, values
+            // start just after it.
+            className="grid min-w-0 grid-cols-1 items-baseline text-sm leading-5 sm:grid-cols-2 sm:gap-4"
             key={String(field.field)}
           >
             <dt className="font-bold text-[var(--text)] sm:text-right">{t(field.labelKey)}</dt>

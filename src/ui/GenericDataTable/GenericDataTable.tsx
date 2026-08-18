@@ -267,8 +267,8 @@ function GenericDataTableInner<T extends object>(
                 <span className="sr-only">{labels.detailsColumn}</span>
               ) : undefined
             }
-            headerClassName="w-11 min-w-11 bg-[var(--surface)] p-0 sm:w-9 sm:min-w-9"
-            bodyClassName="w-11 min-w-11 bg-[var(--surface)] p-0 text-center sm:w-9 sm:min-w-9"
+            headerClassName="w-11 min-w-11 p-0 sm:w-9 sm:min-w-9"
+            bodyClassName="w-11 min-w-11 p-0 text-center sm:w-9 sm:min-w-9"
             body={(primeRow: PrimeDataTableRow) => {
               // Placeholder rows have nothing to expand.
               if (showSkeletonRows) return null;
