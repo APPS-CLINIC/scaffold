@@ -41,12 +41,6 @@ interface GenericDataTableFieldConfigBase<T extends object, K extends GenericDat
   sortable?: boolean;
   /** Server-side sort key when it differs from `field`. */
   sortField?: string;
-  /**
-   * Declares the field's filter, exactly like `sortable` declares sorting:
-   * the field appears in the filter dialog and its applied value renders as
-   * a removable chip. Filtering itself is executed by the owner (URL/server).
-   */
-  filter?: GenericDataTableFilterConfig;
   /** Never moved to the accordion, regardless of available width. */
   alwaysVisible?: boolean;
   headerClassName?: string;
@@ -66,20 +60,6 @@ export type GenericDataTableFieldConfig<T extends object> = {
         component: GenericDataTableCellComponent<T, K>;
       };
 }[GenericDataTableField<T>];
-
-/** A select option for a config-declared column filter. */
-export interface GenericDataTableFilterOption {
-  value: string;
-  /** Translated for display; when absent, the raw value is shown. */
-  labelKey?: MessageKey;
-}
-
-/**
- * Config-declared column filter, mirrored after `sortable`: a field with a
- * `filter` takes part in the filter dialog and the active-filter chips.
- */
-export type GenericDataTableFilterConfig =
-  { type: 'select'; options: readonly GenericDataTableFilterOption[] } | { type: 'dateRange' };
 
 export interface GenericDataTableConfig<T extends object> {
   dataKey: GenericDataTableDataKey<T>;

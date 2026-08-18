@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -91,56 +91,27 @@ describe('CustomersView', () => {
     });
   });
 
-  it('renders deep-linked filters as chips and keeps the search input inert', async () => {
+  it('keeps deep-linked filters working while the filter controls stay inert', async () => {
     const user = userEvent.setup();
     const { store } = renderPage('/customers/all?filter.status=archival');
 
     expect(await screen.findByText('OZAROW CEMENT S.A.')).toBeInTheDocument();
     expect(screen.getByText('4 results')).toBeInTheDocument();
-    expect(screen.getByTestId('filter-chip-status')).toHaveTextContent('Status: Archival');
-    expect(screen.getByText('Clear filters (1)', { exact: false })).toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: 'Customer status' })).not.toBeInTheDocument();
 
     await waitFor(() => {
       expect(selectCustomerQuery(store.getState()).status).toBe('archival');
     });
 
-    // The search input renders but is not wired yet.
+    // The filter button and search input render, but neither is wired yet:
+    // interacting with them must not touch the URL or the query.
+    await user.click(screen.getByRole('button', { name: 'Customize filters' }));
     await user.type(screen.getByPlaceholderText('Search the list'), 'orlen');
 
     const search = screen.getByRole('status', { name: 'Current customer URL' }).textContent ?? '';
     expect(new URLSearchParams(search).get('q')).toBeNull();
+    expect(selectCustomerQuery(store.getState()).status).toBe('archival');
     expect(selectCustomerQuery(store.getState()).q).toBeFalsy();
-  });
-
-  it('applies a config-declared filter through the dialog and removes it via its chip', async () => {
-    const user = userEvent.setup();
-    const { store } = renderPage();
-    await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
-
-    await user.click(screen.getByRole('button', { name: 'Customize filters' }));
-    const dialog = screen.getByRole('dialog', { name: 'Customize filters' });
-    // Date-range fields declared in the config render as from–to pickers.
-    expect(within(dialog).getByLabelText('Rating review date – from')).toBeInTheDocument();
-
-    await user.selectOptions(within(dialog).getByRole('combobox', { name: 'Status' }), 'archival');
-    await user.click(within(dialog).getByRole('button', { name: 'Save' }));
-
-    await waitFor(() => {
-      const search = screen.getByRole('status', { name: 'Current customer URL' }).textContent ?? '';
-      expect(new URLSearchParams(search).get('filter.status')).toBe('archival');
-    });
-    expect(await screen.findByText('OZAROW CEMENT S.A.')).toBeInTheDocument();
-    await waitFor(() => {
-      expect(selectCustomerQuery(store.getState()).status).toBe('archival');
-    });
-
-    // Removing the chip clears that one filter and the URL param with it.
-    await user.click(screen.getByTestId('filter-chip-status'));
-    await waitFor(() => {
-      const search = screen.getByRole('status', { name: 'Current customer URL' }).textContent ?? '';
-      expect(new URLSearchParams(search).get('filter.status')).toBeNull();
-    });
-    expect(await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.')).toBeInTheDocument();
   });
 
   it('writes table sorting and pagination back to the URL', async () => {
