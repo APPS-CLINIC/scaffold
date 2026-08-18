@@ -34,7 +34,11 @@ export function UnderlinedTextCell<
       // an ellipsis and its overflow-tooltip layer forces a default cursor.
       // Table cells must wrap fully and stay clickable-looking, so force the
       // overrides onto the link and every node inside it.
-      className="!cursor-pointer !whitespace-normal break-words font-medium ![text-overflow:clip] [&_*]:!cursor-pointer [&_*]:!whitespace-normal [&_*]:!break-words [&_*]:!overflow-visible [&_*]:![text-overflow:clip]"
+      // Name links render as plain text: no underline, no focus outline and no
+      // hover effect in any state — color pinned, inner layers ignore the
+      // pointer so the library cannot attach hover tooltips/styles (clicks
+      // still reach the anchor).
+      className="!cursor-pointer !whitespace-normal !text-[#506579] !no-underline !outline-none break-words font-medium ![text-overflow:clip] hover:!text-[#506579] hover:!no-underline focus:!outline-none focus-visible:!outline-none [&_*]:pointer-events-none [&_*]:!cursor-pointer [&_*]:!whitespace-normal [&_*]:!break-words [&_*]:!no-underline [&_*]:!overflow-visible [&_*]:![text-overflow:clip]"
       innerWrapperClassName="whitespace-normal break-words"
       label={renderCellValue(value, notAvailable)}
       url={typeof href === 'function' ? href(row) : href}
