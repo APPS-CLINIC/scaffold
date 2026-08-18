@@ -23,7 +23,6 @@ export const customerTableConfig = {
       component: (props) => (
         <UnderlinedTextCell {...props} href={(row) => `/customers/${row.id}`} openInNewTab />
       ),
-      clamp: false,
       sortable: true,
       width: 192,
       alwaysVisible: true,

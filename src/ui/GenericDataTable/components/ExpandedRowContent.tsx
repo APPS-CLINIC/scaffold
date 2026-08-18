@@ -1,5 +1,4 @@
 import { useTranslation } from 'react-i18next';
-import { DefinitionList } from '@/ui';
 import type {
   GenericDataTableFieldConfig,
   GenericDataTableLabels,
@@ -15,7 +14,12 @@ interface ExpandedRowContentProps<T extends object> {
   rowIndex: number;
 }
 
-/** The accordion body: every field that did not fit as a column, in order. */
+/**
+ * The accordion body: every field that did not fit as a column, in order.
+ * Hand-rolled markup on purpose: the IWA DefinitionList types its body text
+ * as a string, while detail values here are rendered components — and the
+ * accordion must use exactly the table's cell typography (14px/20px).
+ */
 export function ExpandedRowContent<T extends object>({
   fields,
   detailsId,
@@ -32,25 +36,25 @@ export function ExpandedRowContent<T extends object>({
       aria-labelledby={`${detailsId}-toggle`}
       className="w-full bg-[var(--surface)] px-4 py-2 sm:px-6"
     >
-      <div className="mx-auto flex max-w-lg flex-col gap-y-1 [&_dl]:items-baseline [&_dl]:max-sm:flex-col [&_dl]:max-sm:gap-0 [&_dt]:max-sm:w-auto [&_dt]:max-sm:text-left">
+      <dl className="mx-auto grid max-w-lg grid-cols-1 gap-y-1">
         {fields.map((field) => (
-          <DefinitionList
+          <div
+            className="grid min-w-0 grid-cols-1 items-baseline text-sm leading-5 sm:grid-cols-[minmax(9rem,auto)_minmax(0,1fr)] sm:gap-4"
             key={String(field.field)}
-            title={{ text: t(field.labelKey), bold: true }}
-            body={{
-              text: (
-                <DetailValue
-                  detail={field}
-                  labels={labels}
-                  locale={locale}
-                  row={row}
-                  rowIndex={rowIndex}
-                />
-              ),
-            }}
-          />
+          >
+            <dt className="font-bold text-[var(--text)] sm:text-right">{t(field.labelKey)}</dt>
+            <dd className="m-0 min-w-0 break-words">
+              <DetailValue
+                detail={field}
+                labels={labels}
+                locale={locale}
+                row={row}
+                rowIndex={rowIndex}
+              />
+            </dd>
+          </div>
         ))}
-      </div>
+      </dl>
     </section>
   );
 }

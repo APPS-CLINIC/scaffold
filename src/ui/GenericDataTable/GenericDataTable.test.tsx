@@ -483,7 +483,7 @@ describe('GenericDataTable', () => {
     expect(screen.getByText('Alice:name:0')).toBeInTheDocument();
   });
 
-  it('replaces rows with skeletons during a refetch without unmounting the table', () => {
+  it('keeps the previous rows visible and dimmed during a refetch', () => {
     mockTableContainerWidth(WIDE_CONTAINER);
     const { rerender, props } = renderTable({ loading: false });
 
@@ -491,11 +491,12 @@ describe('GenericDataTable', () => {
 
     rerender(<GenericDataTable<TestRow> {...props} loading={true} />);
 
-    // Same table element, no vendor loading mask, rows swapped for skeletons.
+    // Same table element, no vendor loading mask; the stale rows stay on
+    // screen (dimmed) until the response lands.
     expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
-    expect(screen.queryByText('Alice:name:0')).not.toBeInTheDocument();
+    expect(screen.getByText('Alice:name:0')).toBeInTheDocument();
     expect(document.querySelector('.p-datatable-loading-overlay')).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Expand Alice details' })).not.toBeInTheDocument();
+    expect(document.querySelector('tbody tr')?.className).toContain('opacity-60');
   });
 
   it('keeps the table mounted when loading resumes after an errored first load', () => {

@@ -75,6 +75,19 @@ function GenericDataTableInner<T extends object>(
     () => createPaginatorTemplate(labels.paginatorActions),
     [labels.paginatorActions],
   );
+  // The real table keeps rendering through every loading state (config-driven
+  // headers, sorting, paginator; no unmount, no vendor loading overlay).
+  // First load (no retained rows): placeholder rows with shimmer bars.
+  // Refetch (sort/page with rows on screen): the previous rows stay visible,
+  // slightly dimmed, until the response lands.
+  const showSkeletonRows = loading && tableRows.length === 0;
+  const dimStaleRows = loading && !showSkeletonRows;
+  const skeletonRows = showSkeletonRows
+    ? Array.from(
+        { length: Math.min(safePageSize, 10) },
+        (_, index) => ({ [String(config.dataKey)]: `__skeleton-${index}__` }) as PrimeDataTableRow,
+      )
+    : null;
   const dataTablePassThrough = useMemo(
     () =>
       createDataTablePassThrough(
@@ -82,8 +95,9 @@ function GenericDataTableInner<T extends object>(
         labels.pagination,
         labels.paginatorActions?.rowsPerPage,
         loading,
+        dimStaleRows,
       ),
-    [labels.pagination, labels.paginatorActions?.rowsPerPage, labels.table, loading],
+    [dimStaleRows, labels.pagination, labels.paginatorActions?.rowsPerPage, labels.table, loading],
   );
   const { expandedRows, getRowKey, isExpanded, toggleRow } = useExpandedRows({
     dataKey: config.dataKey,
@@ -129,20 +143,6 @@ function GenericDataTableInner<T extends object>(
 
   const getDetailsId = (row: T) => `${tableId}-details-${encodeURIComponent(getRowKey(row))}`;
 
-  // While loading, the real table keeps rendering (config-driven headers,
-  // sorting, paginator) and only the rows are placeholders with shimmer
-  // bars — one skeleton mechanism for both the first load and refetches,
-  // with no unmount and no vendor loading overlay.
-  const skeletonRowCount = Math.min(safePageSize, 10);
-  const skeletonRows = useMemo(
-    () =>
-      Array.from(
-        { length: skeletonRowCount },
-        (_, index) => ({ [String(config.dataKey)]: `__skeleton-${index}__` }) as PrimeDataTableRow,
-      ),
-    [config.dataKey, skeletonRowCount],
-  );
-
   return (
     <div
       ref={setRootRef}
@@ -165,9 +165,10 @@ function GenericDataTableInner<T extends object>(
       ) : null}
 
       <PaginatorTable
-        value={loading ? skeletonRows : tableRows}
+        value={skeletonRows ?? tableRows}
         dataKey={String(config.dataKey)}
         lazy
+        stripedRows
         paginator
         alwaysShowPaginator
         first={(safePage - 1) * safePageSize}
@@ -183,12 +184,16 @@ function GenericDataTableInner<T extends object>(
           loading || hasError ? (
             <span aria-hidden="true" className="hidden" />
           ) : (
-            <span className="inline-block py-6" role="status">
-              {labels.empty}
-            </span>
+            <div className="flex flex-col items-center gap-2 py-12 text-center" role="status">
+              <span aria-hidden="true" className="pi pi-inbox text-3xl text-[var(--muted)]" />
+              <span className="text-sm font-bold text-[var(--text)]">{labels.empty}</span>
+              {labels.emptyHint ? (
+                <span className="text-sm text-[var(--muted)]">{labels.emptyHint}</span>
+              ) : null}
+            </div>
           )
         }
-        expandedRows={hasDetails && !loading ? expandedRows : undefined}
+        expandedRows={hasDetails && !showSkeletonRows ? expandedRows : undefined}
         rowExpansionTemplate={(primeRow: PrimeDataTableRow, options: { index: number }) => {
           const row = primeRow as unknown as T;
 
@@ -227,17 +232,20 @@ function GenericDataTableInner<T extends object>(
             headerClassName={twMerge('whitespace-normal', field.headerClassName)}
             bodyClassName={field.cellClassName}
             body={(primeRow: PrimeDataTableRow, options: PrimeColumnBodyOptions) =>
-              loading ? (
-                <span
-                  aria-hidden="true"
-                  className="block h-3 w-3/4 rounded bg-[#ededed] motion-safe:animate-pulse"
-                  style={{ animationDelay: `${options.rowIndex * 50}ms` }}
-                />
+              showSkeletonRows ? (
+                // Sized to match a one-line row, so real rows land without a
+                // height jump.
+                <span aria-hidden="true" className="flex h-5 items-center">
+                  <span
+                    className="block h-3 w-3/4 rounded bg-[#ededed] motion-safe:animate-pulse"
+                    style={{ animationDelay: `${options.rowIndex * 50}ms` }}
+                  />
+                </span>
               ) : (
-                // Figma: cell content clamps to two lines with an ellipsis;
-                // without the clamp, overflowing text bleeds into the next
-                // cell (the wrapper is not a scroll container).
-                <div className={field.clamp === false ? 'break-words' : 'line-clamp-2 break-words'}>
+                // Long content wraps line by line up to 168px, then the cell
+                // scrolls (design note) — never an ellipsis, never bleeding
+                // into the neighbouring cell.
+                <div className="max-h-[168px] overflow-y-auto break-words">
                   <PrimaryCell
                     column={field}
                     locale={locale}
@@ -263,7 +271,7 @@ function GenericDataTableInner<T extends object>(
             bodyClassName="w-11 min-w-11 bg-[var(--surface)] p-0 text-center sm:w-9 sm:min-w-9"
             body={(primeRow: PrimeDataTableRow) => {
               // Placeholder rows have nothing to expand.
-              if (loading) return null;
+              if (showSkeletonRows) return null;
               const row = primeRow as unknown as T;
 
               return (

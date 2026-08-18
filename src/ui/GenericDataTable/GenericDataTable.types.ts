@@ -41,12 +41,6 @@ interface GenericDataTableFieldConfigBase<T extends object, K extends GenericDat
   sortable?: boolean;
   /** Server-side sort key when it differs from `field`. */
   sortField?: string;
-  /**
-   * Cell text handling: by default content clamps to two lines with an
-   * ellipsis; `clamp: false` lets it wrap to its full height instead
-   * (e.g. linked names that must stay fully readable).
-   */
-  clamp?: boolean;
   /** Never moved to the accordion, regardless of available width. */
   alwaysVisible?: boolean;
   headerClassName?: string;
@@ -106,6 +100,8 @@ export interface GenericDataTableLabels<T extends object> {
   table: string;
   loading: string;
   empty: string;
+  /** Secondary line under the empty-state heading. */
+  emptyHint?: string;
   pagination: string;
   notAvailable: ReactNode;
   /** Screen-reader name for the expansion-toggle column. */

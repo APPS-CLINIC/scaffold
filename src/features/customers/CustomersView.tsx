@@ -34,6 +34,7 @@ export function CustomersView() {
       table: t('customers.table.ariaLabel'),
       loading: t('customers.table.loading'),
       empty: t('customers.table.empty'),
+      emptyHint: t('customers.table.emptyHint'),
       pagination: t('customers.table.pagination'),
       notAvailable: t('customers.value.notAvailable'),
       detailsColumn: t('customers.table.detailsColumn'),

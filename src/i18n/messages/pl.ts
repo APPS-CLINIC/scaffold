@@ -46,6 +46,7 @@ export const pl = {
   'customers.table.ariaLabel': 'Klienci oraz ich doradcy',
   'customers.table.loading': 'Ładowanie klientów…',
   'customers.table.empty': 'Brak klientów spełniających wybrane kryteria.',
+  'customers.table.emptyHint': 'Zmień kryteria wyszukiwania lub filtry i spróbuj ponownie.',
   'customers.table.error': 'Nie udało się załadować klientów.',
   'customers.table.expandRow': 'Rozwiń szczegóły klienta {{name}}',
   'customers.table.collapseRow': 'Zwiń szczegóły klienta {{name}}',

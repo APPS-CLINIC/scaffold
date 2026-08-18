@@ -29,7 +29,7 @@ type PaginatorTemplateConfig = Exclude<PaginatorTemplate, string | undefined>;
 export const DEFAULT_PAGE_SIZE_OPTIONS = [10, 25, 50] as const;
 
 export const DATA_TABLE_CLASS_NAME =
-  'w-full max-w-full overflow-hidden bg-[var(--surface)] [&_.p-datatable-row-expansion>td]:!p-0 [&_.p-datatable-thead>tr>th]:!bg-[var(--surface)] [&_.p-datatable-thead>tr>th]:!px-2 [&_.p-datatable-thead>tr>th]:!py-2 [&_.p-datatable-tbody>tr>td]:!px-2 [&_.p-datatable-tbody>tr>td]:!py-1.5 [&_.p-dropdown]:!h-8 [&_.p-sortable-column-icon]:!h-3 [&_.p-sortable-column-icon]:!w-3 sm:[&_.p-paginator-next]:!h-8 sm:[&_.p-paginator-next]:!min-w-8 sm:[&_.p-paginator-page]:!h-8 sm:[&_.p-paginator-page]:!min-w-8 sm:[&_.p-paginator-prev]:!h-8 sm:[&_.p-paginator-prev]:!min-w-8';
+  'w-full max-w-full overflow-hidden bg-[var(--surface)] [&_.p-datatable-tbody>tr.p-row-odd]:!bg-[var(--surface-muted)] [&_.p-datatable-row-expansion>td]:!p-0 [&_.p-datatable-thead>tr>th]:!bg-[var(--surface)] [&_.p-datatable-thead>tr>th]:!px-2 [&_.p-datatable-thead>tr>th]:!py-2 [&_.p-datatable-tbody>tr>td]:!px-2 [&_.p-datatable-tbody>tr>td]:!py-1.5 [&_.p-dropdown]:!h-8 [&_.p-sortable-column-icon]:!h-3 [&_.p-sortable-column-icon]:!w-3 sm:[&_.p-paginator-next]:!h-8 sm:[&_.p-paginator-next]:!min-w-8 sm:[&_.p-paginator-page]:!h-8 sm:[&_.p-paginator-page]:!min-w-8 sm:[&_.p-paginator-prev]:!h-8 sm:[&_.p-paginator-prev]:!min-w-8';
 
 function withAriaLabel(element: ReactElement, label: string | undefined): ReactElement {
   if (!label) return element;
@@ -93,6 +93,7 @@ export function createDataTablePassThrough(
   paginationLabel: string,
   rowsPerPageLabel: string | undefined,
   loading: boolean,
+  dimRows = false,
 ): DataTablePassThroughOptions {
   return {
     wrapper: {
@@ -107,7 +108,12 @@ export function createDataTablePassThrough(
       'aria-busy': loading,
     },
     bodyRow: {
-      className: 'transition-colors hover:bg-[var(--surface-muted)] motion-reduce:transition-none',
+      className: twMerge(
+        'transition-colors hover:bg-[var(--surface-muted)] motion-reduce:transition-none',
+        // Refetch with rows on screen: the previous results stay visible,
+        // dimmed, until the response lands.
+        dimRows && 'opacity-60',
+      ),
     },
     paginator: {
       root: {

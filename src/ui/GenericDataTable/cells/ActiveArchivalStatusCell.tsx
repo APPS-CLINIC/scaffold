@@ -14,13 +14,12 @@ export function ActiveArchivalStatusCell<
 >({ value, notAvailable }: GenericDataTableCellProps<T, K>) {
   const { t } = useTranslation();
 
-  if (value === 'ACTIVE') {
-    return <Status type="active" label={t('common.status.active')} />;
+  switch (value) {
+    case 'ACTIVE':
+      return <Status type="active" label={t('common.status.active')} />;
+    case 'ARCHIVAL':
+      return <Status type="disabled" label={t('common.status.archival')} />;
+    default:
+      return renderCellValue(value, notAvailable);
   }
-
-  if (value === 'ARCHIVAL') {
-    return <Status type="disabled" label={t('common.status.archival')} />;
-  }
-
-  return renderCellValue(value, notAvailable);
 }
