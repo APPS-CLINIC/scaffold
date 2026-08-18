@@ -245,7 +245,7 @@ function GenericDataTableInner<T extends object>(
                 // Long content wraps line by line up to 168px, then the cell
                 // scrolls (design note) — never an ellipsis, never bleeding
                 // into the neighbouring cell.
-                <div className="max-h-[168px] overflow-y-auto break-words">
+                <div className="max-h-[168px] overflow-x-hidden overflow-y-auto break-words">
                   <PrimaryCell
                     column={field}
                     locale={locale}
