@@ -30,10 +30,11 @@ export function UnderlinedTextCell<
   return (
     <InlineLink
       size="small"
-      className="whitespace-normal break-words font-medium"
-      // The real IWA InlineLink truncates long labels with an ellipsis on its
-      // inner wrapper (its "Label Overflow" behavior); table cells must wrap
-      // instead, so override that wrapper too.
+      // The real IWA InlineLink truncates overflowing labels to one line with
+      // an ellipsis and its overflow-tooltip layer forces a default cursor.
+      // Table cells must wrap fully and stay clickable-looking, so force the
+      // overrides onto the link and every node inside it.
+      className="!cursor-pointer !whitespace-normal break-words font-medium ![text-overflow:clip] [&_*]:!cursor-pointer [&_*]:!whitespace-normal [&_*]:!break-words [&_*]:!overflow-visible [&_*]:![text-overflow:clip]"
       innerWrapperClassName="whitespace-normal break-words"
       label={renderCellValue(value, notAvailable)}
       url={typeof href === 'function' ? href(row) : href}
