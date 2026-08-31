@@ -7,22 +7,23 @@
   --border-subtle: #eef1f4;
   --surface: #ffffff;
   --surface-muted: #f5f7fa;
+  --row-striped: #f5f5f5;
   --content-surface: #f0f0f0;
   --navigation-surface: #ffffff;
-  --navigation-accent: #d94c0b;
+  --navigation-accent: #ff6200;
+  --text: #333333;
   --muted: #687280;
   --accent: #262d62;
-  --link: #506579;
   --focus: #3153a4;
-  --success: #16875a;
-  --inactive: #77808b;
-  --warning: #d94c0b;
 
   /* Accent used by UI primitives (e.g. Toast). */
   --color-accent-blue: #262d62;
 
   color-scheme: light;
+  /* ING Me is the IWA brand face; it resolves only where the corporate font
+     is installed, everything else falls back to a humanist system stack. */
   font-family:
+    'ING Me',
     system-ui,
     -apple-system,
     'Segoe UI',
@@ -31,7 +32,7 @@
     Arial,
     sans-serif;
   line-height: 1.5;
-  color: #1f2933;
+  color: var(--text);
 }
 
 *,

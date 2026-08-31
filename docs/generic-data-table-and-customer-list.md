@@ -89,7 +89,7 @@ export const customerTableConfig = {
     {
       field: 'status',
       labelKey: 'customers.table.field.status',
-      component: ActiveInactiveStatusCell,
+      component: ActiveArchivalStatusCell,
       sortable: true,
       width: 112,
     },
@@ -120,7 +120,7 @@ public cell component in its own file:
 - `TextCell` for ordinary primitive text;
 - `UnderlinedTextCell` for link-like primary values;
 - `DateCell` for locale-aware date formatting;
-- `ActiveInactiveStatusCell` for active/inactive status presentation;
+- `ActiveArchivalStatusCell` for ACTIVE/ARCHIVAL status presentation;
 - `ValidityStatusCell` for valid, expiring, and expired states.
 
 These cells are domain-neutral building blocks exported through `@/ui`. The
@@ -129,11 +129,12 @@ should add a renderer inside its own feature only when the presentation is
 genuinely domain-specific; a reusable renderer belongs beside the generic
 table.
 
-Small internal helpers, such as status presentation and safe value handling,
-remain private to the table package. Table classes are combined with IWA's
-`twMerge` (re-exported through the `src/ui/iwa.ts` seam), allowing
-feature-supplied Tailwind classes to override defaults without conflicting
-utilities.
+Small internal helpers, such as safe value handling, remain private to the
+table package; status presentation renders the shared IWA `Status` component.
+IWA components are re-exported through the `@/ui` barrel for feature code,
+while modules inside `src/ui` import `iwa-react-components` directly. Table
+classes are combined with IWA's `twMerge`, allowing feature-supplied Tailwind
+classes to override defaults without conflicting utilities.
 
 ## Explicit expanded-row allowlist
 
@@ -260,9 +261,16 @@ additional pages without adding feature-specific conditions to the router.
 
 ## Styling, translation, and accessibility
 
-- The table uses PrimeReact through `@/ui` and applies the existing semantic
-  design tokens rather than hard-coded product colors.
+- The table uses PrimeReact through `@/ui`. Table chrome (borders, header
+  rule, muted text) uses the semantic design tokens; the IWA components it
+  renders (`Status`, `InlineLink`, the skeleton) carry the IWA brand palette
+  internally, exactly as the real library does.
 - Tailwind classes are merged with IWA's `twMerge` utility.
+- `loading` drives the in-place loading overlay; the separate `initialLoading`
+  prop (true only while the very first load is in flight, e.g. RTK Query's
+  `isLoading`) swaps in the IWA table skeleton. Once the table has rendered,
+  the skeleton never returns — refetches must not unmount the table, so focus
+  and the overlay survive.
 - Field label keys are typed against the i18n catalog and resolved at render
   time, so switching language does not rebuild the static config.
 - Empty, loading, error, pagination, expansion, and unavailable-value text is

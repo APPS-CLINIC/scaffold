@@ -11,7 +11,7 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Column } from 'primereact/column';
-import { PaginatorTable, twMerge } from '../iwa';
+import { PaginatorTable, twMerge } from '@/ui';
 import { ExpandedRowContent, PrimaryCell, RowExpansionButton } from './components';
 import {
   createDataTablePassThrough,
@@ -75,6 +75,19 @@ function GenericDataTableInner<T extends object>(
     () => createPaginatorTemplate(labels.paginatorActions),
     [labels.paginatorActions],
   );
+  // The real table keeps rendering through every loading state (config-driven
+  // headers, sorting, paginator; no unmount, no vendor loading overlay).
+  // First load (no retained rows): placeholder rows with shimmer bars.
+  // Refetch (sort/page with rows on screen): the previous rows stay visible,
+  // slightly dimmed, until the response lands.
+  const showSkeletonRows = loading && tableRows.length === 0;
+  const dimStaleRows = loading && !showSkeletonRows;
+  const skeletonRows = showSkeletonRows
+    ? Array.from(
+        { length: Math.min(safePageSize, 10) },
+        (_, index) => ({ [String(config.dataKey)]: `__skeleton-${index}__` }) as PrimeDataTableRow,
+      )
+    : null;
   const dataTablePassThrough = useMemo(
     () =>
       createDataTablePassThrough(
@@ -82,8 +95,9 @@ function GenericDataTableInner<T extends object>(
         labels.pagination,
         labels.paginatorActions?.rowsPerPage,
         loading,
+        dimStaleRows,
       ),
-    [labels.pagination, labels.paginatorActions?.rowsPerPage, labels.table, loading],
+    [dimStaleRows, labels.pagination, labels.paginatorActions?.rowsPerPage, labels.table, loading],
   );
   const { expandedRows, getRowKey, isExpanded, toggleRow } = useExpandedRows({
     dataKey: config.dataKey,
@@ -151,9 +165,10 @@ function GenericDataTableInner<T extends object>(
       ) : null}
 
       <PaginatorTable
-        value={tableRows}
+        value={skeletonRows ?? tableRows}
         dataKey={String(config.dataKey)}
         lazy
+        stripedRows
         paginator
         alwaysShowPaginator
         first={(safePage - 1) * safePageSize}
@@ -163,19 +178,22 @@ function GenericDataTableInner<T extends object>(
         sortField={sortField}
         sortOrder={sortOrder === 'asc' ? 1 : sortOrder === 'desc' ? -1 : undefined}
         removableSort={false}
-        loading={loading}
         emptyMessage={
           // A falsy value would fall back to PrimeReact's untranslated
           // locale default, so suppression needs a real (hidden) node.
           loading || hasError ? (
             <span aria-hidden="true" className="hidden" />
           ) : (
-            <span className="inline-block py-6" role="status">
-              {labels.empty}
-            </span>
+            <div className="flex flex-col items-center gap-2 py-12 text-center" role="status">
+              <span aria-hidden="true" className="pi pi-inbox text-3xl text-[var(--muted)]" />
+              <span className="text-sm font-bold text-[var(--text)]">{labels.empty}</span>
+              {labels.emptyHint ? (
+                <span className="text-sm text-[var(--muted)]">{labels.emptyHint}</span>
+              ) : null}
+            </div>
           )
         }
-        expandedRows={hasDetails ? expandedRows : undefined}
+        expandedRows={hasDetails && !showSkeletonRows ? expandedRows : undefined}
         rowExpansionTemplate={(primeRow: PrimeDataTableRow, options: { index: number }) => {
           const row = primeRow as unknown as T;
 
@@ -212,16 +230,32 @@ function GenericDataTableInner<T extends object>(
             sortField={field.sortField ?? String(field.field)}
             style={{ width: `${field.width}px` }}
             headerClassName={twMerge('whitespace-normal', field.headerClassName)}
-            bodyClassName={twMerge('whitespace-nowrap', field.cellClassName)}
-            body={(primeRow: PrimeDataTableRow, options: PrimeColumnBodyOptions) => (
-              <PrimaryCell
-                column={field}
-                locale={locale}
-                notAvailable={labels.notAvailable}
-                row={primeRow as unknown as T}
-                rowIndex={options.rowIndex}
-              />
-            )}
+            bodyClassName={field.cellClassName}
+            body={(primeRow: PrimeDataTableRow, options: PrimeColumnBodyOptions) =>
+              showSkeletonRows ? (
+                // Sized to match a one-line row, so real rows land without a
+                // height jump.
+                <span aria-hidden="true" className="flex h-5 items-center">
+                  <span
+                    className="block h-3 w-3/4 rounded bg-[#ededed] motion-safe:animate-pulse"
+                    style={{ animationDelay: `${options.rowIndex * 50}ms` }}
+                  />
+                </span>
+              ) : (
+                // Long content wraps line by line up to 168px, then the cell
+                // scrolls (design note) — never an ellipsis, never bleeding
+                // into the neighbouring cell.
+                <div className="max-h-[168px] overflow-x-hidden overflow-y-auto break-words">
+                  <PrimaryCell
+                    column={field}
+                    locale={locale}
+                    notAvailable={labels.notAvailable}
+                    row={primeRow as unknown as T}
+                    rowIndex={options.rowIndex}
+                  />
+                </div>
+              )
+            }
           />
         ))}
 
@@ -233,9 +267,11 @@ function GenericDataTableInner<T extends object>(
                 <span className="sr-only">{labels.detailsColumn}</span>
               ) : undefined
             }
-            headerClassName="w-11 min-w-11 bg-[var(--surface)] p-0 sm:w-9 sm:min-w-9"
-            bodyClassName="w-11 min-w-11 bg-[var(--surface)] p-0 text-center sm:w-9 sm:min-w-9"
+            headerClassName="w-11 min-w-11 p-0 sm:w-9 sm:min-w-9"
+            bodyClassName="w-11 min-w-11 p-0 text-center sm:w-9 sm:min-w-9"
             body={(primeRow: PrimeDataTableRow) => {
+              // Placeholder rows have nothing to expand.
+              if (showSkeletonRows) return null;
               const row = primeRow as unknown as T;
 
               return (

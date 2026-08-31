@@ -1,4 +1,39 @@
 export { Button, type ButtonProps } from './Button';
+// IWA design-system components consumed by the app, re-exported so feature
+// code imports them from '@/ui' like every other UI building block.
+export {
+  ActionLink,
+  Card,
+  DefinitionList,
+  IconTextButton,
+  InlineLink,
+  MenuList,
+  PaginatorTable,
+  ScreenHeading,
+  SearchWithAutocomplete,
+  SkeletonTable,
+  Status,
+  Switch,
+  TabMenu,
+  TopBar,
+  twMerge,
+} from 'iwa-react-components';
+export type {
+  ActionLinkProps,
+  CardProps,
+  DefinitionListProps,
+  IconTextButtonProps,
+  InlineLinkProps,
+  PaginatorTableProps,
+  ScreenHeadingProps,
+  SearchWithAutocompleteProps,
+  SkeletonTableColumn,
+  SkeletonTableProps,
+  StatusProps,
+  StatusType,
+  SwitchProps,
+  TableProps,
+} from 'iwa-react-components';
 export { TextInput, type TextInputProps } from './TextInput';
 export { Select, type SelectProps } from './Select';
 export {

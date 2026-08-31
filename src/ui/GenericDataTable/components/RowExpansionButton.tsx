@@ -1,4 +1,4 @@
-import { twMerge } from '../../iwa';
+import { twMerge } from '@/ui';
 import type { GenericDataTableLabels } from '../GenericDataTable.types';
 
 interface RowExpansionButtonProps<T extends object> {

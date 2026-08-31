@@ -21,3 +21,15 @@ export type SectionPageRoutes<TKey extends NavigationSectionWithItems> = Readonl
 export type PageRouteDefinitions = {
   readonly [TKey in NavigationSectionWithItems]?: SectionPageRoutes<TKey>;
 };
+
+/**
+ * A section-owned route that is not a navigation destination — e.g. a
+ * details page like `/customers/:id`. Declared next to the section's page
+ * map and appended to the router after the navigation-generated routes.
+ */
+export interface DetailPageRoute {
+  readonly path: string;
+  readonly lazy: PageRouteLoader;
+}
+
+export type SectionDetailRoutes = readonly DetailPageRoute[];

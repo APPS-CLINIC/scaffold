@@ -100,6 +100,8 @@ export interface GenericDataTableLabels<T extends object> {
   table: string;
   loading: string;
   empty: string;
+  /** Secondary line under the empty-state heading. */
+  emptyHint?: string;
   pagination: string;
   notAvailable: ReactNode;
   /** Screen-reader name for the expansion-toggle column. */

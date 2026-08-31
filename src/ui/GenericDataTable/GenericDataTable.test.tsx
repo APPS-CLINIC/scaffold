@@ -443,7 +443,7 @@ describe('GenericDataTable', () => {
     expect(screen.queryByText('No test customers')).not.toBeInTheDocument();
   });
 
-  it('announces loading, marks the table busy, and keeps row actions touch friendly', () => {
+  it('announces loading and marks the table busy', () => {
     mockTableContainerWidth(NARROW_CONTAINER);
     renderTable({ loading: true });
 
@@ -452,11 +452,75 @@ describe('GenericDataTable', () => {
       'aria-busy',
       'true',
     );
+    expect(screen.queryByText('No test customers')).not.toBeInTheDocument();
+  });
+
+  it('keeps row actions touch friendly', () => {
+    mockTableContainerWidth(NARROW_CONTAINER);
+    renderTable();
+
     expect(screen.getByRole('button', { name: 'Expand Alice details' })).toHaveClass(
       'min-h-11',
       'min-w-11',
     );
-    expect(screen.queryByText('No test customers')).not.toBeInTheDocument();
+  });
+
+  it('renders config-driven headers with skeleton rows while loading, then real rows', () => {
+    mockTableContainerWidth(WIDE_CONTAINER);
+    const { rerender, props } = renderTable({ rows: [], totalRecords: 0, loading: true });
+
+    // The real table stays mounted: headers come straight from the config
+    // while the body rows are placeholders.
+    expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /customer name/i })).toBeInTheDocument();
+    expect(screen.queryByText('Alice')).not.toBeInTheDocument();
+    expect(screen.getByRole('status')).toHaveTextContent('Loading test customers');
+
+    rerender(
+      <GenericDataTable<TestRow> {...props} rows={rows} totalRecords={22} loading={false} />,
+    );
+
+    expect(screen.getByText('Alice:name:0')).toBeInTheDocument();
+  });
+
+  it('keeps the previous rows visible and dimmed during a refetch', () => {
+    mockTableContainerWidth(WIDE_CONTAINER);
+    const { rerender, props } = renderTable({ loading: false });
+
+    expect(screen.getByText('Alice:name:0')).toBeInTheDocument();
+
+    rerender(<GenericDataTable<TestRow> {...props} loading={true} />);
+
+    // Same table element, no vendor loading mask; the stale rows stay on
+    // screen (dimmed) until the response lands.
+    expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
+    expect(screen.getByText('Alice:name:0')).toBeInTheDocument();
+    expect(document.querySelector('.p-datatable-loading-overlay')).toBeNull();
+    expect(document.querySelector('tbody tr')?.className).toContain('opacity-60');
+  });
+
+  it('keeps the table mounted when loading resumes after an errored first load', () => {
+    mockTableContainerWidth(WIDE_CONTAINER);
+    const { rerender, props } = renderTable({
+      rows: [],
+      totalRecords: 0,
+      loading: false,
+      error: 'Request failed',
+    });
+
+    expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
+
+    rerender(
+      <GenericDataTable<TestRow>
+        {...props}
+        rows={[]}
+        totalRecords={0}
+        loading={true}
+        error={undefined}
+      />,
+    );
+
+    expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
   });
 
   it('merges conflicting caller classes with the caller overrides taking precedence', () => {

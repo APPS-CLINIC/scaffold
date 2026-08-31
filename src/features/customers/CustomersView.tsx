@@ -5,8 +5,12 @@ import { DATE_DMY_FORMAT_OPTIONS } from '@/i18n/dateFormats';
 import { selectListQuery } from '@/features/urlState/urlState.selectors';
 import { useListQueryState } from '@/features/urlState/useListQueryState';
 import {
-  Button,
+  ActionLink,
+  Card,
   GenericDataTable,
+  IconTextButton,
+  SearchWithAutocomplete,
+  Switch,
   type GenericDataTableLabels,
   type GenericDataTablePageChange,
   type GenericDataTableSortChange,
@@ -30,6 +34,7 @@ export function CustomersView() {
       table: t('customers.table.ariaLabel'),
       loading: t('customers.table.loading'),
       empty: t('customers.table.empty'),
+      emptyHint: t('customers.table.emptyHint'),
       pagination: t('customers.table.pagination'),
       notAvailable: t('customers.value.notAvailable'),
       detailsColumn: t('customers.table.detailsColumn'),
@@ -80,76 +85,81 @@ export function CustomersView() {
 
   return (
     <section
-      aria-labelledby="customers-title"
+      aria-label={t('customers.title')}
       className="w-full min-w-0 max-w-full space-y-4 overflow-hidden"
     >
       <header>
-        <h1
-          id="customers-title"
-          className="text-2xl font-semibold tracking-tight text-[var(--navigation-accent)]"
-        >
+        <h1 className="m-0 text-4xl font-bold leading-[48px] text-[var(--navigation-accent)]">
           {t('customers.title')}
         </h1>
         <p className="sr-only">{t('customers.description')}</p>
       </header>
 
-      <div className="border-y border-[var(--border)] bg-[var(--surface-muted)] px-3 py-3">
-        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--muted)]">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span>{t('customers.dataAsOf')}</span>
-            <strong className="font-semibold text-[var(--text)] underline underline-offset-2">
-              {dataAsOf}
-            </strong>
-            <Button
-              variant="ghost"
-              className="min-h-8 !border-0 px-1.5 py-0 text-xs text-[var(--link)] underline underline-offset-2"
-              onClick={() => void refetch()}
-            >
-              <span
-                aria-hidden="true"
-                className="pi pi-refresh mr-1 text-[var(--navigation-accent)]"
-              />
-              {t('customers.actions.refresh')}
-            </Button>
-          </div>
+      {/* The IWA Card stacks .p-card (12px) and .p-card-body (20px) padding;
+          the design wants exactly 16px per side, so zero the root and give
+          the body the full 16px. */}
+      <Card className="!p-0 [&_.p-card-body]:!p-4">
+        <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[var(--muted)]">
+          <span>{t('customers.dataAsOf')}</span>
+          <strong className="font-bold text-[var(--text)]">{dataAsOf}</strong>
+          <ActionLink
+            icon={<span aria-hidden="true" className="pi pi-refresh text-sm" />}
+            label={t('customers.actions.refresh')}
+            onClick={async () => {
+              await refetch();
+            }}
+          />
+        </div>
 
-          <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap text-xs">
-            <span>{t('customers.actions.expandAll')}</span>
-            <input
-              type="checkbox"
-              className="peer sr-only"
-              checked={allVisibleRowsExpanded}
-              disabled={visibleRowKeys.length === 0}
-              onChange={() => setExpandedRowKeys(allVisibleRowsExpanded ? [] : visibleRowKeys)}
+        {/* Filter section: controls only for now — no filtering or search
+            actions are wired yet (deferred with the rest of the filter model). */}
+        <div className="mb-4 flex flex-col items-start gap-8 rounded bg-[var(--surface-muted)] p-3">
+          <IconTextButton
+            secondary
+            icon={<span aria-hidden="true" className="pi pi-sliders-h text-sm" />}
+            label={t('customers.actions.customizeFilters')}
+          />
+          <div className="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2">
+            <SearchWithAutocomplete
+              className="w-full max-w-96"
+              placeholder={t('customers.search.placeholder')}
             />
-            <span className="relative h-4 w-8 rounded-full bg-[var(--inactive)] transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-3 after:w-3 after:rounded-full after:bg-white after:transition-transform peer-checked:bg-[var(--accent)] peer-checked:after:translate-x-4 peer-disabled:opacity-50 motion-reduce:transition-none motion-reduce:after:transition-none" />
-          </label>
+            <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap text-sm text-[var(--muted)]">
+              <span>{t('customers.actions.expandAll')}</span>
+              <Switch
+                aria-label={t('customers.actions.expandAll')}
+                checked={allVisibleRowsExpanded}
+                disabled={visibleRowKeys.length === 0}
+                onChange={() => setExpandedRowKeys(allVisibleRowsExpanded ? [] : visibleRowKeys)}
+              />
+            </label>
+          </div>
         </div>
 
         <span className="sr-only" role="status" aria-live="polite">
           {t('common.results', { count: data?.page.totalElements ?? 0 })}
         </span>
-      </div>
 
-      <GenericDataTable
-        rows={data?.content ?? []}
-        config={customerTableConfig}
-        totalRecords={data?.page.totalElements ?? 0}
-        page={listQuery.page}
-        pageSize={listQuery.pageSize}
-        pageSizeOptions={[10, 25, 50]}
-        sortField={listQuery.sort || undefined}
-        sortOrder={listQuery.sort ? listQuery.dir : undefined}
-        loading={isLoading || isFetching}
-        error={isError ? t('customers.table.error') : undefined}
-        labels={labels}
-        expandedRowKeys={expandedRowKeys}
-        onExpandedRowKeysChange={setExpandedRowKeys}
-        onPageChange={handlePageChange}
-        onSortChange={handleSortChange}
-        onSortClear={handleSortClear}
-        aria-busy={isLoading || isFetching}
-      />
+        <GenericDataTable
+          rows={data?.content ?? []}
+          config={customerTableConfig}
+          totalRecords={data?.page.totalElements ?? 0}
+          page={listQuery.page}
+          pageSize={listQuery.pageSize}
+          pageSizeOptions={[10, 25, 50]}
+          sortField={listQuery.sort || undefined}
+          sortOrder={listQuery.sort ? listQuery.dir : undefined}
+          loading={isLoading || isFetching}
+          error={isError ? t('customers.table.error') : undefined}
+          labels={labels}
+          expandedRowKeys={expandedRowKeys}
+          onExpandedRowKeysChange={setExpandedRowKeys}
+          onPageChange={handlePageChange}
+          onSortChange={handleSortChange}
+          onSortClear={handleSortClear}
+          aria-busy={isLoading || isFetching}
+        />
+      </Card>
     </section>
   );
 }

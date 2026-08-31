@@ -2,42 +2,45 @@ import { Navigate, createBrowserRouter } from 'react-router-dom';
 import { ErrorLayout } from './ErrorLayout';
 import { RootLayout } from './RootLayout';
 import { navTabs } from './navTabs';
-import { getNavigationItemPath, getNavigationSectionDefaultPath } from './navigation';
+import { getNavigationSectionDefaultPath } from './navigation';
 import { ForbiddenPage } from './pages/ForbiddenPage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { SectionPage } from './pages/SectionPage';
-import { getPageRouteLoader } from './pageRoutes/pageRouteRegistry';
+import { getPageRouteLoader, getSectionDetailRoutes } from './pageRoutes/pageRouteRegistry';
 
 export const router = createBrowserRouter([
   {
     element: <RootLayout />,
     children: [
       { index: true, element: <HomePage /> },
-      // Navigation metadata is configured once. Sections with contextual
-      // items redirect to their default destination; destinations without an
-      // implemented page module keep the shared SectionPage fallback.
+      // Navigation metadata is configured once. Each section is one nested
+      // route tree: the bare section path is its index route (redirecting to
+      // the default destination when the section has items), navigation items
+      // are static child segments, and section-owned detail routes (e.g.
+      // ':id') follow — React Router ranks static segments above dynamic
+      // ones, so '/customers/all' always outranks '/customers/:id'.
       ...navTabs
         .filter((section) => section.path !== '/')
-        .flatMap((section) => [
-          {
-            path: section.path,
-            element:
-              section.items.length > 0 ? (
-                <Navigate to={getNavigationSectionDefaultPath(section)} replace />
-              ) : (
-                <SectionPage titleKey={section.labelKey} />
-              ),
-          },
-          ...section.items.map((item) => {
-            const path = getNavigationItemPath(section, item);
-            const lazy = getPageRouteLoader(section.key, item.id);
+        .map((section) => ({
+          path: section.path,
+          children: [
+            section.items.length > 0
+              ? {
+                  index: true,
+                  element: <Navigate to={getNavigationSectionDefaultPath(section)} replace />,
+                }
+              : { index: true, element: <SectionPage titleKey={section.labelKey} /> },
+            ...section.items.map((item) => {
+              const lazy = getPageRouteLoader(section.key, item.id);
 
-            return lazy
-              ? { path, lazy }
-              : { path, element: <SectionPage titleKey={item.labelKey} /> };
-          }),
-        ]),
+              return lazy
+                ? { path: item.segment, lazy }
+                : { path: item.segment, element: <SectionPage titleKey={item.labelKey} /> };
+            }),
+            ...getSectionDetailRoutes(section.key).map(({ path, lazy }) => ({ path, lazy })),
+          ],
+        })),
     ],
   },
   // Error routes live OUTSIDE RootLayout on purpose: no top bar, menu or
