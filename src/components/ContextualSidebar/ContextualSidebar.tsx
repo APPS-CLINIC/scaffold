@@ -2,13 +2,9 @@ import { useEffect, useState } from 'react';
 import { Hide } from 'ing-react-icons';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
-import {
-  getActiveNavigationItem,
-  getActiveNavigationSection,
-  getContextualNavigationItems,
-  getNavigationItemPath,
-} from '@/routes/navigation';
-import { MenuListAdapter, NavigationIcon, NavigationPanel, cx } from '@/ui';
+import { resolveNavigation } from '@/routes/navigation';
+import { MenuListAdapter, NavigationIcon, NavigationPanel, twMerge } from '@/ui';
+import { NavigationTree } from './NavigationTree';
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = 'scaffold.navigation.sidebar-collapsed';
 
@@ -29,7 +25,7 @@ export function ContextualSidebar() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(readInitialCollapsedState);
-  const section = getActiveNavigationSection(pathname);
+  const sidebar = resolveNavigation(pathname).sidebar;
 
   useEffect(() => {
     try {
@@ -39,78 +35,81 @@ export function ContextualSidebar() {
     }
   }, [isCollapsed]);
 
-  if (!section) return null;
+  if (!sidebar) return null;
 
-  const visibleItems = getContextualNavigationItems(section);
-
-  const activeItem = getActiveNavigationItem(section, pathname);
-  const menuItems = visibleItems.map((item) => ({
+  const menuItems = sidebar.items.map((item) => ({
     id: item.id,
     text: isCollapsed ? '' : t(item.labelKey),
-    icon: item.icon ? (
+    icon: (
       <NavigationIcon
         icon={item.icon}
         {...(isCollapsed
-          ? { role: 'img', 'aria-hidden': false, 'aria-label': t(item.labelKey) }
+          ? {
+              role: 'img',
+              'aria-hidden': false,
+              'aria-label': t(item.labelKey),
+              title: t(item.labelKey),
+            }
           : {})}
       />
-    ) : undefined,
+    ),
   }));
+  const sidebarLabel = t(sidebar.ariaLabelKey);
+  const sidebarTitle = t('nav.title');
   const toggleLabel = t(isCollapsed ? 'nav.sidebar.expand' : 'nav.sidebar.collapse');
-  const menuButtonClassName = cx(
+  const menuButtonClassName = twMerge(
     'min-h-11 w-full !rounded-none text-left',
-    isCollapsed
-      ? '!justify-center px-0 text-sm'
-      : '!justify-center px-0 text-[0px] md:!justify-start md:px-5 md:text-sm',
+    isCollapsed ? '!justify-center px-0 text-sm' : '!justify-start px-5 text-sm',
   );
 
   return (
     <aside
-      aria-label={t('nav.title')}
+      aria-label={sidebarLabel}
       data-collapsed={isCollapsed}
-      className={cx(
-        'app-navigation shrink-0 overflow-hidden border-r border-border bg-[var(--navigation-surface)] transition-[width] duration-150 ease-out',
-        isCollapsed ? 'w-16' : 'w-16 md:w-64',
+      className={twMerge(
+        'app-navigation hidden min-h-0 shrink-0 overflow-hidden border-r border-border bg-[var(--navigation-surface)] transition-[width] duration-150 ease-out motion-reduce:transition-none md:flex',
+        isCollapsed ? 'w-16' : 'w-64',
       )}
     >
-      <div className={cx('h-full', isCollapsed ? 'w-16' : 'w-16 md:w-64')}>
+      <div className={twMerge('h-full min-h-0', isCollapsed ? 'w-16' : 'w-64')}>
         <NavigationPanel
-          title={isCollapsed ? '' : t('nav.title')}
+          title={isCollapsed ? '' : sidebarTitle}
           headerAction={
-            <div className="hidden md:block">
-              <MenuListAdapter
-                aria-label={toggleLabel}
-                items={[
-                  {
-                    id: 'toggle-sidebar',
-                    text: '',
-                    icon: (
-                      <NavigationIcon
-                        icon={Hide}
-                        role="img"
-                        aria-hidden={false}
-                        aria-label={toggleLabel}
-                      />
-                    ),
-                  },
-                ]}
-                buttonClassName="min-h-11 w-full !justify-center !rounded-none px-0 text-sm"
-                onItemSelect={() => setIsCollapsed((current) => !current)}
-              />
-            </div>
+            <button
+              type="button"
+              aria-label={toggleLabel}
+              aria-controls="app-contextual-navigation-items"
+              aria-expanded={!isCollapsed}
+              title={toggleLabel}
+              onClick={() => setIsCollapsed((current) => !current)}
+              className="inline-flex min-h-11 w-full items-center justify-center px-0 text-sm"
+            >
+              <NavigationIcon icon={Hide} />
+            </button>
           }
         >
-          <MenuListAdapter
-            key={`${section.key}:${isCollapsed ? 'icons' : 'labels'}`}
-            aria-label={t('nav.title')}
-            items={menuItems}
-            selectedId={activeItem?.id}
-            buttonClassName={menuButtonClassName}
-            onItemSelect={(item) => {
-              const configuredItem = visibleItems.find((candidate) => candidate.id === item.id);
-              if (configuredItem) navigate(getNavigationItemPath(section, configuredItem));
-            }}
-          />
+          <div id="app-contextual-navigation-items">
+            {sidebar.presentation === 'tree' ? (
+              <NavigationTree
+                key={sidebar.navigationKey}
+                items={sidebar.items}
+                expandedIds={sidebar.expandedIds}
+                isCollapsed={isCollapsed}
+              />
+            ) : (
+              <MenuListAdapter
+                key={`${sidebar.navigationKey}:${isCollapsed ? 'icons' : 'labels'}`}
+                aria-label={sidebarLabel}
+                items={menuItems}
+                selectedId={sidebar.activeItemId ?? undefined}
+                buttonClassName={menuButtonClassName}
+                onItemSelect={(item) => {
+                  const resolvedItem = sidebar.items.find((candidate) => candidate.id === item.id);
+                  if (resolvedItem) navigate(resolvedItem.path);
+                }}
+              />
+            )}
+          </div>
         </NavigationPanel>
       </div>
     </aside>

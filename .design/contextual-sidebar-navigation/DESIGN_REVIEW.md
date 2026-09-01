@@ -1,0 +1,127 @@
+# Design Review: Customer Summary and Contextual Navigation
+
+Reviewed against: `DESIGN_BRIEF.md`, `INFORMATION_ARCHITECTURE.md`, the customer-detail task, and ADR 0030
+Philosophy: Calm, functional banking workspace with contextual disclosure
+Date: 2026-09-01
+
+The original brief predates the customer-detail requirement and describes only
+flat section menus. The recursive customer tree reviewed here is an intentional
+extension required by the accepted task and ADR 0030; it is not treated as an
+unplanned accordion-navigation deviation.
+
+## Screenshots Captured
+
+| Screenshot                                                       | Breakpoint         | Description                                    |
+| ---------------------------------------------------------------- | ------------------ | ---------------------------------------------- |
+| `screenshots/review-customers-list-desktop-1280.png`             | Desktop (1280×800) | Global Customers list and sidebar              |
+| `screenshots/review-customers-list-tablet-768.png`               | Tablet (768×1024)  | Responsive customer list                       |
+| `screenshots/review-customers-list-mobile-375.png`               | Mobile (375×812)   | Single-column customer list                    |
+| `screenshots/review-customer-general-desktop-1280.png`           | Desktop (1280×800) | General data, expanded customer sidebar        |
+| `screenshots/review-customer-general-tablet-768.png`             | Tablet (768×1024)  | Stacked customer data columns                  |
+| `screenshots/review-customer-general-mobile-375.png`             | Mobile (375×812)   | Single-column customer panel                   |
+| `screenshots/review-customer-review-details-desktop-1280.png`    | Desktop (1280×800) | Configured L3 route and expanded parent branch |
+| `screenshots/review-customer-review-details-tablet-768.png`      | Tablet (768×1024)  | L3 route at compact desktop width              |
+| `screenshots/review-customer-review-details-mobile-375.png`      | Mobile (375×812)   | L3 content without the desktop-only sidebar    |
+| `screenshots/review-customer-general-collapsed-desktop-1280.png` | Desktop (1280×800) | Collapsed customer icon rail                   |
+| `screenshots/review-customer-long-loading-desktop-1280.png`      | Desktop (1280×800) | Delayed summary skeleton                       |
+| `screenshots/review-customer-long-loaded-desktop-1280.png`       | Desktop (1280×800) | Long summary values after loading              |
+| `screenshots/review-customer-long-loading-tablet-768.png`        | Tablet (768×1024)  | Delayed stacked skeleton                       |
+| `screenshots/review-customer-long-loaded-tablet-768.png`         | Tablet (768×1024)  | Long stacked values after loading              |
+| `screenshots/review-customer-long-loading-mobile-375.png`        | Mobile (375×812)   | Delayed mobile skeleton                        |
+| `screenshots/review-customer-long-loaded-mobile-375.png`         | Mobile (375×812)   | Long mobile values after loading               |
+
+> All screenshots are stored in
+> `.design/contextual-sidebar-navigation/screenshots/`.
+
+## Summary
+
+The customer-detail shell now has a clear hierarchy: the unchanged global top
+bar establishes **Customers**, the contextual sidebar exposes the customer
+tabs, and the persistent card keeps customer identity visible above tab
+content. The implementation is restrained, token-based, and strongly reuses
+IWA. Browser measurements confirm zero card-height and card-top movement
+between skeleton and long loaded data at 1280, 768, and 375 pixels.
+
+No application-owned blocker remains after the review fixes. The remaining
+accessibility issues are limitations of the installed IWA package and should be
+handled in the shared library rather than patched locally.
+
+## Must Fix
+
+None remaining.
+
+## Should Fix
+
+1. **IWA navigation semantics need a shared-library fix.** The installed
+   `TabMenu` and `MenuList` emit `aria-selected` on ordinary buttons, and
+   `BreadCrumb` cannot mark the current item or localize its navigation label.
+   Application touchpoints are `TopBarCustom.tsx:62`,
+   `MenuListAdapter.tsx:34`, and `CustomerBreadcrumb.tsx:87`. Extend the IWA
+   contracts with correct tab/list/current-item semantics; do not add DOM
+   mutation workarounds in this application.
+2. **The IWA Sky label does not meet normal-text contrast.** The installed
+   palette used by the rating at `customerSummaryPanelFields.ts:69` measures
+   approximately 3.76:1. The IWA team should provide a compliant rating
+   variant or corrected token; overriding the vendor component locally would
+   violate the seam and the task's escalation rule.
+3. **The documented IWA tooltip and icon-button APIs are missing from the
+   installed package.** The collapsed rail therefore retains accessible names
+   and native titles, but it cannot provide the required shared tooltip to
+   sighted keyboard and touch users. Publish the documented APIs before
+   replacing this fallback.
+
+## Could Improve
+
+1. **Add a customer-tab surface below `md` if mobile becomes supported.** The
+   brief explicitly scopes navigation to desktop, so the sidebar is hidden at
+   `ContextualSidebar.tsx:70`. The content itself adapts cleanly at 375 pixels,
+   but switching customer tabs requires a future mobile navigation decision.
+2. **Resolve existing global top-bar overflow in IWA.** The customer work now
+   preserves the original top-bar markup and utilities exactly as requested.
+   The installed component still compresses long tab sets at narrower widths;
+   address that as a separate global-navigation/IWA change rather than inside
+   this customer PR.
+
+## Resolved During Review
+
+1. Loaded field values and skeletons now use the same configuration-driven
+   fixed row geometry (`DataPanel.tsx:112` and
+   `DataPanelSkeleton.tsx:47`). Long values remain present in the accessibility
+   tree and expose their complete text through the native title.
+2. The breadcrumb uses a stable, non-wrapping horizontal track, so replacing a
+   customer ID with the fetched customer name no longer pushes the card down.
+3. The global top bar was restored to its previous IWA structure, spacing, and
+   utility actions; only its items, destinations, and active index come from
+   the resolver.
+4. The sidebar rail toggle exposes `aria-expanded`/`aria-controls`; branch
+   disclosure controls expose `aria-expanded`, and
+   a collapsed active branch promotes its visible parent to
+   `aria-current="location"`.
+5. The customer layout establishes its H1 before the panel's H2/H3 hierarchy,
+   and skeleton motion is disabled when reduced motion is requested.
+6. The RTK Query-to-Redux bridge now mirrors cache reset and failed-refetch
+   transitions deterministically, preventing stale successful data from
+   remaining in the view store.
+
+## What Works Well
+
+- The desktop hierarchy is immediate and predictable in
+  `review-customer-general-desktop-1280.png`: customer identity is strongest,
+  the selected tab is unambiguous, and secondary metadata remains quiet.
+- The L3 screenshot shows the correct parent highlight, child disclosure, and
+  full breadcrumb without losing the customer shell.
+- The panel genuinely renders an icon plus two data columns at desktop and
+  reorganizes into one readable column at compact widths without horizontal
+  document overflow.
+- Spacing, borders, surfaces, icons, typography, and active states use existing
+  Tailwind/design-system tokens; no feature-specific color or shadow values
+  were introduced.
+- IWA reuse is broad and appropriate: `TopBar`, `TabMenu`, `NavigationPanel`,
+  `MenuList`, `NavigationMenuItem.subNodes`, `BreadCrumb`, `Card`,
+  `DefinitionList`, `Skeleton`, `Status`, and `Label` remain behind the UI
+  seam.
+- Keyboard-operable navigation and disclosure actions have separate 44-pixel
+  targets, deep links expand their active ancestry, and modified breadcrumb
+  clicks retain native link behavior.
+- Empty values preserve every configured row and use the required en dash;
+  unsupported group actions and links are absent.

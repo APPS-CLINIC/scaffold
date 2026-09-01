@@ -99,6 +99,33 @@ expansion toggle column renders only while at least one field is in the
 accordion. In jsdom tests use `mockTableContainerWidth` from
 `@/test/tableLayout` to give the fit engine a concrete width.
 
+## `DataPanel` and `DataPanelSkeleton`
+
+`DataPanel<T>` renders a stable icon + two-data-column panel from a typed
+`fields` config rather than hardcoded rows. Each field declares `id`,
+`labelKey`, `column`, and a `value` reader; `formatValue` transforms data before
+the default renderer, while `renderValue` composes richer values such as an IWA
+`Label`. Rows use IWA `DefinitionList`, and empty raw, formatted, or rendered
+values fall back to `emptyValue` without removing the configured row.
+
+Keep the complete field list present for every data variant and pass that same
+config to `DataPanelSkeleton`, together with the column labels and icon/header
+flags. The skeleton keeps translated labels invisibly in flow, so it reserves
+their exact responsive wrapping. Loaded values use a fixed, truncated row with
+their complete text available through the native title and accessibility tree;
+`valueSize` keeps richer values such as an IWA `Label` on the same height in
+both states. Both components share the same layout primitives and IWA
+definition-list geometry, so loading does not cause a layout shift even for
+long backend values.
+
+## `PrimeIcon` and `createPrimeIcon`
+
+`PrimeIcon` is the typed adapter for the PrimeIcons font already included by
+the IWA stack. It is decorative by default and becomes an accessible image when
+given `aria-label`. `createPrimeIcon(name)` returns a stable component reference
+for configuration-driven navigation; store that component in config instead of
+serializing or recreating React icon nodes.
+
 ## `useCustomIcon`
 
 `useCustomIcon(icon, options?)` binds any icon element (inline SVG, font
@@ -144,3 +171,11 @@ of IWA's positional selection contract:
 
 Route code maps the selected ID to a configured path. Do not store
 `selectedIndex`, and do not serialize React icon nodes into navigation JSON.
+
+For nested navigation, use the re-exported IWA `NavigationMenuItem` and pass
+leaf children through its native `subNodes: NavigationMenuSubNode[]` contract.
+The installed component exposes only one child level, so deeper configured
+branches recurse through the application adapter while continuing to use IWA
+for each rendered item. Keep route matching, active-ancestor calculation, and
+branch expansion in the resolver; compose a separate semantic expand/collapse
+button only because the installed IWA item does not provide one.

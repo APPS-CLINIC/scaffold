@@ -3,14 +3,18 @@ export { Button, type ButtonProps } from './Button';
 // code imports them from '@/ui' like every other UI building block.
 export {
   ActionLink,
+  BreadCrumb,
   Card,
   DefinitionList,
   IconTextButton,
   InlineLink,
+  Label,
   MenuList,
+  NavigationMenuItem,
   PaginatorTable,
   ScreenHeading,
   SearchWithAutocomplete,
+  Skeleton,
   SkeletonTable,
   Status,
   Switch,
@@ -20,13 +24,21 @@ export {
 } from 'iwa-react-components';
 export type {
   ActionLinkProps,
+  BreadCrumbItem,
+  BreadCrumbProps,
   CardProps,
   DefinitionListProps,
   IconTextButtonProps,
   InlineLinkProps,
+  LabelProps,
+  LabelSize,
+  LabelVariant,
+  NavigationMenuItemProps,
+  NavigationMenuSubNode,
   PaginatorTableProps,
   ScreenHeadingProps,
   SearchWithAutocompleteProps,
+  SkeletonProps,
   SkeletonTableColumn,
   SkeletonTableProps,
   StatusProps,
@@ -36,6 +48,8 @@ export type {
 } from 'iwa-react-components';
 export { TextInput, type TextInputProps } from './TextInput';
 export { Select, type SelectProps } from './Select';
+export { PrimeIcon, type PrimeIconName, type PrimeIconProps } from './PrimeIcon';
+export { createPrimeIcon } from './createPrimeIcon';
 export {
   MenuListAdapter,
   type MenuListAdapterItem,
@@ -49,6 +63,7 @@ export {
   TextCell,
   UnderlinedTextCell,
   ValidityStatusCell,
+  renderCellValue,
   type GenericDataTableCellComponent,
   type GenericDataTableCellProps,
   type GenericDataTableConfig,
@@ -77,6 +92,17 @@ export {
   type IconSize,
   type IconTone,
 } from './icon/useCustomIcon';
+export {
+  DataPanel,
+  DataPanelSkeleton,
+  type DataPanelColumnLabels,
+  type DataPanelFieldConfig,
+  type DataPanelFieldRenderContext,
+  type DataPanelProps,
+  type DataPanelSkeletonFieldConfig,
+  type DataPanelSkeletonProps,
+  type DataPanelValueSize,
+} from './DataPanel';
 export { cx } from './cx';
 export { ToastProvider } from './toast/ToastProvider';
 export { useToast } from './toast/useToast';

@@ -1,5 +1,4 @@
-import { defaultNavTabKey, type NavTabKey } from '@/routes/navTabs';
-import { getActiveNavigationItem, getActiveNavigationSection } from '@/routes/navigation';
+import { resolveNavigation, type NavigationSectionKey } from '@/routes/navigation';
 
 /**
  * Serializable identity of the content selected by the current pathname.
@@ -8,25 +7,17 @@ import { getActiveNavigationItem, getActiveNavigationSection } from '@/routes/na
  */
 export interface UrlRouteState {
   pathname: string;
-  sectionKey: NavTabKey;
+  sectionKey: NavigationSectionKey;
   itemId: string | null;
 }
 
 export function parseUrlRouteState(pathname: string): UrlRouteState {
-  const section = getActiveNavigationSection(pathname);
-
-  if (!section) {
-    return {
-      pathname,
-      sectionKey: defaultNavTabKey,
-      itemId: null,
-    };
-  }
+  const resolved = resolveNavigation(pathname);
 
   return {
     pathname,
-    sectionKey: section.key,
-    itemId: getActiveNavigationItem(section, pathname)?.id ?? null,
+    sectionKey: resolved.route.sectionKey,
+    itemId: resolved.route.activeItemId,
   };
 }
 

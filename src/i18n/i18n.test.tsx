@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { useTranslation } from 'react-i18next';
 import i18n from '.';
+import { pl } from './messages/pl';
 
 function Sample() {
   const { t } = useTranslation();
@@ -20,12 +21,14 @@ describe('i18n', () => {
 
   it('translates with the default (Polish) catalog', () => {
     render(<Sample />);
-    expect(screen.getByTestId('label')).toHaveTextContent('Szukaj');
+    expect(screen.getByTestId('label')).toHaveTextContent(pl['common.search']);
   });
 
   it('interpolates variables', () => {
     render(<Sample />);
-    expect(screen.getByTestId('count')).toHaveTextContent('3 wyników');
+    expect(screen.getByTestId('count')).toHaveTextContent(
+      pl['common.results'].replace('{{count}}', '3'),
+    );
   });
 
   it('switches language at runtime', async () => {

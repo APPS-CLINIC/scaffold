@@ -7,7 +7,7 @@ import type {
 } from './customers.types';
 
 /** Keys are `normalizeDomainValue` outputs; values are the status contract. */
-const customerStatusByDomainValue: Readonly<Record<string, CustomerStatus>> = {
+export const customerStatusByDomainValue: Readonly<Record<string, CustomerStatus>> = {
   active: 'ACTIVE',
   archival: 'ARCHIVAL',
 };
@@ -15,9 +15,10 @@ const customerStatusByDomainValue: Readonly<Record<string, CustomerStatus>> = {
 /**
  * Own-property lookup over a normalized key. Non-string input normalizes to
  * an empty key (no match), and labels like "constructor" must not resolve
- * via Object.prototype.
+ * via Object.prototype. Exported so other customer-scoped adapters (e.g.
+ * customerSummary) reuse the same status vocabulary instead of duplicating it.
  */
-function lookupDomainValue<V extends string>(
+export function lookupDomainValue<V extends string>(
   vocabulary: Readonly<Record<string, V>>,
   rawValue: unknown,
 ): V | null {
