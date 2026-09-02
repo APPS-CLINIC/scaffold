@@ -35,6 +35,17 @@ navigation structure, but page components and lazy loaders remain in the
 separate section-owned page-route registry. They are deliberately not part of
 the manifest.
 
+The customer page-route module also owns a complete, type-checked lazy-loader
+map for the context's stable item IDs. Every configured L2/L3 destination has
+an explicit route-level page without putting presentation imports in the
+manifest. `CustomerDetailLayout` is therefore a path-independent persistent
+shell: it keeps the customer-summary synchronization and heading mounted while
+the selected page is replaced through its outlet. The dashboard route is a
+direct child and renders its own page without the shared summary panel. A
+pathless `CustomerSummaryLayout` sibling owns the panel and an outlet for every
+other current customer page, so their content changes without duplicating the
+panel composition.
+
 Customer-detail `segment` values are canonical English route identifiers, not
 display copy. The manifest currently derives `/customers/:id/dashboard`,
 `/customers/:id/general-data`, `/customers/:id/cdd-crs-fatca`,
@@ -287,9 +298,11 @@ To add a new section destination:
 7. Add permissions only when the identity integration can evaluate them.
 
 To add a context destination, add a recursive item to the context nested under
-its owning section and add both translations. Any implemented page component
-or lazy loader is wired separately so presentation never enters
-`navigationManifest`.
+its owning section, add both translations, create its route-level page, and add
+the page's lazy loader to the owning section's context page-route map. The map
+is derived from the manifest's stable recursive item IDs, so an omitted or
+unknown customer destination fails type checking while presentation remains
+outside `navigationManifest`.
 
 ## Relevant files
 
@@ -316,6 +329,11 @@ or lazy loader is wired separately so presentation never enters
   — URL and desktop collapse orchestration.
 - [`src/routes/pages/customers/CustomerDetailHeading.tsx`](../src/routes/pages/customers/CustomerDetailHeading.tsx)
   — IWA page heading with the manifest-derived customer-list return link.
+- [`src/routes/pages/customers/CustomerDetailLayout.tsx`](../src/routes/pages/customers/CustomerDetailLayout.tsx)
+  — persistent, path-independent customer synchronization and route outlet.
+- [`src/routes/pages/customers/CustomerSummaryLayout.tsx`](../src/routes/pages/customers/CustomerSummaryLayout.tsx)
+  — pathless panel-and-outlet layout for customer destinations that show the
+  summary.
 - [`src/ui/ScreenHeading.tsx`](../src/ui/ScreenHeading.tsx) — stable
   `navigateTo` adapter around IWA `ScreenHeading`.
 - [`src/ui/MenuListAdapter.tsx`](../src/ui/MenuListAdapter.tsx) — stable-ID

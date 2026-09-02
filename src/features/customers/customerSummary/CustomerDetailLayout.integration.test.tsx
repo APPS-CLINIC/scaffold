@@ -121,22 +121,68 @@ describe('CustomerDetailLayout routing lifecycle', () => {
     await act(async () => {
       await router.navigate('/customers/first/dashboard');
     });
+    expect(
+      view.getByRole('heading', { level: 2, name: i18n.t('nav.customerDetail.dashboard') }),
+    ).toBeInTheDocument();
+    expect(view.container.querySelector('.pi-briefcase')).not.toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledOnce();
+
+    await act(async () => {
+      await router.navigate('/customers/first/dashboard/future-section');
+    });
+    expect(
+      view.getByRole('heading', { level: 2, name: i18n.t('nav.customerDetail.dashboard') }),
+    ).toBeInTheDocument();
     expect(view.container.querySelector('.pi-briefcase')).not.toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledOnce();
 
     await act(async () => {
       await router.navigate('/customers/first/general-data');
     });
-    expect(view.container.querySelector('.pi-briefcase')).toBeInTheDocument();
+    expect(
+      view.getByRole('heading', { level: 2, name: i18n.t('nav.customerDetail.generalData') }),
+    ).toBeInTheDocument();
+    const persistentSummaryIcon = view.container.querySelector('.pi-briefcase');
+    expect(persistentSummaryIcon).toBeInTheDocument();
+
+    await act(async () => {
+      await router.navigate('/customers/first/general-data/future-section');
+    });
+    expect(
+      view.getByRole('heading', { level: 2, name: i18n.t('nav.customerDetail.generalData') }),
+    ).toBeInTheDocument();
+    expect(view.container.querySelector('.pi-briefcase')).toBe(persistentSummaryIcon);
+    expect(fetchMock).toHaveBeenCalledOnce();
+
+    await act(async () => {
+      await router.navigate('/customers/first/reviews');
+    });
+    expect(
+      view.getByRole('heading', { level: 2, name: i18n.t('nav.customerDetail.reviews') }),
+    ).toBeInTheDocument();
+    expect(view.container.querySelector('.pi-briefcase')).toBe(persistentSummaryIcon);
+    expect(fetchMock).toHaveBeenCalledOnce();
+
     await act(async () => {
       await router.navigate('/customers/first/reviews/details');
     });
+    expect(
+      view.getByRole('heading', {
+        level: 2,
+        name: i18n.t('nav.customerDetail.reviewDetails'),
+      }),
+    ).toBeInTheDocument();
+    expect(view.container.querySelector('.pi-briefcase')).toBe(persistentSummaryIcon);
     expect(fetchMock).toHaveBeenCalledOnce();
 
     await act(async () => {
       await router.navigate(-1);
     });
-    expect(router.state.location.pathname).toBe('/customers/first/general-data');
+    expect(router.state.location.pathname).toBe('/customers/first/reviews');
+    expect(
+      view.getByRole('heading', { level: 2, name: i18n.t('nav.customerDetail.reviews') }),
+    ).toBeInTheDocument();
+    expect(view.container.querySelector('.pi-briefcase')).toBe(persistentSummaryIcon);
     expect(fetchMock).toHaveBeenCalledOnce();
 
     await act(async () => {

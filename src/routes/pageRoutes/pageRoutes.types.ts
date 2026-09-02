@@ -17,14 +17,32 @@ type NavigationItemIdFor<TKey extends NavigationSectionKey> = NavigationItemId<
   Extract<ConfiguredNavigationSection, { readonly id: TKey }>['sidebar']['items'][number]
 >;
 
+type NavigationContextItemIdFor<TKey extends NavigationSectionKey> =
+  Extract<ConfiguredNavigationSection, { readonly id: TKey }> extends {
+    readonly context: {
+      readonly sidebar: { readonly items: infer TItems extends readonly unknown[] };
+    };
+  }
+    ? NavigationItemId<TItems[number]>
+    : never;
+
 type NavigationSectionWithItems = {
   [TKey in NavigationSectionKey]: [NavigationItemIdFor<TKey>] extends [never] ? never : TKey;
+}[NavigationSectionKey];
+
+type NavigationSectionWithContextItems = {
+  [TKey in NavigationSectionKey]: [NavigationContextItemIdFor<TKey>] extends [never] ? never : TKey;
 }[NavigationSectionKey];
 
 export type PageRouteLoader = NonNullable<RouteObject['lazy']>;
 
 export type SectionPageRoutes<TKey extends NavigationSectionWithItems> = Readonly<
   Partial<Record<NavigationItemIdFor<TKey>, PageRouteLoader>>
+>;
+
+/** Exhaustive page-loader map for every item in a section's contextual navigation tree. */
+export type SectionContextPageRoutes<TKey extends NavigationSectionWithContextItems> = Readonly<
+  Record<NavigationContextItemIdFor<TKey>, PageRouteLoader>
 >;
 
 export type PageRouteDefinitions = {

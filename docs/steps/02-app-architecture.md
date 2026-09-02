@@ -92,10 +92,12 @@ layer validates their generic syntax, and the owning feature validates its
 domain values with Zod before deriving RTK Query arguments.
 
 The customer-detail summary is an explicit server-state exception required by
-that feature's contract: one layout-level RTK Query subscriber mirrors only the
-active customer into a read-only Redux slice. Views read the identity-scoped
-mirror, and the endpoint evicts its transport cache when the layout leaves, so
-neither layer retains historical customers.
+that feature's contract: one persistent customer-layout RTK Query subscriber
+mirrors only the active customer into a read-only Redux slice. Route-level
+pages read the identity-scoped mirror, and the endpoint evicts its transport
+cache when the customer layout leaves, so neither layer retains historical
+customers. Switching between that customer's L2/L3 pages does not remount the
+subscriber or issue another request.
 → [ADR 0026](../adr/0026-extensible-feature-filters-in-list-urls.md),
 [ADR 0029](../adr/0029-customer-summary-redux-mirror-slice.md)
 
@@ -150,6 +152,15 @@ redirects, from the manifest. Implemented pages and lazy loaders remain in
 section-scoped, type-checked page-route modules and their separate registry.
 Navigation metadata therefore remains independent of page components, domain
 data, and Redux behavior.
+
+The customer page-route module maps every recursive customer-context item ID
+to a lazy route-level page. Its persistent `CustomerDetailLayout` contains only
+customer-summary synchronization, the shared heading, and the outlet; it does
+not inspect the active tab. The dashboard route deliberately sits outside the
+pathless `CustomerSummaryLayout`, while the other customer pages render through
+that layout's panel and outlet. This makes the summary policy explicit in route
+topology without sacrificing one-request behavior across tab and deep-link
+navigation.
 → [ADR 0020](../adr/0020-routing-react-router-v6-for-iwa-compatibility.md),
 [ADR 0023](../adr/0023-configurable-navigation-icon-components.md),
 [ADR 0024](../adr/0024-canonical-route-transitions-in-redux.md),

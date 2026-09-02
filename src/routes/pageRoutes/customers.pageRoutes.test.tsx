@@ -1,15 +1,36 @@
 import { isValidElement } from 'react';
-import { render, screen } from '@testing-library/react';
-import {
-  createMemoryRouter,
-  matchRoutes,
-  RouterProvider,
-  type RouteObject,
-} from 'react-router-dom';
+import { matchRoutes, type RouteObject } from 'react-router-dom';
 import { describe, expect, it } from 'vitest';
-import i18n from '@/i18n';
-import { getNavigationContextDefaultItemPath, navigationManifest } from '@/routes/navigation';
-import { customersDetailRoutes } from './customers.pageRoutes';
+import {
+  getNavigationContextDefaultItemPath,
+  navigationManifest,
+  type NavigationTreeItemConfig,
+} from '@/routes/navigation';
+import { customerDetailPageRoutes, customersDetailRoutes } from './customers.pageRoutes';
+
+function flattenItemIds(items: readonly NavigationTreeItemConfig[]): string[] {
+  return items.flatMap((item) => [item.id, ...flattenItemIds(item.children ?? [])]);
+}
+
+function expectConfiguredPageLoaders(
+  items: readonly NavigationTreeItemConfig[],
+  routes: readonly RouteObject[],
+): void {
+  for (const item of items) {
+    const route = routes.find((candidate) => candidate.path === item.segment);
+    const destinationRoute = item.children?.length
+      ? route?.children?.find((candidate) => candidate.index)
+      : route;
+
+    expect(destinationRoute?.lazy).toBe(
+      customerDetailPageRoutes[item.id as keyof typeof customerDetailPageRoutes],
+    );
+
+    if (item.children?.length) {
+      expectConfiguredPageLoaders(item.children, route?.children ?? []);
+    }
+  }
+}
 
 function createCustomerTestRoutes(): RouteObject[] {
   return [
@@ -32,22 +53,40 @@ describe('customers detail routes', () => {
   if (!customerDetailNavigationContext) {
     throw new Error('Expected the customer-detail navigation context.');
   }
+
+  const dashboardItem = customerDetailNavigationContext.sidebar.items.find(
+    (item) => item.id === 'dashboard',
+  );
+  const summaryItems = customerDetailNavigationContext.sidebar.items.filter(
+    (item) => item.id !== 'dashboard',
+  );
+
+  if (!dashboardItem) {
+    throw new Error('Expected the customer dashboard navigation item.');
+  }
+
   it('derives every recursive customer route from the unified manifest context', () => {
     const customerRoute = customersDetailRoutes[0];
-    const configuredPaths = customerDetailNavigationContext.sidebar.items.map(
-      (item) => item.segment,
+    const dashboardRoute = customerRoute?.children?.find(
+      (route) => route.path === dashboardItem.segment,
+    );
+    const summaryLayoutRoute = customerRoute?.children?.find((route) =>
+      route.id?.endsWith(':summary-layout'),
     );
 
-    expect(
-      customerRoute?.children
+    expect(dashboardRoute?.path).toBe(dashboardItem.segment);
+    expect(summaryLayoutRoute?.path).toBeUndefined();
+    const routedSummaryPaths =
+      summaryLayoutRoute?.children
         ?.map((route) => route.path)
-        .filter((path): path is string => typeof path === 'string' && path !== '*'),
-    ).toEqual(configuredPaths);
+        .filter((path): path is string => typeof path === 'string' && path !== '*') ?? [];
+
+    expect([...routedSummaryPaths].sort()).toEqual(summaryItems.map((item) => item.segment).sort());
 
     const reviewsItem = customerDetailNavigationContext.sidebar.items.find(
       (item) => item.id === 'reviews',
     );
-    const reviewsRoute = customerRoute?.children?.find((route) => route.path === 'reviews');
+    const reviewsRoute = summaryLayoutRoute?.children?.find((route) => route.path === 'reviews');
     const reviewChildren =
       reviewsRoute && 'children' in reviewsRoute ? reviewsRoute.children : undefined;
 
@@ -55,6 +94,29 @@ describe('customers detail routes', () => {
       reviewsItem?.children?.map((item) => item.segment),
     );
   });
+
+  it(
+    'registers and attaches a lazy page for every configured context item',
+    { timeout: 15_000 },
+    async () => {
+      const configuredIds = flattenItemIds(customerDetailNavigationContext.sidebar.items);
+      const customerRoute = customersDetailRoutes[0];
+      const summaryLayoutRoute = customerRoute?.children?.find((route) =>
+        route.id?.endsWith(':summary-layout'),
+      );
+
+      expect(Object.keys(customerDetailPageRoutes).sort()).toEqual([...configuredIds].sort());
+      expectConfiguredPageLoaders([dashboardItem], customerRoute?.children ?? []);
+      expectConfiguredPageLoaders(summaryItems, summaryLayoutRoute?.children ?? []);
+
+      const modules = await Promise.all(
+        Object.values(customerDetailPageRoutes).map((load) => load()),
+      );
+      for (const routeModule of modules) {
+        expect(routeModule.Component).toBeTypeOf('function');
+      }
+    },
+  );
 
   it('redirects the bare customer route to the configured default item', () => {
     const matches = matchRoutes(createCustomerTestRoutes(), '/customers/42');
@@ -82,29 +144,20 @@ describe('customers detail routes', () => {
     expect(matches?.map((match) => match.route.path)).toEqual([
       '/customers',
       `:${customerDetailNavigationContext.parameter}`,
+      undefined,
       'reviews',
       'details',
     ]);
   });
 
-  it('renders only the L3 placeholder at a configured child route', () => {
-    const customerRoute = customersDetailRoutes[0];
-    const reviewsRoute = customerRoute?.children?.find((route) => route.path === 'reviews');
-    if (!reviewsRoute) throw new Error('Expected the reviews customer route');
+  it('keeps dashboard descendants outside the summary layout', () => {
+    const matches = matchRoutes(createCustomerTestRoutes(), '/customers/42/dashboard/future');
 
-    const router = createMemoryRouter([reviewsRoute], {
-      initialEntries: ['/reviews/details'],
-    });
-
-    render(<RouterProvider router={router} />);
-
-    expect(screen.getAllByRole('heading')).toHaveLength(1);
-    expect(
-      screen.getByRole('heading', { name: i18n.t('nav.customerDetail.reviewDetails') }),
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole('heading', { name: i18n.t('nav.customerDetail.reviews') }),
-    ).toBeNull();
+    expect(matches?.map((match) => match.route.path)).toEqual([
+      '/customers',
+      `:${customerDetailNavigationContext.parameter}`,
+      'dashboard/*',
+    ]);
   });
 
   it('keeps an unconfigured L3+ deep link inside the customer layout', () => {
@@ -116,6 +169,7 @@ describe('customers detail routes', () => {
     expect(matches?.map((match) => match.route.path)).toEqual([
       '/customers',
       `:${customerDetailNavigationContext.parameter}`,
+      undefined,
       '*',
     ]);
   });

@@ -70,9 +70,8 @@ function CustomerSummaryHeader({
 
 /**
  * Container: connects the read-only Redux mirror + field config to the
- * generic `DataPanel`. `CustomerDetailLayout` places it outside the per-tab
- * outlet on every summary-bearing customer view; the dashboard is the single
- * product-defined exception because it owns a different header.
+ * generic `DataPanel`. The pathless `CustomerSummaryLayout` keeps it mounted
+ * while summary-bearing customer pages swap through their nested outlet.
  */
 export function CustomerSummaryPanel({ customerId }: { customerId: string }) {
   const { t } = useTranslation();
