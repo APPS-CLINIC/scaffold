@@ -17,7 +17,7 @@ import {
 } from './customerSummaryPanelFields';
 import type { CustomerSummary } from './customerSummary.types';
 
-const CUSTOMER_GLYPH = <PrimeIcon name="briefcase" className="text-4xl" />;
+const CUSTOMER_GLYPH = <PrimeIcon name="briefcase" />;
 
 const EMPTY_CUSTOMER_SUMMARY: CustomerSummary = {
   fullName: '',

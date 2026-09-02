@@ -39,12 +39,12 @@ describe('CustomerSummaryPanel', () => {
     expect(screen.getByText(i18n.t('common.status.active'))).toBeInTheDocument();
     expect(screen.getByText('AAA').parentElement).toHaveClass('rounded-full');
     const icon = container.querySelector('.pi-briefcase');
-    expect(icon).toHaveClass('text-4xl');
     expect(icon?.parentElement).toHaveClass(
       'size-24',
       'bg-[var(--navigation-accent)]',
       'text-white',
     );
+    expect(icon?.parentElement?.className).toContain('[&_.pi]:text-4xl');
     expect(container.querySelector('.pi-cog')).not.toBeInTheDocument();
   });
 

@@ -28,6 +28,7 @@ describe('useCustomIcon', () => {
     expect(icon.className).toContain('rounded-full');
     expect(icon.className).toContain('items-center');
     expect(icon.className).toContain('justify-center');
+    expect(icon.className).toContain('[&_svg]:size-5');
   });
 
   it('applies the default styles (md size, outline tone) when no options are given', () => {
@@ -96,6 +97,8 @@ describe('useCustomIcon', () => {
       'bg-[var(--navigation-accent)]',
       'text-white',
     );
+    expect(screen.getByTestId('icon').className).toContain('[&_.pi]:text-4xl');
+    expect(screen.getByTestId('icon').className).toContain('[&_svg]:size-12');
   });
 
   it('keeps a stable component identity across re-renders with the same inputs', () => {

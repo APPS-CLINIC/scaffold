@@ -140,7 +140,8 @@ serializing or recreating React icon nodes.
 `useCustomIcon(icon, options?)` binds any icon element (inline SVG, font
 glyph, emoji) into a ready-to-use component with **default circular styling
 built in**: a `rounded-full` badge (Tailwind-only) with the glyph centered
-inside. SVGs auto-scale to ~55% of the circle and inherit `currentColor`.
+inside. SVGs and PrimeIcons scale automatically with the selected circle size
+and inherit `currentColor`; callers should not add a separate glyph-size class.
 
 ```tsx
 import { useCustomIcon } from '@/ui';
