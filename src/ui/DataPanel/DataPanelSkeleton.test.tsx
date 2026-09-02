@@ -72,6 +72,7 @@ describe('DataPanelSkeleton', () => {
     expect(container.querySelector('.h-6')).toBeInTheDocument();
     expect(container.querySelector('.custom-skeleton')).toHaveClass(
       'grid-cols-1',
+      'md:grid-cols-[auto_minmax(0,1fr)]',
       'lg:grid-cols-4',
     );
     for (const skeleton of container.querySelectorAll('[style*="width: 100%"]')) {

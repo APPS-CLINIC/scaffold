@@ -22,24 +22,26 @@ export const DataPanelLayout = forwardRef<HTMLDivElement, DataPanelLayoutProps>(
         ref={ref}
         className={twMerge(
           'grid min-w-0 grid-cols-1 items-start gap-4',
-          hasIcon ? 'lg:grid-cols-4 lg:gap-0' : 'lg:grid-cols-1',
+          hasIcon
+            ? 'md:grid-cols-[auto_minmax(0,1fr)] md:gap-y-0 lg:grid-cols-4 lg:gap-x-0'
+            : 'md:grid-cols-1',
           className,
         )}
         {...rest}
       >
         {hasIcon ? (
-          <div className="flex shrink-0 items-start justify-start lg:self-stretch lg:justify-center">
+          <div className="flex shrink-0 items-start justify-start md:self-stretch md:justify-center">
             {icon}
           </div>
         ) : null}
-        <div className={twMerge('min-w-0 space-y-4', hasIcon && 'lg:col-span-3')}>
+        <div className={twMerge('min-w-0 space-y-4', hasIcon && 'md:col-start-2 lg:col-span-3')}>
           {header ? <div className="min-w-0">{header}</div> : null}
           {summary ? (
-            <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-x-8">
+            <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-x-8">
               <div className="min-w-0">{summary}</div>
             </div>
           ) : null}
-          <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-x-8">
+          <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:gap-x-4 lg:gap-x-8">
             <div className="min-w-0">{firstColumn}</div>
             <div className="min-w-0">{secondColumn}</div>
           </div>

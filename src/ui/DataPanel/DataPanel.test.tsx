@@ -64,6 +64,9 @@ describe('DataPanel', () => {
 
     expect(screen.getByText('GRID').closest('dl')).toHaveTextContent('ACME');
     expect(screen.getByText('GRID').parentElement).toHaveTextContent('GRID:');
+    expect(screen.getByText('GRID').closest('dl')?.parentElement).toHaveClass(
+      'md:[&>dl]:grid-cols-[max-content_minmax(0,1fr)]',
+    );
     expect(screen.getByText('AAA').closest('section')).toHaveTextContent('Rating');
     expect(screen.getByText('AAA').closest('dl')).toBeNull();
     expect(screen.getByText('KKF').closest('dl')).toHaveTextContent('—');
@@ -72,8 +75,19 @@ describe('DataPanel', () => {
     expect(container.firstElementChild).toHaveClass(
       'grid',
       'grid-cols-1',
+      'md:grid-cols-[auto_minmax(0,1fr)]',
       'lg:grid-cols-4',
       'custom-panel',
+    );
+    const content = container.firstElementChild?.children.item(1);
+    expect(content).toHaveClass('md:col-start-2', 'lg:col-span-3');
+    expect(content?.children.item(1)).toHaveClass(
+      'grid-cols-1',
+      'lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]',
+    );
+    expect(content?.children.item(2)).toHaveClass(
+      'grid-cols-1',
+      'md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]',
     );
     expect(screen.getByText('GRID').closest('section')).toBeNull();
   });
@@ -96,7 +110,7 @@ describe('DataPanel', () => {
     );
 
     expect(screen.getByText('GRID').closest('dl')).toHaveTextContent('—');
-    expect(container.firstElementChild).toHaveClass('lg:grid-cols-1');
+    expect(container.firstElementChild).toHaveClass('md:grid-cols-1');
   });
 
   it('keeps richer-value geometry when the value is empty', () => {

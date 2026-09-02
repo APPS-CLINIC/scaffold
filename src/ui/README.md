@@ -112,6 +112,12 @@ while `renderValue` composes richer values such as an IWA `Label`. Rows use IWA
 instead of `labelKey` only when the titled section already provides the field's
 accessible context, avoiding a repeated label in the presentation.
 
+The layout stacks on mobile. From `md` upward, an optional icon stays beside
+the content and both detail sections remain side by side in a `3fr / 2fr`
+split. At `lg`, the icon reserves one quarter of the panel, the content uses
+the remaining three quarters, and the lead group aligns with the wider detail
+section.
+
 Keep the complete field list present for every data variant and pass that same
 config to `DataPanelSkeleton`, together with the column labels and icon/header
 flags. Use `iconSize="hero"` when the loaded panel uses the large hero icon;

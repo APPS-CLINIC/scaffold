@@ -17,7 +17,7 @@ unplanned accordion-navigation deviation.
 | `screenshots/review-customers-list-tablet-768.png`               | Tablet (768×1024)  | Responsive customer list                        |
 | `screenshots/review-customers-list-mobile-375.png`               | Mobile (375×812)   | Single-column customer list                     |
 | `screenshots/review-customer-general-desktop-1280.png`           | Desktop (1280×800) | Reference-aligned identity and detail hierarchy |
-| `screenshots/review-customer-general-tablet-768.png`             | Tablet (768×1024)  | Stacked identity, overview, and detail sections |
+| `screenshots/review-customer-general-tablet-768.png`             | Tablet (768×1024)  | Icon-left identity and paired detail sections   |
 | `screenshots/review-customer-general-mobile-375.png`             | Mobile (375×812)   | Single-column customer-detail reading order     |
 | `screenshots/review-customer-review-details-desktop-1280.png`    | Desktop (1280×800) | IWA return link and expanded L3 parent branch   |
 | `screenshots/review-customer-review-details-tablet-768.png`      | Tablet (768×1024)  | L3 route at compact desktop width               |
@@ -25,8 +25,8 @@ unplanned accordion-navigation deviation.
 | `screenshots/review-customer-general-collapsed-desktop-1280.png` | Desktop (1280×800) | Collapsed customer icon rail                    |
 | `screenshots/review-customer-long-loading-desktop-1280.png`      | Desktop (1280×800) | Delayed summary skeleton                        |
 | `screenshots/review-customer-long-loaded-desktop-1280.png`       | Desktop (1280×800) | Long summary values after loading               |
-| `screenshots/review-customer-long-loading-tablet-768.png`        | Tablet (768×1024)  | Delayed stacked skeleton                        |
-| `screenshots/review-customer-long-loaded-tablet-768.png`         | Tablet (768×1024)  | Long stacked values after loading               |
+| `screenshots/review-customer-long-loading-tablet-768.png`        | Tablet (768×1024)  | Delayed compact horizontal skeleton             |
+| `screenshots/review-customer-long-loaded-tablet-768.png`         | Tablet (768×1024)  | Long compact horizontal values after loading    |
 | `screenshots/review-customer-long-loading-mobile-375.png`        | Mobile (375×812)   | Delayed mobile skeleton                         |
 | `screenshots/review-customer-long-loaded-mobile-375.png`         | Mobile (375×812)   | Long mobile values after loading                |
 
@@ -46,7 +46,7 @@ hierarchy: name and status, an untitled overview, then aligned
 rating is a plain value, dates are localized, and the unsupported own-group
 action is absent. The implementation is restrained, token-based, and strongly
 reuses IWA. Browser measurements confirm zero card-height and card-top movement
-between skeleton and long loaded data at 1280, 768, and 375 pixels (406, 614,
+between skeleton and long loaded data at 1280, 768, and 375 pixels (406, 434,
 and 734 pixels respectively in both states).
 
 No application-owned blocker remains after the review fixes. The remaining
@@ -114,6 +114,11 @@ None remaining.
    definition terms with presentation colons, an explicit value-only field
    avoids repeating the rating label, and strict shared date formatting uses
    the active locale without normalizing invalid calendar values.
+8. The horizontal identity layout now starts at `md`: the hero icon remains on
+   the left, all customer text remains on the right, and Identification data
+   and Rating stay paired. Compact-width definition rows retain their complete
+   labels and truncate only values with native full-value titles, reducing the
+   reviewed 768-pixel card from 614 to 434 pixels without layout shift.
 
 ## What Works Well
 
@@ -122,9 +127,10 @@ None remaining.
   the selected tab is unambiguous, and secondary metadata remains quiet.
 - The L3 screenshot shows the correct parent highlight and child disclosure
   without losing either the customer shell or its list return action.
-- The panel genuinely renders an icon plus two data columns at desktop and
-  reorganizes into one readable column at compact widths without horizontal
-  document overflow.
+- The panel renders the icon to the left of its content and keeps the two detail
+  sections paired at desktop and tablet widths; only the mobile layout stacks
+  into the required semantic reading order, without horizontal document
+  overflow.
 - Spacing, borders, surfaces, icons, typography, and active states use existing
   Tailwind/design-system tokens; no feature-specific color or shadow values
   were introduced.
