@@ -87,7 +87,7 @@ describe('DataPanel', () => {
     );
     expect(content?.children.item(2)).toHaveClass(
       'grid-cols-1',
-      'md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]',
+      'lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]',
     );
     expect(screen.getByText('GRID').closest('section')).toBeNull();
   });

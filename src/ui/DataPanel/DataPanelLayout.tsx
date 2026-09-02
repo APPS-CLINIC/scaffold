@@ -41,7 +41,7 @@ export const DataPanelLayout = forwardRef<HTMLDivElement, DataPanelLayoutProps>(
               <div className="min-w-0">{summary}</div>
             </div>
           ) : null}
-          <div className="grid min-w-0 grid-cols-1 gap-4 md:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] md:gap-x-4 lg:gap-x-8">
+          <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-x-8">
             <div className="min-w-0">{firstColumn}</div>
             <div className="min-w-0">{secondColumn}</div>
           </div>

@@ -6,6 +6,10 @@ import { createMemoryRouter, RouterProvider, type RouteObject } from 'react-rout
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { makeStore } from '@/app/store';
 import { baseApi } from '@/api/baseApi';
+import {
+  customerAdvisorsResponseFixture,
+  customerDetailsResponseFixture,
+} from '@/test/customerDetails.fixtures';
 import i18n from '@/i18n';
 import { customersDetailRoutes } from '@/routes/pageRoutes/customers.pageRoutes';
 import { customerSummaryApi } from './customerSummary.api';
@@ -71,13 +75,29 @@ describe('CustomerDetailLayout routing lifecycle', () => {
     const pendingSecondCustomer = new Promise<Response>((resolve) => {
       resolveSecondCustomer = resolve;
     });
+    const requestedPaths: string[] = [];
+    const summaryRequestCount = () =>
+      requestedPaths.filter((path) => path.endsWith('/summary')).length;
     const fetchMock = vi.fn(async (input: RequestInfo | URL): Promise<Response> => {
       const request = input instanceof NativeRequest ? input : new NativeRequest(input);
       const pathname = new URL(request.url).pathname;
+      requestedPaths.push(pathname);
 
       if (pathname.endsWith('/customers/second/summary')) return pendingSecondCustomer;
       if (pathname.endsWith('/customers/first/summary')) {
         return createSummaryResponse('first', 'First Customer');
+      }
+      if (pathname.endsWith('/advisors')) {
+        return new Response(JSON.stringify(customerAdvisorsResponseFixture), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      if (pathname.endsWith('/customers/first') || pathname.endsWith('/customers/second')) {
+        return new Response(JSON.stringify(customerDetailsResponseFixture), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
       }
 
       return new Response(JSON.stringify({ message: 'Not found' }), {
@@ -116,7 +136,26 @@ describe('CustomerDetailLayout routing lifecycle', () => {
     ).toBeInTheDocument();
     expect(view.getAllByText('First Customer').length).toBeGreaterThan(0);
     expect(view.container.querySelector('.pi-briefcase')).toBeInTheDocument();
-    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(summaryRequestCount()).toBe(1);
+    expect(requestedPaths.filter((path) => path.endsWith('/customers/first'))).toHaveLength(1);
+    expect(
+      requestedPaths.filter((path) => path.endsWith('/customers/first/advisors')),
+    ).toHaveLength(1);
+
+    await act(async () => {
+      await router.navigate('/customers/first/cdd-crs-fatca');
+    });
+    expect(
+      view.getByRole('heading', { level: 2, name: i18n.t('nav.customerDetail.cddCrsFatca') }),
+    ).toBeInTheDocument();
+    expect(
+      view.getByRole('heading', {
+        level: 3,
+        name: i18n.t('customers.details.compliance.section.segmentation'),
+      }),
+    ).toBeInTheDocument();
+    expect(requestedPaths.filter((path) => path.endsWith('/customers/first'))).toHaveLength(1);
+    expect(summaryRequestCount()).toBe(1);
 
     await act(async () => {
       await router.navigate('/customers/first/dashboard');
@@ -125,7 +164,7 @@ describe('CustomerDetailLayout routing lifecycle', () => {
       view.getByRole('heading', { level: 2, name: i18n.t('nav.customerDetail.dashboard') }),
     ).toBeInTheDocument();
     expect(view.container.querySelector('.pi-briefcase')).not.toBeInTheDocument();
-    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(summaryRequestCount()).toBe(1);
 
     await act(async () => {
       await router.navigate('/customers/first/dashboard/future-section');
@@ -134,7 +173,7 @@ describe('CustomerDetailLayout routing lifecycle', () => {
       view.getByRole('heading', { level: 2, name: i18n.t('nav.customerDetail.dashboard') }),
     ).toBeInTheDocument();
     expect(view.container.querySelector('.pi-briefcase')).not.toBeInTheDocument();
-    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(summaryRequestCount()).toBe(1);
 
     await act(async () => {
       await router.navigate('/customers/first/general-data');
@@ -144,6 +183,10 @@ describe('CustomerDetailLayout routing lifecycle', () => {
     ).toBeInTheDocument();
     const persistentSummaryIcon = view.container.querySelector('.pi-briefcase');
     expect(persistentSummaryIcon).toBeInTheDocument();
+    expect(requestedPaths.filter((path) => path.endsWith('/customers/first'))).toHaveLength(1);
+    expect(
+      requestedPaths.filter((path) => path.endsWith('/customers/first/advisors')),
+    ).toHaveLength(1);
 
     await act(async () => {
       await router.navigate('/customers/first/general-data/future-section');
@@ -152,7 +195,7 @@ describe('CustomerDetailLayout routing lifecycle', () => {
       view.getByRole('heading', { level: 2, name: i18n.t('nav.customerDetail.generalData') }),
     ).toBeInTheDocument();
     expect(view.container.querySelector('.pi-briefcase')).toBe(persistentSummaryIcon);
-    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(summaryRequestCount()).toBe(1);
 
     await act(async () => {
       await router.navigate('/customers/first/reviews');
@@ -161,7 +204,7 @@ describe('CustomerDetailLayout routing lifecycle', () => {
       view.getByRole('heading', { level: 2, name: i18n.t('nav.customerDetail.reviews') }),
     ).toBeInTheDocument();
     expect(view.container.querySelector('.pi-briefcase')).toBe(persistentSummaryIcon);
-    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(summaryRequestCount()).toBe(1);
 
     await act(async () => {
       await router.navigate('/customers/first/reviews/details');
@@ -173,7 +216,7 @@ describe('CustomerDetailLayout routing lifecycle', () => {
       }),
     ).toBeInTheDocument();
     expect(view.container.querySelector('.pi-briefcase')).toBe(persistentSummaryIcon);
-    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(summaryRequestCount()).toBe(1);
 
     await act(async () => {
       await router.navigate(-1);
@@ -183,7 +226,7 @@ describe('CustomerDetailLayout routing lifecycle', () => {
       view.getByRole('heading', { level: 2, name: i18n.t('nav.customerDetail.reviews') }),
     ).toBeInTheDocument();
     expect(view.container.querySelector('.pi-briefcase')).toBe(persistentSummaryIcon);
-    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(summaryRequestCount()).toBe(1);
 
     await act(async () => {
       await router.navigate('/customers/second/general-data');
@@ -196,7 +239,7 @@ describe('CustomerDetailLayout routing lifecycle', () => {
     expect(selectCustomerSummary(store.getState(), 'first')).toBeNull();
     expect(view.queryByText('First Customer')).not.toBeInTheDocument();
     await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(summaryRequestCount()).toBe(2);
     });
     await waitFor(() => {
       expect(
@@ -212,7 +255,7 @@ describe('CustomerDetailLayout routing lifecycle', () => {
     });
     expect(selectCustomerSummary(store.getState(), 'second')?.fullName).toBe('Second Customer');
     expect(view.getAllByText('Second Customer').length).toBeGreaterThan(0);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(summaryRequestCount()).toBe(2);
 
     view.unmount();
     store.dispatch(baseApi.util.resetApiState());

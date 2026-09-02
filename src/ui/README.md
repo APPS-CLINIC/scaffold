@@ -137,6 +137,41 @@ alias only for the local compatibility package, so route and feature code do
 not depend on two IWA versions. Use it for the standard **Back to:** line and
 orange page H1 instead of recreating that structure locally.
 
+## `KeyValueSections`
+
+`KeyValueSections` renders compact detail-page bands from one ordered config:
+each section has a stable `id`, a required `title`, and an `items` array of
+`{ id, label, value }` pairs. It composes IWA `Card`, `DefinitionList`, and
+`Skeleton` primitives rather than recreating their presentation. Empty values
+remain in the document and fall back to an en dash by default.
+
+Pass the same section config with `loading` enabled to reserve every section
+and row while values are fetched. The responsive layout stacks each label
+above its value on narrow screens, uses a compact proportional pair at the
+small breakpoint, then restores IWA's fixed definition-label column on larger
+screens. At `lg`, the card dedicates one quarter to the section heading and
+three quarters to the definitions; below that threshold the heading stacks
+above the full-width definitions. Each card is exposed as a named semantic
+section through its required heading. Use `headingLevel` when the renderer is
+nested below an existing page heading.
+
+```tsx
+<KeyValueSections
+  aria-label="Customer details"
+  loading={isLoading}
+  sections={[
+    {
+      id: 'basic-data',
+      title: 'Basic data',
+      items: [
+        { id: 'tax-id', label: 'Tax ID', value: customer.taxId },
+        { id: 'country', label: 'Country', value: customer.country },
+      ],
+    },
+  ]}
+/>
+```
+
 ## `PrimeIcon` and `createPrimeIcon`
 
 `PrimeIcon` is the typed adapter for the PrimeIcons font already included by
