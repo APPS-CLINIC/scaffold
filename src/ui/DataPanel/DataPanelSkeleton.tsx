@@ -21,44 +21,56 @@ function DataPanelSkeletonColumn({ fields }: { fields: readonly DataPanelSkeleto
 
   return (
     <>
-      {fields.map((field) => (
-        <DataPanelDefinition key={field.id}>
-          <DefinitionList
-            title={{
-              text: (
-                <span className="relative block min-h-5">
-                  <span className="invisible block">{t(field.labelKey)}</span>
-                  <span className="absolute left-0 top-0 block h-5 w-2/3 overflow-hidden rounded">
-                    <Skeleton
-                      width="100%"
-                      height="100%"
-                      borderRadius="inherit"
-                      className="bg-[var(--border-subtle)] align-middle motion-reduce:animate-none"
-                    />
+      {fields.map((field) => {
+        const value = (
+          <span
+            className={twMerge(
+              'block w-4/5 overflow-hidden rounded',
+              getDataPanelValueHeightClass(field.valueSize),
+            )}
+          >
+            <Skeleton
+              width="100%"
+              height="100%"
+              borderRadius="inherit"
+              className="bg-[var(--border-subtle)] align-middle motion-reduce:animate-none"
+            />
+          </span>
+        );
+
+        if (field.valueOnly)
+          return (
+            <span key={field.id} className="block min-w-0">
+              {value}
+            </span>
+          );
+
+        return (
+          <DataPanelDefinition key={field.id}>
+            <DefinitionList
+              title={{
+                text: (
+                  <span className="relative block min-h-5">
+                    <span className="invisible block">
+                      {t(field.labelKey)}
+                      <span aria-hidden="true">:</span>
+                    </span>
+                    <span className="absolute left-0 top-0 block h-5 w-2/3 overflow-hidden rounded">
+                      <Skeleton
+                        width="100%"
+                        height="100%"
+                        borderRadius="inherit"
+                        className="bg-[var(--border-subtle)] align-middle motion-reduce:animate-none"
+                      />
+                    </span>
                   </span>
-                </span>
-              ),
-            }}
-            body={{
-              text: (
-                <span
-                  className={twMerge(
-                    'block w-4/5 overflow-hidden rounded',
-                    getDataPanelValueHeightClass(field.valueSize),
-                  )}
-                >
-                  <Skeleton
-                    width="100%"
-                    height="100%"
-                    borderRadius="inherit"
-                    className="bg-[var(--border-subtle)] align-middle motion-reduce:animate-none"
-                  />
-                </span>
-              ),
-            }}
-          />
-        </DataPanelDefinition>
-      ))}
+                ),
+              }}
+              body={{ text: value }}
+            />
+          </DataPanelDefinition>
+        );
+      })}
     </>
   );
 }
@@ -75,6 +87,7 @@ export const DataPanelSkeleton = forwardRef<HTMLDivElement, DataPanelSkeletonPro
     const { t } = useTranslation();
     const firstColumn = fields.filter((field) => field.column === 1);
     const secondColumn = fields.filter((field) => field.column === 2);
+    const summary = fields.filter((field) => field.column === 'summary');
 
     return (
       <DataPanelLayout
@@ -101,9 +114,9 @@ export const DataPanelSkeleton = forwardRef<HTMLDivElement, DataPanelSkeletonPro
         }
         header={
           hasHeader ? (
-            <div className="flex min-w-0 items-center gap-4">
-              <span className="block h-7 min-w-0 flex-1">
-                <span className="block h-full w-2/5 overflow-hidden rounded">
+            <div className="flex min-w-0 flex-col items-start gap-1">
+              <span className="block h-8 w-2/5 min-w-0">
+                <span className="block h-7 overflow-hidden rounded">
                   <Skeleton
                     width="100%"
                     height="100%"
@@ -112,15 +125,24 @@ export const DataPanelSkeleton = forwardRef<HTMLDivElement, DataPanelSkeletonPro
                   />
                 </span>
               </span>
-              <span className="block h-5 w-20 shrink-0 overflow-hidden rounded">
-                <Skeleton
-                  width="100%"
-                  height="100%"
-                  borderRadius="inherit"
-                  className="bg-[var(--border-subtle)] motion-reduce:animate-none"
-                />
+              <span className="block h-7 w-20 shrink-0">
+                <span className="block h-6 overflow-hidden rounded">
+                  <Skeleton
+                    width="100%"
+                    height="100%"
+                    borderRadius="inherit"
+                    className="bg-[var(--border-subtle)] motion-reduce:animate-none"
+                  />
+                </span>
               </span>
             </div>
+          ) : undefined
+        }
+        summary={
+          summary.length > 0 ? (
+            <DataPanelColumnLayout>
+              <DataPanelSkeletonColumn fields={summary} />
+            </DataPanelColumnLayout>
           ) : undefined
         }
         firstColumn={

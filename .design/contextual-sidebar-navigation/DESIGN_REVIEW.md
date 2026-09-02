@@ -11,24 +11,24 @@ unplanned accordion-navigation deviation.
 
 ## Screenshots Captured
 
-| Screenshot                                                       | Breakpoint         | Description                                    |
-| ---------------------------------------------------------------- | ------------------ | ---------------------------------------------- |
-| `screenshots/review-customers-list-desktop-1280.png`             | Desktop (1280×800) | Global Customers list and sidebar              |
-| `screenshots/review-customers-list-tablet-768.png`               | Tablet (768×1024)  | Responsive customer list                       |
-| `screenshots/review-customers-list-mobile-375.png`               | Mobile (375×812)   | Single-column customer list                    |
-| `screenshots/review-customer-general-desktop-1280.png`           | Desktop (1280×800) | IWA page heading and expanded customer sidebar |
-| `screenshots/review-customer-general-tablet-768.png`             | Tablet (768×1024)  | Page heading and stacked customer data columns |
-| `screenshots/review-customer-general-mobile-375.png`             | Mobile (375×812)   | Page heading and single-column customer panel  |
-| `screenshots/review-customer-review-details-desktop-1280.png`    | Desktop (1280×800) | IWA return link and expanded L3 parent branch  |
-| `screenshots/review-customer-review-details-tablet-768.png`      | Tablet (768×1024)  | L3 route at compact desktop width              |
-| `screenshots/review-customer-review-details-mobile-375.png`      | Mobile (375×812)   | L3 content without the desktop-only sidebar    |
-| `screenshots/review-customer-general-collapsed-desktop-1280.png` | Desktop (1280×800) | Collapsed customer icon rail                   |
-| `screenshots/review-customer-long-loading-desktop-1280.png`      | Desktop (1280×800) | Delayed summary skeleton                       |
-| `screenshots/review-customer-long-loaded-desktop-1280.png`       | Desktop (1280×800) | Long summary values after loading              |
-| `screenshots/review-customer-long-loading-tablet-768.png`        | Tablet (768×1024)  | Delayed stacked skeleton                       |
-| `screenshots/review-customer-long-loaded-tablet-768.png`         | Tablet (768×1024)  | Long stacked values after loading              |
-| `screenshots/review-customer-long-loading-mobile-375.png`        | Mobile (375×812)   | Delayed mobile skeleton                        |
-| `screenshots/review-customer-long-loaded-mobile-375.png`         | Mobile (375×812)   | Long mobile values after loading               |
+| Screenshot                                                       | Breakpoint         | Description                                     |
+| ---------------------------------------------------------------- | ------------------ | ----------------------------------------------- |
+| `screenshots/review-customers-list-desktop-1280.png`             | Desktop (1280×800) | Global Customers list and sidebar               |
+| `screenshots/review-customers-list-tablet-768.png`               | Tablet (768×1024)  | Responsive customer list                        |
+| `screenshots/review-customers-list-mobile-375.png`               | Mobile (375×812)   | Single-column customer list                     |
+| `screenshots/review-customer-general-desktop-1280.png`           | Desktop (1280×800) | Reference-aligned identity and detail hierarchy |
+| `screenshots/review-customer-general-tablet-768.png`             | Tablet (768×1024)  | Stacked identity, overview, and detail sections |
+| `screenshots/review-customer-general-mobile-375.png`             | Mobile (375×812)   | Single-column customer-detail reading order     |
+| `screenshots/review-customer-review-details-desktop-1280.png`    | Desktop (1280×800) | IWA return link and expanded L3 parent branch   |
+| `screenshots/review-customer-review-details-tablet-768.png`      | Tablet (768×1024)  | L3 route at compact desktop width               |
+| `screenshots/review-customer-review-details-mobile-375.png`      | Mobile (375×812)   | L3 content without the desktop-only sidebar     |
+| `screenshots/review-customer-general-collapsed-desktop-1280.png` | Desktop (1280×800) | Collapsed customer icon rail                    |
+| `screenshots/review-customer-long-loading-desktop-1280.png`      | Desktop (1280×800) | Delayed summary skeleton                        |
+| `screenshots/review-customer-long-loaded-desktop-1280.png`       | Desktop (1280×800) | Long summary values after loading               |
+| `screenshots/review-customer-long-loading-tablet-768.png`        | Tablet (768×1024)  | Delayed stacked skeleton                        |
+| `screenshots/review-customer-long-loaded-tablet-768.png`         | Tablet (768×1024)  | Long stacked values after loading               |
+| `screenshots/review-customer-long-loading-mobile-375.png`        | Mobile (375×812)   | Delayed mobile skeleton                         |
+| `screenshots/review-customer-long-loaded-mobile-375.png`         | Mobile (375×812)   | Long mobile values after loading                |
 
 > All screenshots are stored in
 > `.design/contextual-sidebar-navigation/screenshots/`.
@@ -40,10 +40,14 @@ bar establishes **Customers**, the contextual sidebar exposes the customer
 tabs, IWA `ScreenHeading` provides the Figma-aligned **Back to: My customers**
 action and **Customer** title, and the persistent card keeps customer identity
 visible above tab content. The large white briefcase in an ING-orange circle
-matches the supplied customer reference. The implementation is restrained,
-token-based, and strongly reuses IWA. Browser measurements confirm zero
-card-height and card-top movement between skeleton and long loaded data at
-1280, 768, and 375 pixels.
+matches the supplied customer reference. The card follows the reference's
+hierarchy: name and status, an untitled overview, then aligned
+**Identification data** and **Rating** sections. Labels are bold and compact,
+rating is a plain value, dates are localized, and the unsupported own-group
+action is absent. The implementation is restrained, token-based, and strongly
+reuses IWA. Browser measurements confirm zero card-height and card-top movement
+between skeleton and long loaded data at 1280, 768, and 375 pixels (406, 614,
+and 734 pixels respectively in both states).
 
 No application-owned blocker remains after the review fixes. The remaining
 accessibility issues are limitations of the installed IWA package and should be
@@ -60,16 +64,16 @@ None remaining.
    Application touchpoints are `TopBarCustom.tsx` and `MenuListAdapter.tsx`.
    Extend the IWA contracts with correct tab/list semantics; do not add DOM
    mutation workarounds in this application.
-2. **The IWA Sky label does not meet normal-text contrast.** The installed
-   palette used by the rating at `customerSummaryPanelFields.ts:69` measures
-   approximately 3.76:1. The IWA team should provide a compliant rating
-   variant or corrected token; overriding the vendor component locally would
-   violate the seam and the task's escalation rule.
-3. **The documented IWA tooltip and icon-button APIs are missing from the
+2. **The documented IWA tooltip and icon-button APIs are missing from the
    installed package.** The collapsed rail therefore retains accessible names
    and native titles, but it cannot provide the required shared tooltip to
    sighted keyboard and touch users. Publish the documented APIs before
    replacing this fallback.
+3. **The documented IWA `Heading` is missing from the verified package
+   contract.** Customer and section titles therefore remain semantic `h2`/`h3`
+   elements styled only with existing typography and color tokens. Publish the
+   Storybook component in the package before replacing them; a local duplicate
+   or runtime compatibility hack would weaken the UI seam.
 
 ## Could Improve
 
@@ -86,9 +90,9 @@ None remaining.
 ## Resolved During Review
 
 1. Loaded field values and skeletons now use the same configuration-driven
-   fixed row geometry (`DataPanel.tsx:112` and
-   `DataPanelSkeleton.tsx:47`). Long values remain present in the accessibility
-   tree and expose their complete text through the native title.
+   region and fixed-row geometry. Long values remain present in the
+   accessibility tree and expose their complete text through the native title;
+   the vertical name/status header reserves matching space in every state.
 2. The full breadcrumb was replaced with the Figma-specified IWA
    `ScreenHeading`: one stable **My customers** return link above the orange
    **Customer** H1. Its destination is derived from the manifest root item and
@@ -105,6 +109,11 @@ None remaining.
 6. The RTK Query-to-Redux bridge now mirrors cache reset and failed-refetch
    transitions deterministically, preventing stale successful data from
    remaining in the view store.
+7. The customer card now follows the supplied detail reference: a leading
+   overview block precedes two aligned sections, labels use compact bold
+   definition terms with presentation colons, an explicit value-only field
+   avoids repeating the rating label, and strict shared date formatting uses
+   the active locale without normalizing invalid calendar values.
 
 ## What Works Well
 
@@ -121,8 +130,7 @@ None remaining.
   were introduced.
 - IWA reuse is broad and appropriate: `TopBar`, `TabMenu`, `NavigationPanel`,
   `MenuList`, `NavigationMenuItem.subNodes`, `ScreenHeading`, `Card`,
-  `DefinitionList`, `Skeleton`, `Status`, and `Label` remain behind the UI
-  seam.
+  `DefinitionList`, `Skeleton`, and `Status` remain behind the UI seam.
 - Keyboard-operable navigation and disclosure actions have separate 44-pixel
   targets, deep links expand their active ancestry, and the heading return
   action retains a real manifest-derived link target.

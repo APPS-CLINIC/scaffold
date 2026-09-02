@@ -48,14 +48,14 @@ function CustomerSummaryHeader({
   const fullName = renderCellValue(summary.fullName, emptyValue);
 
   return (
-    <div className="flex min-w-0 items-center gap-4">
+    <div className="flex min-w-0 flex-col items-start gap-1">
       <h2
-        className="m-0 min-w-0 flex-1 truncate text-xl font-bold text-[var(--text)]"
+        className="m-0 w-full min-w-0 truncate text-2xl font-bold text-[var(--text)]"
         title={summary.fullName || undefined}
       >
         {fullName}
       </h2>
-      <div className="shrink-0">
+      <div className="min-h-7">
         {summary.status === 'ACTIVE' ? (
           <Status type="active" label={t('common.status.active')} />
         ) : summary.status === 'ARCHIVAL' ? (

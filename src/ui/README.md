@@ -101,12 +101,16 @@ accordion. In jsdom tests use `mockTableContainerWidth` from
 
 ## `DataPanel` and `DataPanelSkeleton`
 
-`DataPanel<T>` renders a stable icon + two-data-column panel from a typed
-`fields` config rather than hardcoded rows. Each field declares `id`,
-`labelKey`, `column`, and a `value` reader; `formatValue` transforms data before
-the default renderer, while `renderValue` composes richer values such as an IWA
-`Label`. Rows use IWA `DefinitionList`, and empty raw, formatted, or rendered
-values fall back to `emptyValue` without removing the configured row.
+`DataPanel<T>` renders a stable icon + content panel from a typed `fields`
+config rather than hardcoded rows. Each field declares `id`, `labelKey`,
+`column`, and a `value` reader. Set `column: 'summary'` for the optional
+untitled lead group below the header, or use `1` / `2` for the titled detail
+columns below it. `formatValue` transforms data before the default renderer,
+while `renderValue` composes richer values such as an IWA `Label`. Rows use IWA
+`DefinitionList`, and empty raw, formatted, or rendered values fall back to
+`emptyValue` without removing the configured row. Set `valueOnly: true`
+instead of `labelKey` only when the titled section already provides the field's
+accessible context, avoiding a repeated label in the presentation.
 
 Keep the complete field list present for every data variant and pass that same
 config to `DataPanelSkeleton`, together with the column labels and icon/header

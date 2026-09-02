@@ -84,7 +84,7 @@ export const en: Record<MessageKey, string> = {
   'customers.summaryPanel.field.kkf': 'KKF',
   'customers.summaryPanel.field.internalGroupName': 'Internal group',
   'customers.summaryPanel.field.corporateGroupName': 'EUP (corporate group)',
-  'customers.summaryPanel.field.corporateGroupGrid': 'EUP GRID',
+  'customers.summaryPanel.field.corporateGroupGrid': 'EUP GRID (corporate group)',
   'customers.summaryPanel.field.pamName': 'PAM name',
   'customers.summaryPanel.field.pamLam': 'PAM/LAM',
   'customers.summaryPanel.field.homeCountry': 'Home country',

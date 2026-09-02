@@ -28,16 +28,34 @@ describe('CustomerSummaryPanel', () => {
     await i18n.changeLanguage('pl');
   });
 
-  it('renders the scoped customer mirror with IWA status, rating label and brand icon', () => {
+  it('renders the reference hierarchy with IWA status and the brand icon', () => {
     const { container } = renderWithProviders(<CustomerSummaryPanel customerId="42" />, {
       preloadedState: {
         customerSummary: { customerId: '42', data: summary, status: 'succeeded' },
       },
     });
 
-    expect(screen.getByRole('heading', { level: 2, name: 'ACME Corporation' })).toBeInTheDocument();
-    expect(screen.getByText(i18n.t('common.status.active'))).toBeInTheDocument();
-    expect(screen.getByText('AAA').parentElement).toHaveClass('rounded-full');
+    const customerHeading = screen.getByRole('heading', {
+      level: 2,
+      name: 'ACME Corporation',
+    });
+    expect(customerHeading.parentElement).toHaveClass('flex-col', 'items-start');
+    expect(
+      screen.getByText(i18n.t('common.status.active')).closest('.min-h-7'),
+    ).toBeInTheDocument();
+    expect(screen.getByText('AAA').parentElement).not.toHaveClass('rounded-full');
+    expect(screen.getByText('31.08.2026')).toHaveAttribute('title', '31.08.2026');
+    expect(
+      screen.getByRole('heading', {
+        level: 3,
+        name: i18n.t('customers.summaryPanel.column.identification'),
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 3, name: 'Rating' })).toBeInTheDocument();
+    expect(screen.getAllByText('Rating')).toHaveLength(1);
+    expect(screen.getByText('ACME Group').closest('a')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button')).not.toBeInTheDocument();
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
     const icon = container.querySelector('.pi-briefcase');
     expect(icon?.parentElement).toHaveClass(
       'size-24',
@@ -46,6 +64,22 @@ describe('CustomerSummaryPanel', () => {
     );
     expect(icon?.parentElement?.className).toContain('[&_.pi]:text-4xl');
     expect(container.querySelector('.pi-cog')).not.toBeInTheDocument();
+  });
+
+  it('formats the rating date with the active locale', async () => {
+    await i18n.changeLanguage('en');
+    renderWithProviders(<CustomerSummaryPanel customerId="42" />, {
+      preloadedState: {
+        customerSummary: { customerId: '42', data: summary, status: 'succeeded' },
+      },
+    });
+
+    const expectedDate = new Intl.DateTimeFormat('en', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(new Date('2026-08-31T12:00:00'));
+    expect(screen.getByText(expectedDate)).toHaveAttribute('title', expectedDate);
   });
 
   it('keeps the header and every configured field visible as an en dash when values are empty', () => {
@@ -66,8 +100,10 @@ describe('CustomerSummaryPanel', () => {
     const heading = screen.getByRole('heading', { level: 2, name: emptyValue });
     expect(within(heading.parentElement ?? heading).getAllByText(emptyValue)).toHaveLength(2);
     expect(screen.getByText('GRID').closest('dl')).toHaveTextContent(emptyValue);
-    const ratingFieldLabel = screen.getAllByText('Rating').find((element) => element.closest('dt'));
-    expect(ratingFieldLabel?.closest('dl')).toHaveTextContent(emptyValue);
+    const ratingSection = screen
+      .getByRole('heading', { level: 3, name: 'Rating' })
+      .closest('section');
+    expect(ratingSection).toHaveTextContent(emptyValue);
   });
 
   it('never exposes a previous customer and uses reserved loading geometry instead', () => {

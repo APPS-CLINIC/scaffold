@@ -1,5 +1,5 @@
-import { createElement } from 'react';
-import { Label } from '@/ui';
+import i18n from '@/i18n';
+import { formatIsoDmyDate } from '@/i18n/dateFormats';
 import type { DataPanelColumnLabels, DataPanelFieldConfig } from '@/ui';
 import type { CustomerSummary } from './customerSummary.types';
 
@@ -16,24 +16,34 @@ export const customerSummaryPanelColumnLabels: DataPanelColumnLabels = {
  * reuse `DataPanel` with its own field config instead.
  */
 export const customerSummaryPanelFields: readonly DataPanelFieldConfig<CustomerSummary>[] = [
-  { id: 'grid', labelKey: 'customers.summaryPanel.field.grid', column: 1, value: (d) => d.grid },
-  { id: 'kkf', labelKey: 'customers.summaryPanel.field.kkf', column: 1, value: (d) => d.kkf },
+  {
+    id: 'grid',
+    labelKey: 'customers.summaryPanel.field.grid',
+    column: 'summary',
+    value: (d) => d.grid,
+  },
+  {
+    id: 'kkf',
+    labelKey: 'customers.summaryPanel.field.kkf',
+    column: 'summary',
+    value: (d) => d.kkf,
+  },
   {
     id: 'internalGroupName',
     labelKey: 'customers.summaryPanel.field.internalGroupName',
-    column: 1,
+    column: 'summary',
     value: (d) => d.internalGroupName,
   },
   {
     id: 'corporateGroupName',
     labelKey: 'customers.summaryPanel.field.corporateGroupName',
-    column: 1,
+    column: 'summary',
     value: (d) => d.corporateGroupName,
   },
   {
     id: 'corporateGroupGrid',
     labelKey: 'customers.summaryPanel.field.corporateGroupGrid',
-    column: 1,
+    column: 'summary',
     value: (d) => d.corporateGroupGrid,
   },
   {
@@ -62,17 +72,18 @@ export const customerSummaryPanelFields: readonly DataPanelFieldConfig<CustomerS
   },
   {
     id: 'rating',
-    labelKey: 'customers.summaryPanel.field.rating',
+    valueOnly: true,
     column: 2,
     value: (d) => d.rating,
-    valueSize: 'label',
-    renderValue: ({ value }) =>
-      createElement(Label, { text: String(value), variant: 'Sky', size: 'small' }),
   },
   {
     id: 'lendingRatingDate',
     labelKey: 'customers.summaryPanel.field.lendingRatingDate',
     column: 2,
     value: (d) => d.lendingRatingDate,
+    formatValue: (value) =>
+      typeof value === 'string'
+        ? formatIsoDmyDate(value, i18n.resolvedLanguage ?? i18n.language)
+        : value,
   },
 ];

@@ -4,33 +4,46 @@ import { twMerge } from 'iwa-react-components';
 interface DataPanelLayoutProps extends HTMLAttributes<HTMLDivElement> {
   icon?: ReactNode;
   header?: ReactNode;
+  summary?: ReactNode;
   firstColumn: ReactNode;
   secondColumn: ReactNode;
 }
 
 /** Shared geometry for the loaded panel and its skeleton. */
 export const DataPanelLayout = forwardRef<HTMLDivElement, DataPanelLayoutProps>(
-  function DataPanelLayout({ icon, header, firstColumn, secondColumn, className, ...rest }, ref) {
+  function DataPanelLayout(
+    { icon, header, summary, firstColumn, secondColumn, className, ...rest },
+    ref,
+  ) {
     const hasIcon = Boolean(icon);
 
     return (
       <div
         ref={ref}
         className={twMerge(
-          'grid min-w-0 grid-cols-1 items-start gap-4 lg:gap-x-8 lg:gap-y-4',
-          hasIcon ? 'lg:grid-cols-[auto_minmax(0,1fr)_minmax(0,1fr)]' : 'lg:grid-cols-2',
+          'grid min-w-0 grid-cols-1 items-start gap-4',
+          hasIcon ? 'lg:grid-cols-4 lg:gap-0' : 'lg:grid-cols-1',
           className,
         )}
         {...rest}
       >
         {hasIcon ? (
-          <div className="flex shrink-0 items-start justify-start lg:row-span-2 lg:justify-center">
+          <div className="flex shrink-0 items-start justify-start lg:self-stretch lg:justify-center">
             {icon}
           </div>
         ) : null}
-        {header ? <div className="min-w-0 lg:col-span-2">{header}</div> : null}
-        {firstColumn}
-        {secondColumn}
+        <div className={twMerge('min-w-0 space-y-4', hasIcon && 'lg:col-span-3')}>
+          {header ? <div className="min-w-0">{header}</div> : null}
+          {summary ? (
+            <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-x-8">
+              <div className="min-w-0">{summary}</div>
+            </div>
+          ) : null}
+          <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-x-8">
+            <div className="min-w-0">{firstColumn}</div>
+            <div className="min-w-0">{secondColumn}</div>
+          </div>
+        </div>
       </div>
     );
   },
@@ -43,14 +56,12 @@ interface DataPanelColumnLayoutProps {
 
 /** Keeps loaded and loading columns on the same vertical rhythm. */
 export function DataPanelColumnLayout({ title, children }: DataPanelColumnLayoutProps) {
+  if (!title) return <div className="min-w-0 space-y-1">{children}</div>;
+
   return (
     <section className="min-w-0">
-      {title ? (
-        <h3 className="mb-2 mt-0 text-xs font-semibold uppercase tracking-wide text-muted">
-          {title}
-        </h3>
-      ) : null}
-      <div className="min-w-0 space-y-2">{children}</div>
+      <h3 className="mb-2 mt-0 text-xl font-bold text-[var(--text)]">{title}</h3>
+      <div className="min-w-0 space-y-1">{children}</div>
     </section>
   );
 }
@@ -65,9 +76,10 @@ export function DataPanelDefinition({ children }: DataPanelDefinitionProps) {
     <div
       className={twMerge(
         'min-w-0',
-        '[&>dl]:grid [&>dl]:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] [&>dl]:items-start [&>dl]:gap-3',
+        '[&>dl]:grid [&>dl]:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] [&>dl]:items-start [&>dl]:gap-1',
+        'md:[&>dl]:grid-cols-[max-content_minmax(0,1fr)]',
         '[&_dt]:w-auto [&_dt]:min-w-0 [&_dt]:shrink [&_dt]:text-left',
-        '[&_dt>div]:break-words [&_dt>div]:text-[var(--muted)]',
+        '[&_dt>div]:break-words [&_dt>div]:font-bold [&_dt>div]:text-[var(--text)]',
         '[&_dd]:min-w-0 [&_dd>div]:break-words [&_dd>div]:text-[var(--text)]',
       )}
     >

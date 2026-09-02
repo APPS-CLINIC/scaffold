@@ -20,24 +20,36 @@ export interface DataPanelFieldRenderContext<TData> {
   value: unknown;
 }
 
-/** Presentation metadata shared by loaded rows and their loading placeholders. */
-export interface DataPanelSkeletonFieldConfig {
+interface DataPanelFieldPresentation {
   id: string;
-  labelKey: MessageKey;
-  /** Which data column the field renders in — the icon sits in its own column outside this. */
-  column: 1 | 2;
+  /**
+   * `summary` renders in the untitled lead group below the header; numbered
+   * columns render in the two titled detail sections below it.
+   */
+  column: 'summary' | 1 | 2;
   /** Keeps richer values and their loading placeholders on the same fixed row height. */
   valueSize?: DataPanelValueSize;
 }
 
-export interface DataPanelFieldConfig<TData> extends DataPanelSkeletonFieldConfig {
+/** Presentation metadata shared by loaded rows and their loading placeholders. */
+export type DataPanelSkeletonFieldConfig = DataPanelFieldPresentation &
+  (
+    | { labelKey: MessageKey; valueOnly?: false }
+    | {
+        /** Use only when the surrounding titled section supplies the field context. */
+        valueOnly: true;
+        labelKey?: never;
+      }
+  );
+
+export type DataPanelFieldConfig<TData> = DataPanelSkeletonFieldConfig & {
   /** Raw value; `null`/`undefined`/`''` render as `emptyValue` (never a collapsed/hidden row). */
   value: (data: TData) => unknown;
   /** Optional data-only transform applied before the default renderer. */
   formatValue?: (value: unknown, data: TData) => unknown;
   /** Optional component renderer for values such as IWA labels or statuses. */
   renderValue?: (context: DataPanelFieldRenderContext<TData>) => ReactNode;
-}
+};
 
 export interface DataPanelColumnLabels {
   first: MessageKey;
@@ -74,7 +86,7 @@ function DataPanelColumn<TData>({
       {fields.map((field) => (
         <DataPanelField
           key={field.id}
-          label={t(field.labelKey)}
+          label={field.valueOnly ? undefined : t(field.labelKey)}
           field={field}
           data={data}
           emptyValue={emptyValue}
@@ -90,30 +102,36 @@ function DataPanelField<TData>({
   data,
   emptyValue,
 }: {
-  label: string;
+  label?: string;
   field: DataPanelFieldConfig<TData>;
   data: TData;
   emptyValue: ReactNode;
 }) {
   const renderedValue = renderDataPanelField(field, data, emptyValue);
+  const value = (
+    <span
+      className={twMerge('block min-w-0 truncate', getDataPanelValueHeightClass(field.valueSize))}
+      title={renderedValue.title}
+    >
+      {renderedValue.content}
+    </span>
+  );
+
+  if (!label) return value;
 
   return (
     <DataPanelDefinition>
       <DefinitionList
-        title={{ text: label }}
-        body={{
+        title={{
           text: (
-            <span
-              className={twMerge(
-                'block min-w-0 truncate',
-                getDataPanelValueHeightClass(field.valueSize),
-              )}
-              title={renderedValue.title}
-            >
-              {renderedValue.content}
+            <span>
+              {label}
+              <span aria-hidden="true">:</span>
             </span>
           ),
+          bold: true,
         }}
+        body={{ text: value }}
       />
     </DataPanelDefinition>
   );
@@ -162,6 +180,7 @@ function DataPanelInner<TData>(
 ) {
   const firstColumn = fields.filter((field) => field.column === 1);
   const secondColumn = fields.filter((field) => field.column === 2);
+  const summary = fields.filter((field) => field.column === 'summary');
 
   return (
     <DataPanelLayout
@@ -170,6 +189,11 @@ function DataPanelInner<TData>(
       header={header}
       className={className}
       {...rest}
+      summary={
+        summary.length > 0 ? (
+          <DataPanelColumn data={data} fields={summary} emptyValue={emptyValue} />
+        ) : undefined
+      }
       firstColumn={
         <DataPanelColumn
           data={data}
@@ -194,9 +218,10 @@ function DataPanelInner<TData>(
  * Generic label/value/icon renderer, composed from a field-list config
  * rather than a hardcoded JSX field list — other sections (e.g. the future
  * CDD/CRS/FATCA panel) reuse this by supplying their own `data`/`fields`,
- * nothing else changes. The two data columns are always present regardless
- * of which values arrived; supplying an icon adds its dedicated leading
- * column without coupling the renderer to a customer type.
+ * nothing else changes. An optional untitled summary group precedes the two
+ * data columns, which are always present regardless of which values arrived;
+ * supplying an icon adds its dedicated leading column without coupling the
+ * renderer to a customer type.
  */
 export const DataPanel = forwardRef(DataPanelInner) as <TData>(
   props: DataPanelProps<TData> & RefAttributes<HTMLDivElement>,
