@@ -26,6 +26,8 @@ export const en: Record<MessageKey, string> = {
   'customers.description': 'Customer list with relationship data and review deadlines.',
   'customers.dataAsOf': 'As of:',
   'customers.details.title': 'Customer details',
+  'customers.details.pageTitle': 'Customer',
+  'customers.details.backToList': 'My customers',
   'customers.search.placeholder': 'Search the list',
   'customers.filters.status': 'Customer status',
   'customers.filters.type': 'Customer type',

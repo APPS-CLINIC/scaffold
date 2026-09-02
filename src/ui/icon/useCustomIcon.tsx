@@ -6,10 +6,10 @@ import {
   type ReactNode,
   type RefAttributes,
 } from 'react';
-import { cx } from '../cx';
+import { twMerge } from 'iwa-react-components';
 
-export type IconSize = 'sm' | 'md' | 'lg' | 'xl';
-export type IconTone = 'outline' | 'neutral' | 'accent';
+export type IconSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+export type IconTone = 'outline' | 'neutral' | 'accent' | 'brand';
 
 const baseClasses =
   'inline-flex shrink-0 select-none items-center justify-center overflow-hidden ' +
@@ -20,6 +20,7 @@ const sizeClasses: Record<IconSize, string> = {
   md: 'size-9',
   lg: 'size-12',
   xl: 'size-16',
+  '2xl': 'size-24',
 };
 
 const toneClasses: Record<IconTone, string> = {
@@ -27,6 +28,7 @@ const toneClasses: Record<IconTone, string> = {
   outline: 'border border-[var(--border)] bg-[var(--surface)]',
   neutral: 'bg-[var(--surface-muted)] text-[var(--muted)]',
   accent: 'bg-[var(--accent)] text-white',
+  brand: 'bg-[var(--navigation-accent)] text-white',
 };
 
 export interface CustomIconProps extends HTMLAttributes<HTMLSpanElement> {
@@ -86,7 +88,7 @@ export function useCustomIcon(
         <span
           ref={ref}
           {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
-          className={cx(
+          className={twMerge(
             baseClasses,
             sizeClasses[size],
             toneClasses[tone],

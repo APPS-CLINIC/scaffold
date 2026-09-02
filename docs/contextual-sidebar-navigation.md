@@ -56,9 +56,11 @@ the active manifest and is not stored in React or Redux state.
 `resolveNavigation(pathname)` is the single pure interpreter of the manifest.
 It returns complete models for the owning section and optional context, top
 bar, sidebar, route ancestry and breadcrumb. `TopBarCustom`,
-`ContextualSidebar`, the customer breadcrumb and URL mirror consume those
-models instead of repeating customer-specific pathname tests. The router reads
-the same manifest definitions to construct its static route tree.
+`ContextualSidebar`, the customer page heading and URL mirror consume those
+models instead of repeating customer-specific pathname tests. The page heading
+uses only the configured root item as its return destination, while the full
+ancestry remains available to routing and other consumers. The router reads the
+same manifest definitions to construct its static route tree.
 
 Static destinations owned by a section take precedence over its dynamic
 context. `/customers/all` therefore remains the configured list destination,
@@ -81,9 +83,11 @@ numeric index expected by IWA `MenuList`. It does not recreate the visual menu.
 The global sidebar composes IWA `NavigationPanel`, IWA `MenuList`, and icons
 from the IWA icon package. Customer navigation composes IWA
 `NavigationMenuItem` and its native `subNodes` contract within the same panel.
-Local components are limited to routing, stable-ID adaptation, disclosure
-state, the semantic collapse button that the installed IWA package does not
-export, desktop layout, and shared icon presentation.
+The customer page header uses IWA `ScreenHeading` for the single
+manifest-derived return link and page title. Local components are limited to
+routing, stable-ID adaptation, disclosure state, the semantic collapse button
+that the installed IWA package does not export, desktop layout, and shared icon
+presentation.
 
 The resolved `navigationKey` keys the selected list or tree renderer. This
 remounts the vendor navigation when a top-menu click replaces its complete item
@@ -198,6 +202,13 @@ bare context path remains available without a redirect. An unknown item ID is
 handled the same way defensively, although configuration tests should reject
 that mismatch before release.
 
+`breadcrumb.rootItem` identifies the section item used by the customer
+`ScreenHeading` return action. The current `all-customers` value derives
+`/customers/all`; the renderer labels that destination independently through
+i18n as **My customers**. Customer IDs, active tabs, and deeper segments stay
+out of the page heading because their hierarchy is already represented by the
+contextual sidebar.
+
 The sidebar contract is discriminated by `type`: `list` accepts only flat
 items, while `tree` accepts recursive items. TypeScript therefore rejects
 children that a list renderer could not display, and every configured tree
@@ -303,6 +314,10 @@ or lazy loader is wired separately so presentation never enters
   — the single URL-to-Redux writer.
 - [`src/components/ContextualSidebar/ContextualSidebar.tsx`](../src/components/ContextualSidebar/ContextualSidebar.tsx)
   — URL and desktop collapse orchestration.
+- [`src/routes/pages/customers/CustomerDetailHeading.tsx`](../src/routes/pages/customers/CustomerDetailHeading.tsx)
+  — IWA page heading with the manifest-derived customer-list return link.
+- [`src/ui/ScreenHeading.tsx`](../src/ui/ScreenHeading.tsx) — stable
+  `navigateTo` adapter around IWA `ScreenHeading`.
 - [`src/ui/MenuListAdapter.tsx`](../src/ui/MenuListAdapter.tsx) — stable-ID
   adapter over IWA `MenuList`.
 - [`src/ui/NavigationIcon.tsx`](../src/ui/NavigationIcon.tsx) — consistent
@@ -336,7 +351,8 @@ not expose a separate disclosure trigger, so the seam composes the trigger
 around the vendor item. The package also does not export the `Tooltip` or
 `IconButton` APIs documented in Storybook. Its `TabMenu` and `MenuList` emit
 positional buttons with `aria-selected` but without complete tab/list
-semantics; `BreadCrumb` cannot expose a localized navigation label or current
-item; and the small Sky `Label` palette does not meet normal-text AA contrast.
-These vendor gaps are input for the component guild rather than reasons to
-mutate vendor-rendered DOM or override IWA colors locally.
+semantics, and the small Sky `Label` palette does not meet normal-text AA
+contrast. The UI seam normalizes the current `ScreenHeading` `navigateTo`
+contract and the older local compatibility package's `url` alias. The remaining
+vendor gaps are input for the component guild rather than reasons to mutate
+vendor-rendered DOM or override IWA colors locally.

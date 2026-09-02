@@ -25,6 +25,13 @@ describe('DataPanelSkeleton', () => {
     await i18n.changeLanguage('pl');
   });
 
+  it('reserves the configured hero icon geometry', () => {
+    const { container } = render(<DataPanelSkeleton fields={fields} hasIcon iconSize="hero" />);
+
+    expect(container.querySelector('.size-24.rounded-full')).toBeInTheDocument();
+    expect(container.querySelector('.size-12.rounded-full')).not.toBeInTheDocument();
+  });
+
   it('reserves the same responsive grid, headings and configured row count', () => {
     const skeletonRef = createRef<HTMLDivElement>();
     const { container } = render(

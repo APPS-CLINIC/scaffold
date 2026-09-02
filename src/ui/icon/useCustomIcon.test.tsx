@@ -86,6 +86,18 @@ describe('useCustomIcon', () => {
     expect(icon.className).toContain('rounded-full');
   });
 
+  it('supports the large brand treatment used by hero data panels', () => {
+    const { result } = setup({ size: '2xl', tone: 'brand' });
+    const CustomerIcon = result.current;
+
+    render(<CustomerIcon data-testid="icon" />);
+    expect(screen.getByTestId('icon')).toHaveClass(
+      'size-24',
+      'bg-[var(--navigation-accent)]',
+      'text-white',
+    );
+  });
+
   it('keeps a stable component identity across re-renders with the same inputs', () => {
     const options: UseCustomIconOptions = { size: 'md' };
     const { result, rerender } = setup(options);

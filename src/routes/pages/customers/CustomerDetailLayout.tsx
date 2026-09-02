@@ -1,13 +1,8 @@
 import { Outlet, useLocation, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAppSelector } from '@/app/hooks';
-import {
-  CustomerSummaryPanel,
-  CustomerSummarySync,
-  selectCustomerSummary,
-} from '@/features/customers/customerSummary';
+import { CustomerSummaryPanel, CustomerSummarySync } from '@/features/customers/customerSummary';
 import { resolveNavigation } from '@/routes/navigation';
-import { CustomerBreadcrumb } from './CustomerBreadcrumb';
+import { CustomerDetailHeading } from './CustomerDetailHeading';
 
 /**
  * Layout route for `/customers/{id}/...`. Mounted once per customer identity
@@ -19,8 +14,6 @@ export function CustomerDetailLayout() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const { pathname } = useLocation();
-  const customerId = id ?? '';
-  const summary = useAppSelector((state) => selectCustomerSummary(state, customerId));
 
   if (!id) return null;
 
@@ -33,8 +26,7 @@ export function CustomerDetailLayout() {
   return (
     <section aria-label={t('customers.details.title')} className="w-full min-w-0 max-w-full">
       <CustomerSummarySync key={id} customerId={id} />
-      <h1 className="sr-only">{t('customers.details.title')}</h1>
-      <CustomerBreadcrumb customerId={id} customerName={summary?.fullName ?? null} />
+      <CustomerDetailHeading />
       {showsSummaryPanel ? (
         <div className="mt-4">
           <CustomerSummaryPanel customerId={id} />

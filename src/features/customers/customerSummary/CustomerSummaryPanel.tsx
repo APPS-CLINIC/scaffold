@@ -17,7 +17,7 @@ import {
 } from './customerSummaryPanelFields';
 import type { CustomerSummary } from './customerSummary.types';
 
-const CUSTOMER_GLYPH = <PrimeIcon name="building" />;
+const CUSTOMER_GLYPH = <PrimeIcon name="briefcase" className="text-4xl" />;
 
 const EMPTY_CUSTOMER_SUMMARY: CustomerSummary = {
   fullName: '',
@@ -78,7 +78,7 @@ export function CustomerSummaryPanel({ customerId }: { customerId: string }) {
   const { t } = useTranslation();
   const summary = useAppSelector((state) => selectCustomerSummary(state, customerId));
   const status = useAppSelector((state) => selectCustomerSummaryStatus(state, customerId));
-  const CustomerIcon = useCustomIcon(CUSTOMER_GLYPH, { size: 'lg', tone: 'neutral' });
+  const CustomerIcon = useCustomIcon(CUSTOMER_GLYPH, { size: '2xl', tone: 'brand' });
   const emptyValue = t('customers.value.notAvailable');
 
   if (status !== 'failed' && (!summary || status !== 'succeeded')) {
@@ -89,6 +89,7 @@ export function CustomerSummaryPanel({ customerId }: { customerId: string }) {
             fields={customerSummaryPanelFields}
             columnLabels={customerSummaryPanelColumnLabels}
             hasIcon
+            iconSize="hero"
             hasHeader
           />
         </div>
@@ -102,7 +103,7 @@ export function CustomerSummaryPanel({ customerId }: { customerId: string }) {
     <Card>
       <DataPanel
         data={panelSummary}
-        icon={<CustomerIcon className="text-accent" />}
+        icon={<CustomerIcon />}
         header={<CustomerSummaryHeader summary={panelSummary} emptyValue={emptyValue} />}
         columnLabels={customerSummaryPanelColumnLabels}
         fields={customerSummaryPanelFields}

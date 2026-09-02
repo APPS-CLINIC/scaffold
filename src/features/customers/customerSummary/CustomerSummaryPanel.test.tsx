@@ -28,7 +28,7 @@ describe('CustomerSummaryPanel', () => {
     await i18n.changeLanguage('pl');
   });
 
-  it('renders the scoped customer mirror with IWA status, rating label and company icon', () => {
+  it('renders the scoped customer mirror with IWA status, rating label and brand icon', () => {
     const { container } = renderWithProviders(<CustomerSummaryPanel customerId="42" />, {
       preloadedState: {
         customerSummary: { customerId: '42', data: summary, status: 'succeeded' },
@@ -38,7 +38,13 @@ describe('CustomerSummaryPanel', () => {
     expect(screen.getByRole('heading', { level: 2, name: 'ACME Corporation' })).toBeInTheDocument();
     expect(screen.getByText(i18n.t('common.status.active'))).toBeInTheDocument();
     expect(screen.getByText('AAA').parentElement).toHaveClass('rounded-full');
-    expect(container.querySelector('.pi-building')).toBeInTheDocument();
+    const icon = container.querySelector('.pi-briefcase');
+    expect(icon).toHaveClass('text-4xl');
+    expect(icon?.parentElement).toHaveClass(
+      'size-24',
+      'bg-[var(--navigation-accent)]',
+      'text-white',
+    );
     expect(container.querySelector('.pi-cog')).not.toBeInTheDocument();
   });
 
@@ -65,7 +71,7 @@ describe('CustomerSummaryPanel', () => {
   });
 
   it('never exposes a previous customer and uses reserved loading geometry instead', () => {
-    renderWithProviders(<CustomerSummaryPanel customerId="new" />, {
+    const { container } = renderWithProviders(<CustomerSummaryPanel customerId="new" />, {
       preloadedState: {
         customerSummary: { customerId: 'old', data: summary, status: 'succeeded' },
       },
@@ -78,6 +84,7 @@ describe('CustomerSummaryPanel', () => {
     expect(
       screen.getByText(i18n.t('customers.summaryPanel.column.identification')),
     ).toBeInTheDocument();
+    expect(container.querySelector('.size-24.rounded-full')).toBeInTheDocument();
   });
 
   it('renders the stable empty panel after a failed request instead of an endless loading state', () => {

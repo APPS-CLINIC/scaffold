@@ -109,25 +109,25 @@ describe('CustomerDetailLayout routing lifecycle', () => {
     });
     expect(selectCustomerSummary(store.getState(), 'first')?.fullName).toBe('First Customer');
     expect(
-      view.getByRole('heading', { level: 1, name: i18n.t('customers.details.title') }),
+      view.getByRole('heading', { level: 1, name: i18n.t('customers.details.pageTitle') }),
     ).toBeInTheDocument();
     expect(
       view.getByRole('heading', { level: 2, name: i18n.t('nav.customerDetail.generalData') }),
     ).toBeInTheDocument();
     expect(view.getAllByText('First Customer').length).toBeGreaterThan(0);
-    expect(view.container.querySelector('.pi-building')).toBeInTheDocument();
+    expect(view.container.querySelector('.pi-briefcase')).toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledOnce();
 
     await act(async () => {
       await router.navigate('/customers/first/dashboard');
     });
-    expect(view.container.querySelector('.pi-building')).not.toBeInTheDocument();
+    expect(view.container.querySelector('.pi-briefcase')).not.toBeInTheDocument();
     expect(fetchMock).toHaveBeenCalledOnce();
 
     await act(async () => {
       await router.navigate('/customers/first/general-data');
     });
-    expect(view.container.querySelector('.pi-building')).toBeInTheDocument();
+    expect(view.container.querySelector('.pi-briefcase')).toBeInTheDocument();
     await act(async () => {
       await router.navigate('/customers/first/reviews/details');
     });

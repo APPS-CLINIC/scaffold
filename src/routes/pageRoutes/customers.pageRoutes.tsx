@@ -28,7 +28,7 @@ const customerDetailDefaultItemPath = getNavigationContextDefaultItemPath(
 /**
  * Customer routes that are not navigation destinations. Paths are relative
  * to the section path, matching how React Router nests them. `:id` is a
- * layout route: `CustomerDetailLayout` mounts the summary panel/breadcrumb
+ * layout route: `CustomerDetailLayout` mounts the summary panel/page heading
  * once and stays mounted while its nested tab children swap under `<Outlet/>`.
  */
 export const customersDetailRoutes = [
@@ -55,7 +55,7 @@ export const customersDetailRoutes = [
       }),
       // Keep future/unconfigured L2+ deep links inside the customer layout.
       // Prefix matching still identifies a configured L2 owner where one
-      // exists, and the breadcrumb preserves every unmatched segment.
+      // exists, and the resolver preserves every unmatched segment.
       { path: '*', element: <CustomerDetailFallbackPage /> },
     ],
   },

@@ -1,8 +1,8 @@
 # Design Review: Customer Summary and Contextual Navigation
 
-Reviewed against: `DESIGN_BRIEF.md`, `INFORMATION_ARCHITECTURE.md`, the customer-detail task, and ADR 0030
+Reviewed against: `DESIGN_BRIEF.md`, `INFORMATION_ARCHITECTURE.md`, the customer-detail task, the supplied Figma reference, and ADR 0030
 Philosophy: Calm, functional banking workspace with contextual disclosure
-Date: 2026-09-01
+Date: 2026-09-02
 
 The original brief predates the customer-detail requirement and describes only
 flat section menus. The recursive customer tree reviewed here is an intentional
@@ -16,10 +16,10 @@ unplanned accordion-navigation deviation.
 | `screenshots/review-customers-list-desktop-1280.png`             | Desktop (1280×800) | Global Customers list and sidebar              |
 | `screenshots/review-customers-list-tablet-768.png`               | Tablet (768×1024)  | Responsive customer list                       |
 | `screenshots/review-customers-list-mobile-375.png`               | Mobile (375×812)   | Single-column customer list                    |
-| `screenshots/review-customer-general-desktop-1280.png`           | Desktop (1280×800) | General data, expanded customer sidebar        |
-| `screenshots/review-customer-general-tablet-768.png`             | Tablet (768×1024)  | Stacked customer data columns                  |
-| `screenshots/review-customer-general-mobile-375.png`             | Mobile (375×812)   | Single-column customer panel                   |
-| `screenshots/review-customer-review-details-desktop-1280.png`    | Desktop (1280×800) | Configured L3 route and expanded parent branch |
+| `screenshots/review-customer-general-desktop-1280.png`           | Desktop (1280×800) | IWA page heading and expanded customer sidebar |
+| `screenshots/review-customer-general-tablet-768.png`             | Tablet (768×1024)  | Page heading and stacked customer data columns |
+| `screenshots/review-customer-general-mobile-375.png`             | Mobile (375×812)   | Page heading and single-column customer panel  |
+| `screenshots/review-customer-review-details-desktop-1280.png`    | Desktop (1280×800) | IWA return link and expanded L3 parent branch  |
 | `screenshots/review-customer-review-details-tablet-768.png`      | Tablet (768×1024)  | L3 route at compact desktop width              |
 | `screenshots/review-customer-review-details-mobile-375.png`      | Mobile (375×812)   | L3 content without the desktop-only sidebar    |
 | `screenshots/review-customer-general-collapsed-desktop-1280.png` | Desktop (1280×800) | Collapsed customer icon rail                   |
@@ -37,10 +37,13 @@ unplanned accordion-navigation deviation.
 
 The customer-detail shell now has a clear hierarchy: the unchanged global top
 bar establishes **Customers**, the contextual sidebar exposes the customer
-tabs, and the persistent card keeps customer identity visible above tab
-content. The implementation is restrained, token-based, and strongly reuses
-IWA. Browser measurements confirm zero card-height and card-top movement
-between skeleton and long loaded data at 1280, 768, and 375 pixels.
+tabs, IWA `ScreenHeading` provides the Figma-aligned **Back to: My customers**
+action and **Customer** title, and the persistent card keeps customer identity
+visible above tab content. The large white briefcase in an ING-orange circle
+matches the supplied customer reference. The implementation is restrained,
+token-based, and strongly reuses IWA. Browser measurements confirm zero
+card-height and card-top movement between skeleton and long loaded data at
+1280, 768, and 375 pixels.
 
 No application-owned blocker remains after the review fixes. The remaining
 accessibility issues are limitations of the installed IWA package and should be
@@ -53,11 +56,9 @@ None remaining.
 ## Should Fix
 
 1. **IWA navigation semantics need a shared-library fix.** The installed
-   `TabMenu` and `MenuList` emit `aria-selected` on ordinary buttons, and
-   `BreadCrumb` cannot mark the current item or localize its navigation label.
-   Application touchpoints are `TopBarCustom.tsx:62`,
-   `MenuListAdapter.tsx:34`, and `CustomerBreadcrumb.tsx:87`. Extend the IWA
-   contracts with correct tab/list/current-item semantics; do not add DOM
+   `TabMenu` and `MenuList` emit `aria-selected` on ordinary buttons.
+   Application touchpoints are `TopBarCustom.tsx` and `MenuListAdapter.tsx`.
+   Extend the IWA contracts with correct tab/list semantics; do not add DOM
    mutation workarounds in this application.
 2. **The IWA Sky label does not meet normal-text contrast.** The installed
    palette used by the rating at `customerSummaryPanelFields.ts:69` measures
@@ -88,8 +89,10 @@ None remaining.
    fixed row geometry (`DataPanel.tsx:112` and
    `DataPanelSkeleton.tsx:47`). Long values remain present in the accessibility
    tree and expose their complete text through the native title.
-2. The breadcrumb uses a stable, non-wrapping horizontal track, so replacing a
-   customer ID with the fetched customer name no longer pushes the card down.
+2. The full breadcrumb was replaced with the Figma-specified IWA
+   `ScreenHeading`: one stable **My customers** return link above the orange
+   **Customer** H1. Its destination is derived from the manifest root item and
+   no longer depends on asynchronously loaded customer data.
 3. The global top bar was restored to its previous IWA structure, spacing, and
    utility actions; only its items, destinations, and active index come from
    the resolver.
@@ -108,8 +111,8 @@ None remaining.
 - The desktop hierarchy is immediate and predictable in
   `review-customer-general-desktop-1280.png`: customer identity is strongest,
   the selected tab is unambiguous, and secondary metadata remains quiet.
-- The L3 screenshot shows the correct parent highlight, child disclosure, and
-  full breadcrumb without losing the customer shell.
+- The L3 screenshot shows the correct parent highlight and child disclosure
+  without losing either the customer shell or its list return action.
 - The panel genuinely renders an icon plus two data columns at desktop and
   reorganizes into one readable column at compact widths without horizontal
   document overflow.
@@ -117,11 +120,11 @@ None remaining.
   Tailwind/design-system tokens; no feature-specific color or shadow values
   were introduced.
 - IWA reuse is broad and appropriate: `TopBar`, `TabMenu`, `NavigationPanel`,
-  `MenuList`, `NavigationMenuItem.subNodes`, `BreadCrumb`, `Card`,
+  `MenuList`, `NavigationMenuItem.subNodes`, `ScreenHeading`, `Card`,
   `DefinitionList`, `Skeleton`, `Status`, and `Label` remain behind the UI
   seam.
 - Keyboard-operable navigation and disclosure actions have separate 44-pixel
-  targets, deep links expand their active ancestry, and modified breadcrumb
-  clicks retain native link behavior.
+  targets, deep links expand their active ancestry, and the heading return
+  action retains a real manifest-derived link target.
 - Empty values preserve every configured row and use the required en dash;
   unsupported group actions and links are absent.

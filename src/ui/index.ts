@@ -3,7 +3,6 @@ export { Button, type ButtonProps } from './Button';
 // code imports them from '@/ui' like every other UI building block.
 export {
   ActionLink,
-  BreadCrumb,
   Card,
   DefinitionList,
   IconTextButton,
@@ -12,7 +11,6 @@ export {
   MenuList,
   NavigationMenuItem,
   PaginatorTable,
-  ScreenHeading,
   SearchWithAutocomplete,
   Skeleton,
   SkeletonTable,
@@ -24,8 +22,6 @@ export {
 } from 'iwa-react-components';
 export type {
   ActionLinkProps,
-  BreadCrumbItem,
-  BreadCrumbProps,
   CardProps,
   DefinitionListProps,
   IconTextButtonProps,
@@ -36,7 +32,6 @@ export type {
   NavigationMenuItemProps,
   NavigationMenuSubNode,
   PaginatorTableProps,
-  ScreenHeadingProps,
   SearchWithAutocompleteProps,
   SkeletonProps,
   SkeletonTableColumn,
@@ -46,6 +41,8 @@ export type {
   SwitchProps,
   TableProps,
 } from 'iwa-react-components';
+export { BreadCrumb, type BreadCrumbItem, type BreadCrumbProps } from 'iwa-react-components';
+export { ScreenHeading, type ScreenHeadingItem, type ScreenHeadingProps } from './ScreenHeading';
 export { TextInput, type TextInputProps } from './TextInput';
 export { Select, type SelectProps } from './Select';
 export { PrimeIcon, type PrimeIconName, type PrimeIconProps } from './PrimeIcon';

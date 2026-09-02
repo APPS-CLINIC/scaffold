@@ -11,6 +11,8 @@ export interface DataPanelSkeletonProps extends Omit<HTMLAttributes<HTMLDivEleme
   fields: readonly DataPanelSkeletonFieldConfig[];
   columnLabels?: DataPanelColumnLabels;
   hasIcon?: boolean;
+  /** Matches either a regular field icon or a large hero-panel icon. */
+  iconSize?: 'default' | 'hero';
   hasHeader?: boolean;
 }
 
@@ -67,7 +69,7 @@ function DataPanelSkeletonColumn({ fields }: { fields: readonly DataPanelSkeleto
  */
 export const DataPanelSkeleton = forwardRef<HTMLDivElement, DataPanelSkeletonProps>(
   function DataPanelSkeleton(
-    { fields, columnLabels, hasIcon, hasHeader, className, ...rest },
+    { fields, columnLabels, hasIcon, iconSize = 'default', hasHeader, className, ...rest },
     ref,
   ) {
     const { t } = useTranslation();
@@ -82,7 +84,12 @@ export const DataPanelSkeleton = forwardRef<HTMLDivElement, DataPanelSkeletonPro
         className={className}
         icon={
           hasIcon ? (
-            <span className="block size-12 overflow-hidden rounded-full">
+            <span
+              className={twMerge(
+                'block overflow-hidden rounded-full',
+                iconSize === 'hero' ? 'size-24' : 'size-12',
+              )}
+            >
               <Skeleton
                 width="100%"
                 height="100%"

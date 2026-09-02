@@ -110,13 +110,22 @@ values fall back to `emptyValue` without removing the configured row.
 
 Keep the complete field list present for every data variant and pass that same
 config to `DataPanelSkeleton`, together with the column labels and icon/header
-flags. The skeleton keeps translated labels invisibly in flow, so it reserves
-their exact responsive wrapping. Loaded values use a fixed, truncated row with
-their complete text available through the native title and accessibility tree;
-`valueSize` keeps richer values such as an IWA `Label` on the same height in
-both states. Both components share the same layout primitives and IWA
-definition-list geometry, so loading does not cause a layout shift even for
-long backend values.
+flags. Use `iconSize="hero"` when the loaded panel uses the large hero icon;
+the default reserves the regular icon size. The skeleton keeps translated
+labels invisibly in flow, so it reserves their exact responsive wrapping.
+Loaded values use a fixed, truncated row with their complete text available
+through the native title and accessibility tree; `valueSize` keeps richer
+values such as an IWA `Label` on the same height in both states. Both
+components share the same layout primitives and IWA definition-list geometry,
+so loading does not cause a layout shift even for long backend values.
+
+## `ScreenHeading`
+
+`ScreenHeading` is the app-facing adapter over IWA's page heading. Items use a
+single `{ label, navigateTo }` contract. The seam supplies the older `url`
+alias only for the local compatibility package, so route and feature code do
+not depend on two IWA versions. Use it for the standard **Back to:** line and
+orange page H1 instead of recreating that structure locally.
 
 ## `PrimeIcon` and `createPrimeIcon`
 
@@ -137,15 +146,20 @@ inside. SVGs auto-scale to ~55% of the circle and inherit `currentColor`.
 import { useCustomIcon } from '@/ui';
 
 function HistoryButton() {
-  const HistoryIcon = useCustomIcon(historyGlyph, { size: 'lg', label: 'History' });
+  const HistoryIcon = useCustomIcon(historyGlyph, {
+    size: '2xl',
+    tone: 'brand',
+    label: 'History',
+  });
 
-  return <HistoryIcon tone="accent" className="text-orange-600" />;
+  return <HistoryIcon />;
 }
 ```
 
-- `size`: `sm | md | lg | xl` (default `md`); `tone`: `outline | neutral |
-accent` (default `outline` — light surface with a subtle ring, colors come
-  from the global CSS variables).
+- `size`: `sm | md | lg | xl | 2xl` (default `md`); `tone`: `outline |
+neutral | accent | brand` (default `outline` — light surface with a subtle
+  ring, colors come from the global CSS variables). `brand` uses the ING-orange
+  navigation token with a white glyph.
 - `label` sets `role="img"` + `aria-label`; without it the icon is
   `aria-hidden` (decorative).
 - The hook memoizes on the glyph element and options — keep them
