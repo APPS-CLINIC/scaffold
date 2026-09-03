@@ -1,12 +1,10 @@
-import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CustomerGeneralDataView } from '@/features/customers';
+import { useCustomerId } from './useCustomerId';
 
 export function CustomerGeneralDataPage() {
   const { t } = useTranslation();
-  const { id } = useParams<{ id: string }>();
-
-  if (!id) return null;
+  const id = useCustomerId();
 
   return (
     <section aria-labelledby="customer-general-data-title">

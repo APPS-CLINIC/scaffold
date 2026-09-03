@@ -1,11 +1,10 @@
-import { Outlet, useParams } from 'react-router-dom';
-import { CustomerSummaryPanel } from '@/features/customers/customerSummary';
+import { Outlet } from 'react-router-dom';
+import { CustomerSummaryPanel } from '@/features/customers';
+import { useCustomerId } from './useCustomerId';
 
 /** Persistent panel shell shared by customer pages that display master data. */
 export function CustomerSummaryLayout() {
-  const { id } = useParams<{ id: string }>();
-
-  if (!id) return null;
+  const id = useCustomerId();
 
   return (
     <>

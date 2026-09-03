@@ -1,6 +1,6 @@
 # ADR 0029 — Customer summary as a read-only Redux mirror slice
 
-- **Status:** Accepted
+- **Status:** Superseded by ADR-0031
 - **Date:** 2026-08-31
 
 ## Context

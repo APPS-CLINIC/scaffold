@@ -91,7 +91,6 @@ export const en: Record<MessageKey, string> = {
   'customers.summaryPanel.field.pamLam': 'PAM/LAM',
   'customers.summaryPanel.field.homeCountry': 'Home country',
   'customers.summaryPanel.field.segmentColor': 'Segment color',
-  'customers.summaryPanel.field.rating': 'Rating',
   'customers.summaryPanel.field.lendingRatingDate': 'Rating date',
   'customers.summaryPanel.loading': 'Loading customer data…',
   'customers.details.data.error': 'Detailed customer data could not be loaded.',

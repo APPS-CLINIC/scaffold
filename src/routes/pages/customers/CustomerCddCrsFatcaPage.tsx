@@ -1,12 +1,10 @@
-import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CustomerCddCrsFatcaView } from '@/features/customers';
+import { useCustomerId } from './useCustomerId';
 
 export function CustomerCddCrsFatcaPage() {
   const { t } = useTranslation();
-  const { id } = useParams<{ id: string }>();
-
-  if (!id) return null;
+  const id = useCustomerId();
 
   return (
     <section aria-labelledby="customer-compliance-title">

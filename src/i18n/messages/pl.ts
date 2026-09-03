@@ -93,7 +93,6 @@ export const pl = {
   'customers.summaryPanel.field.pamLam': 'PAM/LAM',
   'customers.summaryPanel.field.homeCountry': 'Kraj macierzysty',
   'customers.summaryPanel.field.segmentColor': 'Kolor segmentu',
-  'customers.summaryPanel.field.rating': 'Rating',
   'customers.summaryPanel.field.lendingRatingDate': 'Data ratingu',
   'customers.summaryPanel.loading': 'Ładowanie danych klienta…',
   'customers.details.data.error': 'Nie udało się załadować szczegółowych danych klienta.',

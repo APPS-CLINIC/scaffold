@@ -1,4 +1,7 @@
+import { useMemo, type ReactElement } from 'react';
+import { useTranslation } from 'react-i18next';
 import { formatIsoDmyDate } from '@/i18n/dateFormats';
+import { Status } from '@/ui';
 import type { CustomerAddress } from './customerDetails.types';
 
 function presentParts(parts: readonly (string | null)[]): string[] {
@@ -53,4 +56,45 @@ export function isPastCustomerDate(value: string | null, today = new Date()): bo
   ].join('-');
 
   return comparableDate < todayDate;
+}
+
+export interface CustomerFormatters {
+  date: (value: string | null) => string | null;
+  yesNo: (value: boolean | null) => string | null;
+  address: (value: CustomerAddress | null) => string | null;
+  /** Localized date preceded by the IWA "Overdue" status when the date is in the past (CDD + FATCA rows). */
+  expiry: (value: string | null) => ReactElement | null;
+}
+
+/** Binds the pure formatters above to the active locale/translations, once per render. */
+export function useCustomerFormatters(): CustomerFormatters {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.resolvedLanguage ?? i18n.language;
+
+  return useMemo(
+    () => ({
+      date: (value: string | null) => formatCustomerDate(value, locale),
+      yesNo: (value: boolean | null) =>
+        formatCustomerBoolean(value, { yes: t('common.yes'), no: t('common.no') }),
+      address: formatCustomerAddress,
+      expiry: (value: string | null): ReactElement | null => {
+        const formatted = formatCustomerDate(value, locale);
+        if (!value || !formatted) return null;
+
+        return (
+          <span className="inline-flex flex-wrap items-center gap-2">
+            {isPastCustomerDate(value) ? (
+              <Status
+                type="incomplete"
+                label={t('customers.details.compliance.status.overdue')}
+                className="[&_*]:!text-sm [&_*]:!leading-5"
+              />
+            ) : null}
+            <time dateTime={value}>{formatted}</time>
+          </span>
+        );
+      },
+    }),
+    [locale, t],
+  );
 }

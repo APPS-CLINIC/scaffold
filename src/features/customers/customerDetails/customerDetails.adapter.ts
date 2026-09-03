@@ -145,18 +145,15 @@ export function mapCustomerAdvisorsResponse(response: CustomerAdvisorsResponse):
   return { ...EMPTY_ADVISORS, ...response };
 }
 
-export function createEmptyCustomerDetails(): CustomerDetails {
-  return mapCustomerDetailsResponse({
-    addresses: null,
-    consents: null,
-    crs: null,
-    fatca: null,
-    mifid: null,
-    lei: null,
-    emir: null,
-  });
-}
+/** Reserved layout for every General data / CDD row while a customer's request is unresolved. */
+export const EMPTY_CUSTOMER_DETAILS: CustomerDetails = mapCustomerDetailsResponse({
+  addresses: null,
+  consents: null,
+  crs: null,
+  fatca: null,
+  mifid: null,
+  lei: null,
+  emir: null,
+});
 
-export function createEmptyCustomerAdvisors(): CustomerAdvisors {
-  return { ...EMPTY_ADVISORS };
-}
+export const EMPTY_CUSTOMER_ADVISORS: CustomerAdvisors = { ...EMPTY_ADVISORS };

@@ -1,9 +1,12 @@
-import { describe, expect, it } from 'vitest';
+import { render, renderHook, screen } from '@testing-library/react';
+import { beforeEach, describe, expect, it } from 'vitest';
+import i18n from '@/i18n';
 import {
   formatCustomerAddress,
   formatCustomerBoolean,
   formatCustomerDate,
   isPastCustomerDate,
+  useCustomerFormatters,
 } from './customerDetails.formatters';
 
 describe('customer detail formatters', () => {
@@ -44,5 +47,45 @@ describe('customer detail formatters', () => {
     expect(isPastCustomerDate('unknown', today)).toBe(false);
     expect(isPastCustomerDate('2025-13-01', today)).toBe(false);
     expect(isPastCustomerDate('2025-02-31', today)).toBe(false);
+  });
+});
+
+describe('useCustomerFormatters().expiry', () => {
+  beforeEach(async () => {
+    await i18n.changeLanguage('en');
+  });
+
+  it('marks a past date as Overdue and keeps <time dateTime> on the formatted value', () => {
+    const expectedDate = new Intl.DateTimeFormat('en', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(new Date('2000-01-02T12:00:00'));
+    const { result } = renderHook(() => useCustomerFormatters());
+
+    render(<>{result.current.expiry('2000-01-02')}</>);
+
+    expect(screen.getByText('Overdue')).toBeInTheDocument();
+    expect(screen.getByText(expectedDate)).toHaveAttribute('datetime', '2000-01-02');
+  });
+
+  it('renders a future date without the Overdue badge', () => {
+    const expectedDate = new Intl.DateTimeFormat('en', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(new Date('2999-01-02T12:00:00'));
+    const { result } = renderHook(() => useCustomerFormatters());
+
+    render(<>{result.current.expiry('2999-01-02')}</>);
+
+    expect(screen.queryByText('Overdue')).not.toBeInTheDocument();
+    expect(screen.getByText(expectedDate)).toHaveAttribute('datetime', '2999-01-02');
+  });
+
+  it('returns null for a missing expiration date', () => {
+    const { result } = renderHook(() => useCustomerFormatters());
+
+    expect(result.current.expiry(null)).toBeNull();
   });
 });
