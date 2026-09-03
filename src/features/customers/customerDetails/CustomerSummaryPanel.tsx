@@ -8,10 +8,11 @@ import type { CustomerSummary } from './customerSummary.types';
 
 const CUSTOMER_GLYPH = <PrimeIcon name="briefcase" />;
 
-// The panel's two-column split, carried verbatim from 16c79b4 (D11): stacked below
-// lg (768px), paired from lg (1024px) onward.
+// The panel's two-column split: stacked below lg, paired from lg onward (D11). Both columns
+// are content-sized and left-aligned, so Rating sits next to the identification data instead
+// of being pushed to the middle of the card.
 const SPLIT =
-  'grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:gap-x-8';
+  'grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,max-content)_minmax(0,max-content)] lg:justify-start lg:gap-x-12';
 
 function SummaryHeader({ summary, empty }: { summary: CustomerSummary; empty: string }) {
   const { t } = useTranslation();

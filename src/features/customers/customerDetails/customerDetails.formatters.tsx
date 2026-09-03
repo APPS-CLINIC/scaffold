@@ -81,15 +81,16 @@ export function useCustomerFormatters(): CustomerFormatters {
         const formatted = formatCustomerDate(value, locale);
         if (!value || !formatted) return null;
 
+        if (!isPastCustomerDate(value)) return <time dateTime={value}>{formatted}</time>;
+
+        // Past dates lead with the vendor warning status on its own line, the date below it.
         return (
-          <span className="inline-flex flex-wrap items-center gap-2">
-            {isPastCustomerDate(value) ? (
-              <Status
-                type="incomplete"
-                label={t('customers.details.compliance.status.overdue')}
-                className="[&_*]:!text-sm [&_*]:!leading-5"
-              />
-            ) : null}
+          <span className="flex min-w-0 flex-col items-start gap-0.5">
+            <Status
+              type="incomplete"
+              label={t('customers.details.compliance.status.overdue')}
+              className="[&_*]:!text-sm [&_*]:!leading-5"
+            />
             <time dateTime={value}>{formatted}</time>
           </span>
         );

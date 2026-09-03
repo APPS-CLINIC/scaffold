@@ -164,8 +164,8 @@ describe('CustomerDetailLayout routing lifecycle', () => {
     ).toBeInTheDocument();
     expect(
       view.getByRole('heading', {
-        level: 3,
-        name: i18n.t('customers.details.compliance.section.segmentation'),
+        level: 4,
+        name: i18n.t('customers.details.compliance.subsection.scopeFileData'),
       }),
     ).toBeInTheDocument();
     expect(requestedPaths.filter((path) => path.endsWith('/customers/first'))).toHaveLength(1);

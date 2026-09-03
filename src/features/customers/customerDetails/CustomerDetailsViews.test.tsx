@@ -166,10 +166,17 @@ describe('customer detail views', () => {
     expect(screen.getByText('Review')).toBeInTheDocument();
     expect(screen.getAllByText('Completed')).toHaveLength(2);
     expect(screen.getByText('Periodic')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 3, name: 'Segmentation' })).toBeInTheDocument();
-    expect(screen.getByText('Assessment date').closest('dl')).toHaveTextContent('–');
-    expect(screen.getByText('First generation').closest('dl')).toHaveTextContent('–');
-    expect(screen.getByText('Second generation').closest('dl')).toHaveTextContent('–');
+    // Both design groups live inside the single CDD card, separated by one divider.
+    expect(
+      within(cddSection).getByRole('heading', { level: 4, name: 'Data ICBS' }),
+    ).toBeInTheDocument();
+    expect(
+      within(cddSection).getByRole('heading', { level: 4, name: 'Scope file data' }),
+    ).toBeInTheDocument();
+    expect(cddSection.querySelectorAll('hr')).toHaveLength(1);
+    expect(screen.getByText('Approval date').closest('dl')).toHaveTextContent('–');
+    expect(screen.getByText('First pre - exit letter').closest('dl')).toHaveTextContent('–');
+    expect(screen.getByText('Second pre - exit letter').closest('dl')).toHaveTextContent('–');
     expect(screen.getByText('Sprint start date').closest('dl')).toHaveTextContent('–');
   });
 });

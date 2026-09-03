@@ -74,33 +74,53 @@ export function ValueSkeleton() {
   );
 }
 
-/** One titled card band: IWA Card, h3 in the leading quarter at lg, rows in the remaining three. */
+export interface CustomerFieldGroup {
+  /** Optional sub-heading; rendered above its own rows, inside the same card. */
+  titleKey?: MessageKey;
+  rows: readonly CustomerFieldRow[];
+}
+
+type SectionContent =
+  | { rows: readonly CustomerFieldRow[]; groups?: never }
+  | { groups: readonly CustomerFieldGroup[]; rows?: never };
+
+/**
+ * One titled card band. The section title sits above its rows (not beside them), and a
+ * section may hold several titled groups separated by a full-width divider, as the CDD
+ * card does with "Data ICBS" and "Scope file data".
+ */
 export function CustomerDetailSection({
   titleKey,
-  rows,
   loading,
-}: {
-  titleKey: MessageKey;
-  rows: readonly CustomerFieldRow[];
-  loading: boolean;
-}) {
+  ...content
+}: { titleKey: MessageKey; loading: boolean } & SectionContent) {
   const { t } = useTranslation();
   const headingId = useId();
+  const groups: readonly CustomerFieldGroup[] = content.groups ?? [{ rows: content.rows ?? [] }];
 
   return (
     <Card>
-      <section
-        aria-labelledby={headingId}
-        className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-4 lg:gap-6"
-      >
+      <section aria-labelledby={headingId} className="min-w-0">
         <h3 id={headingId} className="m-0 text-lg font-bold leading-6 text-[var(--text)]">
           {t(titleKey)}
         </h3>
-        <div className="min-w-0 space-y-1 lg:col-span-3">
-          {rows.map((row) => (
-            <CustomerField key={row.labelKey} {...row} loading={loading} />
-          ))}
-        </div>
+        {groups.map((group, index) => (
+          <div key={group.titleKey ?? 'rows'} className="min-w-0">
+            {index > 0 ? (
+              <hr className="my-4 border-0 border-t border-[var(--border-subtle)]" />
+            ) : null}
+            {group.titleKey ? (
+              <h4 className="m-0 mt-3 text-sm font-bold text-[var(--text)]">{t(group.titleKey)}</h4>
+            ) : null}
+            <div className="mt-3 grid min-w-0 grid-cols-1 lg:grid-cols-4">
+              <div className="min-w-0 space-y-1 lg:col-span-3 lg:col-start-2">
+                {group.rows.map((row) => (
+                  <CustomerField key={row.labelKey} {...row} loading={loading} />
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
       </section>
     </Card>
   );

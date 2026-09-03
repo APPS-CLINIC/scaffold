@@ -16,7 +16,10 @@ export interface CustomerCddCrsFatcaViewProps {
  */
 const NOT_MAPPED = null;
 
-/** Route content for the CDD/CRS/FATCA tab: 4 sections, 25 rows (15 NOT_MAPPED), design order preserved. */
+/**
+ * Route content for the CDD/CRS/FATCA tab. Three cards, 25 rows (15 NOT_MAPPED), design order
+ * preserved: CDD carries the "Data ICBS" and "Scope file data" groups behind one divider.
+ */
 export function CustomerCddCrsFatcaView({ customerId }: CustomerCddCrsFatcaViewProps) {
   const { t } = useTranslation();
   const f = useCustomerFormatters();
@@ -28,37 +31,37 @@ export function CustomerCddCrsFatcaView({ customerId }: CustomerCddCrsFatcaViewP
     (!details.isError && details.currentData === undefined) ||
     (!summary.isError && s === undefined);
 
-  const cdd: readonly CustomerFieldRow[] = [
+  const dataIcbs: readonly CustomerFieldRow[] = [
     { labelKey: 'customers.details.compliance.field.cddDate', value: NOT_MAPPED },
     { labelKey: 'customers.details.compliance.field.cddRiskLevel', value: s?.cddRiskLevel },
     {
       labelKey: 'customers.details.compliance.field.cddExpirationDate',
       value: f.expiry(s?.cddExpirationDate ?? null),
     },
-    { labelKey: 'customers.details.compliance.field.cddAssessmentDate', value: NOT_MAPPED },
-    { labelKey: 'customers.details.compliance.field.cddRiskLevelVintage', value: NOT_MAPPED },
+    { labelKey: 'customers.details.compliance.field.cddApprovalDate', value: NOT_MAPPED },
+    { labelKey: 'customers.details.compliance.field.cddRiskLevelVantage', value: NOT_MAPPED },
     {
-      labelKey: 'customers.details.compliance.field.cddExpirationDateVintage',
+      labelKey: 'customers.details.compliance.field.cddExpirationDateVantage',
       value: NOT_MAPPED,
     },
     { labelKey: 'customers.details.compliance.field.cddOwner', value: NOT_MAPPED },
-    { labelKey: 'customers.details.compliance.field.cddFirstGeneration', value: NOT_MAPPED },
-    { labelKey: 'customers.details.compliance.field.cddSecondGeneration', value: NOT_MAPPED },
-    { labelKey: 'customers.details.compliance.field.mlrdDeviationFrom', value: NOT_MAPPED },
-    { labelKey: 'customers.details.compliance.field.mlrdDeviationTo', value: NOT_MAPPED },
-    { labelKey: 'customers.details.compliance.field.mlrdDeviationFlag', value: NOT_MAPPED },
+    { labelKey: 'customers.details.compliance.field.cddFirstPreExitLetter', value: NOT_MAPPED },
+    { labelKey: 'customers.details.compliance.field.cddSecondPreExitLetter', value: NOT_MAPPED },
+    { labelKey: 'customers.details.compliance.field.mlroDeviationFrom', value: NOT_MAPPED },
+    { labelKey: 'customers.details.compliance.field.mlroDeviationTo', value: NOT_MAPPED },
+    { labelKey: 'customers.details.compliance.field.mlroDeviationFlag', value: NOT_MAPPED },
   ];
 
-  const segmentation: readonly CustomerFieldRow[] = [
-    { labelKey: 'customers.details.compliance.field.segmentationGroup', value: NOT_MAPPED },
-    { labelKey: 'customers.details.compliance.field.segmentationCluster', value: NOT_MAPPED },
-    { labelKey: 'customers.details.compliance.field.segmentationSprint', value: NOT_MAPPED },
+  const scopeFile: readonly CustomerFieldRow[] = [
+    { labelKey: 'customers.details.compliance.field.scopeFileGroup', value: NOT_MAPPED },
+    { labelKey: 'customers.details.compliance.field.scopeFileCluster', value: NOT_MAPPED },
+    { labelKey: 'customers.details.compliance.field.scopeFileSprint', value: NOT_MAPPED },
     {
-      labelKey: 'customers.details.compliance.field.segmentationSprintStartDate',
+      labelKey: 'customers.details.compliance.field.scopeFileSprintStartDate',
       value: NOT_MAPPED,
     },
     {
-      labelKey: 'customers.details.compliance.field.segmentationSprintEndDate',
+      labelKey: 'customers.details.compliance.field.scopeFileSprintEndDate',
       value: NOT_MAPPED,
     },
   ];
@@ -106,12 +109,10 @@ export function CustomerCddCrsFatcaView({ customerId }: CustomerCddCrsFatcaViewP
       ) : null}
       <CustomerDetailSection
         titleKey="customers.details.compliance.section.cdd"
-        rows={cdd}
-        loading={loading}
-      />
-      <CustomerDetailSection
-        titleKey="customers.details.compliance.section.segmentation"
-        rows={segmentation}
+        groups={[
+          { titleKey: 'customers.details.compliance.subsection.dataIcbs', rows: dataIcbs },
+          { titleKey: 'customers.details.compliance.subsection.scopeFileData', rows: scopeFile },
+        ]}
         loading={loading}
       />
       <CustomerDetailSection

@@ -107,6 +107,38 @@ describe('CustomerDetailSection', () => {
     expect(rowLabels).toEqual(['Tax ID:', 'REGON:']);
   });
 
+  it('renders each configured group under its own sub-heading, split by one divider', () => {
+    render(
+      <CustomerDetailSection
+        titleKey="customers.details.compliance.section.cdd"
+        groups={[
+          {
+            titleKey: 'customers.details.compliance.subsection.dataIcbs',
+            rows: [{ labelKey: 'customers.details.compliance.field.cddOwner', value: 'owner' }],
+          },
+          {
+            titleKey: 'customers.details.compliance.subsection.scopeFileData',
+            rows: [{ labelKey: 'customers.details.compliance.field.scopeFileGroup', value: null }],
+          },
+        ]}
+        loading={false}
+      />,
+    );
+
+    const section = screen.getByRole('heading', { level: 3, name: 'CDD' }).closest('section');
+    if (!section) throw new Error('Expected a CDD section');
+    expect(
+      within(section).getByRole('heading', { level: 4, name: 'Data ICBS' }),
+    ).toBeInTheDocument();
+    expect(
+      within(section).getByRole('heading', { level: 4, name: 'Scope file data' }),
+    ).toBeInTheDocument();
+    // One divider between the two groups, never before the first one.
+    expect(section.querySelectorAll('hr')).toHaveLength(1);
+    expect(within(section).getByText('owner')).toBeInTheDocument();
+    expect(within(section).getByText('Group').closest('dl')).toHaveTextContent('–');
+  });
+
   it('passes loading through to every row', () => {
     render(
       <CustomerDetailSection
