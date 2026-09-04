@@ -71,9 +71,8 @@ function readText(source: Record<string, unknown>, keys: readonly string[]): str
 }
 
 /**
- * Keep the unobserved transport wrapper at the HTTP boundary. Its object is
- * identifiable from the two final keys that are visible in Swagger, without
- * leaking wrapper-name assumptions into page configuration.
+ * Locates the basic-data group by its `catalogOpenDate` and `reviewExtensionDate` keys,
+ * whether it sits at the top level or under a wrapper object.
  */
 function findBasicDataSource(response: CustomerDetailsResponse): Record<string, unknown> {
   if ('catalogOpenDate' in response && 'reviewExtensionDate' in response) return response;
@@ -140,7 +139,7 @@ export function mapCustomerDetailsResponse(response: CustomerDetailsResponse): C
   };
 }
 
-/** Keep the advisor view stable if a nullable field is omitted by an older service version. */
+/** Fills in omitted advisor fields so every configured row exists. */
 export function mapCustomerAdvisorsResponse(response: CustomerAdvisorsResponse): CustomerAdvisors {
   return { ...EMPTY_ADVISORS, ...response };
 }

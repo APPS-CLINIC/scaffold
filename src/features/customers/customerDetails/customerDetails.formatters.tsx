@@ -83,7 +83,7 @@ export function useCustomerFormatters(): CustomerFormatters {
 
         if (!isPastCustomerDate(value)) return <time dateTime={value}>{formatted}</time>;
 
-        // Past dates lead with the vendor warning status on its own line, the date below it.
+        // Past dates show the Overdue status on its own line, the date below it.
         return (
           <span className="flex min-w-0 flex-col items-start gap-0.5">
             <Status

@@ -1,141 +1,155 @@
 import { useTranslation } from 'react-i18next';
 import { CustomerDetailSection, type CustomerFieldRow } from './CustomerFields';
 import { EMPTY_CUSTOMER_ADVISORS, EMPTY_CUSTOMER_DETAILS } from './customerDetails.adapter';
-import { useGetCustomerAdvisorsQuery, useGetCustomerDetailsQuery } from './customerDetails.api';
+import {
+  isAwaitingData,
+  useGetCustomerAdvisorsQuery,
+  useGetCustomerDetailsQuery,
+} from './customerDetails.api';
 import { useCustomerFormatters } from './customerDetails.formatters';
 
 export interface CustomerGeneralDataViewProps {
   customerId: string;
 }
 
-/** Route content for the General data tab: 4 sections, 38 rows, design order preserved. */
+/** Route content for the General data tab. Section and row order follow the design. */
 export function CustomerGeneralDataView({ customerId }: CustomerGeneralDataViewProps) {
   const { t } = useTranslation();
-  const f = useCustomerFormatters();
-  const details = useGetCustomerDetailsQuery(customerId);
-  const advisors = useGetCustomerAdvisorsQuery(customerId);
-  const d = details.currentData ?? EMPTY_CUSTOMER_DETAILS;
-  const a = advisors.currentData ?? EMPTY_CUSTOMER_ADVISORS;
-  const loading =
-    (!details.isError && details.currentData === undefined) ||
-    (!advisors.isError && advisors.currentData === undefined);
+  const format = useCustomerFormatters();
+  const detailsQuery = useGetCustomerDetailsQuery(customerId);
+  const advisorsQuery = useGetCustomerAdvisorsQuery(customerId);
+  const details = detailsQuery.currentData ?? EMPTY_CUSTOMER_DETAILS;
+  const advisors = advisorsQuery.currentData ?? EMPTY_CUSTOMER_ADVISORS;
+  const loading = isAwaitingData(detailsQuery) || isAwaitingData(advisorsQuery);
 
   const basic: readonly CustomerFieldRow[] = [
     {
       labelKey: 'customers.details.generalData.field.catalogOpenDate',
-      value: f.date(d.basicData.catalogOpenDate),
+      value: format.date(details.basicData.catalogOpenDate),
     },
-    { labelKey: 'customers.details.generalData.field.taxId', value: d.basicData.taxId },
-    { labelKey: 'customers.details.generalData.field.regon', value: d.basicData.regon },
-    { labelKey: 'customers.details.generalData.field.krs', value: d.basicData.krs },
+    { labelKey: 'customers.details.generalData.field.taxId', value: details.basicData.taxId },
+    { labelKey: 'customers.details.generalData.field.regon', value: details.basicData.regon },
+    { labelKey: 'customers.details.generalData.field.krs', value: details.basicData.krs },
     {
       labelKey: 'customers.details.generalData.field.residenceCountry',
-      value: d.basicData.residenceCountry,
+      value: details.basicData.residenceCountry,
     },
     {
       labelKey: 'customers.details.generalData.field.registrationCountry',
-      value: d.basicData.registrationCountry,
+      value: details.basicData.registrationCountry,
     },
     {
       labelKey: 'customers.details.generalData.field.customerType',
-      value: d.basicData.customerType,
+      value: details.basicData.customerType,
     },
-    { labelKey: 'customers.details.generalData.field.sector', value: d.basicData.sector },
-    { labelKey: 'customers.details.generalData.field.subSector', value: d.basicData.subSector },
+    { labelKey: 'customers.details.generalData.field.sector', value: details.basicData.sector },
+    {
+      labelKey: 'customers.details.generalData.field.subSector',
+      value: details.basicData.subSector,
+    },
     {
       labelKey: 'customers.details.generalData.field.nbpEntityType',
-      value: d.basicData.nbpEntityType,
+      value: details.basicData.nbpEntityType,
     },
     {
       labelKey: 'customers.details.generalData.field.nbpEntityTypeDescription',
-      value: d.basicData.nbpEntityTypeDescription,
+      value: details.basicData.nbpEntityTypeDescription,
     },
     {
       labelKey: 'customers.details.generalData.field.mifidClassification',
-      value: d.mifid.mifidClassification,
+      value: details.mifid.mifidClassification,
     },
-    { labelKey: 'customers.details.generalData.field.leiCode', value: d.lei.leiCode },
+    { labelKey: 'customers.details.generalData.field.leiCode', value: details.lei.leiCode },
     {
       labelKey: 'customers.details.generalData.field.leiCodeValidityDate',
-      value: f.date(d.lei.leiCodeValidityDate),
+      value: format.date(details.lei.leiCodeValidityDate),
     },
     {
       labelKey: 'customers.details.generalData.field.emirClassification',
-      value: d.emir.emirClassification,
+      value: details.emir.emirClassification,
     },
-    { labelKey: 'customers.details.generalData.field.naicsCode', value: d.basicData.naicsCode },
-    { labelKey: 'customers.details.generalData.field.naicsName', value: d.basicData.naicsName },
+    {
+      labelKey: 'customers.details.generalData.field.naicsCode',
+      value: details.basicData.naicsCode,
+    },
+    {
+      labelKey: 'customers.details.generalData.field.naicsName',
+      value: details.basicData.naicsName,
+    },
   ];
 
   const addresses: readonly CustomerFieldRow[] = [
     {
       labelKey: 'customers.details.generalData.field.mainAddress',
-      value: f.address(d.addresses.mainAddress),
+      value: format.address(details.addresses.mainAddress),
     },
     {
       labelKey: 'customers.details.generalData.field.mailingAddress',
-      value: f.address(d.addresses.mailingAddress),
+      value: format.address(details.addresses.mailingAddress),
     },
   ];
 
   const advisorRows: readonly CustomerFieldRow[] = [
-    { labelKey: 'customers.details.generalData.field.rmAdvisor', value: a.rmAdvisor },
-    { labelKey: 'customers.details.generalData.field.lendingAdvisor', value: a.lendingAdvisor },
-    { labelKey: 'customers.details.generalData.field.sfAdvisor', value: a.sfAdvisor },
-    { labelKey: 'customers.details.generalData.field.pcmAdvisor', value: a.pcmAdvisor },
-    { labelKey: 'customers.details.generalData.field.fmAdvisor', value: a.fmAdvisor },
-    { labelKey: 'customers.details.generalData.field.tsAdvisor', value: a.tsAdvisor },
-    { labelKey: 'customers.details.generalData.field.ebdAdvisor', value: a.ebdAdvisor },
+    { labelKey: 'customers.details.generalData.field.rmAdvisor', value: advisors.rmAdvisor },
+    {
+      labelKey: 'customers.details.generalData.field.lendingAdvisor',
+      value: advisors.lendingAdvisor,
+    },
+    { labelKey: 'customers.details.generalData.field.sfAdvisor', value: advisors.sfAdvisor },
+    { labelKey: 'customers.details.generalData.field.pcmAdvisor', value: advisors.pcmAdvisor },
+    { labelKey: 'customers.details.generalData.field.fmAdvisor', value: advisors.fmAdvisor },
+    { labelKey: 'customers.details.generalData.field.tsAdvisor', value: advisors.tsAdvisor },
+    { labelKey: 'customers.details.generalData.field.ebdAdvisor', value: advisors.ebdAdvisor },
     {
       labelKey: 'customers.details.generalData.field.implementationAdvisor',
-      value: a.implementationAdvisor,
+      value: advisors.implementationAdvisor,
     },
     {
       labelKey: 'customers.details.generalData.field.customerServiceAdvisor',
-      value: a.customerServiceAdvisor,
+      value: advisors.customerServiceAdvisor,
     },
   ];
 
   const consents: readonly CustomerFieldRow[] = [
     {
       labelKey: 'customers.details.generalData.field.electronicBskMarketingConsent',
-      value: f.yesNo(d.consents.electronicBskMarketingConsent),
+      value: format.yesNo(details.consents.electronicBskMarketingConsent),
     },
     {
       labelKey: 'customers.details.generalData.field.nvTransferConsent',
-      value: f.yesNo(d.consents.nvTransferConsent),
+      value: format.yesNo(details.consents.nvTransferConsent),
     },
     {
       labelKey: 'customers.details.generalData.field.bskTransferConsent',
-      value: f.yesNo(d.consents.bskTransferConsent),
+      value: format.yesNo(details.consents.bskTransferConsent),
     },
     {
       labelKey: 'customers.details.generalData.field.traditionalBskMarketingConsent',
-      value: f.yesNo(d.consents.traditionalBskMarketingConsent),
+      value: format.yesNo(details.consents.traditionalBskMarketingConsent),
     },
     {
       labelKey: 'customers.details.generalData.field.udbTransferConsent',
-      value: f.yesNo(d.consents.udbTransferConsent),
+      value: format.yesNo(details.consents.udbTransferConsent),
     },
     {
       labelKey: 'customers.details.generalData.field.fromIngLeaseConsent',
-      value: f.yesNo(d.consents.fromIngLeaseConsent),
+      value: format.yesNo(details.consents.fromIngLeaseConsent),
     },
     {
       labelKey: 'customers.details.generalData.field.toIngLeaseConsent',
-      value: f.yesNo(d.consents.toIngLeaseConsent),
+      value: format.yesNo(details.consents.toIngLeaseConsent),
     },
     {
       labelKey: 'customers.details.generalData.field.fromCommercialFinanceConsent',
-      value: f.yesNo(d.consents.fromCommercialFinanceConsent),
+      value: format.yesNo(details.consents.fromCommercialFinanceConsent),
     },
     {
       labelKey: 'customers.details.generalData.field.toCommercialFinanceConsent',
-      value: f.yesNo(d.consents.toCommercialFinanceConsent),
+      value: format.yesNo(details.consents.toCommercialFinanceConsent),
     },
     {
       labelKey: 'customers.details.generalData.field.outsideBankConsent',
-      value: f.yesNo(d.consents.outsideBankConsent),
+      value: format.yesNo(details.consents.outsideBankConsent),
     },
   ];
 
@@ -146,7 +160,7 @@ export function CustomerGeneralDataView({ customerId }: CustomerGeneralDataViewP
       aria-busy={loading || undefined}
       className="min-w-0 space-y-4"
     >
-      {details.isError || advisors.isError ? (
+      {detailsQuery.isError || advisorsQuery.isError ? (
         <p role="alert" className="sr-only">
           {t('customers.details.data.error')}
         </p>

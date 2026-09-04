@@ -11,12 +11,10 @@ export interface CustomerFieldRow {
   value: CustomerFieldValue;
 }
 
-// Geometry carried over from the deleted vendor-DOM override blocks these rows replace
-// (a hand-rolled dl needs no descendant selectors any more):
-// compact (panel) geometry: 2fr/3fr, then content-sized left-aligned label at md —
-//   `break-words` moves from the vendor inner div onto the `dd`.
-// fixed (tab) geometry: stack below sm, 2fr/3fr at sm, fixed right-aligned label at md,
-//   wider at xl.
+// Row geometry.
+// Compact (summary panel): 2fr/3fr label/value split, content-sized left-aligned label from md.
+// Fixed (detail tabs): stacked below sm, 2fr/3fr from sm, a 300px right-aligned label column
+// from md so the longest configured label stays on one line.
 const COMPACT = {
   dl: 'm-0 grid min-w-0 grid-cols-[minmax(0,2fr)_minmax(0,3fr)] items-start gap-1 md:grid-cols-[max-content_minmax(0,1fr)]',
   dt: 'min-w-0 break-words text-sm font-bold text-[var(--text)]',
@@ -24,14 +22,17 @@ const COMPACT = {
 };
 const FIXED = {
   dl: 'm-0 grid min-w-0 grid-cols-1 items-start gap-1 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] sm:gap-x-2 md:flex md:gap-4',
-  dt: 'min-w-0 break-words text-sm font-bold text-[var(--text)] md:w-40 md:shrink-0 md:text-right xl:w-52',
+  dt: 'min-w-0 break-words text-sm font-bold text-[var(--text)] md:w-[300px] md:shrink-0 md:text-right',
   dd: 'm-0 min-w-0 break-words text-sm text-[var(--text)] md:flex-1',
 };
 
 const isEmpty = (value: CustomerFieldValue): boolean =>
   value === null || value === undefined || (typeof value === 'string' && value.trim() === '');
 
-/** One label/value row, hand-rolled as its own <dl> (the vendor list component types its text as a plain string, so a rendered element like `expiry()`'s badge cannot flow through it; tests use .closest('dl')). */
+/**
+ * One label/value row rendered as its own `<dl>`. The IWA DefinitionList accepts string text
+ * only, and values such as the expiry date render an element.
+ */
 export function CustomerField({
   labelKey,
   value,
@@ -39,17 +40,17 @@ export function CustomerField({
   compact = false,
 }: CustomerFieldRow & { loading?: boolean; compact?: boolean }) {
   const { t } = useTranslation();
-  const g = compact ? COMPACT : FIXED;
+  const geometry = compact ? COMPACT : FIXED;
   const empty = isEmpty(value);
   const shown = empty ? t('customers.value.notAvailable') : value;
 
   return (
-    <dl className={g.dl}>
-      <dt className={g.dt}>
+    <dl className={geometry.dl}>
+      <dt className={geometry.dt}>
         {t(labelKey)}
         <span aria-hidden="true">:</span>
       </dt>
-      <dd className={g.dd}>
+      <dd className={geometry.dd}>
         {loading ? (
           <ValueSkeleton />
         ) : (
@@ -65,7 +66,7 @@ export function CustomerField({
   );
 }
 
-/** The vendor placeholder component takes no styling prop of its own: the wrapping span owns size, radius and overflow. */
+/** The IWA Skeleton takes no styling props; the wrapping span owns size, radius and overflow. */
 export function ValueSkeleton() {
   return (
     <span className="block h-5 w-3/5 overflow-hidden rounded" aria-hidden="true">

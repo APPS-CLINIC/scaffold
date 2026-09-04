@@ -186,8 +186,7 @@ function resolveTree(
   pathSegments: readonly string[],
   options: ResolveNavigationOptions,
 ): ResolvedTree {
-  const visibleItems = getVisibleItems(items, options);
-  const activeConfigPath = findActiveConfigPath(visibleItems, pathSegments, options);
+  const activeConfigPath = findActiveConfigPath(items, pathSegments, options);
   const activeItems = new Set(activeConfigPath);
   const currentItem = activeConfigPath.at(-1);
   const resolvedByConfig = new Map<NavigationTreeItemConfig, ResolvedNavigationNode>();
@@ -213,7 +212,7 @@ function resolveTree(
         return node;
       });
 
-  const resolvedItems = buildNodes(visibleItems, basePath);
+  const resolvedItems = buildNodes(items, basePath);
 
   return {
     items: resolvedItems,

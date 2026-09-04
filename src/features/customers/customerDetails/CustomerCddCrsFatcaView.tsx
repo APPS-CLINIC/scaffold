@@ -1,8 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { CustomerDetailSection, type CustomerFieldRow } from './CustomerFields';
 import { EMPTY_CUSTOMER_DETAILS } from './customerDetails.adapter';
-import { useGetCustomerDetailsQuery } from './customerDetails.api';
+import { isAwaitingData, useGetCustomerDetailsQuery } from './customerDetails.api';
 import { useCustomerFormatters } from './customerDetails.formatters';
+import { EMPTY_CUSTOMER_SUMMARY } from './customerSummary.adapter';
 import { useGetCustomerSummaryQuery } from './customerSummary.api';
 
 export interface CustomerCddCrsFatcaViewProps {
@@ -10,33 +11,30 @@ export interface CustomerCddCrsFatcaViewProps {
 }
 
 /**
- * Design rows whose backend field is not confirmed yet (Swagger photo cut off,
- * customerDetails.types.ts:72-79). They render the shared "not available" dash on purpose.
- * `grep NOT_MAPPED` lists every one; delete this constant when the last binding lands.
+ * Rows that have no backend binding yet. They render the shared "not available" value.
+ * Remove this constant once every row is bound to a field.
  */
 const NOT_MAPPED = null;
 
 /**
- * Route content for the CDD/CRS/FATCA tab. Three cards, 25 rows (15 NOT_MAPPED), design order
- * preserved: CDD carries the "Data ICBS" and "Scope file data" groups behind one divider.
+ * Route content for the CDD/CRS/FATCA tab. Card and row order follow the design; the CDD card
+ * holds the "Data ICBS" and "Scope file data" groups separated by one divider.
  */
 export function CustomerCddCrsFatcaView({ customerId }: CustomerCddCrsFatcaViewProps) {
   const { t } = useTranslation();
-  const f = useCustomerFormatters();
-  const details = useGetCustomerDetailsQuery(customerId);
-  const summary = useGetCustomerSummaryQuery(customerId); // subscriber #2 of the layout's cache entry
-  const d = details.currentData ?? EMPTY_CUSTOMER_DETAILS;
-  const s = summary.currentData;
-  const loading =
-    (!details.isError && details.currentData === undefined) ||
-    (!summary.isError && s === undefined);
+  const format = useCustomerFormatters();
+  const detailsQuery = useGetCustomerDetailsQuery(customerId);
+  const summaryQuery = useGetCustomerSummaryQuery(customerId); // shares the layout's cache entry, no extra request
+  const details = detailsQuery.currentData ?? EMPTY_CUSTOMER_DETAILS;
+  const summary = summaryQuery.currentData ?? EMPTY_CUSTOMER_SUMMARY;
+  const loading = isAwaitingData(detailsQuery) || isAwaitingData(summaryQuery);
 
   const dataIcbs: readonly CustomerFieldRow[] = [
     { labelKey: 'customers.details.compliance.field.cddDate', value: NOT_MAPPED },
-    { labelKey: 'customers.details.compliance.field.cddRiskLevel', value: s?.cddRiskLevel },
+    { labelKey: 'customers.details.compliance.field.cddRiskLevel', value: summary.cddRiskLevel },
     {
       labelKey: 'customers.details.compliance.field.cddExpirationDate',
-      value: f.expiry(s?.cddExpirationDate ?? null),
+      value: format.expiry(summary.cddExpirationDate),
     },
     { labelKey: 'customers.details.compliance.field.cddApprovalDate', value: NOT_MAPPED },
     { labelKey: 'customers.details.compliance.field.cddRiskLevelVantage', value: NOT_MAPPED },
@@ -67,31 +65,37 @@ export function CustomerCddCrsFatcaView({ customerId }: CustomerCddCrsFatcaViewP
   ];
 
   const crs: readonly CustomerFieldRow[] = [
-    { labelKey: 'customers.details.compliance.field.crsProcessType', value: d.crs.crsProcessType },
+    {
+      labelKey: 'customers.details.compliance.field.crsProcessType',
+      value: details.crs.crsProcessType,
+    },
     {
       labelKey: 'customers.details.compliance.field.crsReviewDate',
-      value: f.date(d.crs.crsReviewDate),
+      value: format.date(details.crs.crsReviewDate),
     },
-    { labelKey: 'customers.details.compliance.field.crsStatus', value: d.crs.crsStatus },
+    { labelKey: 'customers.details.compliance.field.crsStatus', value: details.crs.crsStatus },
     {
       labelKey: 'customers.details.compliance.field.crsClassificationDate',
-      value: f.date(d.crs.crsClassificationDate),
+      value: format.date(details.crs.crsClassificationDate),
     },
   ];
 
   const fatca: readonly CustomerFieldRow[] = [
     {
       labelKey: 'customers.details.compliance.field.fatcaReviewType',
-      value: d.fatca.fatcaReviewType,
+      value: details.fatca.fatcaReviewType,
     },
     {
       labelKey: 'customers.details.compliance.field.fatcaReviewDate',
-      value: f.expiry(d.fatca.fatcaReviewDate),
+      value: format.expiry(details.fatca.fatcaReviewDate),
     },
-    { labelKey: 'customers.details.compliance.field.fatcaStatus', value: d.fatca.fatcaStatus },
+    {
+      labelKey: 'customers.details.compliance.field.fatcaStatus',
+      value: details.fatca.fatcaStatus,
+    },
     {
       labelKey: 'customers.details.compliance.field.fatcaClassificationDate',
-      value: f.date(d.fatca.fatcaClassificationDate),
+      value: format.date(details.fatca.fatcaClassificationDate),
     },
   ];
 
@@ -102,7 +106,7 @@ export function CustomerCddCrsFatcaView({ customerId }: CustomerCddCrsFatcaViewP
       aria-busy={loading || undefined}
       className="min-w-0 space-y-4"
     >
-      {details.isError || summary.isError ? (
+      {detailsQuery.isError || summaryQuery.isError ? (
         <p role="alert" className="sr-only">
           {t('customers.details.data.error')}
         </p>

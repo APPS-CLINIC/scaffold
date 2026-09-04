@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Card, PrimeIcon, Skeleton, Status, useCustomIcon } from '@/ui';
 import { CustomerField, ValueSkeleton, type CustomerFieldRow } from './CustomerFields';
+import { isAwaitingData } from './customerDetails.api';
 import { useCustomerFormatters } from './customerDetails.formatters';
 import { EMPTY_CUSTOMER_SUMMARY } from './customerSummary.adapter';
 import { useGetCustomerSummaryQuery } from './customerSummary.api';
@@ -8,9 +9,9 @@ import type { CustomerSummary } from './customerSummary.types';
 
 const CUSTOMER_GLYPH = <PrimeIcon name="briefcase" />;
 
-// The panel's two-column split: stacked below lg, paired from lg onward (D11). Both columns
-// are content-sized and left-aligned, so Rating sits next to the identification data instead
-// of being pushed to the middle of the card.
+// The panel's two-column split: stacked below lg, side by side from lg. Both columns are
+// content-sized and left-aligned, so Rating sits next to the identification data instead of
+// being pushed to the middle of the card.
 const SPLIT =
   'grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,max-content)_minmax(0,max-content)] lg:justify-start lg:gap-x-12';
 
@@ -60,32 +61,35 @@ function SummaryHeaderSkeleton({ label }: { label: string }) {
 /** Persistent panel above every customer tab: icon, name/status header, overview + two detail columns. */
 export function CustomerSummaryPanel({ customerId }: { customerId: string }) {
   const { t } = useTranslation();
-  const f = useCustomerFormatters();
-  const { currentData, isError } = useGetCustomerSummaryQuery(customerId); // same cache key as the layout anchor -> one request
+  const format = useCustomerFormatters();
+  const summaryQuery = useGetCustomerSummaryQuery(customerId); // shares the layout's cache entry, no extra request
   const CustomerIcon = useCustomIcon(CUSTOMER_GLYPH, { size: '2xl', tone: 'brand' });
-  const loading = !isError && currentData === undefined; // arg-scoped: never the previous customer
-  const s = currentData ?? EMPTY_CUSTOMER_SUMMARY; // failed request -> stable empty panel, not an endless skeleton
+  const loading = isAwaitingData(summaryQuery);
+  const summary = summaryQuery.currentData ?? EMPTY_CUSTOMER_SUMMARY; // a failed request renders the empty panel, not a skeleton
   const empty = t('customers.value.notAvailable');
-  const rating = s.rating?.trim() ? s.rating : null;
+  const rating = summary.rating?.trim() ? summary.rating : null;
 
   const overview: readonly CustomerFieldRow[] = [
-    { labelKey: 'customers.summaryPanel.field.grid', value: s.grid },
-    { labelKey: 'customers.summaryPanel.field.kkf', value: s.kkf },
-    { labelKey: 'customers.summaryPanel.field.internalGroupName', value: s.internalGroupName },
-    { labelKey: 'customers.summaryPanel.field.corporateGroupName', value: s.corporateGroupName },
-    { labelKey: 'customers.summaryPanel.field.corporateGroupGrid', value: s.corporateGroupGrid },
+    { labelKey: 'customers.summaryPanel.field.grid', value: summary.grid },
+    { labelKey: 'customers.summaryPanel.field.kkf', value: summary.kkf },
+    {
+      labelKey: 'customers.summaryPanel.field.internalGroupName',
+      value: summary.internalGroupName,
+    },
+    {
+      labelKey: 'customers.summaryPanel.field.corporateGroupName',
+      value: summary.corporateGroupName,
+    },
+    {
+      labelKey: 'customers.summaryPanel.field.corporateGroupGrid',
+      value: summary.corporateGroupGrid,
+    },
   ];
   const identification: readonly CustomerFieldRow[] = [
-    { labelKey: 'customers.summaryPanel.field.pamName', value: s.pamName },
-    { labelKey: 'customers.summaryPanel.field.pamLam', value: s.pamLam },
-    { labelKey: 'customers.summaryPanel.field.homeCountry', value: s.homeCountry },
-    { labelKey: 'customers.summaryPanel.field.segmentColor', value: s.segmentColor },
-  ];
-  const ratingDate: readonly CustomerFieldRow[] = [
-    {
-      labelKey: 'customers.summaryPanel.field.lendingRatingDate',
-      value: f.date(s.lendingRatingDate),
-    },
+    { labelKey: 'customers.summaryPanel.field.pamName', value: summary.pamName },
+    { labelKey: 'customers.summaryPanel.field.pamLam', value: summary.pamLam },
+    { labelKey: 'customers.summaryPanel.field.homeCountry', value: summary.homeCountry },
+    { labelKey: 'customers.summaryPanel.field.segmentColor', value: summary.segmentColor },
   ];
   const rows = (list: readonly CustomerFieldRow[]) =>
     list.map((row) => <CustomerField key={row.labelKey} compact loading={loading} {...row} />);
@@ -103,7 +107,7 @@ export function CustomerSummaryPanel({ customerId }: { customerId: string }) {
           {loading ? (
             <SummaryHeaderSkeleton label={t('customers.summaryPanel.loading')} />
           ) : (
-            <SummaryHeader summary={s} empty={empty} />
+            <SummaryHeader summary={summary} empty={empty} />
           )}
           <div className={SPLIT}>
             <div className="min-w-0 space-y-1">{rows(overview)}</div>
@@ -126,7 +130,12 @@ export function CustomerSummaryPanel({ customerId }: { customerId: string }) {
                 >
                   {loading ? <ValueSkeleton /> : (rating ?? empty)}
                 </span>
-                {rows(ratingDate)}
+                <CustomerField
+                  compact
+                  loading={loading}
+                  labelKey="customers.summaryPanel.field.lendingRatingDate"
+                  value={format.date(summary.lendingRatingDate)}
+                />
               </div>
             </section>
           </div>

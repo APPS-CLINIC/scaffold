@@ -70,12 +70,11 @@ export interface CustomerBasicData {
 }
 
 /**
- * Observed payload from `GET /api/v1/customers/{id}`.
+ * Payload from `GET /api/v1/customers/{id}`.
  *
- * The photographed Swagger response confirms every named nested object below.
- * Its first object's wrapper and earlier properties are outside the captured
- * area, so the adapter deliberately accepts unknown top-level properties and
- * isolates that transport uncertainty from the view model.
+ * The basic-data group arrives either at the top level or inside a wrapper object whose key
+ * is not fixed by the contract. The index signature admits that wrapper; the adapter locates
+ * the group by its content and maps it to `CustomerBasicData`.
  */
 export interface CustomerDetailsResponse {
   [property: string]: unknown;

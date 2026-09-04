@@ -16,14 +16,14 @@ export const customersPageRoutes = {
 const placeholder = (titleKey: MessageKey) => <SectionPage titleKey={titleKey} headingLevel={2} />;
 
 /**
- * `/customers/:id/*`, hand-written. Static segments MUST equal the manifest's customer-context
- * segments — the sidebar, breadcrumb and URL mirror derive their state from the pathname alone
- * (resolveNavigation.ts:246-273). `customers.pageRoutes.test.tsx` fails on any drift.
+ * Routes below `/customers/:id`. Static segments must equal the manifest's customer-context
+ * segments: the sidebar, breadcrumb and URL mirror derive their state from the pathname alone.
+ * `customers.pageRoutes.test.tsx` guards that equality.
  */
 export const customersDetailRoutes: readonly RouteObject[] = [
   {
     path: ':id',
-    caseSensitive: true, // no-op on a param, kept so "every path is caseSensitive" reads uniformly
+    caseSensitive: true,
     lazy: async () => {
       const { CustomerDetailLayout } =
         await import('@/routes/pages/customers/CustomerDetailLayout');
