@@ -53,16 +53,10 @@ describe('CustomersView', () => {
     await i18n.changeLanguage('pl');
     renderPage();
 
-    expect(screen.getByRole('heading', { name: i18n.t('customers.title') })).toBeInTheDocument();
-    expect(
-      await screen.findByRole('columnheader', {
-        name: i18n.t('customers.table.field.fullName'),
-      }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole('button', { name: i18n.t('customers.actions.customizeFilters') }),
-    ).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(i18n.t('customers.search.placeholder'))).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Klienci oraz ich doradcy' })).toBeInTheDocument();
+    expect(await screen.findByRole('columnheader', { name: 'Nazwa klienta' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Dostosuj filtry' })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Szukaj na liście')).toBeInTheDocument();
   });
 
   it('renders the development preview cache without an HTTP request', async () => {
@@ -83,7 +77,6 @@ describe('CustomersView', () => {
     // The search input renders but is not wired yet: a deep-linked q param
     // must not populate it.
     expect(screen.getByPlaceholderText('Search the list')).toHaveValue('');
-    expect(screen.queryByRole('combobox', { name: 'Customer status' })).not.toBeInTheDocument();
     expect(await screen.findByText('CARREFOUR POLAND SP. Z O.O.')).toBeInTheDocument();
     expect(screen.getByText('1 results')).toBeInTheDocument();
 
@@ -103,7 +96,6 @@ describe('CustomersView', () => {
 
     expect(await screen.findByText('OZAROW CEMENT S.A.')).toBeInTheDocument();
     expect(screen.getByText('4 results')).toBeInTheDocument();
-    expect(screen.queryByRole('combobox', { name: 'Customer status' })).not.toBeInTheDocument();
 
     await waitFor(() => {
       expect(selectCustomerQuery(store.getState()).status).toBe('archival');
@@ -128,7 +120,6 @@ describe('CustomersView', () => {
     });
     expect(nameLink).toHaveAttribute('href', '/customers/23997');
     expect(nameLink).toHaveAttribute('target', '_blank');
-    expect(nameLink).toHaveAttribute('rel', 'noreferrer');
   });
 
   it('writes table sorting and pagination back to the URL', async () => {

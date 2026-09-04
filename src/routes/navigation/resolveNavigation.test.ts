@@ -21,6 +21,32 @@ function toListNavigationItem(item: NavigationTreeItemConfig): NavigationItemCon
   };
 }
 
+function withRestrictedContextItem(
+  restrict: (item: NavigationTreeItemConfig) => NavigationTreeItemConfig,
+): NavigationManifest {
+  const customers = navigationManifest.sections.find((section) => section.id === 'customers');
+  const customerDetail = customers?.context;
+  if (!customers || !customerDetail) throw new Error('Expected the customer-detail context.');
+
+  return {
+    ...navigationManifest,
+    sections: navigationManifest.sections.map((section) =>
+      section.id === 'customers'
+        ? {
+            ...customers,
+            context: {
+              ...customerDetail,
+              sidebar: {
+                type: 'tree',
+                items: customerDetail.sidebar.items.map(restrict),
+              },
+            },
+          }
+        : section,
+    ),
+  };
+}
+
 describe('resolveNavigation', () => {
   it('keeps the configured static destination outside entity context', () => {
     const navigation = resolveNavigation('/customers/all');
@@ -316,5 +342,65 @@ describe('resolveNavigation', () => {
     expect(hidden.route.activeItemId).toBeNull();
     expect(visible.sidebar?.items.map((item) => item.id)).toEqual(['public', 'restricted']);
     expect(visible.route.activeItemId).toBe('restricted');
+  });
+  it('hides a permission-owned context branch together with its permitted descendants', () => {
+    const manifest = withRestrictedContextItem((item) =>
+      item.id === 'reviews' ? { ...item, requiredPermissions: ['customers:reviews'] } : item,
+    );
+
+    const hidden = resolveNavigation('/customers/42/reviews/details', manifest, {
+      grantedPermissions: new Set(),
+    });
+    const visible = resolveNavigation('/customers/42/reviews/details', manifest, {
+      grantedPermissions: new Set(['customers:reviews']),
+    });
+
+    expect(hidden.sidebar?.items.map((item) => item.id)).not.toContain('reviews');
+    expect(hidden.route.matchedItemIds).toEqual([]);
+    expect(hidden.route.unmatchedSegments).toEqual(['reviews', 'details']);
+    expect(hidden.breadcrumb.items.map((item) => item.kind)).toEqual([
+      'message',
+      'parameter',
+      'segment',
+      'segment',
+    ]);
+
+    expect(visible.sidebar?.items.map((item) => item.id)).toContain('reviews');
+    expect(visible.route.matchedItemIds).toEqual(['reviews', 'review-details']);
+  });
+
+  it('hides a permission-owned leaf while its permitted parent stays the current item', () => {
+    const manifest = withRestrictedContextItem((item) =>
+      item.id === 'reviews'
+        ? {
+            ...item,
+            children: (item.children ?? []).map((child) => ({
+              ...child,
+              requiredPermissions: ['customers:reviewDetails'],
+            })),
+          }
+        : item,
+    );
+
+    const hidden = resolveNavigation('/customers/42/reviews/details', manifest, {
+      grantedPermissions: new Set(),
+    });
+
+    expect(hidden.sidebar?.items.find((item) => item.id === 'reviews')?.children).toEqual([]);
+    expect(hidden.sidebar?.expandedIds).toEqual([]);
+    expect(hidden.route.matchedItemIds).toEqual(['reviews']);
+    expect(hidden.route.unmatchedSegments).toEqual(['details']);
+    expect(hidden.breadcrumb.items.at(-1)).toMatchObject({ kind: 'segment', segment: 'details' });
+  });
+
+  it('keeps permission-owned items visible when no permission set is supplied', () => {
+    const manifest = withRestrictedContextItem((item) =>
+      item.id === 'reviews' ? { ...item, requiredPermissions: ['customers:reviews'] } : item,
+    );
+
+    const navigation = resolveNavigation('/customers/42/reviews/details', manifest);
+
+    expect(navigation.sidebar?.items.map((item) => item.id)).toContain('reviews');
+    expect(navigation.route.matchedItemIds).toEqual(['reviews', 'review-details']);
   });
 });
