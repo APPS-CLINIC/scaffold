@@ -33,6 +33,12 @@ export default tseslint.config(
       ],
     },
   },
+  // Test helpers and doubles are never fast-refreshed, and they deliberately export
+  // functions next to the components they fake.
+  {
+    files: ['src/test/**/*.{ts,tsx}'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
   // Node-land config files.
   {
     files: ['*.config.{js,ts}', 'vitest.setup.ts'],

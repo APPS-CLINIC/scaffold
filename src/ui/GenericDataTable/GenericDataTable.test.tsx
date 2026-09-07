@@ -3,6 +3,10 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
+
+// Render against PrimeReact directly instead of loading the IWA package, so this file
+// does not depend on the library resolving under vitest. See src/test/iwaComponentsMock.
+vi.mock('iwa-react-components', () => import('@/test/iwaComponentsMock'));
 import { mockTableContainerWidth, resizeTableContainer } from '@/test/tableLayout';
 import {
   GenericDataTable,
