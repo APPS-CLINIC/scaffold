@@ -21,3 +21,14 @@ applyTo: 'src/**/*.test.{ts,tsx}'
 - No snapshot tests; write explicit assertions.
 - Keep tests deterministic: no real timers, network or randomness — mock at
   the boundary (`vi.mock`, RTK Query mocks) and prefer fake timers.
+- To fake an IWA component, mock `'iwa-react-components'`, not `'@/ui'`. A
+  factory replaces the entire module, and `@/ui` is a barrel that also exports
+  this repo's own primitives (`createPrimeIcon`, `PrimeIcon`, `cx`, the
+  adapters). Faking the barrel deletes them, and any module in the graph that
+  reaches one dies with `No "<name>" export is defined on the "@/ui" mock`.
+  Mock the barrel only when the point is to fake a local primitive too, as
+  `ContextualSidebar.test.tsx` does; then the factory owes every name the graph
+  touches. A vendor factory owes only the vendor names it touches, `twMerge`
+  included — it is used by most primitives.
+- Prefer needing no mock at all: a unit whose module graph never reaches `@/ui`
+  (see `cells/cellFormatting.test.tsx`) cannot break when the library changes.

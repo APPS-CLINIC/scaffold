@@ -8,10 +8,15 @@ import { ActiveArchivalStatusCell } from './ActiveArchivalStatusCell';
 import { UnderlinedTextCell } from './UnderlinedTextCell';
 import { ValidityStatusCell } from './ValidityStatusCell';
 
-// These cells render IWA components. The fakes are typed with the library's own prop
-// types, so a prop-contract drift breaks `tsc -b` while the assertions below stay on
-// what this repo owns: the domain value to status type mapping and the link URL.
-vi.mock('@/ui', () => ({
+// These cells render IWA components. Mock the library, never the `@/ui` barrel: a
+// factory replaces the whole module, so faking the barrel would also delete the local
+// primitives it exports (`createPrimeIcon`, `twMerge`, ...) and anything in the graph
+// that reaches one fails with "No <name> export is defined on the @/ui mock".
+// The fakes are typed with the library's own prop types, so a prop-contract drift
+// breaks `tsc -b` while the assertions below stay on what this repo owns: the domain
+// value to status type mapping and the link URL.
+vi.mock('iwa-react-components', () => ({
+  twMerge: (...values: unknown[]) => values.filter(Boolean).join(' '),
   Status: ({ type, label }: StatusProps) => (
     <span data-testid="status" data-type={type}>
       {label}
