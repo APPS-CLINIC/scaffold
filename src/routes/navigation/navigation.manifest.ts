@@ -1,5 +1,9 @@
 import { Settings } from 'ing-react-icons';
-import { createPrimeIcon } from '@/ui';
+// Deliberately not the `@/ui` barrel. These icons are built while this module is
+// evaluated, so pulling the whole barrel in makes the manifest depend on every UI
+// primitive being initialised first — an import cycle then leaves `createPrimeIcon`
+// undefined and fails with `(0 , createPrimeIcon) is not a function`.
+import { createPrimeIcon } from '@/ui/createPrimeIcon';
 import type { NavigationManifest } from './navigation.types';
 
 const dashboardIcon = createPrimeIcon('home');
