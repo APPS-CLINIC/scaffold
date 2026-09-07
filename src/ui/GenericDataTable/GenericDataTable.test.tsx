@@ -4,7 +4,11 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
 
-import { mockTableContainerWidth, resizeTableContainer } from '@/test/tableLayout';
+import {
+  mockTableContainerWidth,
+  paginatorControl,
+  resizeTableContainer,
+} from '@/test/tableLayout';
 import {
   GenericDataTable,
   type GenericDataTableCellProps,
@@ -115,20 +119,6 @@ const labels = {
 };
 
 const appendToHead = document.head.appendChild.bind(document.head);
-
-/**
- * Paginator controls are found by the structural class the table library gives them, not
- * by their accessible name. The name comes from `createPaginatorTemplate`, and whether the
- * library applies that template is the library's business — `GenericDataTable.prime.test`
- * covers the labels directly. These cases are about the page numbers this component
- * reports, so they must hold either way.
- */
-function paginatorControl(control: 'first' | 'prev' | 'next' | 'last'): HTMLElement {
-  const element = document.querySelector<HTMLElement>(`.p-paginator-${control}`);
-  if (!element) throw new Error(`No paginator ${control} control rendered.`);
-
-  return element;
-}
 
 function renderTable(overrides: Partial<GenericDataTableProps<TestRow>> = {}) {
   const props: GenericDataTableProps<TestRow> = {

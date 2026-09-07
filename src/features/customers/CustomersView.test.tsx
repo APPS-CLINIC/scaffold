@@ -9,7 +9,7 @@ import { createUrlState } from '@/features/urlState/urlState.slice';
 import i18n from '@/i18n';
 import { installCustomerApiTestTransport } from '@/test/customerApiTestTransport';
 import { renderWithProviders } from '@/test/renderWithProviders';
-import { mockTableContainerWidth } from '@/test/tableLayout';
+import { mockTableContainerWidth, paginatorControl } from '@/test/tableLayout';
 import { CustomersView } from './CustomersView';
 import { customersApi } from './customers.api';
 import { selectCustomerQuery } from './customers.filters';
@@ -133,7 +133,7 @@ describe('CustomersView', () => {
       expect(new URLSearchParams(search).get('sort')).toBe('fullName');
     });
 
-    await user.click(screen.getByRole('button', { name: 'Next page' }));
+    await user.click(paginatorControl('next'));
     await waitFor(() => {
       const search = screen.getByRole('status', { name: 'Current customer URL' }).textContent ?? '';
       expect(new URLSearchParams(search).get('page')).toBe('2');
