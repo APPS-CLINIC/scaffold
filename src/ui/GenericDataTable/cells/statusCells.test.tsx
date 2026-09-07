@@ -1,4 +1,7 @@
+import type { ReactNode } from 'react';
 import { render, screen } from '@testing-library/react';
+import type * as IwaComponents from 'iwa-react-components';
+import type { InlineLinkProps, StatusProps } from 'iwa-react-components';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
 import type { GenericDataTableCellProps } from '../GenericDataTable.types';
@@ -6,9 +9,22 @@ import { ActiveArchivalStatusCell } from './ActiveArchivalStatusCell';
 import { UnderlinedTextCell } from './UnderlinedTextCell';
 import { ValidityStatusCell } from './ValidityStatusCell';
 
-// Mock the library, never the `@/ui` barrel: a factory replaces the whole module, so
-// faking the barrel would also delete the local primitives it exports.
-vi.mock('iwa-react-components', () => import('@/test/iwaComponentsMock'));
+// The status type is a prop, not visible in what the components render, so these two
+// are overridden to expose it. Spreading the module first keeps every other export the
+// graph reaches; `importOriginal` resolves to the aliased double, not the real library.
+vi.mock('iwa-react-components', async (importOriginal) => ({
+  ...(await importOriginal<typeof IwaComponents>()),
+  Status: ({ type, label }: StatusProps) => (
+    <span data-testid="status" data-type={type}>
+      {label}
+    </span>
+  ),
+  InlineLink: ({ label, url, openInNewTab }: InlineLinkProps) => (
+    <a data-testid="inline-link" href={url} data-new-tab={openInNewTab ? 'true' : undefined}>
+      {label as ReactNode}
+    </a>
+  ),
+}));
 
 interface TestRow {
   id: number;

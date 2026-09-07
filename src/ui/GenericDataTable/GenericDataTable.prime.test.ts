@@ -1,9 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { mapPageEvent, mapSortEvent } from './GenericDataTable.prime';
-
-// The module under test pulls twMerge through the `@/ui` barrel, which re-exports the
-// IWA package. Faking the package keeps these pure mappers testable on their own.
-vi.mock('iwa-react-components', () => import('@/test/iwaComponentsMock'));
 
 // The PrimeReact event shapes are the vendor's; the translation into this repo's
 // page/sort contract is ours, and it is pure. Testing it here keeps the mapping
