@@ -1,0 +1,17 @@
+Good catch, and it was worse than the naming. isPastCustomerDate re-implemented
+the ISO date regex and the calendar round-trip that src/i18n/dateFormats.ts
+already had, byte for byte. That is now isPastIsoDate there, behind one shared
+parseIsoLocalDate that formatIsoDmyDate uses as well. formatCustomerDate is
+gone entirely — it was a one-line null guard over formatIsoDmyDate.
+
+The two that remain are no longer exported and no longer claim to be about
+customers: formatPostalAddress and formatYesNo, both private to the module,
+since useCustomerFormatters is their only caller.
+
+I kept the hook itself here. Its expiry member hardcodes
+customers.details.compliance.status.overdue and the CDD/FATCA rule of stacking
+the Overdue badge above the date, so that one is genuinely domain-bound.
+
+On CustomerAddress: the shape is generic, but it types the addresses object of
+the customer payload and the adapter that normalises it, so I left the name
+matching the endpoint it models.
