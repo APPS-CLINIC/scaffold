@@ -223,6 +223,15 @@ A customer slice should be introduced only for customer-specific client state
 that is neither server cache nor URL state and genuinely needs coordination
 outside the current view.
 
+The one piece of client state the list does keep — which fields the user chose
+as columns, and in what order — is not customer-specific either. It lives in
+the generic `tableSettings` slice (`src/features/tableSettings`), keyed by the
+config's `id`, hydrated from storage before the first render and written only
+when the user saves or restores defaults. `useTableColumnSettings(config)`
+resolves the effective configuration from it; the table itself never reads
+Redux. See
+[ADR 0034](adr/0034-user-table-preferences-in-a-persisted-redux-slice.md).
+
 ## Transport model and response adapter
 
 `CustomerResponse` follows the backend payload, including its strings and
