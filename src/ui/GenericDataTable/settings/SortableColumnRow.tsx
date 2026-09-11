@@ -1,6 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Select, twMerge } from 'iwa-react-components';
+import { IconButton, Select, twMerge } from 'iwa-react-components';
 import { useTranslation } from 'react-i18next';
 import type { GenericDataTableField, TableColumnOption } from '../GenericDataTable.types';
 import type { ColumnDraftRow } from './columnSettingsDraft';
@@ -17,8 +17,8 @@ export interface SortableColumnRowProps<T extends object> {
   onRemove: () => void;
 }
 
-const ICON_BUTTON_CLASS_NAME =
-  'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded text-[var(--muted)] transition-colors hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--focus)] disabled:cursor-default disabled:opacity-40 disabled:hover:text-[var(--muted)] motion-reduce:transition-none';
+const DRAG_HANDLE_CLASS_NAME =
+  'inline-flex h-10 w-10 shrink-0 cursor-grab items-center justify-center rounded text-[var(--muted)] transition-colors hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--focus)] active:cursor-grabbing motion-reduce:transition-none';
 
 /**
  * One column of the settings list. A column already in use shows its name; only a
@@ -64,7 +64,7 @@ export function SortableColumnRow<T extends object>({
       <button
         ref={setActivatorNodeRef}
         type="button"
-        className={twMerge(ICON_BUTTON_CLASS_NAME, 'cursor-grab active:cursor-grabbing')}
+        className={DRAG_HANDLE_CLASS_NAME}
         aria-label={t('table.settings.row.move', { position })}
         {...attributes}
         {...listeners}
@@ -85,15 +85,29 @@ export function SortableColumnRow<T extends object>({
           {current === undefined ? null : t(current.labelKey)}
         </span>
       )}
-      <button
-        type="button"
-        className={ICON_BUTTON_CLASS_NAME}
-        aria-label={t('table.settings.row.remove', { position })}
-        disabled={!removable}
-        onClick={onRemove}
-      >
-        <span className="pi pi-times" aria-hidden="true" />
-      </button>
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center">
+        <IconButton
+          size={20}
+          disabled={!removable}
+          onClick={onRemove}
+          icon={
+            // IWA's IconButton takes no aria-label, so the icon names the control.
+            <svg
+              viewBox="0 0 20 20"
+              fill="none"
+              role="img"
+              aria-label={t('table.settings.row.remove', { position })}
+            >
+              <path
+                d="M5 5l10 10M15 5L5 15"
+                stroke="currentColor"
+                strokeWidth={2}
+                strokeLinecap="round"
+              />
+            </svg>
+          }
+        />
+      </span>
     </li>
   );
 }

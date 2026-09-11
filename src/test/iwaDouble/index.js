@@ -13,7 +13,7 @@
  * `Table` delegates to PrimeReact because the IWA table is a styled PrimeReact DataTable.
  */
 
-import { createElement, useState } from 'react';
+import { cloneElement, createElement, useState } from 'react';
 import { DataTable } from 'primereact/datatable';
 
 export function Table({ dataTableRef, separatedRows, ...props }) {
@@ -617,6 +617,26 @@ const BUTTON_STYLES = {
     secondary: 'text-[#262d62]',
   },
 };
+
+export function IconButton({ icon, size = 24, disabled, className, onClick }) {
+  return createElement(
+    'button',
+    {
+      type: 'button',
+      disabled,
+      onClick: () => {
+        if (!disabled) void onClick?.();
+      },
+      className: twMerge(
+        'inline-flex shrink-0 items-center justify-center',
+        disabled ? 'cursor-default text-[#a8a8a8]' : 'text-[#ff6200]',
+        className,
+      ),
+      style: { width: size, height: size },
+    },
+    cloneElement(icon, { width: size, height: size }),
+  );
+}
 
 export function Button({
   label,
