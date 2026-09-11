@@ -81,7 +81,7 @@ export function SortableColumnRow<T extends object>({
           errorMessage={invalid ? t('table.settings.row.empty') : undefined}
         />
       ) : (
-        <span className="flex min-h-10 min-w-0 flex-1 items-center break-words text-sm text-[var(--text)]">
+        <span className="flex min-h-10 min-w-0 flex-1 items-center break-words rounded border border-[#c4c9ce] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)]">
           {current === undefined ? null : t(current.labelKey)}
         </span>
       )}

@@ -106,6 +106,7 @@ describe('SortableColumnRow', () => {
     renderRow();
 
     expect(screen.getByRole('listitem')).toHaveTextContent('Status');
+    expect(screen.getByText('Status')).toHaveClass('border', 'rounded');
     expect(screen.queryByTestId('select')).not.toBeInTheDocument();
   });
 
