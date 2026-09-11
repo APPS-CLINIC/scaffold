@@ -1,9 +1,9 @@
 import type * as DndKitCore from '@dnd-kit/core';
 import type { DndContextProps } from '@dnd-kit/core';
+import type { ComponentProps } from 'react';
 import { act, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type * as IwaComponents from 'iwa-react-components';
-import type { DialogProps } from 'iwa-react-components';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
 import type { TableColumnOption } from '../GenericDataTable.types';
@@ -25,11 +25,14 @@ vi.mock('@dnd-kit/core', async (importOriginal) => ({
 // The dialog layout is a set of props handed to the library, so the fake records them
 // per heading. It closes with a function updater to prove both forms of the setter
 // contract are honoured.
-const dialogProps: { current: Record<string, DialogProps> } = { current: {} };
+// The library types `children` on the component, not on its exported props interface.
+type DialogComponentProps = ComponentProps<typeof IwaComponents.Dialog>;
+
+const dialogProps: { current: Record<string, DialogComponentProps> } = { current: {} };
 
 vi.mock('iwa-react-components', async (importOriginal) => ({
   ...(await importOriginal<typeof IwaComponents>()),
-  Dialog: (props: DialogProps) => {
+  Dialog: (props: DialogComponentProps) => {
     const { headingProps, visibility, onSetVisibility, buttonProps, children } = props;
     if (headingProps?.text) dialogProps.current[headingProps.text] = props;
 
@@ -85,7 +88,7 @@ function captured(): DndContextProps {
   return dndProps.current;
 }
 
-function dialog(heading: string): DialogProps {
+function dialog(heading: string): DialogComponentProps {
   const props = dialogProps.current[heading];
   if (props === undefined) throw new Error(`Dialog "${heading}" did not render.`);
 
