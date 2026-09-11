@@ -87,7 +87,8 @@ export const en: Record<MessageKey, string> = {
   'table.settings.hint':
     'Choose the fields to display from the data available in this template. You can also change their order',
   'table.settings.layout.title': 'Customize column layout',
-  'table.settings.layout.used': 'Used columns: {{used}} of {{total}}',
+  'table.settings.layout.usedLabel': 'Used columns:',
+  'table.settings.layout.usedCount': '{{used}} of {{total}}',
   'table.settings.row.move': 'Move column {{position}}',
   'table.settings.row.remove': 'Remove column {{position}}',
   'table.settings.row.empty': 'Fill in or remove the column',

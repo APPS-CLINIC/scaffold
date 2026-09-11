@@ -63,10 +63,7 @@ describe('TableColumnSettingsDialog', () => {
     renderDialog();
 
     const dialog = settingsDialog();
-    expect(within(dialog).getByRole('button', { name: 'Customize columns' })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
+    expect(within(dialog).getByText('Customize columns')).toBeInTheDocument();
     expect(
       within(dialog).getByText(/Choose the fields to display from the data available/),
     ).toBeInTheDocument();
@@ -74,6 +71,7 @@ describe('TableColumnSettingsDialog', () => {
       within(dialog).getByRole('heading', { name: 'Customize column layout' }),
     ).toBeInTheDocument();
     expect(counter()).toHaveTextContent('Used columns: 2 of 4');
+    expect(within(counter()).getByText('2 of 4').tagName).toBe('STRONG');
     expect(counter()).toHaveAttribute('role', 'status');
     expect(counter()).toHaveAttribute('aria-live', 'polite');
     expect(rowNames()).toEqual(['GRID', 'Customer name']);

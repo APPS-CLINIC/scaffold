@@ -22,19 +22,31 @@ vi.mock('@dnd-kit/core', async (importOriginal) => ({
   },
 }));
 
-// The library types the visibility setter as a state setter, so the fake closes with
-// a function updater to prove both forms of the contract are honoured.
+// The dialog layout is a set of props handed to the library, so the fake records them
+// per heading. It closes with a function updater to prove both forms of the setter
+// contract are honoured.
+const dialogProps: { current: Record<string, DialogProps> } = { current: {} };
+
 vi.mock('iwa-react-components', async (importOriginal) => ({
   ...(await importOriginal<typeof IwaComponents>()),
-  Dialog: ({ headingProps, visibility, onSetVisibility, children }: DialogProps) =>
-    visibility ? (
+  Dialog: (props: DialogProps) => {
+    const { headingProps, visibility, onSetVisibility, buttonProps, children } = props;
+    if (headingProps?.text) dialogProps.current[headingProps.text] = props;
+
+    return visibility ? (
       <section aria-label={headingProps?.text}>
         <button type="button" onClick={() => onSetVisibility((current) => !current)}>
           Close {headingProps?.text}
         </button>
         {children}
+        {buttonProps.map((button) => (
+          <button key={button.label} type="button" onClick={() => void button.onClick?.()}>
+            {button.label}
+          </button>
+        ))}
       </section>
-    ) : null,
+    ) : null;
+  },
 }));
 
 interface Row {
@@ -73,6 +85,13 @@ function captured(): DndContextProps {
   return dndProps.current;
 }
 
+function dialog(heading: string): DialogProps {
+  const props = dialogProps.current[heading];
+  if (props === undefined) throw new Error(`Dialog "${heading}" did not render.`);
+
+  return props;
+}
+
 function dragEnd(activeId: number, overId: number | null) {
   const event = {
     active: { id: activeId },
@@ -83,6 +102,7 @@ function dragEnd(activeId: number, overId: number | null) {
 
 beforeEach(async () => {
   dndProps.current = null;
+  dialogProps.current = {};
   await i18n.changeLanguage('en');
 });
 
@@ -140,6 +160,34 @@ describe('TableColumnSettingsForm drag and drop', () => {
     expect(announcements.onDragOver({ active, over: null })).toBeUndefined();
     expect(announcements.onDragEnd({ active, over: null })).toBeUndefined();
     expect(announcements.onDragCancel({ active, over: null })).toBeUndefined();
+  });
+});
+
+describe('TableColumnSettingsForm dialog layout', () => {
+  it('centres the title and puts restore on the left of a separated cancel and save footer', () => {
+    renderForm();
+
+    const settings = dialog('List settings');
+    expect(settings.headingProps).toMatchObject({ centered: true });
+    expect(settings.bottomSeparator).toBe(true);
+    expect(settings.buttonProps.map(({ label, style }) => [label, style])).toEqual([
+      ['Restore defaults', 'text'],
+      ['Cancel', 'outline'],
+      ['Save', 'filled'],
+    ]);
+    expect(settings.buttonProps[0]?.className).toContain('mr-auto');
+  });
+
+  it('stretches both confirmation buttons across the dialog', () => {
+    renderForm();
+
+    const confirm = dialog('Restoring default settings');
+    expect(confirm.buttonsPosition).toBe('column');
+    expect(confirm.buttonProps.map(({ label, style }) => [label, style])).toEqual([
+      ['Restore defaults', 'filled'],
+      ['Back to settings', 'outline'],
+    ]);
+    expect(confirm.buttonProps.every((button) => button.className?.includes('w-full'))).toBe(true);
   });
 });
 

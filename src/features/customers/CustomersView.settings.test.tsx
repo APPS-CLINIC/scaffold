@@ -87,6 +87,7 @@ const currentSearch = () =>
 const settingsDialog = () => screen.getByRole('dialog', { name: 'List settings' });
 const columnRows = () => within(settingsDialog()).getAllByRole('listitem');
 const rowNames = () => columnRows().map((row) => row.textContent);
+const usedColumns = () => within(settingsDialog()).getByText(/^Used columns:/).textContent;
 const columnHeaderNames = () =>
   screen.getAllByRole('columnheader').map((header) => header.textContent?.trim());
 const expandedRegions = () => screen.queryAllByRole('region', { name: /collapse details for/i });
@@ -123,7 +124,7 @@ describe('CustomersView column settings', () => {
     expect(expandedRegions()).toHaveLength(1);
 
     await user.click(screen.getByRole('button', { name: 'List settings' }));
-    expect(within(settingsDialog()).getByText('Used columns: 25 of 25')).toBeInTheDocument();
+    expect(usedColumns()).toBe('Used columns: 25 of 25');
     expect(rowNames()).toEqual(labelsOf(defaultColumns));
     expect(rowNames()[1]).toBe('GRID');
 
@@ -168,7 +169,7 @@ describe('CustomersView column settings', () => {
 
     await user.click(screen.getByRole('button', { name: 'List settings' }));
     expect(rowNames()).toEqual(['Status', 'Customer name']);
-    expect(within(settingsDialog()).getByText('Used columns: 2 of 25')).toBeInTheDocument();
+    expect(usedColumns()).toBe('Used columns: 2 of 25');
   });
 
   it('restores the default columns after confirmation and empties the storage', async () => {
@@ -209,6 +210,6 @@ describe('CustomersView column settings', () => {
 
     await user.click(screen.getByRole('button', { name: 'List settings' }));
     expect(rowNames()).toEqual(labelsOf(columnsWithout('grid')));
-    expect(within(settingsDialog()).getByText('Used columns: 24 of 25')).toBeInTheDocument();
+    expect(usedColumns()).toBe('Used columns: 24 of 25');
   });
 });

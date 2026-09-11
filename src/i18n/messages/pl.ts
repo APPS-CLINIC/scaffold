@@ -89,7 +89,8 @@ export const pl = {
   'table.settings.hint':
     'Spośród danych dostępnych w szablonie wybierz te, które chcesz wyświetlić. Możesz też zmienić ich kolejność',
   'table.settings.layout.title': 'Dostosuj układ kolumn',
-  'table.settings.layout.used': 'Wykorzystane kolumny: {{used}} z {{total}}',
+  'table.settings.layout.usedLabel': 'Wykorzystane kolumny:',
+  'table.settings.layout.usedCount': '{{used}} z {{total}}',
   'table.settings.row.move': 'Zmień pozycję kolumny {{position}}',
   'table.settings.row.remove': 'Usuń kolumnę {{position}}',
   'table.settings.row.empty': 'Uzupełnij lub usuń kolumnę',

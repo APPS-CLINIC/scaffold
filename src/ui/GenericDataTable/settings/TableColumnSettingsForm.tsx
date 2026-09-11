@@ -15,7 +15,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { ActionLink, Dialog, TabMenu } from 'iwa-react-components';
+import { Dialog } from 'iwa-react-components';
 import { useTranslation } from 'react-i18next';
 import type {
   GenericDataTableField,
@@ -38,8 +38,6 @@ export type TableColumnSettingsFormProps<T extends object> = Omit<
   TableColumnSettingsDialogProps<T>,
   'open'
 >;
-
-const keepActiveTab = () => undefined;
 
 /**
  * The settings dialog body with its draft. Mounted only while the dialog is
@@ -166,10 +164,18 @@ export function TableColumnSettingsForm<T extends object>({
   return (
     <>
       <Dialog
-        headingProps={{ text: t('table.settings.title') }}
+        headingProps={{ text: t('table.settings.title'), centered: true }}
         visibility
         onSetVisibility={handleSetVisibility}
+        bottomSeparator
         buttonProps={[
+          // The footer is a right-aligned row; the auto margin pulls this action to the left.
+          {
+            label: t('table.settings.restoreDefaults'),
+            style: 'text',
+            className: 'mr-auto',
+            onClick: () => setConfirmOpen(true),
+          },
           { label: t('table.settings.cancel'), style: 'outline', onClick: onCancel },
           { label: t('table.settings.save'), style: 'filled', onClick: submit },
         ]}
@@ -177,18 +183,27 @@ export function TableColumnSettingsForm<T extends object>({
         {/* Capped below the dialog's own limit, so the dialog body never scrolls and the
             overflow lands on the column list alone. */}
         <div className="flex max-h-[55vh] flex-col gap-4">
-          <TabMenu
-            items={[{ label: t('table.settings.tab.columns') }]}
-            activeIndex={0}
-            onChangeActiveIndex={keepActiveTab}
-          />
-          <p className="m-0 text-sm text-[var(--muted)]">{t('table.settings.hint')}</p>
-          <div className="space-y-1">
-            <h3 className="m-0 text-base font-bold text-[var(--text)]">
+          <div className="border-b border-[var(--border-subtle)]">
+            <span className="-mb-px inline-block border-b-[3px] border-[var(--navigation-accent)] px-6 pb-2 text-base font-bold text-[var(--text)]">
+              {t('table.settings.tab.columns')}
+            </span>
+          </div>
+          <p className="m-0 flex gap-3 text-sm text-[var(--muted)]">
+            <span
+              aria-hidden="true"
+              className="mt-[7px] size-1.5 shrink-0 bg-[var(--navigation-accent)]"
+            />
+            <span>{t('table.settings.hint')}</span>
+          </p>
+          <div>
+            <h3 className="m-0 text-sm font-bold text-[var(--text)]">
               {t('table.settings.layout.title')}
             </h3>
-            <p role="status" aria-live="polite" className="m-0 text-sm text-[var(--muted)]">
-              {t('table.settings.layout.used', { used, total })}
+            <p role="status" aria-live="polite" className="m-0 text-sm text-[var(--text)]">
+              {t('table.settings.layout.usedLabel')}{' '}
+              <strong className="font-bold">
+                {t('table.settings.layout.usedCount', { used, total })}
+              </strong>
             </p>
           </div>
           <DndContext
@@ -222,35 +237,37 @@ export function TableColumnSettingsForm<T extends object>({
               </ol>
             </SortableContext>
           </DndContext>
-          <div className="flex flex-wrap items-center gap-6">
-            <ActionLink
-              icon={<span aria-hidden="true" className="pi pi-plus text-sm" />}
-              label={t('table.settings.addColumn')}
-              disabled={!canAddRow(draft)}
-              onClick={addRow}
+          <button
+            type="button"
+            className="group ml-12 inline-flex items-center gap-2 self-start text-sm text-[#506579] disabled:cursor-default disabled:text-[#b3bcc7]"
+            disabled={!canAddRow(draft)}
+            onClick={addRow}
+          >
+            <span
+              aria-hidden="true"
+              className="pi pi-plus text-xs text-[var(--navigation-accent)] group-disabled:text-[#b3bcc7]"
             />
-            <ActionLink
-              icon={<span aria-hidden="true" className="pi pi-replay text-sm" />}
-              label={t('table.settings.restoreDefaults')}
-              onClick={() => setConfirmOpen(true)}
-            />
-          </div>
+            <span className="underline underline-offset-2">{t('table.settings.addColumn')}</span>
+          </button>
         </div>
       </Dialog>
       <Dialog
         headingProps={{ text: t('table.settings.restore.title') }}
         visibility={confirmOpen}
         onSetVisibility={handleSetConfirmVisibility}
+        bottomSeparator
         buttonsPosition="column"
         buttonProps={[
           {
             label: t('table.settings.restore.confirm'),
             style: 'filled',
+            className: 'w-full justify-center',
             onClick: onRestoreDefaults,
           },
           {
             label: t('table.settings.restore.back'),
             style: 'outline',
+            className: 'w-full justify-center',
             onClick: () => setConfirmOpen(false),
           },
         ]}
