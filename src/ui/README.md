@@ -99,26 +99,113 @@ expansion toggle column renders only while at least one field is in the
 accordion. In jsdom tests use `mockTableContainerWidth` from
 `@/test/tableLayout` to give the fit engine a concrete width.
 
+## `DataPanel` and `DataPanelSkeleton`
+
+`DataPanel<T>` renders a stable icon + content panel from a typed `fields`
+config rather than hardcoded rows. Each field declares `id`, `labelKey`,
+`column`, and a `value` reader. Set `column: 'summary'` for the optional
+untitled lead group below the header, or use `1` / `2` for the titled detail
+columns below it. `formatValue` transforms data before the default renderer,
+while `renderValue` composes richer values such as an IWA `Label`. Rows use IWA
+`DefinitionList`, and empty raw, formatted, or rendered values fall back to
+`emptyValue` without removing the configured row. Set `valueOnly: true`
+instead of `labelKey` only when the titled section already provides the field's
+accessible context, avoiding a repeated label in the presentation.
+
+The layout stacks on mobile. From `md` upward, an optional icon stays beside
+the content and both detail sections remain side by side in a `3fr / 2fr`
+split. At `lg`, the icon reserves one quarter of the panel, the content uses
+the remaining three quarters, and the lead group aligns with the wider detail
+section.
+
+Keep the complete field list present for every data variant and pass that same
+config to `DataPanelSkeleton`, together with the column labels and icon/header
+flags. Use `iconSize="hero"` when the loaded panel uses the large hero icon;
+the default reserves the regular icon size. The skeleton keeps translated
+labels invisibly in flow, so it reserves their exact responsive wrapping.
+Loaded values use a fixed, truncated row with their complete text available
+through the native title and accessibility tree; `valueSize` keeps richer
+values such as an IWA `Label` on the same height in both states. Both
+components share the same layout primitives and IWA definition-list geometry,
+so loading does not cause a layout shift even for long backend values.
+
+## `ScreenHeading`
+
+`ScreenHeading` is the app-facing adapter over IWA's page heading. Items use a
+single `{ label, navigateTo }` contract. The seam supplies the older `url`
+alias only for the local compatibility package, so route and feature code do
+not depend on two IWA versions. Use it for the standard **Back to:** line and
+orange page H1 instead of recreating that structure locally.
+
+## `KeyValueSections`
+
+`KeyValueSections` renders compact detail-page bands from one ordered config:
+each section has a stable `id`, a required `title`, and an `items` array of
+`{ id, label, value }` pairs. It composes IWA `Card`, `DefinitionList`, and
+`Skeleton` primitives rather than recreating their presentation. Empty values
+remain in the document and fall back to an en dash by default.
+
+Pass the same section config with `loading` enabled to reserve every section
+and row while values are fetched. The responsive layout stacks each label
+above its value on narrow screens, uses a compact proportional pair at the
+small breakpoint, then restores IWA's fixed definition-label column on larger
+screens. At `lg`, the card dedicates one quarter to the section heading and
+three quarters to the definitions; below that threshold the heading stacks
+above the full-width definitions. Each card is exposed as a named semantic
+section through its required heading. Use `headingLevel` when the renderer is
+nested below an existing page heading.
+
+```tsx
+<KeyValueSections
+  aria-label="Customer details"
+  loading={isLoading}
+  sections={[
+    {
+      id: 'basic-data',
+      title: 'Basic data',
+      items: [
+        { id: 'tax-id', label: 'Tax ID', value: customer.taxId },
+        { id: 'country', label: 'Country', value: customer.country },
+      ],
+    },
+  ]}
+/>
+```
+
+## `PrimeIcon` and `createPrimeIcon`
+
+`PrimeIcon` is the typed adapter for the PrimeIcons font already included by
+the IWA stack. It is decorative by default and becomes an accessible image when
+given `aria-label`. `createPrimeIcon(name)` returns a stable component reference
+for configuration-driven navigation; store that component in config instead of
+serializing or recreating React icon nodes.
+
 ## `useCustomIcon`
 
 `useCustomIcon(icon, options?)` binds any icon element (inline SVG, font
 glyph, emoji) into a ready-to-use component with **default circular styling
 built in**: a `rounded-full` badge (Tailwind-only) with the glyph centered
-inside. SVGs auto-scale to ~55% of the circle and inherit `currentColor`.
+inside. SVGs and PrimeIcons scale automatically with the selected circle size
+and inherit `currentColor`; callers should not add a separate glyph-size class.
 
 ```tsx
 import { useCustomIcon } from '@/ui';
 
 function HistoryButton() {
-  const HistoryIcon = useCustomIcon(historyGlyph, { size: 'lg', label: 'History' });
+  const HistoryIcon = useCustomIcon(historyGlyph, {
+    size: '2xl',
+    tone: 'brand',
+    label: 'History',
+  });
 
-  return <HistoryIcon tone="accent" className="text-orange-600" />;
+  return <HistoryIcon />;
 }
 ```
 
-- `size`: `sm | md | lg | xl` (default `md`); `tone`: `outline | neutral |
-accent` (default `outline` — light surface with a subtle ring, colors come
-  from the global CSS variables).
+- `size`: `sm | md | lg | xl | 2xl` (default `md`); `tone`: `outline |
+neutral | accent | brand` (default `outline` — light surface with a subtle
+  ring, colors come from the global CSS variables). `brand` uses the ING-orange
+  navigation token with a white glyph.
 - `label` sets `role="img"` + `aria-label`; without it the icon is
   `aria-hidden` (decorative).
 - The hook memoizes on the glyph element and options — keep them
@@ -144,3 +231,11 @@ of IWA's positional selection contract:
 
 Route code maps the selected ID to a configured path. Do not store
 `selectedIndex`, and do not serialize React icon nodes into navigation JSON.
+
+For nested navigation, use the re-exported IWA `NavigationMenuItem` and pass
+leaf children through its native `subNodes: NavigationMenuSubNode[]` contract.
+The installed component exposes only one child level, so deeper configured
+branches recurse through the application adapter while continuing to use IWA
+for each rendered item. Keep route matching, active-ancestor calculation, and
+branch expansion in the resolver; compose a separate semantic expand/collapse
+button only because the installed IWA item does not provide one.

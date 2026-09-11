@@ -3,6 +3,7 @@ import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import i18n from '@/i18n';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import { ContextualSidebar } from './ContextualSidebar';
 
@@ -32,7 +33,10 @@ interface MockNavigationIconProps {
 }
 
 vi.mock('@/ui', () => ({
-  cx: (...values: Array<string | false | undefined>) => values.filter(Boolean).join(' '),
+  twMerge: (...values: Array<string | false | undefined>) => values.filter(Boolean).join(' '),
+  createPrimeIcon: () => () => null,
+  PrimeIcon: () => <span aria-hidden="true" />,
+  NavigationMenuItem: ({ mainNode }: { mainNode: ReactNode }) => <div>{mainNode}</div>,
   NavigationIcon: ({ role, 'aria-label': ariaLabel }: MockNavigationIconProps) => (
     <span role={role} aria-label={ariaLabel} aria-hidden={ariaLabel ? undefined : 'true'} />
   ),
@@ -91,11 +95,11 @@ describe('ContextualSidebar', () => {
       { initialEntries: ['/portfolio/reviews'] },
     );
 
-    expect(screen.getByRole('button', { name: 'Przeglądy' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: i18n.t('nav.portfolio.reviews') })).toHaveAttribute(
       'aria-current',
       'page',
     );
-    await user.click(screen.getByRole('button', { name: 'Klienci w portfelu' }));
+    await user.click(screen.getByRole('button', { name: i18n.t('nav.portfolio.clients') }));
     expect(screen.getByLabelText('Current path')).toHaveTextContent('/portfolio/clients');
   });
 
@@ -109,13 +113,15 @@ describe('ContextualSidebar', () => {
       { initialEntries: ['/portfolio/dashboard'] },
     );
 
-    expect(screen.getByRole('button', { name: 'Dashboard' })).toHaveAttribute(
+    expect(screen.getByRole('button', { name: i18n.t('nav.portfolio.dashboard') })).toHaveAttribute(
       'aria-current',
       'page',
     );
     await user.click(screen.getByRole('button', { name: 'Open clients' }));
-    expect(screen.queryByRole('button', { name: 'Dashboard' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Wszyscy klienci' })).toHaveAttribute(
+    expect(
+      screen.queryByRole('button', { name: i18n.t('nav.portfolio.dashboard') }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: i18n.t('nav.customers.all') })).toHaveAttribute(
       'aria-current',
       'page',
     );
@@ -125,21 +131,54 @@ describe('ContextualSidebar', () => {
     const user = userEvent.setup();
     renderWithProviders(<ContextualSidebar />, { initialEntries: ['/customers/all'] });
 
-    const navigation = screen.getByRole('complementary', { name: 'Nawigacja' });
+    const navigation = screen.getByRole('complementary', { name: i18n.t('nav.title') });
     expect(navigation).toHaveAttribute('data-collapsed', 'false');
-    await user.click(screen.getByRole('button', { name: 'Zwiń nawigację' }));
+    const collapseButton = screen.getByRole('button', {
+      name: i18n.t('nav.sidebar.collapse'),
+    });
+    expect(collapseButton).toHaveAttribute('aria-expanded', 'true');
+    await user.click(collapseButton);
     expect(navigation).toHaveAttribute('data-collapsed', 'true');
-    expect(screen.queryByText('Wszyscy klienci')).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Wszyscy klienci' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: i18n.t('nav.sidebar.expand') })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    expect(screen.queryByText(i18n.t('nav.customers.all'))).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: i18n.t('nav.customers.all') })).toBeInTheDocument();
     expect(window.localStorage.getItem('scaffold.navigation.sidebar-collapsed')).toBe('true');
   });
 
   it('renders the default sidebar item for a section without dedicated items', () => {
     renderWithProviders(<ContextualSidebar />, { initialEntries: ['/groups'] });
-    expect(screen.getByRole('complementary', { name: 'Nawigacja' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Przegląd' })).toHaveAttribute(
+    expect(screen.getByRole('complementary', { name: i18n.t('nav.title') })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: i18n.t('nav.sidebar.overview') })).toHaveAttribute(
       'aria-current',
       'page',
     );
+  });
+
+  it('switches the sidebar from the global list to the customer tree from the URL', () => {
+    renderWithProviders(<ContextualSidebar />, {
+      initialEntries: ['/customers/42/general-data'],
+    });
+
+    expect(
+      screen.getByRole('complementary', {
+        name: i18n.t('nav.customerDetail.navigation'),
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: i18n.t('nav.customerDetail.generalData') }),
+    ).toHaveAttribute('aria-current', 'page');
+    expect(
+      screen.queryByRole('button', { name: i18n.t('nav.customers.all') }),
+    ).not.toBeInTheDocument();
+  });
+
+  it('uses a mobile-hidden desktop rail', () => {
+    renderWithProviders(<ContextualSidebar />, { initialEntries: ['/customers/all'] });
+
+    const navigation = screen.getByRole('complementary', { name: i18n.t('nav.title') });
+    expect(navigation).toHaveClass('hidden', 'md:flex', 'min-h-0', 'overflow-hidden');
   });
 });

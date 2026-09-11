@@ -7,10 +7,12 @@ export {
   DefinitionList,
   IconTextButton,
   InlineLink,
+  Label,
   MenuList,
+  NavigationMenuItem,
   PaginatorTable,
-  ScreenHeading,
   SearchWithAutocomplete,
+  Skeleton,
   SkeletonTable,
   Status,
   Switch,
@@ -24,9 +26,14 @@ export type {
   DefinitionListProps,
   IconTextButtonProps,
   InlineLinkProps,
+  LabelProps,
+  LabelSize,
+  LabelVariant,
+  NavigationMenuItemProps,
+  NavigationMenuSubNode,
   PaginatorTableProps,
-  ScreenHeadingProps,
   SearchWithAutocompleteProps,
+  SkeletonProps,
   SkeletonTableColumn,
   SkeletonTableProps,
   StatusProps,
@@ -34,8 +41,12 @@ export type {
   SwitchProps,
   TableProps,
 } from 'iwa-react-components';
+export { BreadCrumb, type BreadCrumbItem, type BreadCrumbProps } from 'iwa-react-components';
+export { ScreenHeading, type ScreenHeadingItem, type ScreenHeadingProps } from './ScreenHeading';
 export { TextInput, type TextInputProps } from './TextInput';
 export { Select, type SelectProps } from './Select';
+export { PrimeIcon, type PrimeIconName, type PrimeIconProps } from './PrimeIcon';
+export { createPrimeIcon } from './createPrimeIcon';
 export {
   MenuListAdapter,
   type MenuListAdapterItem,
@@ -49,6 +60,7 @@ export {
   TextCell,
   UnderlinedTextCell,
   ValidityStatusCell,
+  renderCellValue,
   type GenericDataTableCellComponent,
   type GenericDataTableCellProps,
   type GenericDataTableConfig,
@@ -77,6 +89,23 @@ export {
   type IconSize,
   type IconTone,
 } from './icon/useCustomIcon';
+export {
+  DataPanel,
+  DataPanelSkeleton,
+  type DataPanelColumnLabels,
+  type DataPanelFieldConfig,
+  type DataPanelFieldRenderContext,
+  type DataPanelProps,
+  type DataPanelSkeletonFieldConfig,
+  type DataPanelSkeletonProps,
+  type DataPanelValueSize,
+} from './DataPanel';
+export {
+  KeyValueSections,
+  type KeyValueItem,
+  type KeyValueSection,
+  type KeyValueSectionsProps,
+} from './KeyValueSections';
 export { cx } from './cx';
 export { ToastProvider } from './toast/ToastProvider';
 export { useToast } from './toast/useToast';

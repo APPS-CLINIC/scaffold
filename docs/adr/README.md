@@ -46,6 +46,8 @@ keep ADRs at all; use it as the template for new records.
 | [0026](0026-extensible-feature-filters-in-list-urls.md)       | Extensible feature filters in list URLs             | Accepted               |
 | [0027](0027-section-scoped-lazy-page-route-modules.md)        | Section-scoped lazy page route modules              | Accepted               |
 | [0028](0028-development-preview-data-through-rtk-query.md)    | Development preview data through RTK Query          | Accepted               |
+| [0029](0029-customer-summary-redux-mirror-slice.md)           | Customer summary as a read-only Redux mirror slice  | Accepted               |
+| [0030](0030-unified-configurable-navigation-manifest.md)      | Unified configurable navigation manifest            | Accepted               |
 
 ### Step 03 — Scope alignment (discovery)
 

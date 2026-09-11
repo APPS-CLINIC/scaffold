@@ -28,6 +28,7 @@ describe('useCustomIcon', () => {
     expect(icon.className).toContain('rounded-full');
     expect(icon.className).toContain('items-center');
     expect(icon.className).toContain('justify-center');
+    expect(icon.className).toContain('[&_svg]:size-5');
   });
 
   it('applies the default styles (md size, outline tone) when no options are given', () => {
@@ -84,6 +85,20 @@ describe('useCustomIcon', () => {
     expect(icon.className).toContain('text-orange-600');
     expect(icon.className).toContain('shadow');
     expect(icon.className).toContain('rounded-full');
+  });
+
+  it('supports the large brand treatment used by hero data panels', () => {
+    const { result } = setup({ size: '2xl', tone: 'brand' });
+    const CustomerIcon = result.current;
+
+    render(<CustomerIcon data-testid="icon" />);
+    expect(screen.getByTestId('icon')).toHaveClass(
+      'size-24',
+      'bg-[var(--navigation-accent)]',
+      'text-white',
+    );
+    expect(screen.getByTestId('icon').className).toContain('[&_.pi]:text-4xl');
+    expect(screen.getByTestId('icon').className).toContain('[&_svg]:size-12');
   });
 
   it('keeps a stable component identity across re-renders with the same inputs', () => {

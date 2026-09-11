@@ -1,6 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 import type { RootState } from '@/app/store';
-import { navTabs } from '@/routes/navTabs';
+import { navigationManifest } from '@/routes/navigation';
 import { defaultListQuery } from './urlState.schema';
 
 /** Base selector: the validated list query mirrored from the URL. */
@@ -16,9 +16,9 @@ export const selectActiveNavigationItemId = createSelector([selectRoute], (route
 
 export const selectPathname = createSelector([selectRoute], (route) => route.pathname);
 
-/** The active tab as a TabMenu `activeIndex` (position within `navTabs`). */
+/** The active tab as a TabMenu index within the manifest sections. */
 export const selectActiveTabIndex = createSelector([selectActiveTab], (activeTab) =>
-  navTabs.findIndex((tab) => tab.key === activeTab),
+  navigationManifest.sections.findIndex((section) => section.id === activeTab),
 );
 
 /**

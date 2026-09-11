@@ -5,6 +5,7 @@ export {
   TextCell,
   UnderlinedTextCell,
   ValidityStatusCell,
+  renderCellValue,
 } from './cells';
 export type {
   GenericDataTableCellComponent,

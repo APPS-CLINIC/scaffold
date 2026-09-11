@@ -1,20 +1,32 @@
 export {
-  defaultNavigationItem,
-  navigationSections,
-  type ConfiguredNavigationItem,
-  type NavigationIconComponent,
-  type NavigationItemConfig,
-  type NavigationMatchMode,
-  type NavigationSection,
+  navigationManifest,
+  type NavigationManifestSection,
   type NavigationSectionKey,
-} from './navigation.config';
+} from './navigation.manifest';
 export {
-  defaultNavigationSectionKey,
-  getActiveNavigationItem,
-  getActiveNavigationSection,
-  getContextualNavigationItems,
+  getNavigationContextDefaultItemPath,
   getNavigationItemPath,
-  getNavigationSectionByKey,
   getNavigationSectionDefaultPath,
-  getVisibleNavigationItems,
-} from './navigation';
+  resolveNavigation,
+  type ResolveNavigationOptions,
+} from './resolveNavigation';
+export type {
+  NavigationContextConfig,
+  NavigationIconComponent,
+  NavigationItemConfig,
+  NavigationManifest,
+  NavigationMatchMode,
+  NavigationSectionConfig,
+  NavigationSidebarConfig,
+  NavigationSidebarType,
+  NavigationTopBarMode,
+  NavigationTreeItemConfig,
+  ResolvedBreadcrumbItem,
+  ResolvedNavigation,
+  ResolvedNavigationContext,
+  ResolvedNavigationNode,
+  ResolvedNavigationRoute,
+  ResolvedNavigationSurfaceItem,
+  ResolvedSidebarNavigation,
+  ResolvedTopNavigation,
+} from './navigation.types';

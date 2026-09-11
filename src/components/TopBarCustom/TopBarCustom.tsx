@@ -4,24 +4,24 @@ import { Hide, Logout, Settings } from 'ing-react-icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/app/hooks';
-import { selectActiveTabIndex } from '@/features/urlState/urlState.selectors';
-import { navTabs } from '@/routes/navTabs';
-import { getNavigationSectionDefaultPath } from '@/routes/navigation';
+import { selectPathname } from '@/features/urlState/urlState.selectors';
+import { resolveNavigation } from '@/routes/navigation';
 import { Logo } from '@/components/Logo';
 
 /**
  * Top bar with the primary tab navigation (IWA TopBar + TabMenu).
  *
- * The active tab is not local state: clicking a tab only navigates, the URL
- * is the source of truth. `UrlStateSync` mirrors the complete route identity,
- * and `selectActiveTabIndex` derives the active tab from it — so
- * deep links, back/forward and programmatic navigation all highlight the
- * right tab.
+ * The active tab is not local state: clicking a tab only navigates, and the
+ * URL remains the source of truth. A pure route resolver applies the declared
+ * navigation policy and gives this component one render model for global and
+ * contextual modes. Deep links, back/forward and programmatic navigation
+ * therefore reconstruct the same state without policy branches in JSX.
  */
 export const TopBarCustom = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const activeIndex = useAppSelector(selectActiveTabIndex);
+  const pathname = useAppSelector(selectPathname);
+  const topNavigation = resolveNavigation(pathname).topBar;
 
   return (
     <TopBar
@@ -60,14 +60,14 @@ export const TopBarCustom = () => {
       ]}
     >
       <TabMenu
-        activeIndex={activeIndex}
-        items={navTabs.map((tab) => ({ label: t(tab.labelKey) }))}
+        activeIndex={topNavigation.activeIndex}
+        items={topNavigation.items.map((tab) => ({ label: t(tab.labelKey) }))}
         // The prop is typed as Dispatch<SetStateAction<number>>, so it must
         // also accept an updater function; resolve it against the current index.
         onChangeActiveIndex={(value: SetStateAction<number>) => {
-          const index = typeof value === 'function' ? value(activeIndex) : value;
-          const tab = navTabs[index];
-          if (tab) navigate(getNavigationSectionDefaultPath(tab));
+          const index = typeof value === 'function' ? value(topNavigation.activeIndex) : value;
+          const item = topNavigation.items[index];
+          if (item) navigate(item.path);
         }}
       />
     </TopBar>

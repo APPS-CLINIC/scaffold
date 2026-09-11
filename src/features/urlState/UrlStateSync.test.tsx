@@ -53,7 +53,7 @@ describe('UrlStateSync route mirror', () => {
         routeChanged({
           pathname: '/customers/all/123',
           sectionKey: 'customers',
-          itemId: 'all-customers',
+          itemId: null,
         }),
       ),
     );

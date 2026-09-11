@@ -53,10 +53,16 @@ describe('CustomersView', () => {
     await i18n.changeLanguage('pl');
     renderPage();
 
-    expect(screen.getByRole('heading', { name: 'Klienci oraz ich doradcy' })).toBeInTheDocument();
-    expect(await screen.findByRole('columnheader', { name: /nazwa klienta/i })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Dostosuj filtry' })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText('Szukaj na liście')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: i18n.t('customers.title') })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('columnheader', {
+        name: i18n.t('customers.table.field.fullName'),
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: i18n.t('customers.actions.customizeFilters') }),
+    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(i18n.t('customers.search.placeholder'))).toBeInTheDocument();
   });
 
   it('renders the development preview cache without an HTTP request', async () => {

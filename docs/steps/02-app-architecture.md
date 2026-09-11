@@ -90,7 +90,16 @@ processes the complete collection.
 Feature filters use readable `filter.<key>` search parameters. The shared URL
 layer validates their generic syntax, and the owning feature validates its
 domain values with Zod before deriving RTK Query arguments.
-→ [ADR 0026](../adr/0026-extensible-feature-filters-in-list-urls.md)
+
+The customer-detail summary is an explicit server-state exception required by
+that feature's contract: one persistent customer-layout RTK Query subscriber
+mirrors only the active customer into a read-only Redux slice. Route-level
+pages read the identity-scoped mirror, and the endpoint evicts its transport
+cache when the customer layout leaves, so neither layer retains historical
+customers. Switching between that customer's L2/L3 pages does not remount the
+subscriber or issue another request.
+→ [ADR 0026](../adr/0026-extensible-feature-filters-in-list-urls.md),
+[ADR 0029](../adr/0029-customer-summary-redux-mirror-slice.md)
 
 ### 5. Generic data tables
 
@@ -113,15 +122,50 @@ without touching feature code.
 ### 7. Routing — `src/routes`
 
 React Router v6 exposes the URL/search params as observable state and provides
-the `RootLayout` mount point for `UrlStateSync`. A typed frontend navigation
-manifest supplies the top tabs, contextual IWA menu, default redirects, and
-pathname matching without storing positional menu indexes. Implemented
-destinations are composed from section-scoped, type-checked route modules and
-loaded lazily through React Router while their paths remain manifest-derived.
+the `RootLayout` mount point for `UrlStateSync`. Navigation has three explicit
+roles: `navigation.types.ts` contains contracts only,
+`navigation.manifest.ts` contains the complete physical configuration, and
+`resolveNavigation.ts` is the single pure pathname interpreter. There are no
+parallel section or context configuration modules.
+
+Each manifest section declares
+`{ id, path, labelKey, defaultItem?, sidebar, context? }`. Its one optional
+dynamic context is nested under the owning section and declares
+`{ id, parameter, defaultItem?, ariaLabelKey, topBar, sidebar, breadcrumb? }`.
+This structure makes URL ownership, an optional default contextual destination,
+and supported cardinality explicit without duplicating them in route
+components. The resolver produces the top bar, sidebar, breadcrumb, nested
+route ancestry, and semantic route identity used by the Redux URL mirror.
+Components do not repeat context selection or pathname matching.
+
+The customer context combines a runtime id with recursive L2/L3 destinations.
+Its surface policy keeps the application-wide top bar on **Customers** while
+the sidebar uses the customer tree. It configures
+`defaultItem: 'general-data'`, so the router redirects `/customers/:id` to the
+manifest-derived `/customers/:id/general-data` path. Static section
+destinations take precedence over the dynamic context, so `/customers/all`
+cannot be mistaken for a customer id. Customer route segments remain canonical
+English identifiers, while every visible label comes from i18n.
+
+The router derives section and context paths, including configured default
+redirects, from the manifest. Implemented pages and lazy loaders remain in
+section-scoped, type-checked page-route modules and their separate registry.
+Navigation metadata therefore remains independent of page components, domain
+data, and Redux behavior.
+
+The customer page-route module maps every recursive customer-context item ID
+to a lazy route-level page. Its persistent `CustomerDetailLayout` contains only
+customer-summary synchronization, the shared heading, and the outlet; it does
+not inspect the active tab. The dashboard route deliberately sits outside the
+pathless `CustomerSummaryLayout`, while the other customer pages render through
+that layout's panel and outlet. This makes the summary policy explicit in route
+topology without sacrificing one-request behavior across tab and deep-link
+navigation.
 → [ADR 0020](../adr/0020-routing-react-router-v6-for-iwa-compatibility.md),
 [ADR 0023](../adr/0023-configurable-navigation-icon-components.md),
 [ADR 0024](../adr/0024-canonical-route-transitions-in-redux.md),
-[ADR 0027](../adr/0027-section-scoped-lazy-page-route-modules.md)
+[ADR 0027](../adr/0027-section-scoped-lazy-page-route-modules.md),
+[ADR 0030](../adr/0030-unified-configurable-navigation-manifest.md)
 
 ## How a single interaction flows
 

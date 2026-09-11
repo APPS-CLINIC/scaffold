@@ -15,11 +15,32 @@ describe('parseUrlRouteState', () => {
     });
   });
 
-  it('retains the full pathname for deeper content under the same sidebar item', () => {
+  it('keeps an unsupported exact-item descendant observable without claiming a sidebar item', () => {
     expect(parseUrlRouteState('/customers/all/123/documents')).toEqual({
       pathname: '/customers/all/123/documents',
       sectionKey: 'customers',
-      itemId: 'all-customers',
+      itemId: null,
+    });
+  });
+
+  it('mirrors the active customer L2 owner for L2 and L3+ paths', () => {
+    expect(parseUrlRouteState('/customers/42/general-data')).toEqual({
+      pathname: '/customers/42/general-data',
+      sectionKey: 'customers',
+      itemId: 'general-data',
+    });
+    expect(parseUrlRouteState('/customers/42/reviews/details/record-7')).toEqual({
+      pathname: '/customers/42/reviews/details/record-7',
+      sectionKey: 'customers',
+      itemId: 'reviews',
+    });
+  });
+
+  it('keeps the customer L1 route distinct from every L2 tab', () => {
+    expect(parseUrlRouteState('/customers/42')).toEqual({
+      pathname: '/customers/42',
+      sectionKey: 'customers',
+      itemId: null,
     });
   });
 

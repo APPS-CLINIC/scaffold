@@ -1,8 +1,8 @@
 import { Navigate, createBrowserRouter } from 'react-router-dom';
+import { buildNavigationItemRoutes } from './buildNavigationItemRoutes';
 import { ErrorLayout } from './ErrorLayout';
 import { RootLayout } from './RootLayout';
-import { navTabs } from './navTabs';
-import { getNavigationSectionDefaultPath } from './navigation';
+import { getNavigationSectionDefaultPath, navigationManifest } from './navigation';
 import { ForbiddenPage } from './pages/ForbiddenPage';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
@@ -19,26 +19,29 @@ export const router = createBrowserRouter([
       // the default destination when the section has items), navigation items
       // are static child segments, and section-owned detail routes (e.g.
       // ':id') follow — React Router ranks static segments above dynamic
-      // ones, so '/customers/all' always outranks '/customers/:id'.
-      ...navTabs
+      // ones, so static destinations always outrank a context parameter.
+      ...navigationManifest.sections
         .filter((section) => section.path !== '/')
         .map((section) => ({
           path: section.path,
+          caseSensitive: true,
           children: [
-            section.items.length > 0
+            section.sidebar.items.length > 0
               ? {
                   index: true,
                   element: <Navigate to={getNavigationSectionDefaultPath(section)} replace />,
                 }
               : { index: true, element: <SectionPage titleKey={section.labelKey} /> },
-            ...section.items.map((item) => {
-              const lazy = getPageRouteLoader(section.key, item.id);
-
-              return lazy
-                ? { path: item.segment, lazy }
-                : { path: item.segment, element: <SectionPage titleKey={item.labelKey} /> };
+            ...buildNavigationItemRoutes(section.sidebar.items, {
+              routeIdPrefix: `section:${section.id}`,
+              getLazy: (item) => getPageRouteLoader(section.id, item.id),
             }),
-            ...getSectionDetailRoutes(section.key).map(({ path, lazy }) => ({ path, lazy })),
+            ...getSectionDetailRoutes(section.id).map(({ path, lazy, children }) => ({
+              path,
+              caseSensitive: true,
+              lazy,
+              children: children ? [...children] : undefined,
+            })),
           ],
         })),
     ],

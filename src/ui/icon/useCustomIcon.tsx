@@ -6,20 +6,29 @@ import {
   type ReactNode,
   type RefAttributes,
 } from 'react';
-import { cx } from '../cx';
+import { twMerge } from 'iwa-react-components';
 
-export type IconSize = 'sm' | 'md' | 'lg' | 'xl';
-export type IconTone = 'outline' | 'neutral' | 'accent';
+export type IconSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl';
+export type IconTone = 'outline' | 'neutral' | 'accent' | 'brand';
 
 const baseClasses =
   'inline-flex shrink-0 select-none items-center justify-center overflow-hidden ' +
-  'rounded-full align-middle [&_svg]:h-[55%] [&_svg]:w-[55%]';
+  'rounded-full align-middle';
 
 const sizeClasses: Record<IconSize, string> = {
   sm: 'size-6',
   md: 'size-9',
   lg: 'size-12',
   xl: 'size-16',
+  '2xl': 'size-24',
+};
+
+const glyphSizeClasses: Record<IconSize, string> = {
+  sm: '[&_.pi]:text-xs [&_svg]:size-3',
+  md: '[&_.pi]:text-base [&_svg]:size-5',
+  lg: '[&_.pi]:text-xl [&_svg]:size-6',
+  xl: '[&_.pi]:text-2xl [&_svg]:size-8',
+  '2xl': '[&_.pi]:text-4xl [&_svg]:size-12',
 };
 
 const toneClasses: Record<IconTone, string> = {
@@ -27,6 +36,7 @@ const toneClasses: Record<IconTone, string> = {
   outline: 'border border-[var(--border)] bg-[var(--surface)]',
   neutral: 'bg-[var(--surface-muted)] text-[var(--muted)]',
   accent: 'bg-[var(--accent)] text-white',
+  brand: 'bg-[var(--navigation-accent)] text-white',
 };
 
 export interface CustomIconProps extends HTMLAttributes<HTMLSpanElement> {
@@ -50,8 +60,9 @@ export type CustomIconComponent = ForwardRefExoticComponent<
 /**
  * Binds a glyph into a ready-to-use circular icon component with default
  * styling built in: a `rounded-full` badge (Tailwind-only) with the glyph
- * centered inside. SVG glyphs are auto-scaled to ~55% of the circle and pick
- * up `currentColor`, so tint via `text-*` utilities or the `tone` prop.
+ * centered inside. SVG and PrimeIcons glyphs scale with the selected circle
+ * size and pick up `currentColor`, so tint via `text-*` utilities or the
+ * `tone` prop.
  *
  * ```tsx
  * const userGlyph = <UserSvg />;
@@ -86,9 +97,10 @@ export function useCustomIcon(
         <span
           ref={ref}
           {...(label ? { role: 'img', 'aria-label': label } : { 'aria-hidden': true })}
-          className={cx(
+          className={twMerge(
             baseClasses,
             sizeClasses[size],
+            glyphSizeClasses[size],
             toneClasses[tone],
             defaultClassName,
             className,

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { pl } from '@/i18n/messages/pl';
 import { mapCustomerResponse } from './customers.adapter';
 import type { CustomerResponse } from './customers.types';
 
@@ -60,8 +61,8 @@ describe('customer response adapter', () => {
     expect(
       mapCustomerResponse({
         ...response,
-        status: 'aktywny',
-        tsPriceConditionStatus: 'Wygasł',
+        status: pl['common.status.active'],
+        tsPriceConditionStatus: pl['common.status.expired'],
       }),
     ).toMatchObject({ status: null, tsPriceConditionStatus: null });
 
