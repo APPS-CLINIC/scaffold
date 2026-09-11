@@ -12,9 +12,8 @@ export const customerSummaryApi = baseApi.injectEndpoints({
       query: getCustomerSummaryRequest,
       transformResponse: (response: CustomerSummaryResponse) =>
         mapCustomerSummaryResponse(response),
-      providesTags: (_result, _error, customerId) => [{ type: 'CustomerSummary', id: customerId }],
-      // The mirror slice intentionally holds at most the active customer.
-      // Remove the transport cache as soon as the layout subscription leaves.
+      // RTK Query is the only cache: never keep a customer's summary around once
+      // the layout's subscription leaves, so switching/leaving evicts it immediately.
       keepUnusedDataFor: 0,
     }),
   }),

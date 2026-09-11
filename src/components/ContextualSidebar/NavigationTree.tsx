@@ -36,6 +36,7 @@ function NavigationTreeRow({ item, expandedIds, isCollapsed, depth }: Navigation
   const subNodes: NavigationMenuSubNode[] =
     usesNativeSubNodes && expanded && !isCollapsed
       ? item.children.map((child) => ({
+          id: child.id,
           label: t(child.labelKey),
           isActive: child.isActive,
           onClick: () => navigate(child.path),

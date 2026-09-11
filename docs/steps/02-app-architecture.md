@@ -91,15 +91,17 @@ Feature filters use readable `filter.<key>` search parameters. The shared URL
 layer validates their generic syntax, and the owning feature validates its
 domain values with Zod before deriving RTK Query arguments.
 
-The customer-detail summary is an explicit server-state exception required by
-that feature's contract: one persistent customer-layout RTK Query subscriber
-mirrors only the active customer into a read-only Redux slice. Route-level
-pages read the identity-scoped mirror, and the endpoint evicts its transport
-cache when the customer layout leaves, so neither layer retains historical
-customers. Switching between that customer's L2/L3 pages does not remount the
-subscriber or issue another request.
+The customer-detail summary reads RTK Query directly, with no Redux mirror.
+`CustomerDetailLayout` holds a persistent `useGetCustomerSummaryQuery(id)`
+subscription as a lifetime anchor for the customer visit (`selectFromResult:
+() => ({})`, so cache transitions never re-render it); the summary panel and
+the CDD/CRS/FATCA view subscribe to the same cache key and read `currentData`
+only, never the previous customer's `data`. `keepUnusedDataFor: 0` still
+evicts the transport cache when the layout leaves or the customer id changes,
+so nothing retains historical customers. Switching between that customer's
+L2/L3 pages does not remount the anchor or issue another request.
 → [ADR 0026](../adr/0026-extensible-feature-filters-in-list-urls.md),
-[ADR 0029](../adr/0029-customer-summary-redux-mirror-slice.md)
+[ADR 0031](../adr/0031-customer-summary-read-directly-from-rtk-query.md)
 
 ### 5. Generic data tables
 
@@ -147,25 +149,28 @@ destinations take precedence over the dynamic context, so `/customers/all`
 cannot be mistaken for a customer id. Customer route segments remain canonical
 English identifiers, while every visible label comes from i18n.
 
-The router derives section and context paths, including configured default
-redirects, from the manifest. Implemented pages and lazy loaders remain in
+The router derives section paths, including configured default redirects,
+from the manifest. Implemented pages and lazy loaders remain in
 section-scoped, type-checked page-route modules and their separate registry.
 Navigation metadata therefore remains independent of page components, domain
 data, and Redux behavior.
 
-The customer page-route module maps every recursive customer-context item ID
-to a lazy route-level page. Its persistent `CustomerDetailLayout` contains only
-customer-summary synchronization, the shared heading, and the outlet; it does
-not inspect the active tab. The dashboard route deliberately sits outside the
-pathless `CustomerSummaryLayout`, while the other customer pages render through
-that layout's panel and outlet. This makes the summary policy explicit in route
-topology without sacrificing one-request behavior across tab and deep-link
-navigation.
+The customer page-route module owns an explicit `:id` route literal instead
+of generating one from the manifest; a co-located test asserts its segments
+against the manifest's customer-context items and its index redirect against
+the manifest's default item. Its persistent `CustomerDetailLayout` is the
+summary subscription anchor plus the shared heading and outlet; it does not
+inspect the active tab. The dashboard route deliberately sits outside the
+pathless `CustomerSummaryLayout`, while the other customer pages render
+through that layout's panel and outlet. This makes the summary policy
+explicit in route topology without sacrificing one-request behavior across
+tab and deep-link navigation.
 → [ADR 0020](../adr/0020-routing-react-router-v6-for-iwa-compatibility.md),
 [ADR 0023](../adr/0023-configurable-navigation-icon-components.md),
 [ADR 0024](../adr/0024-canonical-route-transitions-in-redux.md),
 [ADR 0027](../adr/0027-section-scoped-lazy-page-route-modules.md),
-[ADR 0030](../adr/0030-unified-configurable-navigation-manifest.md)
+[ADR 0030](../adr/0030-unified-configurable-navigation-manifest.md),
+[ADR 0032](../adr/0032-explicit-route-objects-for-customer-detail-tree.md)
 
 ## How a single interaction flows
 

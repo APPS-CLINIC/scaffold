@@ -6,8 +6,8 @@ import type { CustomerStatus } from '../customers.types';
  * its empty-value fallback without collapsing the layout.
  *
  * `cddRiskLevel`/`cddExpirationDate` are modeled here because the backend
- * always returns them, but the master-data panel config does not render them
- * — they belong to the future CDD/CRS/FATCA section.
+ * always returns them alongside the master-data fields; the CDD/CRS/FATCA
+ * tab is what renders them, not the summary panel.
  */
 export interface CustomerSummaryResponse {
   fullName: string | null;
@@ -31,6 +31,3 @@ export interface CustomerSummaryResponse {
 export interface CustomerSummary extends Omit<CustomerSummaryResponse, 'status'> {
   status: CustomerStatus | null;
 }
-
-/** Lifecycle exposed by the Redux mirror to customer-context views. */
-export type CustomerSummaryLoadStatus = 'idle' | 'loading' | 'succeeded' | 'failed';

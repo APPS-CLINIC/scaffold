@@ -56,3 +56,17 @@ export function resizeTableContainer(width: number): void {
     }
   });
 }
+
+/**
+ * Find a paginator control by the class the table library gives it rather than by its
+ * accessible name. The name comes from the app's own `paginatorTemplate`, so a lookup by
+ * name conflates "the control is mislabelled" with "the control is not rendered at all" —
+ * and with no template the library renders an empty paginator, so that distinction
+ * matters. Label coverage lives in `GenericDataTable.prime.test.tsx`.
+ */
+export function paginatorControl(control: 'first' | 'prev' | 'next' | 'last'): HTMLElement {
+  const element = document.querySelector<HTMLElement>(`.p-paginator-${control}`);
+  if (!element) throw new Error(`No paginator ${control} control rendered.`);
+
+  return element;
+}

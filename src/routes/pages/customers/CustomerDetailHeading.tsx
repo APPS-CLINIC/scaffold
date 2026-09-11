@@ -1,9 +1,13 @@
 import type { MouseEvent as ReactMouseEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { resolveNavigation } from '@/routes/navigation';
+import { getNavigationItemPath, resolveNavigation } from '@/routes/navigation';
 import { ScreenHeading, type ScreenHeadingItem } from '@/ui';
 
+/**
+ * The IWA ScreenHeading renders its items as plain anchors, which would trigger a full page
+ * load. This capture handler routes same-origin, unmodified left clicks through React Router.
+ */
 function useHeadingLinkCapture() {
   const navigate = useNavigate();
 
@@ -39,12 +43,18 @@ export function CustomerDetailHeading() {
   const { t } = useTranslation();
   const { pathname } = useLocation();
   const onClickCapture = useHeadingLinkCapture();
-  const rootItem = resolveNavigation(pathname).breadcrumb.items.find(
-    (item) => item.id.startsWith('section-item:') && item.kind === 'message',
-  );
-  const items: readonly ScreenHeadingItem[] = rootItem
-    ? [{ label: t('customers.details.backToList'), navigateTo: rootItem.path }]
-    : [];
+  const section = resolveNavigation(pathname).section;
+  const rootItemId = section?.context?.breadcrumb?.rootItem;
+  const rootItem = section?.sidebar.items.find((item) => item.id === rootItemId);
+  const items: readonly ScreenHeadingItem[] =
+    section && rootItem
+      ? [
+          {
+            label: t('customers.details.backToList'),
+            navigateTo: getNavigationItemPath(section, rootItem),
+          },
+        ]
+      : [];
 
   return (
     <div onClickCapture={onClickCapture}>

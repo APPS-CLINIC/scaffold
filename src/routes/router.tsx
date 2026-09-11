@@ -36,12 +36,8 @@ export const router = createBrowserRouter([
               routeIdPrefix: `section:${section.id}`,
               getLazy: (item) => getPageRouteLoader(section.id, item.id),
             }),
-            ...getSectionDetailRoutes(section.id).map(({ path, lazy, children }) => ({
-              path,
-              caseSensitive: true,
-              lazy,
-              children: children ? [...children] : undefined,
-            })),
+            // The detail route literal (e.g. customers.pageRoutes.tsx) owns caseSensitive itself.
+            ...getSectionDetailRoutes(section.id),
           ],
         })),
     ],

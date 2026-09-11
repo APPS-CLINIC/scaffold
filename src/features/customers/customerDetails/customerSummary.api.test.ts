@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { makeStore } from '@/app/store';
 import { baseApi } from '@/api/baseApi';
+import { customerSummaryResponseFixture } from '@/test/customerDetails.fixtures';
 import { customerSummaryApi, getCustomerSummaryRequest } from './customerSummary.api';
-import type { CustomerSummaryResponse } from './customerSummary.types';
 
 const NativeRequest = globalThis.Request;
 const TEST_ORIGIN = 'https://app.test';
@@ -14,23 +14,7 @@ class AbsoluteTestRequest extends NativeRequest {
   }
 }
 
-const response: CustomerSummaryResponse = {
-  fullName: 'ACME Corporation Ltd.',
-  grid: 'PL12345678',
-  corporateGroupName: null,
-  corporateGroupGrid: null,
-  internalGroupName: null,
-  pamLam: null,
-  homeCountry: null,
-  segmentColor: null,
-  rating: 'AAA',
-  status: 'ACTIVE',
-  kkf: null,
-  pamName: null,
-  lendingRatingDate: null,
-  cddRiskLevel: null,
-  cddExpirationDate: null,
-};
+const response = customerSummaryResponseFixture;
 
 afterEach(() => {
   vi.unstubAllGlobals();

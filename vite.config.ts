@@ -36,6 +36,13 @@ export default defineConfig(({ mode }) => {
       },
     },
     test: {
+      // Tests run against a repo-local double instead of the real design system; see
+      // src/test/iwaDouble/index.js. Type checking and the build still use the package.
+      alias: {
+        'iwa-react-components': fileURLToPath(
+          new URL('./src/test/iwaDouble/index.js', import.meta.url),
+        ),
+      },
       globals: true,
       environment: 'jsdom',
       setupFiles: ['./vitest.setup.ts'],

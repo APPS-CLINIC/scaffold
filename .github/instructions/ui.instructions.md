@@ -12,6 +12,17 @@ applyTo: 'src/ui/**'
   them.
 - Every new primitive must be exported (with its prop types) from
   `src/ui/index.ts`. Feature/route code imports only from `@/ui`.
+- One exception to importing only from `@/ui`: a module that calls a primitive
+  while it is being evaluated, rather than while rendering, imports that
+  primitive from its own file. `navigation.manifest.ts` builds its icons at
+  module scope, so it imports `@/ui/createPrimeIcon` directly; going through the
+  barrel would make it wait for every primitive to initialise, and one import
+  cycle then leaves the binding undefined — `(0 , createPrimeIcon) is not a
+function`, thrown from the manifest rather than from the cycle.
+- A hook that renders or styles UI is a primitive and lives here too
+  (`useCustomIcon` is the example), exported from the same barrel. Only
+  store-bound hooks belong in `src/app/hooks.ts`. There is no third home for
+  hooks: a second copy under another folder is a duplicate, not a variant.
 - Style new primitives with Tailwind v3 utilities (see `docs/adr/0021`):
   no new CSS/CSS-module files. Colors come from the design tokens in
   `src/styles/global.css`, referenced as arbitrary values —

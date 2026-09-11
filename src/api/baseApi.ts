@@ -13,7 +13,7 @@ export const baseApi = createApi({
   }),
   // Register cache tags here as features add endpoints, so invalidation stays
   // coordinated across the app.
-  tagTypes: ['CustomerSummary'],
+  tagTypes: [],
   // Keep responses cached for a minute after the last subscriber unmounts.
   keepUnusedDataFor: 60,
   endpoints: () => ({}),
