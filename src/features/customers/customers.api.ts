@@ -1,4 +1,4 @@
-import { baseApi } from '@/api/baseApi';
+import { baseApi, downloadFileFromResponse } from '@/api/baseApi';
 import { mapCustomerResponse } from './customers.adapter';
 import type {
   Customer,
@@ -6,11 +6,12 @@ import type {
   CustomerResponse,
   CustomerStatus,
   PageResponse,
+  ExportRequest,
 } from './customers.types';
 
 const DEFAULT_PAGE_SIZE = 10;
 
-const customerSortFields = new Set<keyof Customer>([
+const customerFields = new Set<keyof Customer>([
   'id',
   'fullName',
   'shortName',
@@ -47,8 +48,8 @@ function toPositiveInteger(value: number, fallback: number): number {
   return Number.isFinite(value) ? Math.max(1, Math.trunc(value)) : fallback;
 }
 
-function isCustomerSortField(field: string): field is keyof Customer {
-  return customerSortFields.has(field as keyof Customer);
+function isCustomerField(field: string): field is keyof Customer {
+  return customerFields.has(field as keyof Customer);
 }
 
 /** Convert the app's 1-based page to the Spring service's 0-based contract. */
@@ -56,7 +57,7 @@ export function toCustomerBackendParams(query: CustomerQuery) {
   const page = toPositiveInteger(query.page, 1) - 1;
   const size = toPositiveInteger(query.pageSize, DEFAULT_PAGE_SIZE);
   const requestedSortField = query.sort.trim();
-  const sortField = isCustomerSortField(requestedSortField) ? requestedSortField : 'id';
+  const sortField = isCustomerField(requestedSortField) ? requestedSortField : 'id';
   const sortDirection: 'ASC' | 'DESC' = query.dir === 'desc' ? 'DESC' : 'ASC';
   const q = query.q.trim();
   const type = query.type.trim();
@@ -114,13 +115,41 @@ export function mapCustomerPageResponse(
   };
 }
 
+/**
+ * Export customers request. The backend returns a binary file, so the
+ * `responseHandler` is provided to handle the download.
+ * @param params The export request parameters.
+ * @returns An object containing the URL, HTTP method, and response handler.
+ */
+export function exportCustomersRequest(params: ExportRequest): {
+  url: string;
+  method: string;
+  responseHandler: (response: Response) => Promise<void>;
+} {
+  const columnSelection = (params.columnSelection ?? []).filter(isCustomerField).join(',');
+
+  const exportParams = new URLSearchParams({
+    locale: params.locale,
+    ...(columnSelection ? { columnSelection } : {}),
+  });
+
+  return {
+    url: `customers/export?${exportParams.toString()}`,
+    method: 'GET',
+    responseHandler: (response) => downloadFileFromResponse(response, 'customers.xlsx'),
+  };
+}
+
 export const customersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getCustomers: builder.query<PageResponse<Customer>, CustomerQuery>({
       query: getCustomersRequest,
       transformResponse: mapCustomerPageResponse,
     }),
+    exportCustomers: builder.mutation<void, ExportRequest>({
+      query: exportCustomersRequest,
+    }),
   }),
 });
 
-export const { useGetCustomersQuery } = customersApi;
+export const { useGetCustomersQuery, useExportCustomersMutation } = customersApi;

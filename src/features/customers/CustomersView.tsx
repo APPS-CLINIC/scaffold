@@ -10,15 +10,15 @@ import {
   GenericDataTable,
   IconTextButton,
   SearchWithAutocomplete,
-  Switch,
   type GenericDataTableLabels,
   type GenericDataTablePageChange,
   type GenericDataTableSortChange,
 } from '@/ui';
 import { customerTableConfig } from './customerTable';
-import { useGetCustomersQuery } from './customers.api';
+import { useGetCustomersQuery, useExportCustomersMutation } from './customers.api';
 import { selectCustomerQuery } from './customers.filters';
 import type { Customer } from './customers.types';
+import { GenericTableSettings } from '@/ui/GenericDataTable/GenericTableSettings.tsx';
 
 export function CustomersView() {
   const { t, i18n } = useTranslation();
@@ -68,12 +68,6 @@ export function CustomersView() {
     setQuery({ sort: '', dir: 'asc' }, { resetPage: false });
   };
 
-  const visibleRowKeys = useMemo(
-    () => (data?.content ?? []).map((customer) => String(customer.id)),
-    [data?.content],
-  );
-  const allVisibleRowsExpanded =
-    visibleRowKeys.length > 0 && visibleRowKeys.every((key) => expandedRowKeys.includes(key));
   const dataAsOf = useMemo(
     () =>
       new Intl.DateTimeFormat(
@@ -82,6 +76,13 @@ export function CustomersView() {
       ).format(new Date(fulfilledTimeStamp ?? Date.now())),
     [fulfilledTimeStamp, i18n.language, i18n.resolvedLanguage],
   );
+
+  const [exportCustomers] = useExportCustomersMutation();
+  const handleExport = async () => {
+    await exportCustomers({
+      locale: i18n.resolvedLanguage ?? i18n.language,
+    });
+  };
 
   return (
     <section
@@ -124,15 +125,12 @@ export function CustomersView() {
               className="w-full max-w-96"
               placeholder={t('customers.search.placeholder')}
             />
-            <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap text-sm text-[var(--muted)]">
-              <span>{t('customers.actions.expandAll')}</span>
-              <Switch
-                aria-label={t('customers.actions.expandAll')}
-                checked={allVisibleRowsExpanded}
-                disabled={visibleRowKeys.length === 0}
-                onChange={() => setExpandedRowKeys(allVisibleRowsExpanded ? [] : visibleRowKeys)}
-              />
-            </label>
+            <GenericTableSettings
+              dataContent={data?.content}
+              onExpandedRowKeysChange={setExpandedRowKeys}
+              expandedRowKeys={expandedRowKeys}
+              handleExport={handleExport}
+            />
           </div>
         </div>
 

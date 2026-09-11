@@ -1,13 +1,15 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { makeStore } from '@/app/store';
+import * as baseApiModule from '@/api/baseApi';
 import { installCustomerApiTestTransport } from '@/test/customerApiTestTransport';
 import {
   customerBackendParamsToSearchParams,
   customersApi,
+  exportCustomersRequest,
   getCustomersRequest,
   toCustomerBackendParams,
 } from './customers.api';
-import type { CustomerQuery } from './customers.types';
+import type { CustomerQuery, ExportRequest } from './customers.types';
 
 const makeQuery = (overrides: Partial<CustomerQuery> = {}): CustomerQuery => ({
   q: '',
@@ -91,6 +93,68 @@ describe('customer API contract', () => {
     expect(cached.data).toEqual(response);
 
     subscription.unsubscribe();
+    store.dispatch(customersApi.util.resetApiState());
+  });
+});
+
+describe('customer export contract', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('builds a GET export URL with the locale and only the known customer columns', () => {
+    const request = exportCustomersRequest({
+      locale: 'pl',
+      columnSelection: ['fullName', 'secretToken', 'grid'],
+    });
+
+    expect(request.method).toBe('GET');
+    expect(request.url).toBe('customers/export?locale=pl&columnSelection=fullName%2Cgrid');
+  });
+
+  it('omits the column selection when no known column is requested', () => {
+    expect(exportCustomersRequest({ locale: 'en' }).url).toBe('customers/export?locale=en');
+    expect(exportCustomersRequest({ locale: 'en', columnSelection: ['unknown'] }).url).toBe(
+      'customers/export?locale=en',
+    );
+  });
+
+  it('hands the binary response to the download helper with the customers fallback name', async () => {
+    const download = vi
+      .spyOn(baseApiModule, 'downloadFileFromResponse')
+      .mockResolvedValue(undefined);
+    const response = new Response(new Blob(['xlsx']));
+
+    await exportCustomersRequest({ locale: 'pl' }).responseHandler(response);
+
+    expect(download).toHaveBeenCalledWith(response, 'customers.xlsx');
+  });
+
+  it('requests the export through the RTK Query mutation and downloads the file', async () => {
+    const fetchMock = installCustomerApiTestTransport();
+    fetchMock.mockResolvedValueOnce(
+      new Response(new Blob(['xlsx']), {
+        headers: { 'Content-Disposition': 'attachment; filename="customers.xlsx"' },
+      }),
+    );
+    const download = vi
+      .spyOn(baseApiModule, 'downloadFileFromResponse')
+      .mockResolvedValue(undefined);
+    const store = makeStore();
+    const params: ExportRequest = { locale: 'en', columnSelection: ['fullName'] };
+
+    await store.dispatch(customersApi.endpoints.exportCustomers.initiate(params)).unwrap();
+
+    const request = fetchMock.mock.calls[0]?.[0];
+    if (!(request instanceof Request)) throw new Error('Expected fetch to receive a Request');
+    const url = new URL(request.url);
+
+    expect(request.method).toBe('GET');
+    expect(url.pathname).toBe('/api/customers/export');
+    expect(url.searchParams.get('locale')).toBe('en');
+    expect(url.searchParams.get('columnSelection')).toBe('fullName');
+    expect(download).toHaveBeenCalledTimes(1);
+
     store.dispatch(customersApi.util.resetApiState());
   });
 });

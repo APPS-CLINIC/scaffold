@@ -47,6 +47,7 @@ export const pl = {
   'customers.actions.customizeFilters': 'Dostosuj filtry',
   'customers.actions.expandAll': 'Rozwiń wszystkie',
   'customers.actions.refresh': 'Odśwież',
+  'customers.actions.export': 'Pobierz do excela',
   'customers.table.ariaLabel': 'Klienci oraz ich doradcy',
   'customers.table.loading': 'Ładowanie klientów…',
   'customers.table.empty': 'Brak klientów spełniających wybrane kryteria.',
