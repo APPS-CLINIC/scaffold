@@ -1,6 +1,8 @@
 export interface ColumnDraftRow<K extends string> {
   key: number;
   field: K | null;
+  /** Added in this editing session: its field is picked with a Select until Save. */
+  added: boolean;
 }
 
 export interface ColumnSettingsDraft<K extends string> {
@@ -27,7 +29,7 @@ export function createColumnSettingsDraft<K extends string>(
   const known = new Set(allFields);
   const rows = columns
     .filter((field) => known.has(field))
-    .map((field, index) => ({ key: index, field }));
+    .map((field, index) => ({ key: index, field, added: false }));
 
   return { allFields, rows, nextKey: rows.length, submitted: false };
 }
@@ -80,7 +82,7 @@ export function columnSettingsDraftReducer<K extends string>(
 
       return {
         ...draft,
-        rows: [...draft.rows, { key: draft.nextKey, field: null }],
+        rows: [...draft.rows, { key: draft.nextKey, field: null, added: true }],
         nextKey: draft.nextKey + 1,
       };
     case 'rowRemoved':

@@ -20,6 +20,14 @@ import { customerTableConfig } from './customerTable';
 const appendToHead = document.head.appendChild.bind(document.head);
 const defaultColumns: readonly string[] = customerTableConfig.fields.map((field) => field.field);
 const columnsWithout = (removed: string) => defaultColumns.filter((field) => field !== removed);
+const labelKeyOf = new Map(
+  customerTableConfig.fields.map((field) => [field.field as string, field.labelKey] as const),
+);
+const labelsOf = (columns: readonly string[]) =>
+  columns.map((column) => {
+    const labelKey = labelKeyOf.get(column);
+    return labelKey === undefined ? column : i18n.t(labelKey);
+  });
 
 function createMemoryStorage(): Storage {
   const items = new Map<string, string>();
@@ -77,10 +85,8 @@ const currentSearch = () =>
     screen.getByRole('status', { name: 'Current customer URL' }).textContent ?? '',
   );
 const settingsDialog = () => screen.getByRole('dialog', { name: 'List settings' });
-const rowValues = () =>
-  within(settingsDialog())
-    .getAllByRole('combobox')
-    .map((select) => (select as HTMLSelectElement).value);
+const columnRows = () => within(settingsDialog()).getAllByRole('listitem');
+const rowNames = () => columnRows().map((row) => row.textContent);
 const columnHeaderNames = () =>
   screen.getAllByRole('columnheader').map((header) => header.textContent?.trim());
 const expandedRegions = () => screen.queryAllByRole('region', { name: /collapse details for/i });
@@ -118,8 +124,8 @@ describe('CustomersView column settings', () => {
 
     await user.click(screen.getByRole('button', { name: 'List settings' }));
     expect(within(settingsDialog()).getByText('Used columns: 25 of 25')).toBeInTheDocument();
-    expect(rowValues()).toEqual(defaultColumns);
-    expect(rowValues()[1]).toBe('grid');
+    expect(rowNames()).toEqual(labelsOf(defaultColumns));
+    expect(rowNames()[1]).toBe('GRID');
 
     await user.click(within(settingsDialog()).getByRole('button', { name: 'Remove column 2' }));
     await user.click(within(settingsDialog()).getByRole('button', { name: 'Save' }));
@@ -161,7 +167,7 @@ describe('CustomersView column settings', () => {
     expect(screen.queryAllByRole('button', { name: /expand details for/i })).toHaveLength(0);
 
     await user.click(screen.getByRole('button', { name: 'List settings' }));
-    expect(rowValues()).toEqual(['status', 'fullName']);
+    expect(rowNames()).toEqual(['Status', 'Customer name']);
     expect(within(settingsDialog()).getByText('Used columns: 2 of 25')).toBeInTheDocument();
   });
 
@@ -197,12 +203,12 @@ describe('CustomersView column settings', () => {
 
     await user.click(screen.getByRole('button', { name: 'List settings' }));
     await user.click(within(settingsDialog()).getByRole('button', { name: 'Add column' }));
-    expect(rowValues()).toHaveLength(25);
+    expect(columnRows()).toHaveLength(25);
     await user.click(within(settingsDialog()).getByRole('button', { name: 'Cancel' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'List settings' }));
-    expect(rowValues()).toEqual(columnsWithout('grid'));
+    expect(rowNames()).toEqual(labelsOf(columnsWithout('grid')));
     expect(within(settingsDialog()).getByText('Used columns: 24 of 25')).toBeInTheDocument();
   });
 });

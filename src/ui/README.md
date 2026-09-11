@@ -113,8 +113,11 @@ accordion. In jsdom tests use `mockTableContainerWidth` from
 ### Column settings
 
 `TableColumnSettingsDialog<T>` is the "List settings" dialog: one sortable
-row per used column (drag handle, IWA `Select`, remove), "Add column",
-"Restore defaults" behind a confirmation, Cancel and Save. It is
+row per used column (drag handle, column name, remove), "Add column",
+"Restore defaults" behind a confirmation, Cancel and Save. A row added with
+"Add column" picks its field from an IWA `Select` of the unused fields and
+keeps that Select until Save. Only the column list scrolls — the dialog body
+never does — and a newly added row is scrolled into view. It is
 presentational and generic: `fields` is the universe of `{ field, labelKey }`
 options in configuration order, `columns` the field names in use when it
 opens, and `onSave` receives the ordered field names once every row is filled

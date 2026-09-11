@@ -57,10 +57,10 @@ function renderDialog() {
   );
 }
 
-const selectValues = () =>
+const rowNames = () =>
   within(screen.getByRole('dialog', { name: 'List settings' }))
-    .getAllByRole('combobox')
-    .map((select) => (select as HTMLSelectElement).value);
+    .getAllByRole('listitem')
+    .map((row) => row.textContent);
 
 beforeEach(async () => {
   stubListGeometry();
@@ -91,7 +91,7 @@ describe('TableColumnSettingsDialog keyboard reordering', () => {
     expect(screen.getByText('Column GRID is at position 2 of 3')).toBeInTheDocument();
     await user.keyboard('[Space]');
 
-    expect(selectValues()).toEqual(['name', 'grid', 'status']);
+    expect(rowNames()).toEqual(['Customer name', 'GRID', 'Status']);
     expect(screen.getByText('Column GRID dropped at position 2 of 3')).toBeInTheDocument();
   });
 
@@ -104,7 +104,7 @@ describe('TableColumnSettingsDialog keyboard reordering', () => {
     await user.keyboard('[ArrowDown]');
     await user.keyboard('[Escape]');
 
-    expect(selectValues()).toEqual(['grid', 'name', 'status']);
+    expect(rowNames()).toEqual(['GRID', 'Customer name', 'Status']);
     expect(screen.getByText('Moving column GRID cancelled')).toBeInTheDocument();
   });
 });

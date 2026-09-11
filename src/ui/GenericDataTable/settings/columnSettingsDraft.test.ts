@@ -23,8 +23,8 @@ describe('createColumnSettingsDraft', () => {
     const draft = createColumnSettingsDraft(allFields, ['grid', 'name']);
 
     expect(draft.rows).toEqual([
-      { key: 0, field: 'grid' },
-      { key: 1, field: 'name' },
+      { key: 0, field: 'grid', added: false },
+      { key: 1, field: 'name', added: false },
     ]);
     expect(draft.nextKey).toBe(2);
     expect(draft.submitted).toBe(false);
@@ -40,12 +40,12 @@ describe('createColumnSettingsDraft', () => {
 });
 
 describe('columnSettingsDraftReducer', () => {
-  it('appends an empty row and stops at the size of the universe', () => {
+  it('appends an empty added row and stops at the size of the universe', () => {
     let draft = createColumnSettingsDraft(allFields, ['name', 'status', 'grid']);
     expect(canAddRow(draft)).toBe(true);
 
     draft = columnSettingsDraftReducer(draft, { type: 'rowAdded' });
-    expect(draft.rows.at(-1)).toEqual({ key: 3, field: null });
+    expect(draft.rows.at(-1)).toEqual({ key: 3, field: null, added: true });
     expect(draft.nextKey).toBe(4);
     expect(canAddRow(draft)).toBe(false);
 
@@ -58,7 +58,7 @@ describe('columnSettingsDraftReducer', () => {
     expect(canRemoveRow(draft)).toBe(true);
 
     draft = columnSettingsDraftReducer(draft, { type: 'rowRemoved', key: 0 });
-    expect(draft.rows).toEqual([{ key: 1, field: 'status' }]);
+    expect(draft.rows).toEqual([{ key: 1, field: 'status', added: false }]);
     expect(canRemoveRow(draft)).toBe(false);
 
     const kept = columnSettingsDraftReducer(draft, { type: 'rowRemoved', key: 1 });
@@ -81,6 +81,19 @@ describe('columnSettingsDraftReducer', () => {
       field: null,
     });
     expect(fieldsOf(cleared)).toEqual(['name', null]);
+  });
+
+  it('keeps the added mark with its row through field changes and moves', () => {
+    let draft = createColumnSettingsDraft(allFields, ['name', 'status']);
+    draft = columnSettingsDraftReducer(draft, { type: 'rowAdded' });
+    draft = columnSettingsDraftReducer(draft, { type: 'rowFieldChanged', key: 2, field: 'grid' });
+    draft = columnSettingsDraftReducer(draft, { type: 'rowMoved', from: 2, to: 0 });
+
+    expect(draft.rows.map((row) => [row.field, row.added])).toEqual([
+      ['grid', true],
+      ['name', false],
+      ['status', false],
+    ]);
   });
 
   it('moves a row down, up, and ignores a no-op or out-of-range move', () => {

@@ -52,10 +52,12 @@ const options: readonly TableColumnOption<Row>[] = [
   { field: 'grid', labelKey: 'customers.table.field.grid' },
 ];
 
+const addedRow = { key: 7, field: 'status' as const, added: true };
+
 function renderRow(props: Partial<SortableColumnRowProps<Row>> = {}) {
   const onFieldChange = vi.fn();
   const onRemove = vi.fn();
-  const row = props.row ?? { key: 7, field: 'status' as const };
+  const row = props.row ?? { key: 7, field: 'status' as const, added: false };
 
   render(
     <DndContext>
@@ -91,8 +93,15 @@ describe('SortableColumnRow', () => {
     expect(screen.getByRole('button', { name: 'Remove column 2' })).toBeEnabled();
   });
 
-  it('hands the Select the options in the given order, unsorted, with the current field', () => {
+  it('shows a column already in use by its name, without a Select', () => {
     renderRow();
+
+    expect(screen.getByRole('listitem')).toHaveTextContent('Status');
+    expect(screen.queryByTestId('select')).not.toBeInTheDocument();
+  });
+
+  it('hands the Select of an added row the options in the given order, unsorted', () => {
+    renderRow({ row: addedRow });
 
     const select = screen.getByTestId('select');
     expect(select).toHaveAttribute('data-sort-options', 'false');
@@ -107,7 +116,7 @@ describe('SortableColumnRow', () => {
 
   it('reports the chosen field, or null when the choice is cleared', async () => {
     const user = userEvent.setup();
-    const { onFieldChange } = renderRow();
+    const { onFieldChange } = renderRow({ row: addedRow });
 
     await user.selectOptions(screen.getByTestId('select'), 'grid');
     expect(onFieldChange).toHaveBeenLastCalledWith('grid');
@@ -132,13 +141,13 @@ describe('SortableColumnRow', () => {
   });
 
   it('shows the validation message only while invalid', () => {
-    renderRow({ invalid: true, row: { key: 9, field: null } });
+    renderRow({ invalid: true, row: { key: 9, field: null, added: true } });
 
     expect(screen.getByText('Fill in or remove the column')).toBeInTheDocument();
   });
 
   it('shows no validation message while valid', () => {
-    renderRow();
+    renderRow({ row: addedRow });
 
     expect(screen.queryByText('Fill in or remove the column')).not.toBeInTheDocument();
   });

@@ -65,8 +65,7 @@ function renderForm() {
   return { onCancel };
 }
 
-const selectValues = () =>
-  screen.getAllByRole('combobox').map((select) => (select as HTMLSelectElement).value);
+const rowNames = () => screen.getAllByRole('listitem').map((row) => row.textContent);
 
 function captured(): DndContextProps {
   if (dndProps.current === null) throw new Error('DndContext did not render.');
@@ -93,10 +92,10 @@ describe('TableColumnSettingsForm drag and drop', () => {
 
     // Ids are row keys: grid is 0, name is 1, status is 2.
     dragEnd(0, 2);
-    expect(selectValues()).toEqual(['name', 'status', 'grid']);
+    expect(rowNames()).toEqual(['Customer name', 'Status', 'GRID']);
 
     dragEnd(0, 1);
-    expect(selectValues()).toEqual(['grid', 'name', 'status']);
+    expect(rowNames()).toEqual(['GRID', 'Customer name', 'Status']);
   });
 
   it('leaves the order alone when the drop has no target or targets itself', () => {
@@ -105,7 +104,7 @@ describe('TableColumnSettingsForm drag and drop', () => {
     dragEnd(1, null);
     dragEnd(1, 1);
 
-    expect(selectValues()).toEqual(['grid', 'name', 'status']);
+    expect(rowNames()).toEqual(['GRID', 'Customer name', 'Status']);
   });
 
   it('announces every step of a move in the active language', () => {

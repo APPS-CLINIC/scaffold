@@ -39,8 +39,9 @@ function renderDialog(props: Partial<TableColumnSettingsDialogProps<Row>> = {}) 
 const settingsDialog = () => screen.getByRole('dialog', { name: 'List settings' });
 // dnd-kit renders its own announcement live region, so the counter is found by its text.
 const counter = () => within(settingsDialog()).getByText(/^Used columns:/);
-const selects = () => within(settingsDialog()).getAllByRole('combobox');
-const selectValues = () => selects().map((select) => (select as HTMLSelectElement).value);
+const columnRows = () => within(settingsDialog()).getAllByRole('listitem');
+const rowNames = () => columnRows().map((row) => row.textContent);
+const selects = () => within(settingsDialog()).queryAllByRole('combobox');
 const optionLabels = (select: HTMLElement) =>
   within(select)
     .getAllByRole('option')
@@ -58,7 +59,7 @@ describe('TableColumnSettingsDialog', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
   });
 
-  it('shows one row per column, in order, with the tab, hint, title and counter', () => {
+  it('shows one named row per column, in order, with the tab, hint, title and counter', () => {
     renderDialog();
 
     const dialog = settingsDialog();
@@ -75,17 +76,20 @@ describe('TableColumnSettingsDialog', () => {
     expect(counter()).toHaveTextContent('Used columns: 2 of 4');
     expect(counter()).toHaveAttribute('role', 'status');
     expect(counter()).toHaveAttribute('aria-live', 'polite');
-    expect(selectValues()).toEqual(['grid', 'name']);
+    expect(rowNames()).toEqual(['GRID', 'Customer name']);
+    expect(selects()).toHaveLength(0);
     expect(within(dialog).getByRole('button', { name: 'Move column 1' })).toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: 'Move column 2' })).toBeInTheDocument();
   });
 
-  it('offers each row the unused fields plus its own, in configuration order', () => {
+  it('offers an added row only the unused fields, in configuration order', async () => {
+    const user = userEvent.setup();
     renderDialog();
 
-    const [first, second] = selects();
-    expect(first && optionLabels(first)).toEqual(['Status', 'GRID', 'KKF']);
-    expect(second && optionLabels(second)).toEqual(['Customer name', 'Status', 'KKF']);
+    await user.click(screen.getByRole('button', { name: 'Add column' }));
+
+    const [added] = selects();
+    expect(added && optionLabels(added)).toEqual(['Status', 'KKF']);
   });
 
   it('appends an empty row on Add column and disables it once every field is used', async () => {
@@ -93,12 +97,32 @@ describe('TableColumnSettingsDialog', () => {
     renderDialog();
 
     await user.click(screen.getByRole('button', { name: 'Add column' }));
-    expect(selectValues()).toEqual(['grid', 'name', '']);
+    expect(columnRows()).toHaveLength(3);
+    expect(selects().map((select) => (select as HTMLSelectElement).value)).toEqual(['']);
     expect(counter()).toHaveTextContent('Used columns: 2 of 4');
 
     await user.click(screen.getByRole('button', { name: 'Add column' }));
-    expect(selectValues()).toHaveLength(4);
+    expect(columnRows()).toHaveLength(4);
     expect(screen.getByRole('button', { name: 'Add column' })).toBeDisabled();
+  });
+
+  it('scrolls the column list to a row added at its end', async () => {
+    const user = userEvent.setup();
+    renderDialog();
+    const list = within(settingsDialog()).getByRole('list');
+    let scrollTop = 0;
+    Object.defineProperty(list, 'scrollHeight', { configurable: true, value: 480 });
+    Object.defineProperty(list, 'scrollTop', {
+      configurable: true,
+      get: () => scrollTop,
+      set: (value: number) => {
+        scrollTop = value;
+      },
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Add column' }));
+
+    expect(scrollTop).toBe(480);
   });
 
   it('removes a row and disables the remove control on the last one', async () => {
@@ -107,7 +131,7 @@ describe('TableColumnSettingsDialog', () => {
 
     await user.click(screen.getByRole('button', { name: 'Remove column 1' }));
 
-    expect(selectValues()).toEqual(['name']);
+    expect(rowNames()).toEqual(['Customer name']);
     expect(screen.getByRole('button', { name: 'Remove column 1' })).toBeDisabled();
   });
 
@@ -122,18 +146,20 @@ describe('TableColumnSettingsDialog', () => {
     expect(settingsDialog()).toBeInTheDocument();
     expect(screen.getByText('Fill in or remove the column')).toBeInTheDocument();
 
-    const [, , empty] = selects();
+    const [empty] = selects();
     expect(empty).toBeDefined();
     if (empty) await user.selectOptions(empty, 'note');
 
     expect(screen.queryByText('Fill in or remove the column')).not.toBeInTheDocument();
+    // An added row keeps its Select until Save, so the choice can still be corrected.
+    expect(empty).toHaveValue('note');
   });
 
   it('hands the ordered columns to onSave once every row is filled', async () => {
     const user = userEvent.setup();
     const { onSave } = renderDialog();
     await user.click(screen.getByRole('button', { name: 'Add column' }));
-    const [, , empty] = selects();
+    const [empty] = selects();
     if (empty) await user.selectOptions(empty, 'status');
 
     await user.click(screen.getByRole('button', { name: 'Save' }));
@@ -150,6 +176,17 @@ describe('TableColumnSettingsDialog', () => {
 
     await user.click(within(settingsDialog()).getByRole('button', { name: 'Zamknij' }));
     expect(onCancel).toHaveBeenCalledTimes(2);
+  });
+
+  it('discards the draft through a click on the backdrop', async () => {
+    const user = userEvent.setup();
+    const { onCancel } = renderDialog();
+
+    const backdrop = settingsDialog().parentElement;
+    expect(backdrop).not.toBeNull();
+    if (backdrop) await user.click(backdrop);
+
+    expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
   it('asks for confirmation before restoring the defaults', async () => {
@@ -170,7 +207,7 @@ describe('TableColumnSettingsDialog', () => {
       screen.queryByRole('dialog', { name: 'Restoring default settings' }),
     ).not.toBeInTheDocument();
     expect(onRestoreDefaults).not.toHaveBeenCalled();
-    expect(selectValues()).toEqual(['name']);
+    expect(rowNames()).toEqual(['Customer name']);
 
     await user.click(screen.getByRole('button', { name: 'Restore defaults' }));
     await user.click(
@@ -186,7 +223,7 @@ describe('TableColumnSettingsDialog', () => {
     const user = userEvent.setup();
     const { rerender, onSave, onCancel, onRestoreDefaults } = renderDialog();
     await user.click(screen.getByRole('button', { name: 'Add column' }));
-    expect(selectValues()).toHaveLength(3);
+    expect(selects()).toHaveLength(1);
 
     const reopen = (open: boolean, columns: readonly Field[]) =>
       rerender(
@@ -203,6 +240,7 @@ describe('TableColumnSettingsDialog', () => {
     reopen(false, ['grid', 'name']);
     reopen(true, ['status']);
 
-    expect(selectValues()).toEqual(['status']);
+    expect(rowNames()).toEqual(['Status']);
+    expect(selects()).toHaveLength(0);
   });
 });

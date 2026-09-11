@@ -9,7 +9,7 @@ export interface SortableColumnRowProps<T extends object> {
   row: ColumnDraftRow<GenericDataTableField<T>>;
   /** 1-based, for the accessible names of the row controls. */
   position: number;
-  /** Fields this row may pick, in configuration order. */
+  /** Fields this row may pick, in configuration order; it includes the row's own field. */
   options: readonly TableColumnOption<T>[];
   invalid: boolean;
   removable: boolean;
@@ -20,6 +20,10 @@ export interface SortableColumnRowProps<T extends object> {
 const ICON_BUTTON_CLASS_NAME =
   'inline-flex h-10 w-10 shrink-0 items-center justify-center rounded text-[var(--muted)] transition-colors hover:text-[var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[var(--focus)] disabled:cursor-default disabled:opacity-40 disabled:hover:text-[var(--muted)] motion-reduce:transition-none';
 
+/**
+ * One column of the settings list. A column already in use shows its name; only a
+ * row added in this session picks its field from a Select.
+ */
 export function SortableColumnRow<T extends object>({
   row,
   position,
@@ -39,6 +43,8 @@ export function SortableColumnRow<T extends object>({
     transition,
     isDragging,
   } = useSortable({ id: row.key });
+
+  const current = options.find((option) => option.field === row.field);
 
   const handleChange = (value: string | null) => {
     const option = options.find((candidate) => candidate.field === value);
@@ -64,14 +70,20 @@ export function SortableColumnRow<T extends object>({
       >
         <span className="pi pi-bars" aria-hidden="true" />
       </button>
-      <Select
-        className="min-w-0 flex-1"
-        options={options.map((option) => ({ value: option.field, label: t(option.labelKey) }))}
-        value={row.field}
-        onChange={handleChange}
-        sortOptions={false}
-        errorMessage={invalid ? t('table.settings.row.empty') : undefined}
-      />
+      {row.added ? (
+        <Select
+          className="min-w-0 flex-1"
+          options={options.map((option) => ({ value: option.field, label: t(option.labelKey) }))}
+          value={row.field}
+          onChange={handleChange}
+          sortOptions={false}
+          errorMessage={invalid ? t('table.settings.row.empty') : undefined}
+        />
+      ) : (
+        <span className="flex min-h-10 min-w-0 flex-1 items-center break-words text-sm text-[var(--text)]">
+          {current === undefined ? null : t(current.labelKey)}
+        </span>
+      )}
       <button
         type="button"
         className={ICON_BUTTON_CLASS_NAME}

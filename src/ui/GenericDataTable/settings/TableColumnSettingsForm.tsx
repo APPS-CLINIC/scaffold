@@ -1,4 +1,4 @@
-import { useReducer, useState, type SetStateAction } from 'react';
+import { useLayoutEffect, useReducer, useRef, useState, type SetStateAction } from 'react';
 import {
   closestCenter,
   DndContext,
@@ -66,10 +66,20 @@ export function TableColumnSettingsForm<T extends object>({
       ),
   );
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const listRef = useRef<HTMLOListElement>(null);
+  const rowWasAdded = useRef(false);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
+
+  // Rows are appended at the end of the scrolling list, so a new one is scrolled into view.
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    if (!rowWasAdded.current || list === null) return;
+    rowWasAdded.current = false;
+    list.scrollTop = list.scrollHeight;
+  }, [draft.rows]);
 
   const total = fields.length;
   const rowIndexOf = (id: UniqueIdentifier) => draft.rows.findIndex((row) => row.key === id);
@@ -127,6 +137,12 @@ export function TableColumnSettingsForm<T extends object>({
     dispatch({ type: 'rowMoved', from, to });
   };
 
+  const addRow = () => {
+    if (!canAddRow(draft)) return;
+    rowWasAdded.current = true;
+    dispatch({ type: 'rowAdded' });
+  };
+
   const submit = () => {
     if (!isDraftValid(draft)) {
       dispatch({ type: 'submitted' });
@@ -158,7 +174,9 @@ export function TableColumnSettingsForm<T extends object>({
           { label: t('table.settings.save'), style: 'filled', onClick: submit },
         ]}
       >
-        <div className="space-y-4">
+        {/* Capped below the dialog's own limit, so the dialog body never scrolls and the
+            overflow lands on the column list alone. */}
+        <div className="flex max-h-[55vh] flex-col gap-4">
           <TabMenu
             items={[{ label: t('table.settings.tab.columns') }]}
             activeIndex={0}
@@ -186,7 +204,7 @@ export function TableColumnSettingsForm<T extends object>({
               items={draft.rows.map((row) => row.key)}
               strategy={verticalListSortingStrategy}
             >
-              <ol className="m-0 max-h-[50vh] list-none space-y-1 overflow-y-auto p-0">
+              <ol ref={listRef} className="m-0 min-h-0 list-none space-y-1 overflow-y-auto p-0">
                 {draft.rows.map((row, index) => (
                   <SortableColumnRow
                     key={row.key}
@@ -209,7 +227,7 @@ export function TableColumnSettingsForm<T extends object>({
               icon={<span aria-hidden="true" className="pi pi-plus text-sm" />}
               label={t('table.settings.addColumn')}
               disabled={!canAddRow(draft)}
-              onClick={() => dispatch({ type: 'rowAdded' })}
+              onClick={addRow}
             />
             <ActionLink
               icon={<span aria-hidden="true" className="pi pi-replay text-sm" />}
