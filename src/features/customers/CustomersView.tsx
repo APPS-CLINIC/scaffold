@@ -8,6 +8,7 @@ import {
   ActionLink,
   Card,
   GenericDataTable,
+  GenericTableSettings,
   IconTextButton,
   SearchWithAutocomplete,
   type GenericDataTableLabels,
@@ -18,7 +19,6 @@ import { customerTableConfig } from './customerTable';
 import { useGetCustomersQuery, useExportCustomersMutation } from './customers.api';
 import { selectCustomerQuery } from './customers.filters';
 import type { Customer } from './customers.types';
-import { GenericTableSettings } from '@/ui/GenericDataTable/GenericTableSettings.tsx';
 
 export function CustomersView() {
   const { t, i18n } = useTranslation();

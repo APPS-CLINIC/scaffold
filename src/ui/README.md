@@ -110,6 +110,55 @@ expansion toggle column renders only while at least one field is in the
 accordion. In jsdom tests use `mockTableContainerWidth` from
 `@/test/tableLayout` to give the fit engine a concrete width.
 
+### Column settings
+
+`TableColumnSettingsDialog<T>` is the "List settings" dialog: one sortable
+row per used column (drag handle, IWA `Select`, remove), "Add column",
+"Restore defaults" behind a confirmation, Cancel and Save. It is
+presentational and generic: `fields` is the universe of `{ field, labelKey }`
+options in configuration order, `columns` the field names in use when it
+opens, and `onSave` receives the ordered field names once every row is filled
+(an empty row blocks Save and shows "Fill in or remove the column"). Cancel,
+the close icon and a backdrop click call `onCancel`; confirming the restore
+calls `onRestoreDefaults`. The owner keeps the effective columns, persists
+them and closes the dialog. Nothing renders while `open` is false, so every
+opening starts from the current `columns`. Reordering runs on `@dnd-kit`:
+pointer drag on the handle, or Space, arrow keys and Space from the keyboard,
+announced through the i18n catalog. `GenericTableSettings` renders the
+"List settings" action first in the toolbar when `onOpenSettings` is given.
+
+```tsx
+import { useState } from 'react';
+import { useTableColumnSettings } from '@/features/tableSettings';
+import { GenericDataTable, GenericTableSettings, TableColumnSettingsDialog } from '@/ui';
+
+function CustomersList() {
+  const settings = useTableColumnSettings(customerTableConfig);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  return (
+    <>
+      <GenericTableSettings {...toolbarProps} onOpenSettings={() => setSettingsOpen(true)} />
+      <GenericDataTable config={settings.config} {...tableProps} />
+      <TableColumnSettingsDialog
+        open={settingsOpen}
+        fields={customerTableConfig.fields}
+        columns={settings.columns}
+        onSave={(columns) => {
+          settings.saveColumns(columns);
+          setSettingsOpen(false);
+        }}
+        onCancel={() => setSettingsOpen(false)}
+        onRestoreDefaults={() => {
+          settings.restoreDefaults();
+          setSettingsOpen(false);
+        }}
+      />
+    </>
+  );
+}
+```
+
 ## `ScreenHeading`
 
 `ScreenHeading` is the app-facing adapter over IWA's page heading. Items use a

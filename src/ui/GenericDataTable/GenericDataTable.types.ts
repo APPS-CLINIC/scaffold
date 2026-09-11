@@ -144,4 +144,23 @@ export interface GenericTableSettingsProps<T extends object> extends Omit<
   onExpandedRowKeysChange: (keys: readonly string[]) => void;
   expandedRowKeys: readonly string[];
   handleExport: () => void;
+  /** Renders the "List settings" action only when supplied — a table without settings stays valid. */
+  onOpenSettings?: () => void;
+}
+
+/** What the settings dialog needs to know about a field. */
+export type TableColumnOption<T extends object> = Pick<
+  GenericDataTableFieldConfig<T>,
+  'field' | 'labelKey'
+>;
+
+export interface TableColumnSettingsDialogProps<T extends object> {
+  open: boolean;
+  /** Every field the table can show, in configuration order. */
+  fields: readonly TableColumnOption<T>[];
+  /** The columns in use when the dialog opens, in display order. */
+  columns: readonly GenericDataTableField<T>[];
+  onSave: (columns: readonly GenericDataTableField<T>[]) => void;
+  onCancel: () => void;
+  onRestoreDefaults: () => void;
 }

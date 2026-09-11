@@ -55,9 +55,10 @@ keep ADRs at all; use it as the template for new records.
 
 ### Step 03 — Scope alignment (discovery)
 
-| ADR                                               | Title                                                       | Status                 |
-| ------------------------------------------------- | ----------------------------------------------------------- | ---------------------- |
-| [0013](0013-iwa-components-primereact.md)         | IWA Components (PrimeReact) as the UI library behind `@/ui` | Accepted               |
-| [0014](0014-internationalization-i18n.md)         | Internationalization (i18n)                                 | Accepted               |
-| [0019](0019-tailwind-utilities.md)                | Tailwind CSS v4 (utilities layer) alongside CSS modules     | Superseded by ADR-0021 |
-| [0021](0021-tailwind-v3-for-iwa-compatibility.md) | Tailwind CSS v3 for IWA compatibility                       | Accepted               |
+| ADR                                                    | Title                                                       | Status                 |
+| ------------------------------------------------------ | ----------------------------------------------------------- | ---------------------- |
+| [0013](0013-iwa-components-primereact.md)              | IWA Components (PrimeReact) as the UI library behind `@/ui` | Accepted               |
+| [0014](0014-internationalization-i18n.md)              | Internationalization (i18n)                                 | Accepted               |
+| [0019](0019-tailwind-utilities.md)                     | Tailwind CSS v4 (utilities layer) alongside CSS modules     | Superseded by ADR-0021 |
+| [0021](0021-tailwind-v3-for-iwa-compatibility.md)      | Tailwind CSS v3 for IWA compatibility                       | Accepted               |
+| [0035](0035-dnd-kit-for-accessible-list-reordering.md) | @dnd-kit for accessible list reordering                     | Accepted               |
