@@ -46,8 +46,9 @@ export function SortableColumnRow<T extends object>({
 
   const current = options.find((option) => option.field === row.field);
 
-  const handleChange = (value: string | null) => {
-    const option = options.find((candidate) => candidate.field === value);
+  // IWA's Select passes PrimeReact's change event, so the picked option's value is `event.value`.
+  const handleChange = (event: { value: unknown }) => {
+    const option = options.find((candidate) => candidate.field === event.value);
     onFieldChange(option === undefined ? null : option.field);
   };
 

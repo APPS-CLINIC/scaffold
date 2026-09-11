@@ -19,7 +19,16 @@ vi.mock('iwa-react-components', async (importOriginal) => ({
         data-testid="select"
         data-sort-options={String(sortOptions)}
         value={value ?? ''}
-        onChange={(event) => onChange?.(event.target.value || null)}
+        onChange={(event) => {
+          const picked = event.target.value || null;
+          onChange?.({
+            originalEvent: event,
+            value: picked,
+            stopPropagation: () => event.stopPropagation(),
+            preventDefault: () => event.preventDefault(),
+            target: { name: '', id: '', value: picked },
+          });
+        }}
       >
         <option value="" />
         {options.map((option) =>

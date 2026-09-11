@@ -219,14 +219,17 @@ verbatim from `index.ts` (`ActionLink`, `Card`, `Select`, `Switch`, `TabMenu`,
 
 ### `Select`
 
-`Select` is the IWA dropdown, not a native `<select>`. `options` is a plain
-array of strings or `{ value, label }` objects; `value` and `onChange` make it
-controlled, and `onChange` receives `null` when the selection is cleared. The
-library sorts options alphabetically by default, so pass `sortOptions={false}`
-whenever the configured order is the contract. `errorMessage` both marks the
-field invalid and renders the text. Stick to the props the library documents —
-`options`, `value`, `onChange`, `disabled`, `readOnly`, `errorMessage`,
-`sortOptions`, `className`, `dataTestId` — and label the field with
+`Select` is the IWA dropdown, not a native `<select>`: IWA passes PrimeReact
+`Dropdown` props through. `options` is a plain array of strings or
+`{ value, label }` objects, and `value` plus `onChange` make it controlled.
+`onChange` receives PrimeReact's change event, not the value itself — read
+`event.value`, which is the picked option's `value` (or `null` once the
+selection is cleared). The library sorts options alphabetically by default, so
+pass `sortOptions={false}` whenever the configured order is the contract.
+`errorMessage` both marks the field invalid and renders the text. Stick to the
+props the library documents — `options`, `value`, `onChange`, `disabled`,
+`readOnly`, `errorMessage`, `error`, `showErrorMessage`, `sortOptions`,
+`componentSize`, `className`, `dataTestId` — and label the field with
 surrounding markup rather than a placeholder.
 
 ```tsx
@@ -235,7 +238,7 @@ import { Select } from '@/ui';
 <Select
   options={fields.map((field) => ({ value: field.name, label: t(field.labelKey) }))}
   value={selected}
-  onChange={setSelected}
+  onChange={(event) => setSelected(event.value)}
   sortOptions={false}
   errorMessage={invalid ? t('form.required') : undefined}
 />;

@@ -688,7 +688,18 @@ export function Select({
         disabled: disabled || readOnly,
         'data-testid': dataTestId,
         'aria-label': ariaLabel,
-        onChange: (event) => onChange?.(event.target.value || null),
+        // IWA's Select takes PrimeReact Dropdown props: onChange receives a change event
+        // whose `value` is the picked option's value, never the bare value.
+        onChange: (event) => {
+          const picked = event.target.value || null;
+          onChange?.({
+            originalEvent: event,
+            value: picked,
+            stopPropagation: () => event.stopPropagation(),
+            preventDefault: () => event.preventDefault(),
+            target: { name: undefined, id: undefined, value: picked },
+          });
+        },
         className: twMerge(
           'h-10 w-full appearance-none rounded border border-[#c4c9ce] bg-white pl-3 pr-8 text-sm text-[#333333]',
           "bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%226%22><path d=%22M0 0l5 6 5-6z%22 fill=%22%234a4f55%22/></svg>')] bg-[position:right_0.75rem_center] bg-no-repeat",
