@@ -65,4 +65,4 @@ export interface CustomerQuery {
   type: string;
 }
 
-export type { PageResponse } from '@/api/pagination.types';
+export type { PageResponse, ExportRequest } from '@/api/baseApi.types.ts';

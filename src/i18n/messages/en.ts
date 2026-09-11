@@ -45,6 +45,7 @@ export const en: Record<MessageKey, string> = {
   'customers.actions.customizeFilters': 'Customize filters',
   'customers.actions.expandAll': 'Expand all',
   'customers.actions.refresh': 'Refresh',
+  'customers.actions.export': 'Download to Excel',
   'customers.table.ariaLabel': 'Customers and their advisors',
   'customers.table.loading': 'Loading customers…',
   'customers.table.empty': 'No customers match the selected criteria.',

@@ -136,3 +136,13 @@ export interface GenericDataTableProps<T extends object> extends Omit<
    */
   onSortClear?: () => void;
 }
+
+export interface GenericTableSettingsProps<T extends object> extends Omit<
+  HTMLAttributes<HTMLDivElement>,
+  'children'
+> {
+  dataContent: T[] | undefined;
+  onExpandedRowKeysChange: (keys: readonly string[]) => void;
+  expandedRowKeys: readonly string[];
+  handleExport: () => void;
+}
