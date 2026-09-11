@@ -56,6 +56,7 @@ describe('CustomersView', () => {
     expect(screen.getByRole('heading', { name: 'Klienci oraz ich doradcy' })).toBeInTheDocument();
     expect(await screen.findByRole('columnheader', { name: 'Nazwa klienta' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Dostosuj filtry' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Ustawienia listy' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Szukaj na liście')).toBeInTheDocument();
   });
 

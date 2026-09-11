@@ -312,9 +312,15 @@ additional pages without adding feature-specific conditions to the router.
    label, width, and (where needed) cell component per field.
 6. Connect the endpoint, URL callbacks, translated labels, and config in the
    feature view.
-7. Add a route-level page and register its lazy loader in the appropriate
+7. To let users choose and order the columns, give the config an `id`, pass
+   `useTableColumnSettings(config).config` to the table instead of the static
+   config, and render `GenericTableSettings` with `onOpenSettings` plus
+   `TableColumnSettingsDialog` from `@/ui`, whose `onSave` and
+   `onRestoreDefaults` call the hook's `saveColumns` / `restoreDefaults` and
+   collapse the expanded rows (`CustomersView` is the reference).
+8. Add a route-level page and register its lazy loader in the appropriate
    section page-route module.
-8. Add translations and tests for the endpoint mapping, config invariants,
+9. Add translations and tests for the endpoint mapping, config invariants,
    feature integration, and any new reusable cell.
 
 ## Relevant files
@@ -341,6 +347,11 @@ additional pages without adding feature-specific conditions to the router.
   — responsive column/accordion fit engine.
 - [`src/ui/GenericDataTable/resolveColumnFields.ts`](../src/ui/GenericDataTable/resolveColumnFields.ts)
   — pure resolver applying an ordered field-name list to the configured fields.
+- [`src/ui/GenericDataTable/settings`](../src/ui/GenericDataTable/settings)
+  — the "List settings" dialog, its sortable rows and the pure draft reducer.
+- [`src/features/tableSettings`](../src/features/tableSettings)
+  — persisted column settings: slice, schema, storage port, listener and
+  `useTableColumnSettings`.
 - [`src/routes/pages/customers/CustomersPage.tsx`](../src/routes/pages/customers/CustomersPage.tsx)
   — route-level page boundary.
 - [`src/dev/previewData`](../src/dev/previewData)
