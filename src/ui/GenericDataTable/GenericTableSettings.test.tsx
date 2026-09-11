@@ -90,6 +90,17 @@ describe('GenericTableSettings', () => {
     expect(onOpenSettings).toHaveBeenCalledTimes(1);
   });
 
+  it('styles the list settings action like the export action, with a decorative icon', () => {
+    renderSettings({ onOpenSettings: vi.fn() });
+
+    const settings = screen.getByRole('button', { name: 'List settings' });
+    const exportAction = screen.getByText('Download to Excel');
+    const linkClasses = ['underline', 'text-sm', '!text-[#506579]', 'hover:!no-underline'];
+    expect(settings).toHaveClass(...linkClasses);
+    expect(exportAction).toHaveClass(...linkClasses);
+    expect(settings.querySelector('[aria-hidden="true"]')).toBeInTheDocument();
+  });
+
   it('renders no list settings action without a handler', () => {
     renderSettings();
 

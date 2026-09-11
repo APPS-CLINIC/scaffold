@@ -1,8 +1,11 @@
 import { useCustomIcon } from '@/ui/icon/useCustomIcon';
 import { Download, Settings } from 'ing-react-icons';
 import { useTranslation } from 'react-i18next';
-import { ActionLink, Switch } from 'iwa-react-components';
+import { Switch } from 'iwa-react-components';
 import type { GenericTableSettingsProps } from '@/ui/GenericDataTable/GenericDataTable.types.ts';
+
+const TOOLBAR_ACTION_CLASS_NAME =
+  '!cursor-pointer underline !whitespace-normal !text-[#506579] break-words text-sm ![text-overflow:clip] hover:!text-[#506579] hover:!no-underline [&_*]:pointer-events-none [&_*]:!cursor-pointer [&_*]:!whitespace-normal [&_*]:!break-words [&_*]:!no-underline [&_*]:!overflow-visible [&_*]:![text-overflow:clip]';
 
 export function GenericTableSettings<T extends { id: number }>({
   dataContent,
@@ -17,14 +20,21 @@ export function GenericTableSettings<T extends { id: number }>({
     visibleRowKeys.length > 0 && visibleRowKeys.every((key) => expandedRowKeys.includes(key));
 
   const DownloadIcon = useCustomIcon(<Download />, { size: 'md', tone: 'neutral' });
+  const SettingsIcon = useCustomIcon(<Settings />, { size: 'md', tone: 'neutral' });
 
   return (
     <div className="flex items-center justify-end gap-4">
       {onOpenSettings ? (
-        <ActionLink icon={<Settings />} label={t('table.settings.open')} onClick={onOpenSettings} />
+        <button
+          type="button"
+          className={`${TOOLBAR_ACTION_CLASS_NAME} rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]`}
+          onClick={onOpenSettings}
+        >
+          <SettingsIcon className="-mr-1" /> {t('table.settings.open')}
+        </button>
       ) : null}
       <span
-        className="!cursor-pointer underline !whitespace-normal !text-[#506579] !outline-none break-words text-sm ![text-overflow:clip] hover:!text-[#506579] hover:!no-underline focus:!outline-none focus-visible:!outline-none [&_*]:pointer-events-none [&_*]:!cursor-pointer [&_*]:!whitespace-normal [&_*]:!break-words [&_*]:!no-underline [&_*]:!overflow-visible [&_*]:![text-overflow:clip]"
+        className={`${TOOLBAR_ACTION_CLASS_NAME} !outline-none focus:!outline-none focus-visible:!outline-none`}
         onClick={handleExport}
       >
         <DownloadIcon className="-mr-1" /> {t('customers.actions.export')}
