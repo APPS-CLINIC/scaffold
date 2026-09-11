@@ -19,14 +19,22 @@ and explicitly defines:
 - which fields can be sorted and which backend sort field they use;
 - the single translated label per field (`labelKey`);
 - the pixel `width` each field occupies as a column;
-- which fields are pinned (`alwaysVisible`) and the optional `columnOrder`;
-- whether expansion behaves as a single-row accordion.
+- which fields are pinned (`alwaysVisible`);
+- whether expansion behaves as a single-row accordion;
+- an optional `id` naming the config, so table settings can be stored per
+  table.
 
 Which fields render as columns is decided **at runtime**: the table measures
-its container and shows, in display order, as many columns as fit without
+its container and shows, in `fields` order, as many columns as fit without
 horizontal scrolling; the remaining fields drop into the expanded-row
 accordion (last column drops first). When the currently sorted column drops,
 the table raises `onSortClear` so the owner can reset the sort in the URL.
+A user-chosen subset and order is applied before the config reaches the table:
+the pure `resolveColumnFields(fields, columns)` from `@/ui` maps an ordered
+list of field names to the configured field configs (unknown and repeated
+names dropped, empty result falling back to the configured `fields`), and the
+owner passes a config with the resolved `fields`. The table itself only ever
+sees `fields`.
 
 The result keeps the reusable behavior in one place while allowing each list
 feature to decide how its domain values should look.
@@ -322,6 +330,8 @@ additional pages without adding feature-specific conditions to the router.
   — feature integration.
 - [`src/ui/GenericDataTable/useResponsiveFields.ts`](../src/ui/GenericDataTable/useResponsiveFields.ts)
   — responsive column/accordion fit engine.
+- [`src/ui/GenericDataTable/resolveColumnFields.ts`](../src/ui/GenericDataTable/resolveColumnFields.ts)
+  — pure resolver applying an ordered field-name list to the configured fields.
 - [`src/routes/pages/customers/CustomersPage.tsx`](../src/routes/pages/customers/CustomersPage.tsx)
   — route-level page boundary.
 - [`src/dev/previewData`](../src/dev/previewData)

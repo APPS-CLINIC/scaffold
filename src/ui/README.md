@@ -39,9 +39,19 @@ move to the expanded-row accordion. Each field carries the same config shape:
 a single `labelKey` (used for the column header and the accordion label
 alike), a pixel `width` the fit engine budgets with, an optional cell
 `component`, and `sortable`. `alwaysVisible: true` pins a field so it can
-never drop; `columnOrder` overrides the display (and therefore drop) order.
+never drop; the `fields` order is the display (and therefore drop) order.
 When the currently sorted column drops into the accordion the table calls
 `onSortClear`, so the owner can reset the sort in its store/URL.
+
+To let users choose which fields are used and in what order, keep the static
+config as the base and hand the table a config whose `fields` come from the
+pure `resolveColumnFields(fields, columns)`: it maps an ordered list of field
+names to the matching field configs, drops unknown and repeated names, falls
+back to the configured `fields` when nothing resolves, and returns the input
+`fields` reference whenever the result would be identical, so memoized
+consumers and the `onSortClear` effect stay quiet. Fields left out of the list
+reach neither the columns nor the accordion. An optional `id` names the config
+so its settings can be stored per table.
 
 Reusable, domain-neutral cell components live with the table seam, one public
 cell per file. Features compose `TextCell`, `UnderlinedTextCell`, `DateCell`,

@@ -61,6 +61,7 @@ export {
   UnderlinedTextCell,
   ValidityStatusCell,
   renderCellValue,
+  resolveColumnFields,
   type GenericDataTableCellComponent,
   type GenericDataTableCellProps,
   type GenericDataTableConfig,

@@ -1,4 +1,5 @@
 export { GenericDataTable } from './GenericDataTable';
+export { resolveColumnFields } from './resolveColumnFields';
 export {
   ActiveArchivalStatusCell,
   DateCell,

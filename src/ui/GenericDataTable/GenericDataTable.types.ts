@@ -62,15 +62,14 @@ export type GenericDataTableFieldConfig<T extends object> = {
 }[GenericDataTableField<T>];
 
 export interface GenericDataTableConfig<T extends object> {
+  /** Stable identity of this table configuration; required for persisted settings. */
+  id?: string;
   dataKey: GenericDataTableDataKey<T>;
-  /** Every field the table can show — as a column when it fits, else in the accordion. */
-  fields: readonly GenericDataTableFieldConfig<T>[];
   /**
-   * Display-order override. Listed fields render first, in this order; the
-   * remaining fields keep their `fields` order after them. Columns drop to
-   * the accordion from the end of the resolved order.
+   * Every field the table can show, in display order — as a column when it
+   * fits, else in the accordion. Columns drop to the accordion from the end.
    */
-  columnOrder?: readonly GenericDataTableField<T>[];
+  fields: readonly GenericDataTableFieldConfig<T>[];
   singleRowExpansion?: boolean;
 }
 

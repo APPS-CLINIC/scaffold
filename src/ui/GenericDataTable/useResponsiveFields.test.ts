@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { GenericDataTableFieldConfig } from './GenericDataTable.types';
-import { EXPANDER_COLUMN_WIDTH_PX, orderFields, splitFieldsByWidth } from './useResponsiveFields';
+import { EXPANDER_COLUMN_WIDTH_PX, splitFieldsByWidth } from './useResponsiveFields';
 
 // The column-fit engine is pure and imports no component, so these assertions hold
 // whatever the IWA table renders. GenericDataTable.test.tsx covers the same rules
@@ -40,22 +40,6 @@ const fields: readonly GenericDataTableFieldConfig<TestRow>[] = [name, status, n
 
 const idsOf = (list: readonly GenericDataTableFieldConfig<TestRow>[]) =>
   list.map((field) => field.field);
-
-describe('orderFields', () => {
-  it('returns the configured order when no column order is given', () => {
-    expect(idsOf(orderFields(fields))).toEqual(['name', 'status', 'note', 'metadata']);
-    expect(idsOf(orderFields(fields, []))).toEqual(['name', 'status', 'note', 'metadata']);
-  });
-
-  it('puts listed fields first in their listed order, unlisted ones after', () => {
-    expect(idsOf(orderFields(fields, ['status', 'name']))).toEqual([
-      'status',
-      'name',
-      'note',
-      'metadata',
-    ]);
-  });
-});
 
 describe('splitFieldsByWidth', () => {
   it('keeps every field as a column when they all fit', () => {
