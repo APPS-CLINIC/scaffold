@@ -17,11 +17,10 @@ docs/
 │  ├─ 01-scaffold-and-config.md
 │  ├─ 02-app-architecture.md
 │  └─ 03-scope-alignment.md
-├─ adr/                 ← the "why": one decision per file, immutable once accepted
-│  ├─ README.md
-│  ├─ 0000-record-architecture-decisions.md
-│  └─ ...
-└─ plans/               ← specification + implementation plan per larger feature
+└─ adr/                 ← the "why": one decision per file, immutable once accepted
+   ├─ README.md
+   ├─ 0000-record-architecture-decisions.md
+   └─ ...
 ```
 
 - **Steps** are the guide. Read them in order to build a mental model.
@@ -54,13 +53,6 @@ The full, indexed list lives in [`adr/README.md`](adr/README.md).
   queries, URL state, RTK Query ownership, user-chosen column set and order
   (the "List settings" dialog, persisted per browser), and development preview
   data.
-
-## Plans
-
-- [Table column settings](plans/table-column-settings/) — specification
-  (`table-column-settings-SPECS.md`) and implementation plan
-  (`table-column-settings-PLAN.md`) behind the customer table's column
-  settings.
 
 ## Pull request delivery notes
 

@@ -124,7 +124,14 @@ fields with translated labels; response fields are never discovered or exposed
 implicitly. Search, filters, sorting, and pagination stay in the URL, server
 state stays in RTK Query, and transient expanded-row state stays local to the
 table.
-→ [ADR 0025](../adr/0025-configuration-driven-generic-data-tables.md)
+
+Which configured fields a table uses, and in which order, is a user
+preference: the owning feature resolves the static configuration against the
+`tableSettings` slice with `resolveColumnFields` and hands the effective
+configuration to the table, which never reads Redux. The generic "List
+settings" dialog edits that choice.
+→ [ADR 0025](../adr/0025-configuration-driven-generic-data-tables.md),
+[ADR 0034](../adr/0034-user-table-preferences-in-a-persisted-redux-slice.md)
 
 ### 6. UI seam — `src/ui`
 
