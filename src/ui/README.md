@@ -6,8 +6,9 @@ local primitives stay here until they are replaced with thin IWA wrappers.
 
 ## How to evolve the seam
 
-1. Replace the implementations of `Button`, `TextInput`, `Select`, etc. with
-   re-exports (or thin wrappers) of your org components.
+1. Replace the implementations of `Button`, `TextInput`, etc. with re-exports
+   (or thin wrappers) of your org components; `Select` already comes straight
+   from IWA (see [IWA re-exports](#iwa-re-exports)).
 2. **Keep the exported names and prop contracts** from `index.ts`. Everything
    in `src/features/**` and `src/routes/**` imports from `@/ui`, so as long as
    the contracts hold, no feature code changes.
@@ -156,6 +157,37 @@ neutral | accent | brand` (default `outline` — light surface with a subtle
 - The hook memoizes on the glyph element and options — keep them
   referentially stable (hoist the element out of render, like `historyGlyph`
   above) so the returned component keeps its identity across re-renders.
+
+## IWA re-exports
+
+Components the app consumes from IWA without an adapter are re-exported
+verbatim from `index.ts` (`ActionLink`, `Card`, `Select`, `Switch`, `TabMenu`,
+`TopBar`, …); `index.ts` is the complete list. Feature code imports them from
+`@/ui` like every local primitive.
+
+### `Select`
+
+`Select` is the IWA dropdown, not a native `<select>`. `options` is a plain
+array of strings or `{ value, label }` objects; `value` and `onChange` make it
+controlled, and `onChange` receives `null` when the selection is cleared. The
+library sorts options alphabetically by default, so pass `sortOptions={false}`
+whenever the configured order is the contract. `errorMessage` both marks the
+field invalid and renders the text. Stick to the props the library documents —
+`options`, `value`, `onChange`, `disabled`, `readOnly`, `errorMessage`,
+`sortOptions`, `className`, `dataTestId` — and label the field with
+surrounding markup rather than a placeholder.
+
+```tsx
+import { Select } from '@/ui';
+
+<Select
+  options={fields.map((field) => ({ value: field.name, label: t(field.labelKey) }))}
+  value={selected}
+  onChange={setSelected}
+  sortOptions={false}
+  errorMessage={invalid ? t('form.required') : undefined}
+/>;
+```
 
 ## IWA navigation adapters
 
