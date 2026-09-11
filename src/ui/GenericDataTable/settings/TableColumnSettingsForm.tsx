@@ -173,11 +173,17 @@ export function TableColumnSettingsForm<T extends object>({
           {
             label: t('table.settings.restoreDefaults'),
             style: 'text',
+            size: 'medium',
             className: 'mr-auto',
             onClick: () => setConfirmOpen(true),
           },
-          { label: t('table.settings.cancel'), style: 'outline', onClick: onCancel },
-          { label: t('table.settings.save'), style: 'filled', onClick: submit },
+          {
+            label: t('table.settings.cancel'),
+            style: 'outline',
+            size: 'medium',
+            onClick: onCancel,
+          },
+          { label: t('table.settings.save'), style: 'filled', size: 'medium', onClick: submit },
         ]}
       >
         {/* Capped below the dialog's own limit, so the dialog body never scrolls and the
@@ -261,12 +267,14 @@ export function TableColumnSettingsForm<T extends object>({
           {
             label: t('table.settings.restore.confirm'),
             style: 'filled',
+            size: 'medium',
             className: 'w-full justify-center',
             onClick: onRestoreDefaults,
           },
           {
             label: t('table.settings.restore.back'),
             style: 'outline',
+            size: 'medium',
             className: 'w-full justify-center',
             onClick: () => setConfirmOpen(false),
           },

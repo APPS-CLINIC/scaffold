@@ -176,6 +176,7 @@ describe('TableColumnSettingsForm dialog layout', () => {
       ['Save', 'filled'],
     ]);
     expect(settings.buttonProps[0]?.className).toContain('mr-auto');
+    expect(settings.buttonProps.every((button) => button.size === 'medium')).toBe(true);
   });
 
   it('stretches both confirmation buttons across the dialog', () => {
@@ -188,6 +189,7 @@ describe('TableColumnSettingsForm dialog layout', () => {
       ['Back to settings', 'outline'],
     ]);
     expect(confirm.buttonProps.every((button) => button.className?.includes('w-full'))).toBe(true);
+    expect(confirm.buttonProps.every((button) => button.size === 'medium')).toBe(true);
   });
 });
 
