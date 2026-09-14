@@ -94,11 +94,23 @@ describe('GenericTableSettings', () => {
     renderSettings({ onOpenSettings: vi.fn() });
 
     const settings = screen.getByRole('button', { name: 'List settings' });
-    const exportAction = screen.getByText('Download to Excel');
-    const linkClasses = ['underline', 'text-sm', '!text-[#506579]', 'hover:!no-underline'];
-    expect(settings).toHaveClass(...linkClasses);
-    expect(exportAction).toHaveClass(...linkClasses);
+    const exportAction = screen.getByText('Download to Excel').parentElement;
+    const actionClasses = ['group', 'text-sm', '!text-[#506579]'];
+    expect(settings).toHaveClass(...actionClasses);
+    expect(exportAction).toHaveClass(...actionClasses);
     expect(settings.querySelector('[aria-hidden="true"]')).toBeInTheDocument();
+  });
+
+  it('underlines only the action labels, which follow the icon directly', () => {
+    renderSettings({ onOpenSettings: vi.fn() });
+
+    const labels = [screen.getByText('List settings'), screen.getByText('Download to Excel')];
+    for (const label of labels) {
+      expect(label).toHaveClass('underline', 'group-hover:no-underline');
+      expect(label.parentElement).not.toHaveClass('underline');
+      expect(label.parentElement?.childNodes).toHaveLength(2);
+      expect(label.previousSibling).toHaveAttribute('aria-hidden', 'true');
+    }
   });
 
   it('renders no list settings action without a handler', () => {

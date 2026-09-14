@@ -116,12 +116,16 @@ accordion. In jsdom tests use `mockTableContainerWidth` from
 row per used column (drag handle, column name, remove), "Add column",
 "Restore defaults" behind a confirmation, Cancel and Save. A row added with
 "Add column" picks its field from an IWA `Select` of the unused fields and
-keeps that Select until Save. Only the column list scrolls — the dialog body
-never does — and a newly added row is scrolled into view. It is
+keeps that Select until Save. The dialog is an IWA `CustomizableDialog` with a
+fixed 600 × 835 px frame (capped by the viewport) and its own footer, so the
+tab line and the footer separator span the whole dialog and only the column
+list scrolls; a newly added row is scrolled into view. It is
 presentational and generic: `fields` is the universe of `{ field, labelKey }`
 options in configuration order, `columns` the field names in use when it
 opens, and `onSave` receives the ordered field names once every row is filled
-(an empty row blocks Save and shows "Fill in or remove the column"). Cancel,
+(a blocked Save marks the rows empty at that moment with "Fill in or remove
+the column" and scrolls the first one into view; rows added later start
+unmarked). Cancel,
 the close icon and a backdrop click call `onCancel`; confirming the restore
 calls `onRestoreDefaults`. The owner keeps the effective columns, persists
 them and closes the dialog. Nothing renders while `open` is false, so every

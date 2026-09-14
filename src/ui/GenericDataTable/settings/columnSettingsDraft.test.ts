@@ -18,16 +18,19 @@ function fieldsOf(draft: ColumnSettingsDraft<Field>): (Field | null)[] {
   return draft.rows.map((row) => row.field);
 }
 
+function marksOf(draft: ColumnSettingsDraft<Field>): boolean[] {
+  return draft.rows.map((row) => row.invalid);
+}
+
 describe('createColumnSettingsDraft', () => {
-  it('creates one row per column, in order, with sequential keys', () => {
+  it('creates one unmarked row per column, in order, with sequential keys', () => {
     const draft = createColumnSettingsDraft(allFields, ['grid', 'name']);
 
     expect(draft.rows).toEqual([
-      { key: 0, field: 'grid', added: false },
-      { key: 1, field: 'name', added: false },
+      { key: 0, field: 'grid', added: false, invalid: false },
+      { key: 1, field: 'name', added: false, invalid: false },
     ]);
     expect(draft.nextKey).toBe(2);
-    expect(draft.submitted).toBe(false);
     expect(draft.allFields).toBe(allFields);
   });
 
@@ -45,7 +48,7 @@ describe('columnSettingsDraftReducer', () => {
     expect(canAddRow(draft)).toBe(true);
 
     draft = columnSettingsDraftReducer(draft, { type: 'rowAdded' });
-    expect(draft.rows.at(-1)).toEqual({ key: 3, field: null, added: true });
+    expect(draft.rows.at(-1)).toEqual({ key: 3, field: null, added: true, invalid: false });
     expect(draft.nextKey).toBe(4);
     expect(canAddRow(draft)).toBe(false);
 
@@ -58,7 +61,7 @@ describe('columnSettingsDraftReducer', () => {
     expect(canRemoveRow(draft)).toBe(true);
 
     draft = columnSettingsDraftReducer(draft, { type: 'rowRemoved', key: 0 });
-    expect(draft.rows).toEqual([{ key: 1, field: 'status', added: false }]);
+    expect(draft.rows).toEqual([{ key: 1, field: 'status', added: false, invalid: false }]);
     expect(canRemoveRow(draft)).toBe(false);
 
     const kept = columnSettingsDraftReducer(draft, { type: 'rowRemoved', key: 1 });
@@ -111,23 +114,60 @@ describe('columnSettingsDraftReducer', () => {
   });
 
   it('never mutates the previous draft', () => {
-    const draft = createColumnSettingsDraft(allFields, ['name', 'status']);
-    const rowsBefore = [...draft.rows];
+    const draft = columnSettingsDraftReducer(
+      createColumnSettingsDraft(allFields, ['name', 'status']),
+      { type: 'rowAdded' },
+    );
+    const rowsBefore = draft.rows.map((row) => ({ ...row }));
 
     columnSettingsDraftReducer(draft, { type: 'rowMoved', from: 0, to: 1 });
     columnSettingsDraftReducer(draft, { type: 'rowAdded' });
     columnSettingsDraftReducer(draft, { type: 'rowRemoved', key: 0 });
     columnSettingsDraftReducer(draft, { type: 'rowFieldChanged', key: 0, field: 'grid' });
+    columnSettingsDraftReducer(draft, { type: 'submitted' });
 
     expect(draft.rows).toEqual(rowsBefore);
   });
 
-  it('marks the draft submitted once', () => {
-    const draft = createColumnSettingsDraft(allFields, ['name']);
+  it('marks the rows that are empty on Save, and only once', () => {
+    let draft = createColumnSettingsDraft(allFields, ['name']);
+    draft = columnSettingsDraftReducer(draft, { type: 'rowAdded' });
 
     const submitted = columnSettingsDraftReducer(draft, { type: 'submitted' });
-    expect(submitted.submitted).toBe(true);
+    expect(marksOf(submitted)).toEqual([false, true]);
     expect(columnSettingsDraftReducer(submitted, { type: 'submitted' })).toBe(submitted);
+  });
+
+  it('leaves a draft without empty rows untouched on Save', () => {
+    const draft = createColumnSettingsDraft(allFields, ['name']);
+
+    expect(columnSettingsDraftReducer(draft, { type: 'submitted' })).toBe(draft);
+  });
+
+  it('starts a row added after Save unmarked', () => {
+    let draft = createColumnSettingsDraft(allFields, ['name']);
+    draft = columnSettingsDraftReducer(draft, { type: 'rowAdded' });
+    draft = columnSettingsDraftReducer(draft, { type: 'submitted' });
+    draft = columnSettingsDraftReducer(draft, { type: 'rowRemoved', key: 1 });
+
+    draft = columnSettingsDraftReducer(draft, { type: 'rowAdded' });
+
+    expect(draft.rows.map((row) => [row.key, row.invalid])).toEqual([
+      [0, false],
+      [2, false],
+    ]);
+  });
+
+  it('keeps a mark while its row stays empty and clears it once a field is picked', () => {
+    let draft = createColumnSettingsDraft(allFields, ['name']);
+    draft = columnSettingsDraftReducer(draft, { type: 'rowAdded' });
+    draft = columnSettingsDraftReducer(draft, { type: 'submitted' });
+
+    draft = columnSettingsDraftReducer(draft, { type: 'rowFieldChanged', key: 1, field: null });
+    expect(marksOf(draft)).toEqual([false, true]);
+
+    draft = columnSettingsDraftReducer(draft, { type: 'rowFieldChanged', key: 1, field: 'grid' });
+    expect(marksOf(draft)).toEqual([false, false]);
   });
 });
 

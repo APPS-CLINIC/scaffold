@@ -11,7 +11,6 @@ export interface SortableColumnRowProps<T extends object> {
   position: number;
   /** Fields this row may pick, in configuration order; it includes the row's own field. */
   options: readonly TableColumnOption<T>[];
-  invalid: boolean;
   removable: boolean;
   onFieldChange: (field: GenericDataTableField<T> | null) => void;
   onRemove: () => void;
@@ -28,7 +27,6 @@ export function SortableColumnRow<T extends object>({
   row,
   position,
   options,
-  invalid,
   removable,
   onFieldChange,
   onRemove,
@@ -78,7 +76,7 @@ export function SortableColumnRow<T extends object>({
           value={row.field}
           onChange={handleChange}
           sortOptions={false}
-          errorMessage={invalid ? t('table.settings.row.empty') : undefined}
+          errorMessage={row.invalid ? t('table.settings.row.empty') : undefined}
         />
       ) : (
         <span className="flex min-h-10 min-w-0 flex-1 items-center break-words rounded border border-[#c4c9ce] bg-[var(--surface)] px-3 py-2 text-sm text-[var(--text)]">

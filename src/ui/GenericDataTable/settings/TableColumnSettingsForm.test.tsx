@@ -1,7 +1,7 @@
 import type * as DndKitCore from '@dnd-kit/core';
 import type { DndContextProps } from '@dnd-kit/core';
 import type { ComponentProps } from 'react';
-import { act, render, screen } from '@testing-library/react';
+import { act, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type * as IwaComponents from 'iwa-react-components';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -22,18 +22,19 @@ vi.mock('@dnd-kit/core', async (importOriginal) => ({
   },
 }));
 
-// The dialog layout is a set of props handed to the library, so the fake records them
-// per heading. It closes with a function updater to prove both forms of the setter
-// contract are honoured.
+// The dialog frame is a set of props handed to the library, so the fake records them per
+// heading. It closes with a function updater to prove both forms of the setter contract are
+// honoured. The button fake exposes its style props as data attributes.
 // The library types `children` on the component, not on its exported props interface.
-type DialogComponentProps = ComponentProps<typeof IwaComponents.Dialog>;
+type DialogComponentProps = ComponentProps<typeof IwaComponents.CustomizableDialog>;
+type ButtonComponentProps = ComponentProps<typeof IwaComponents.Button>;
 
 const dialogProps: { current: Record<string, DialogComponentProps> } = { current: {} };
 
 vi.mock('iwa-react-components', async (importOriginal) => ({
   ...(await importOriginal<typeof IwaComponents>()),
-  Dialog: (props: DialogComponentProps) => {
-    const { headingProps, visibility, onSetVisibility, buttonProps, children } = props;
+  CustomizableDialog: (props: DialogComponentProps) => {
+    const { headingProps, visibility, onSetVisibility, children } = props;
     if (headingProps?.text) dialogProps.current[headingProps.text] = props;
 
     return visibility ? (
@@ -42,14 +43,20 @@ vi.mock('iwa-react-components', async (importOriginal) => ({
           Close {headingProps?.text}
         </button>
         {children}
-        {buttonProps.map((button) => (
-          <button key={button.label} type="button" onClick={() => void button.onClick?.()}>
-            {button.label}
-          </button>
-        ))}
       </section>
     ) : null;
   },
+  Button: ({ label, style, size, className, onClick }: ButtonComponentProps) => (
+    <button
+      type="button"
+      data-style={style}
+      data-size={size}
+      className={className}
+      onClick={() => void onClick?.()}
+    >
+      {label}
+    </button>
+  ),
 }));
 
 interface Row {
@@ -94,6 +101,17 @@ function dialog(heading: string): DialogComponentProps {
 
   return props;
 }
+
+const classesOf = (className: string | undefined) => className?.split(' ') ?? [];
+
+function footerButtons(heading: string): HTMLElement[] {
+  return within(screen.getByRole('region', { name: heading }))
+    .getAllByRole('button')
+    .filter((button) => button.dataset.style !== undefined);
+}
+
+const describeButtons = (buttons: HTMLElement[]) =>
+  buttons.map((button) => [button.textContent, button.dataset.style, button.dataset.size]);
 
 function dragEnd(activeId: number, overId: number | null) {
   const event = {
@@ -167,32 +185,67 @@ describe('TableColumnSettingsForm drag and drop', () => {
 });
 
 describe('TableColumnSettingsForm dialog layout', () => {
-  it('centres the title and puts restore on the left of a separated cancel and save footer', () => {
+  it('gives the settings dialog a fixed 600 by 835 frame capped by the viewport', () => {
     renderForm();
 
     const settings = dialog('List settings');
     expect(settings.headingProps).toMatchObject({ centered: true });
-    expect(settings.bottomSeparator).toBe(true);
-    expect(settings.buttonProps.map(({ label, style }) => [label, style])).toEqual([
-      ['Restore defaults', 'text'],
-      ['Cancel', 'outline'],
-      ['Save', 'filled'],
-    ]);
-    expect(settings.buttonProps[0]?.className).toContain('mr-auto');
-    expect(settings.buttonProps.every((button) => button.size === 'medium')).toBe(true);
+    expect(classesOf(settings.className)).toEqual(
+      expect.arrayContaining([
+        '!w-[600px]',
+        '!max-w-[calc(100vw-2rem)]',
+        '!h-[835px]',
+        '!max-h-[calc(100vh-2rem)]',
+      ]),
+    );
   });
 
-  it('stretches both confirmation buttons across the dialog', () => {
+  it('drops the content padding so the tab line and the footer separator span the dialog', () => {
     renderForm();
 
-    const confirm = dialog('Restoring default settings');
-    expect(confirm.buttonsPosition).toBe('column');
-    expect(confirm.buttonProps.map(({ label, style }) => [label, style])).toEqual([
-      ['Restore defaults', 'filled'],
-      ['Back to settings', 'outline'],
+    expect(classesOf(dialog('List settings').contentClassName)).toContain('!p-0');
+    // The fake renders children straight into the region, which stands in for the content.
+    const region = screen.getByRole('region', { name: 'List settings' });
+    const tabRow = within(region).getByText('Customize columns').parentElement;
+    expect(tabRow).toHaveClass('border-b', 'px-6');
+    expect(tabRow?.parentElement).toBe(region);
+    const footer = footerButtons('List settings')[0]?.parentElement;
+    expect(footer).toHaveClass('border-t', 'px-6');
+    expect(footer?.parentElement).toBe(region);
+  });
+
+  it('puts restore on the left of cancel and save in the footer', () => {
+    renderForm();
+
+    const footer = footerButtons('List settings');
+    expect(describeButtons(footer)).toEqual([
+      ['Restore defaults', 'text', 'medium'],
+      ['Cancel', 'outline', 'medium'],
+      ['Save', 'filled', 'medium'],
     ]);
-    expect(confirm.buttonProps.every((button) => button.className?.includes('w-full'))).toBe(true);
-    expect(confirm.buttonProps.every((button) => button.size === 'medium')).toBe(true);
+    expect(footer[0]).toHaveClass('mr-auto');
+  });
+
+  it('gives the confirmation a 420 wide frame of at least 296 with stretched buttons', async () => {
+    const user = userEvent.setup();
+    renderForm();
+    await user.click(screen.getByRole('button', { name: 'Restore defaults' }));
+
+    const confirm = dialog('Restoring default settings');
+    expect(classesOf(confirm.className)).toEqual(
+      expect.arrayContaining(['!w-[420px]', '!max-w-[calc(100vw-2rem)]', '!min-h-[296px]']),
+    );
+    expect(classesOf(confirm.contentClassName)).toContain('!p-0');
+    const buttons = footerButtons('Restoring default settings');
+    expect(describeButtons(buttons)).toEqual([
+      ['Restore defaults', 'filled', 'medium'],
+      ['Back to settings', 'outline', 'medium'],
+    ]);
+    expect(buttons.every((button) => button.classList.contains('w-full'))).toBe(true);
+    expect(buttons[0]?.parentElement).toHaveClass('border-t', 'flex-col');
+    expect(buttons[0]?.parentElement?.parentElement).toBe(
+      screen.getByRole('region', { name: 'Restoring default settings' }),
+    );
   });
 });
 

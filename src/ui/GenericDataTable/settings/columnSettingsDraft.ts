@@ -3,6 +3,8 @@ export interface ColumnDraftRow<K extends string> {
   field: K | null;
   /** Added in this editing session: its field is picked with a Select until Save. */
   added: boolean;
+  /** Was empty when Save was attempted; picking a field clears it. */
+  invalid: boolean;
 }
 
 export interface ColumnSettingsDraft<K extends string> {
@@ -10,8 +12,6 @@ export interface ColumnSettingsDraft<K extends string> {
   allFields: readonly K[];
   rows: readonly ColumnDraftRow<K>[];
   nextKey: number;
-  /** Set once Save was attempted; empty rows show their validation state from then on. */
-  submitted: boolean;
 }
 
 export type ColumnSettingsDraftAction<K extends string> =
@@ -29,9 +29,9 @@ export function createColumnSettingsDraft<K extends string>(
   const known = new Set(allFields);
   const rows = columns
     .filter((field) => known.has(field))
-    .map((field, index) => ({ key: index, field, added: false }));
+    .map((field, index) => ({ key: index, field, added: false, invalid: false }));
 
-  return { allFields, rows, nextKey: rows.length, submitted: false };
+  return { allFields, rows, nextKey: rows.length };
 }
 
 export function canAddRow<K extends string>(draft: ColumnSettingsDraft<K>): boolean {
@@ -82,7 +82,7 @@ export function columnSettingsDraftReducer<K extends string>(
 
       return {
         ...draft,
-        rows: [...draft.rows, { key: draft.nextKey, field: null, added: true }],
+        rows: [...draft.rows, { key: draft.nextKey, field: null, added: true, invalid: false }],
         nextKey: draft.nextKey + 1,
       };
     case 'rowRemoved':
@@ -93,7 +93,9 @@ export function columnSettingsDraftReducer<K extends string>(
       return {
         ...draft,
         rows: draft.rows.map((row) =>
-          row.key === action.key ? { ...row, field: action.field } : row,
+          row.key === action.key
+            ? { ...row, field: action.field, invalid: row.invalid && action.field === null }
+            : row,
         ),
       };
     case 'rowMoved': {
@@ -104,6 +106,11 @@ export function columnSettingsDraftReducer<K extends string>(
       return { ...draft, rows: moveItem(draft.rows, from, to) };
     }
     case 'submitted':
-      return draft.submitted ? draft : { ...draft, submitted: true };
+      if (!draft.rows.some((row) => row.field === null && !row.invalid)) return draft;
+
+      return {
+        ...draft,
+        rows: draft.rows.map((row) => (row.field === null ? { ...row, invalid: true } : row)),
+      };
   }
 }

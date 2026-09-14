@@ -1,4 +1,5 @@
-import { useLayoutEffect, useReducer, useRef, useState, type SetStateAction } from 'react';
+import { useReducer, useRef, useState, type SetStateAction } from 'react';
+import { flushSync } from 'react-dom';
 import {
   closestCenter,
   DndContext,
@@ -15,7 +16,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Dialog } from 'iwa-react-components';
+import { Button, CustomizableDialog } from 'iwa-react-components';
 import { useTranslation } from 'react-i18next';
 import type {
   GenericDataTableField,
@@ -38,6 +39,16 @@ export type TableColumnSettingsFormProps<T extends object> = Omit<
   TableColumnSettingsDialogProps<T>,
   'open'
 >;
+
+// The library pads the content and sizes the dialog itself, hence the important modifiers.
+// Without the padding the tab line and the footer separators reach the dialog edges, so
+// every section pads itself.
+const DIALOG_CONTENT_CLASS_NAME = 'flex min-h-0 flex-col !p-0';
+const SETTINGS_DIALOG_CLASS_NAME =
+  '!h-[835px] !max-h-[calc(100vh-2rem)] !w-[600px] !max-w-[calc(100vw-2rem)]';
+const RESTORE_DIALOG_CLASS_NAME = '!min-h-[296px] !w-[420px] !max-w-[calc(100vw-2rem)]';
+const DIALOG_FOOTER_CLASS_NAME =
+  'flex shrink-0 gap-3 border-t border-[var(--border-subtle)] px-6 py-4';
 
 /**
  * The settings dialog body with its draft. Mounted only while the dialog is
@@ -65,19 +76,10 @@ export function TableColumnSettingsForm<T extends object>({
   );
   const [confirmOpen, setConfirmOpen] = useState(false);
   const listRef = useRef<HTMLOListElement>(null);
-  const rowWasAdded = useRef(false);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
-
-  // Rows are appended at the end of the scrolling list, so a new one is scrolled into view.
-  useLayoutEffect(() => {
-    const list = listRef.current;
-    if (!rowWasAdded.current || list === null) return;
-    rowWasAdded.current = false;
-    list.scrollTop = list.scrollHeight;
-  }, [draft.rows]);
 
   const total = fields.length;
   const rowIndexOf = (id: UniqueIdentifier) => draft.rows.findIndex((row) => row.key === id);
@@ -135,18 +137,22 @@ export function TableColumnSettingsForm<T extends object>({
     dispatch({ type: 'rowMoved', from, to });
   };
 
+  // Both scrolls measure the list, so the update is committed to the DOM first.
   const addRow = () => {
     if (!canAddRow(draft)) return;
-    rowWasAdded.current = true;
-    dispatch({ type: 'rowAdded' });
+    flushSync(() => dispatch({ type: 'rowAdded' }));
+    const list = listRef.current;
+    if (list !== null) list.scrollTop = list.scrollHeight;
   };
 
   const submit = () => {
-    if (!isDraftValid(draft)) {
-      dispatch({ type: 'submitted' });
+    if (isDraftValid(draft)) {
+      onSave(selectDraftColumns(draft));
       return;
     }
-    onSave(selectDraftColumns(draft));
+    flushSync(() => dispatch({ type: 'submitted' }));
+    const firstEmpty = draft.rows.findIndex((row) => row.field === null);
+    listRef.current?.children.item(firstEmpty)?.scrollIntoView({ block: 'nearest' });
   };
 
   // The library's setter contract is a state setter, so a function updater must be resolved.
@@ -163,37 +169,20 @@ export function TableColumnSettingsForm<T extends object>({
 
   return (
     <>
-      <Dialog
+      <CustomizableDialog
         headingProps={{ text: t('table.settings.title'), centered: true }}
         visibility
         onSetVisibility={handleSetVisibility}
-        bottomSeparator
-        buttonProps={[
-          // The footer is a right-aligned row; the auto margin pulls this action to the left.
-          {
-            label: t('table.settings.restoreDefaults'),
-            style: 'text',
-            size: 'medium',
-            className: 'mr-auto',
-            onClick: () => setConfirmOpen(true),
-          },
-          {
-            label: t('table.settings.cancel'),
-            style: 'outline',
-            size: 'medium',
-            onClick: onCancel,
-          },
-          { label: t('table.settings.save'), style: 'filled', size: 'medium', onClick: submit },
-        ]}
+        className={SETTINGS_DIALOG_CLASS_NAME}
+        contentClassName={DIALOG_CONTENT_CLASS_NAME}
       >
-        {/* Capped below the dialog's own limit, so the dialog body never scrolls and the
-            overflow lands on the column list alone. */}
-        <div className="flex max-h-[55vh] flex-col gap-4">
-          <div className="border-b border-[var(--border-subtle)]">
-            <span className="-mb-px inline-block border-b-[3px] border-[var(--navigation-accent)] px-6 pb-2 text-base font-bold text-[var(--text)]">
-              {t('table.settings.tab.columns')}
-            </span>
-          </div>
+        <div className="border-b border-[var(--border-subtle)] px-6 pt-4">
+          <span className="-mb-px inline-block border-b-[3px] border-[var(--navigation-accent)] px-6 pb-2 text-base font-bold text-[var(--text)]">
+            {t('table.settings.tab.columns')}
+          </span>
+        </div>
+        {/* The dialog height is fixed, so the overflow lands on the column list alone. */}
+        <div className="flex min-h-0 flex-1 flex-col gap-4 px-6 py-4">
           <p className="m-0 flex gap-3 text-sm text-[var(--muted)]">
             <span
               aria-hidden="true"
@@ -232,7 +221,6 @@ export function TableColumnSettingsForm<T extends object>({
                     row={row}
                     position={index + 1}
                     options={optionsFor(row.key)}
-                    invalid={draft.submitted && row.field === null}
                     removable={canRemoveRow(draft)}
                     onFieldChange={(field) =>
                       dispatch({ type: 'rowFieldChanged', key: row.key, field })
@@ -256,32 +244,50 @@ export function TableColumnSettingsForm<T extends object>({
             <span className="underline underline-offset-2">{t('table.settings.addColumn')}</span>
           </button>
         </div>
-      </Dialog>
-      <Dialog
+        <div className={`${DIALOG_FOOTER_CLASS_NAME} items-center`}>
+          <Button
+            label={t('table.settings.restoreDefaults')}
+            style="text"
+            size="medium"
+            className="mr-auto"
+            onClick={() => setConfirmOpen(true)}
+          />
+          <Button
+            label={t('table.settings.cancel')}
+            style="outline"
+            size="medium"
+            onClick={onCancel}
+          />
+          <Button label={t('table.settings.save')} style="filled" size="medium" onClick={submit} />
+        </div>
+      </CustomizableDialog>
+      <CustomizableDialog
         headingProps={{ text: t('table.settings.restore.title') }}
         visibility={confirmOpen}
         onSetVisibility={handleSetConfirmVisibility}
-        bottomSeparator
-        buttonsPosition="column"
-        buttonProps={[
-          {
-            label: t('table.settings.restore.confirm'),
-            style: 'filled',
-            size: 'medium',
-            className: 'w-full justify-center',
-            onClick: onRestoreDefaults,
-          },
-          {
-            label: t('table.settings.restore.back'),
-            style: 'outline',
-            size: 'medium',
-            className: 'w-full justify-center',
-            onClick: () => setConfirmOpen(false),
-          },
-        ]}
+        className={RESTORE_DIALOG_CLASS_NAME}
+        contentClassName={DIALOG_CONTENT_CLASS_NAME}
       >
-        <p className="m-0 text-sm text-[var(--text)]">{t('table.settings.restore.body')}</p>
-      </Dialog>
+        <p className="m-0 flex-1 px-6 pb-6 pt-2 text-sm text-[var(--text)]">
+          {t('table.settings.restore.body')}
+        </p>
+        <div className={`${DIALOG_FOOTER_CLASS_NAME} flex-col`}>
+          <Button
+            label={t('table.settings.restore.confirm')}
+            style="filled"
+            size="medium"
+            className="w-full justify-center"
+            onClick={onRestoreDefaults}
+          />
+          <Button
+            label={t('table.settings.restore.back')}
+            style="outline"
+            size="medium"
+            className="w-full justify-center"
+            onClick={() => setConfirmOpen(false)}
+          />
+        </div>
+      </CustomizableDialog>
     </>
   );
 }

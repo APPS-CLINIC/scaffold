@@ -831,31 +831,13 @@ export function Chip({ label, selected, onClick, disabled, removable, className,
   );
 }
 
-export function Dialog({
-  headingProps,
-  buttonProps = [],
-  visibility,
-  onSetVisibility,
-  closeButtonIcon = true,
-  onHide,
-  buttonsPosition = 'row',
-  bottomSeparator,
-  children,
-  dataTestId,
-}) {
-  if (!visibility) return null;
-
-  const close = () => {
-    onSetVisibility?.(false);
-    void onHide?.();
-  };
-
+function dialogFrame({ headingProps, closeButtonIcon, onClose, dataTestId, className }, ...body) {
   return createElement(
     'div',
     {
       className: 'fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4',
       onClick: (event) => {
-        if (event.target === event.currentTarget) close();
+        if (event.target === event.currentTarget) onClose();
       },
     },
     createElement(
@@ -865,7 +847,10 @@ export function Dialog({
         'aria-modal': 'true',
         'aria-label': headingProps?.text,
         'data-testid': dataTestId,
-        className: 'flex max-h-[85vh] w-full max-w-xl flex-col rounded bg-white shadow-lg',
+        className: twMerge(
+          'flex max-h-[85vh] w-full max-w-xl flex-col rounded bg-white shadow-lg',
+          className,
+        ),
       },
       createElement(
         'div',
@@ -886,7 +871,7 @@ export function Dialog({
               {
                 type: 'button',
                 'aria-label': 'Zamknij',
-                onClick: close,
+                onClick: onClose,
                 className:
                   'absolute right-4 top-4 flex h-8 w-8 items-center justify-center text-[#333333]',
               },
@@ -905,18 +890,71 @@ export function Dialog({
             )
           : null,
       ),
-      createElement('div', { className: 'min-h-0 flex-1 overflow-y-auto px-6 py-4' }, children),
-      createElement(
-        'div',
-        {
-          className: twMerge(
-            'flex shrink-0 justify-end gap-3 px-6 pb-6 pt-2',
-            buttonsPosition === 'column' && 'flex-col',
-            bottomSeparator && 'border-t border-[#e0e0e0]',
-          ),
-        },
-        buttonProps.map((props, index) => createElement(Button, { key: index, ...props })),
-      ),
+      ...body,
+    ),
+  );
+}
+
+export function Dialog({
+  headingProps,
+  buttonProps = [],
+  visibility,
+  onSetVisibility,
+  closeButtonIcon = true,
+  onHide,
+  buttonsPosition = 'row',
+  bottomSeparator,
+  children,
+  dataTestId,
+}) {
+  if (!visibility) return null;
+
+  const close = () => {
+    onSetVisibility?.(false);
+    void onHide?.();
+  };
+
+  return dialogFrame(
+    { headingProps, closeButtonIcon, onClose: close, dataTestId },
+    createElement('div', { className: 'min-h-0 flex-1 overflow-y-auto px-6 py-4' }, children),
+    createElement(
+      'div',
+      {
+        className: twMerge(
+          'flex shrink-0 justify-end gap-3 px-6 pb-6 pt-2',
+          buttonsPosition === 'column' && 'flex-col',
+          bottomSeparator && 'border-t border-[#e0e0e0]',
+        ),
+      },
+      buttonProps.map((props, index) => createElement(Button, { key: index, ...props })),
+    ),
+  );
+}
+
+export function CustomizableDialog({
+  headingProps,
+  className,
+  contentClassName,
+  visibility,
+  onSetVisibility,
+  closeButtonIcon = true,
+  onHide,
+  children,
+  dataTestId,
+}) {
+  if (!visibility) return null;
+
+  const close = () => {
+    onSetVisibility?.(false);
+    void onHide?.();
+  };
+
+  return dialogFrame(
+    { headingProps, closeButtonIcon, onClose: close, dataTestId, className },
+    createElement(
+      'div',
+      { className: twMerge('min-h-0 flex-1 overflow-y-auto px-6 py-4', contentClassName) },
+      children,
     ),
   );
 }

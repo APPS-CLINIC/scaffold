@@ -61,12 +61,12 @@ const options: readonly TableColumnOption<Row>[] = [
   { field: 'grid', labelKey: 'customers.table.field.grid' },
 ];
 
-const addedRow = { key: 7, field: 'status' as const, added: true };
+const addedRow = { key: 7, field: 'status' as const, added: true, invalid: false };
 
 function renderRow(props: Partial<SortableColumnRowProps<Row>> = {}) {
   const onFieldChange = vi.fn();
   const onRemove = vi.fn();
-  const row = props.row ?? { key: 7, field: 'status' as const, added: false };
+  const row = props.row ?? { key: 7, field: 'status' as const, added: false, invalid: false };
 
   render(
     <DndContext>
@@ -76,7 +76,6 @@ function renderRow(props: Partial<SortableColumnRowProps<Row>> = {}) {
             row={row}
             position={2}
             options={options}
-            invalid={false}
             removable
             onFieldChange={onFieldChange}
             onRemove={onRemove}
@@ -151,7 +150,7 @@ describe('SortableColumnRow', () => {
   });
 
   it('shows the validation message only while invalid', () => {
-    renderRow({ invalid: true, row: { key: 9, field: null, added: true } });
+    renderRow({ row: { key: 9, field: null, added: true, invalid: true } });
 
     expect(screen.getByText('Fill in or remove the column')).toBeInTheDocument();
   });

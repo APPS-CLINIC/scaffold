@@ -109,7 +109,12 @@ describe('TableColumnSettingsDialog', () => {
     renderDialog();
     const list = within(settingsDialog()).getByRole('list');
     let scrollTop = 0;
-    Object.defineProperty(list, 'scrollHeight', { configurable: true, value: 480 });
+    // Measured from the rows present when it is read, so scrolling before the new row renders
+    // falls one row short.
+    Object.defineProperty(list, 'scrollHeight', {
+      configurable: true,
+      get: () => list.children.length * 40,
+    });
     Object.defineProperty(list, 'scrollTop', {
       configurable: true,
       get: () => scrollTop,
@@ -120,7 +125,7 @@ describe('TableColumnSettingsDialog', () => {
 
     await user.click(screen.getByRole('button', { name: 'Add column' }));
 
-    expect(scrollTop).toBe(480);
+    expect(scrollTop).toBe(120);
   });
 
   it('removes a row and disables the remove control on the last one', async () => {
@@ -151,6 +156,53 @@ describe('TableColumnSettingsDialog', () => {
     expect(screen.queryByText('Fill in or remove the column')).not.toBeInTheDocument();
     // An added row keeps its Select until Save, so the choice can still be corrected.
     expect(empty).toHaveValue('note');
+  });
+
+  it('starts a column added again after the marked one was removed without the message', async () => {
+    const user = userEvent.setup();
+    renderDialog();
+    await user.click(screen.getByRole('button', { name: 'Add column' }));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+    expect(screen.getByText('Fill in or remove the column')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Remove column 3' }));
+    await user.click(screen.getByRole('button', { name: 'Add column' }));
+
+    expect(selects()).toHaveLength(1);
+    expect(screen.queryByText('Fill in or remove the column')).not.toBeInTheDocument();
+  });
+
+  it('keeps the message on the row that was empty on Save and not on a row added later', async () => {
+    const user = userEvent.setup();
+    renderDialog();
+    await user.click(screen.getByRole('button', { name: 'Add column' }));
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    await user.click(screen.getByRole('button', { name: 'Add column' }));
+
+    const [, , marked, added] = columnRows();
+    expect(screen.getAllByText('Fill in or remove the column')).toHaveLength(1);
+    expect(marked && within(marked).getByText('Fill in or remove the column')).toBeTruthy();
+    expect(added && within(added).queryByText('Fill in or remove the column')).toBeNull();
+  });
+
+  it('scrolls the first empty row into view with its message when Save is blocked', async () => {
+    const user = userEvent.setup();
+    const scrolled: { row: Element; text: string | null }[] = [];
+    const scrollIntoView = vi
+      .spyOn(Element.prototype, 'scrollIntoView')
+      .mockImplementation(function (this: Element) {
+        scrolled.push({ row: this, text: this.textContent });
+      });
+    renderDialog();
+    await user.click(screen.getByRole('button', { name: 'Add column' }));
+    await user.click(screen.getByRole('button', { name: 'Add column' }));
+
+    await user.click(screen.getByRole('button', { name: 'Save' }));
+
+    expect(scrollIntoView).toHaveBeenCalledExactlyOnceWith({ block: 'nearest' });
+    expect(scrolled[0]?.row).toBe(columnRows()[2]);
+    expect(scrolled[0]?.text).toContain('Fill in or remove the column');
   });
 
   it('hands the ordered columns to onSave once every row is filled', async () => {
