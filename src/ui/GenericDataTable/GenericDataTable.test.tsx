@@ -155,7 +155,7 @@ describe('GenericDataTable', () => {
     expect(screen.getByRole('columnheader', { name: /customer name/i })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: /status/i })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'KKF' })).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: /internal group name/i })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /own group/i })).toBeInTheDocument();
     expect(screen.getByText('Alice:name:0')).toBeInTheDocument();
     expect(screen.getByText('ACTIVE')).toBeInTheDocument();
     expect(screen.getByText('Custom metadata: gold')).toBeInTheDocument();

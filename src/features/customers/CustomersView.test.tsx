@@ -33,8 +33,8 @@ function renderPage(initialEntry = '/customers/all', store?: AppStore) {
 }
 
 beforeEach(async () => {
-  // Wide enough for the nine reference columns; identifiers and advisors
-  // stay in the accordion, mirroring the desktop reference layout.
+  // Wide enough for the nine leading columns (name … lending rating); the TS
+  // date and status, the identifiers and the advisors stay in the accordion.
   mockTableContainerWidth(1380);
   installCustomerApiTestTransport();
   vi.spyOn(document.head, 'appendChild').mockImplementation(<T extends Node>(node: T): T => {
@@ -132,6 +132,12 @@ describe('CustomersView', () => {
     await waitFor(() => {
       const search = screen.getByRole('status', { name: 'Current customer URL' }).textContent ?? '';
       expect(new URLSearchParams(search).get('sort')).toBe('fullName');
+    });
+
+    await user.click(screen.getByRole('columnheader', { name: /customer name/i }));
+    await waitFor(() => {
+      const search = screen.getByRole('status', { name: 'Current customer URL' }).textContent ?? '';
+      expect(new URLSearchParams(search).get('dir')).toBe('desc');
     });
 
     await user.click(paginatorControl('next'));
