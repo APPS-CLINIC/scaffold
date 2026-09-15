@@ -42,6 +42,12 @@ export const pl = {
   'customers.actions.expandAll': 'Rozwiń wszystkie',
   'customers.actions.refresh': 'Odśwież',
   'customers.actions.export': 'Pobierz do excela',
+  // A non-breaking space keeps the number and its unit on one line when the
+  // label wraps inside a narrow table cell.
+  'customers.overdueDays_one': 'Zaległy {{count}}\u00A0dzień',
+  'customers.overdueDays_few': 'Zaległe {{count}}\u00A0dni',
+  'customers.overdueDays_many': 'Zaległe {{count}}\u00A0dni',
+  'customers.overdueDays_other': 'Zaległe {{count}}\u00A0dni',
   'customers.table.ariaLabel': 'Klienci oraz ich doradcy',
   'customers.table.loading': 'Ładowanie klientów…',
   'customers.table.empty': 'Brak klientów spełniających wybrane kryteria.',

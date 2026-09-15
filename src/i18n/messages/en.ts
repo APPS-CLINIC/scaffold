@@ -40,6 +40,12 @@ export const en: Record<MessageKey, string> = {
   'customers.actions.expandAll': 'Expand all',
   'customers.actions.refresh': 'Refresh',
   'customers.actions.export': 'Download to Excel',
+  // A non-breaking space keeps the number and its unit on one line when the
+  // label wraps inside a narrow table cell.
+  'customers.overdueDays_one': 'Overdue by {{count}}\u00A0day',
+  'customers.overdueDays_few': 'Overdue by {{count}}\u00A0days',
+  'customers.overdueDays_many': 'Overdue by {{count}}\u00A0days',
+  'customers.overdueDays_other': 'Overdue by {{count}}\u00A0days',
   'customers.table.ariaLabel': 'Customers and their advisors',
   'customers.table.loading': 'Loading customers…',
   'customers.table.empty': 'No customers match the selected criteria.',
