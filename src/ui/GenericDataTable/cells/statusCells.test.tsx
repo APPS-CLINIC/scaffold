@@ -7,7 +7,6 @@ import i18n from '@/i18n';
 import type { GenericDataTableCellProps } from '../GenericDataTable.types';
 import { ActiveArchivalStatusCell } from './ActiveArchivalStatusCell';
 import { UnderlinedTextCell } from './UnderlinedTextCell';
-import { ValidityStatusCell } from './ValidityStatusCell';
 
 // The status type is a prop, not visible in what the components render, so these two
 // are overridden to expose it. Spreading the module first keeps every other export the
@@ -30,10 +29,9 @@ interface TestRow {
   id: number;
   name: string | null;
   status: 'ACTIVE' | 'ARCHIVAL' | null;
-  validity: 'valid' | 'expiring' | 'expired' | null;
 }
 
-const row: TestRow = { id: 23997, name: 'Example', status: 'ACTIVE', validity: 'valid' };
+const row: TestRow = { id: 23997, name: 'Example', status: 'ACTIVE' };
 
 function cellProps<K extends keyof TestRow>(
   field: K,
@@ -64,23 +62,6 @@ describe('ActiveArchivalStatusCell', () => {
     expect(screen.getByTestId('status')).toHaveTextContent('Archival');
 
     rerender(<ActiveArchivalStatusCell {...cellProps('status', null)} />);
-    expect(screen.queryByTestId('status')).not.toBeInTheDocument();
-    expect(screen.getByText('—')).toBeInTheDocument();
-  });
-});
-
-describe('ValidityStatusCell', () => {
-  it('maps each validity value to its status type', () => {
-    const { rerender } = render(<ValidityStatusCell {...cellProps('validity', 'valid')} />);
-    expect(screen.getByTestId('status')).toHaveTextContent('Valid');
-
-    rerender(<ValidityStatusCell {...cellProps('validity', 'expiring')} />);
-    expect(screen.getByTestId('status')).toHaveTextContent('Expiring soon');
-
-    rerender(<ValidityStatusCell {...cellProps('validity', 'expired')} />);
-    expect(screen.getByTestId('status')).toHaveTextContent('Expired');
-
-    rerender(<ValidityStatusCell {...cellProps('validity', null)} />);
     expect(screen.queryByTestId('status')).not.toBeInTheDocument();
     expect(screen.getByText('—')).toBeInTheDocument();
   });

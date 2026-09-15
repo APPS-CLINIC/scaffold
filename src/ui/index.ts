@@ -62,7 +62,6 @@ export {
   DateCell,
   TextCell,
   UnderlinedTextCell,
-  ValidityStatusCell,
   renderCellValue,
   resolveColumnFields,
   type GenericDataTableCellComponent,

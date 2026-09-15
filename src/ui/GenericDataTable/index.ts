@@ -7,7 +7,6 @@ export {
   DateCell,
   TextCell,
   UnderlinedTextCell,
-  ValidityStatusCell,
   renderCellValue,
 } from './cells';
 export type {
