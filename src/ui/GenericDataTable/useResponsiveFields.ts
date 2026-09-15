@@ -1,29 +1,8 @@
 import { useLayoutEffect, useMemo, useRef, useState } from 'react';
-import type { GenericDataTableField, GenericDataTableFieldConfig } from './GenericDataTable.types';
+import type { GenericDataTableFieldConfig } from './GenericDataTable.types';
 
 /** Width reserved for the row-expansion toggle column (matches `min-w-11`). */
 export const EXPANDER_COLUMN_WIDTH_PX = 44;
-
-/**
- * Resolve the display order: fields listed in `columnOrder` first (in that
- * order), the remaining fields after them in their `fields` order.
- */
-export function orderFields<T extends object>(
-  fields: readonly GenericDataTableFieldConfig<T>[],
-  columnOrder?: readonly GenericDataTableField<T>[],
-): readonly GenericDataTableFieldConfig<T>[] {
-  if (!columnOrder || columnOrder.length === 0) return fields;
-
-  const rankByField = new Map(columnOrder.map((field, index) => [field as string, index]));
-  const listed = fields
-    .filter((field) => rankByField.has(field.field))
-    .sort(
-      (left, right) => (rankByField.get(left.field) ?? 0) - (rankByField.get(right.field) ?? 0),
-    );
-  const unlisted = fields.filter((field) => !rankByField.has(field.field));
-
-  return [...listed, ...unlisted];
-}
 
 export interface ResponsiveFieldSplit<T extends object> {
   visibleFields: readonly GenericDataTableFieldConfig<T>[];
@@ -94,7 +73,6 @@ export function splitFieldsByWidth<T extends object>(
 
 interface UseResponsiveFieldsOptions<T extends object> {
   fields: readonly GenericDataTableFieldConfig<T>[];
-  columnOrder?: readonly GenericDataTableField<T>[];
 }
 
 /**
@@ -102,10 +80,7 @@ interface UseResponsiveFieldsOptions<T extends object> {
  * columns and accordion overflow. Measurement happens in a layout effect, so
  * the pre-measure minimal render is replaced before the browser paints.
  */
-export function useResponsiveFields<T extends object>({
-  fields,
-  columnOrder,
-}: UseResponsiveFieldsOptions<T>) {
+export function useResponsiveFields<T extends object>({ fields }: UseResponsiveFieldsOptions<T>) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = useState<number | null>(null);
 
@@ -122,10 +97,9 @@ export function useResponsiveFields<T extends object>({
     return () => observer.disconnect();
   }, []);
 
-  const orderedFields = useMemo(() => orderFields(fields, columnOrder), [fields, columnOrder]);
   const { visibleFields, accordionFields } = useMemo(
-    () => splitFieldsByWidth(orderedFields, containerWidth),
-    [orderedFields, containerWidth],
+    () => splitFieldsByWidth(fields, containerWidth),
+    [fields, containerWidth],
   );
 
   return { containerRef, containerWidth, visibleFields, accordionFields };

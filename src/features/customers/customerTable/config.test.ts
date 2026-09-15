@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { customerTableConfig } from './config';
 
 describe('customerTableConfig', () => {
+  it('identifies the table so its settings can be persisted', () => {
+    expect(customerTableConfig.id).toBe('customers');
+  });
+
   it('keeps the reference field order explicit', () => {
     expect(customerTableConfig.fields.map(({ field }) => field)).toEqual([
       'fullName',

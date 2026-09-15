@@ -12,6 +12,7 @@ export {
   NavigationMenuItem,
   PaginatorTable,
   SearchWithAutocomplete,
+  Select,
   Skeleton,
   SkeletonTable,
   Status,
@@ -33,6 +34,7 @@ export type {
   NavigationMenuSubNode,
   PaginatorTableProps,
   SearchWithAutocompleteProps,
+  SelectProps,
   SkeletonProps,
   SkeletonTableColumn,
   SkeletonTableProps,
@@ -44,7 +46,6 @@ export type {
 export { BreadCrumb, type BreadCrumbItem, type BreadCrumbProps } from 'iwa-react-components';
 export { ScreenHeading, type ScreenHeadingItem, type ScreenHeadingProps } from './ScreenHeading';
 export { TextInput, type TextInputProps } from './TextInput';
-export { Select, type SelectProps } from './Select';
 export { PrimeIcon, type PrimeIconName, type PrimeIconProps } from './PrimeIcon';
 export { createPrimeIcon } from './createPrimeIcon';
 export {
@@ -55,12 +56,15 @@ export {
 export { NavigationPanel, type NavigationPanelProps } from './NavigationPanel';
 export {
   GenericDataTable,
+  GenericTableSettings,
+  TableColumnSettingsDialog,
   ActiveArchivalStatusCell,
   DateCell,
   TextCell,
   UnderlinedTextCell,
   ValidityStatusCell,
   renderCellValue,
+  resolveColumnFields,
   type GenericDataTableCellComponent,
   type GenericDataTableCellProps,
   type GenericDataTableConfig,
@@ -75,6 +79,9 @@ export {
   type GenericDataTableProps,
   type GenericDataTableSortChange,
   type GenericDataTableSortOrder,
+  type GenericTableSettingsProps,
+  type TableColumnOption,
+  type TableColumnSettingsDialogProps,
 } from './GenericDataTable';
 export {
   NavigationIcon,

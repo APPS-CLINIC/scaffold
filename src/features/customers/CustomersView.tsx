@@ -2,14 +2,18 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/app/hooks';
 import { DATE_DMY_FORMAT_OPTIONS } from '@/i18n/dateFormats';
+import { useTableColumnSettings } from '@/features/tableSettings';
 import { selectListQuery } from '@/features/urlState/urlState.selectors';
 import { useListQueryState } from '@/features/urlState/useListQueryState';
 import {
   ActionLink,
   Card,
   GenericDataTable,
+  GenericTableSettings,
   IconTextButton,
   SearchWithAutocomplete,
+  TableColumnSettingsDialog,
+  type GenericDataTableField,
   type GenericDataTableLabels,
   type GenericDataTablePageChange,
   type GenericDataTableSortChange,
@@ -18,7 +22,6 @@ import { customerTableConfig } from './customerTable';
 import { useGetCustomersQuery, useExportCustomersMutation } from './customers.api';
 import { selectCustomerQuery } from './customers.filters';
 import type { Customer } from './customers.types';
-import { GenericTableSettings } from '@/ui/GenericDataTable/GenericTableSettings.tsx';
 
 export function CustomersView() {
   const { t, i18n } = useTranslation();
@@ -28,6 +31,8 @@ export function CustomersView() {
   const { data, isLoading, isFetching, isError, fulfilledTimeStamp, refetch } =
     useGetCustomersQuery(customerQuery);
   const [expandedRowKeys, setExpandedRowKeys] = useState<readonly string[]>([]);
+  const tableSettings = useTableColumnSettings(customerTableConfig);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const labels = useMemo<GenericDataTableLabels<Customer>>(
     () => ({
@@ -84,6 +89,19 @@ export function CustomersView() {
     });
   };
 
+  // A changed column set changes what the accordion shows, so open rows close.
+  const handleSettingsSave = (columns: readonly GenericDataTableField<Customer>[]) => {
+    tableSettings.saveColumns(columns);
+    setExpandedRowKeys([]);
+    setSettingsOpen(false);
+  };
+
+  const handleSettingsRestore = () => {
+    tableSettings.restoreDefaults();
+    setExpandedRowKeys([]);
+    setSettingsOpen(false);
+  };
+
   return (
     <section
       aria-label={t('customers.title')}
@@ -130,6 +148,7 @@ export function CustomersView() {
               onExpandedRowKeysChange={setExpandedRowKeys}
               expandedRowKeys={expandedRowKeys}
               handleExport={handleExport}
+              onOpenSettings={() => setSettingsOpen(true)}
             />
           </div>
         </div>
@@ -140,7 +159,7 @@ export function CustomersView() {
 
         <GenericDataTable
           rows={data?.content ?? []}
-          config={customerTableConfig}
+          config={tableSettings.config}
           totalRecords={data?.page.totalElements ?? 0}
           page={listQuery.page}
           pageSize={listQuery.pageSize}
@@ -158,6 +177,15 @@ export function CustomersView() {
           aria-busy={isLoading || isFetching}
         />
       </Card>
+
+      <TableColumnSettingsDialog
+        open={settingsOpen}
+        fields={customerTableConfig.fields}
+        columns={tableSettings.columns}
+        onSave={handleSettingsSave}
+        onCancel={() => setSettingsOpen(false)}
+        onRestoreDefaults={handleSettingsRestore}
+      />
     </section>
   );
 }

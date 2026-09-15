@@ -6,3 +6,6 @@ import { cleanup } from '@testing-library/react';
 afterEach(() => {
   cleanup();
 });
+
+// jsdom does not implement scrolling.
+Element.prototype.scrollIntoView = function scrollIntoView() {};

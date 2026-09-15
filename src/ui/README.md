@@ -6,8 +6,9 @@ local primitives stay here until they are replaced with thin IWA wrappers.
 
 ## How to evolve the seam
 
-1. Replace the implementations of `Button`, `TextInput`, `Select`, etc. with
-   re-exports (or thin wrappers) of your org components.
+1. Replace the implementations of `Button`, `TextInput`, etc. with re-exports
+   (or thin wrappers) of your org components; `Select` already comes straight
+   from IWA (see [IWA re-exports](#iwa-re-exports)).
 2. **Keep the exported names and prop contracts** from `index.ts`. Everything
    in `src/features/**` and `src/routes/**` imports from `@/ui`, so as long as
    the contracts hold, no feature code changes.
@@ -39,9 +40,19 @@ move to the expanded-row accordion. Each field carries the same config shape:
 a single `labelKey` (used for the column header and the accordion label
 alike), a pixel `width` the fit engine budgets with, an optional cell
 `component`, and `sortable`. `alwaysVisible: true` pins a field so it can
-never drop; `columnOrder` overrides the display (and therefore drop) order.
+never drop; the `fields` order is the display (and therefore drop) order.
 When the currently sorted column drops into the accordion the table calls
 `onSortClear`, so the owner can reset the sort in its store/URL.
+
+To let users choose which fields are used and in what order, keep the static
+config as the base and hand the table a config whose `fields` come from the
+pure `resolveColumnFields(fields, columns)`: it maps an ordered list of field
+names to the matching field configs, drops unknown and repeated names, falls
+back to the configured `fields` when nothing resolves, and returns the input
+`fields` reference whenever the result would be identical, so memoized
+consumers and the `onSortClear` effect stay quiet. Fields left out of the list
+reach neither the columns nor the accordion. An optional `id` names the config
+so its settings can be stored per table.
 
 Reusable, domain-neutral cell components live with the table seam, one public
 cell per file. Features compose `TextCell`, `UnderlinedTextCell`, `DateCell`,
@@ -99,6 +110,62 @@ expansion toggle column renders only while at least one field is in the
 accordion. In jsdom tests use `mockTableContainerWidth` from
 `@/test/tableLayout` to give the fit engine a concrete width.
 
+### Column settings
+
+`TableColumnSettingsDialog<T>` is the "List settings" dialog: one sortable
+row per used column (drag handle, column name, remove), "Add column",
+"Restore defaults" behind a confirmation, Cancel and Save. A row added with
+"Add column" picks its field from an IWA `Select` of the unused fields and
+keeps that Select until Save. The dialog is an IWA `CustomizableDialog` with a
+fixed 600 × 835 px frame (capped by the viewport) and its own footer, so the
+tab line and the footer separator span the whole dialog and only the column
+list scrolls; a newly added row is scrolled into view. It is
+presentational and generic: `fields` is the universe of `{ field, labelKey }`
+options in configuration order, `columns` the field names in use when it
+opens, and `onSave` receives the ordered field names once every row is filled
+(a blocked Save marks the rows empty at that moment with "Fill in or remove
+the column" and scrolls the first one into view; rows added later start
+unmarked). Cancel,
+the close icon and a backdrop click call `onCancel`; confirming the restore
+calls `onRestoreDefaults`. The owner keeps the effective columns, persists
+them and closes the dialog. Nothing renders while `open` is false, so every
+opening starts from the current `columns`. Reordering runs on `@dnd-kit`:
+pointer drag on the handle, or Space, arrow keys and Space from the keyboard,
+announced through the i18n catalog. `GenericTableSettings` renders the
+"List settings" action first in the toolbar when `onOpenSettings` is given.
+
+```tsx
+import { useState } from 'react';
+import { useTableColumnSettings } from '@/features/tableSettings';
+import { GenericDataTable, GenericTableSettings, TableColumnSettingsDialog } from '@/ui';
+
+function CustomersList() {
+  const settings = useTableColumnSettings(customerTableConfig);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  return (
+    <>
+      <GenericTableSettings {...toolbarProps} onOpenSettings={() => setSettingsOpen(true)} />
+      <GenericDataTable config={settings.config} {...tableProps} />
+      <TableColumnSettingsDialog
+        open={settingsOpen}
+        fields={customerTableConfig.fields}
+        columns={settings.columns}
+        onSave={(columns) => {
+          settings.saveColumns(columns);
+          setSettingsOpen(false);
+        }}
+        onCancel={() => setSettingsOpen(false)}
+        onRestoreDefaults={() => {
+          settings.restoreDefaults();
+          setSettingsOpen(false);
+        }}
+      />
+    </>
+  );
+}
+```
+
 ## `ScreenHeading`
 
 `ScreenHeading` is the app-facing adapter over IWA's page heading. Items use a
@@ -146,6 +213,40 @@ neutral | accent | brand` (default `outline` — light surface with a subtle
 - The hook memoizes on the glyph element and options — keep them
   referentially stable (hoist the element out of render, like `historyGlyph`
   above) so the returned component keeps its identity across re-renders.
+
+## IWA re-exports
+
+Components the app consumes from IWA without an adapter are re-exported
+verbatim from `index.ts` (`ActionLink`, `Card`, `Select`, `Switch`, `TabMenu`,
+`TopBar`, …); `index.ts` is the complete list. Feature code imports them from
+`@/ui` like every local primitive.
+
+### `Select`
+
+`Select` is the IWA dropdown, not a native `<select>`: IWA passes PrimeReact
+`Dropdown` props through. `options` is a plain array of strings or
+`{ value, label }` objects, and `value` plus `onChange` make it controlled.
+`onChange` receives PrimeReact's change event, not the value itself — read
+`event.value`, which is the picked option's `value` (or `null` once the
+selection is cleared). The library sorts options alphabetically by default, so
+pass `sortOptions={false}` whenever the configured order is the contract.
+`errorMessage` both marks the field invalid and renders the text. Stick to the
+props the library documents — `options`, `value`, `onChange`, `disabled`,
+`readOnly`, `errorMessage`, `error`, `showErrorMessage`, `sortOptions`,
+`componentSize`, `className`, `dataTestId` — and label the field with
+surrounding markup rather than a placeholder.
+
+```tsx
+import { Select } from '@/ui';
+
+<Select
+  options={fields.map((field) => ({ value: field.name, label: t(field.labelKey) }))}
+  value={selected}
+  onChange={(event) => setSelected(event.value)}
+  sortOptions={false}
+  errorMessage={invalid ? t('form.required') : undefined}
+/>;
+```
 
 ## IWA navigation adapters
 

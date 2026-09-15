@@ -50,7 +50,9 @@ The full, indexed list lives in [`adr/README.md`](adr/README.md).
   guide.
 - [Generic data table and customer list](generic-data-table-and-customer-list.md)
   — typed per-cell configuration, expandable detail allowlists, server-driven
-  queries, URL state, RTK Query ownership, and development preview data.
+  queries, URL state, RTK Query ownership, user-chosen column set and order
+  (the "List settings" dialog, persisted per browser), and development preview
+  data.
 
 ## Pull request delivery notes
 
