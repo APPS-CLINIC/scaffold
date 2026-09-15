@@ -131,10 +131,12 @@ public cell component in its own file:
 - `ActiveArchivalStatusCell` for ACTIVE/ARCHIVAL status presentation.
 
 These cells are domain-neutral building blocks exported through `@/ui`. The
-customer feature only composes them in its configuration. A future feature
-should add a renderer inside its own feature only when the presentation is
-genuinely domain-specific; a reusable renderer belongs beside the generic
-table.
+customer feature composes them in its configuration and adds a renderer of its
+own only where the presentation is domain-specific: the customer table's
+`customerTable/OverdueDateCell.tsx` wraps the feature's `OverdueDate`, which
+shows the IWA "incomplete" status with the number of days overdue above a past
+review or pricing date. A reusable renderer belongs beside the generic table;
+a domain-flavoured one stays in its feature.
 
 Small internal helpers, such as safe value handling, remain private to the
 table package; status presentation renders the shared IWA `Status` component.
