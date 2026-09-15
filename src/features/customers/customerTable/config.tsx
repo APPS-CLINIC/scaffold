@@ -1,6 +1,7 @@
 import type { Customer } from '@/features/customers/customers.types';
 import { ActiveArchivalStatusCell, TextCell, UnderlinedTextCell } from '@/ui';
 import type { GenericDataTableConfig } from '@/ui';
+import { CustomerTypeCell } from './CustomerTypeCell';
 import { OverdueDateCell } from './OverdueDateCell';
 
 /**
@@ -47,7 +48,7 @@ export const customerTableConfig = {
     {
       field: 'type',
       labelKey: 'customers.table.field.type',
-      component: TextCell,
+      component: CustomerTypeCell,
       sortable: true,
       width: 128,
     },

@@ -37,6 +37,7 @@ export const pl = {
   'customers.filters.activeCount': 'Aktywne filtry: {{count}}',
   'customers.filters.active': 'Aktywny',
   'customers.filters.archival': 'Archiwalny',
+  'customers.type.corporate': 'Corporate',
   'customers.actions.clearFilters': 'Wyczyść filtry',
   'customers.actions.customizeFilters': 'Dostosuj filtry',
   'customers.actions.expandAll': 'Rozwiń wszystkie',

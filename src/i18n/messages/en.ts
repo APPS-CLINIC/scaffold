@@ -35,6 +35,7 @@ export const en: Record<MessageKey, string> = {
   'customers.filters.activeCount': 'Active filters: {{count}}',
   'customers.filters.active': 'Active',
   'customers.filters.archival': 'Archival',
+  'customers.type.corporate': 'Corporate',
   'customers.actions.clearFilters': 'Clear filters',
   'customers.actions.customizeFilters': 'Customize filters',
   'customers.actions.expandAll': 'Expand all',

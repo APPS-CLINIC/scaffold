@@ -1,10 +1,15 @@
 import { normalizeDomainValue } from '@/i18n/domainValues';
-import type { Customer, CustomerResponse, CustomerStatus } from './customers.types';
+import type { Customer, CustomerResponse, CustomerStatus, CustomerType } from './customers.types';
 
 /** Keys are `normalizeDomainValue` outputs; values are the status contract. */
 export const customerStatusByDomainValue: Readonly<Record<string, CustomerStatus>> = {
   active: 'ACTIVE',
   archival: 'ARCHIVAL',
+};
+
+/** Keys are `normalizeDomainValue` outputs; values are the type contract. */
+export const customerTypeByDomainValue: Readonly<Record<string, CustomerType>> = {
+  corporate: 'CORPORATE',
 };
 
 /**
@@ -25,10 +30,15 @@ function normalizeCustomerStatus(value: unknown): CustomerStatus | null {
   return lookupDomainValue(customerStatusByDomainValue, value);
 }
 
+function normalizeCustomerType(value: unknown): CustomerType | null {
+  return lookupDomainValue(customerTypeByDomainValue, value);
+}
+
 /** Keep transport vocabulary at the RTK Query boundary. */
 export function mapCustomerResponse(response: CustomerResponse): Customer {
   return {
     ...response,
     status: normalizeCustomerStatus(response.status),
+    type: normalizeCustomerType(response.type),
   };
 }

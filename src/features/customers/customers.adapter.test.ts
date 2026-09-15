@@ -38,22 +38,24 @@ const response: CustomerResponse = {
 };
 
 describe('customer response adapter', () => {
-  it('normalizes backend status values without renaming response fields', () => {
+  it('normalizes backend status and type values without renaming response fields', () => {
     expect(mapCustomerResponse({ ...response, tsPriceConditionStatus: 2 })).toMatchObject({
       fullName: response.fullName,
       taxId: response.taxId,
       status: 'ACTIVE',
+      type: 'CORPORATE',
       tsPriceConditionStatus: 2,
     });
   });
 
-  it('maps the archival status case-insensitively', () => {
+  it('maps the archival status and the customer type case-insensitively', () => {
     expect(
       mapCustomerResponse({
         ...response,
         status: ' Archival ',
+        type: ' corporate ',
       }),
-    ).toMatchObject({ status: 'ARCHIVAL' });
+    ).toMatchObject({ status: 'ARCHIVAL', type: 'CORPORATE' });
   });
 
   it('rejects labels outside the English-only contract', () => {
@@ -62,15 +64,17 @@ describe('customer response adapter', () => {
       mapCustomerResponse({
         ...response,
         status: pl['common.status.active'],
+        type: 'Korporacyjny',
       }),
-    ).toMatchObject({ status: null });
+    ).toMatchObject({ status: null, type: null });
 
     expect(
       mapCustomerResponse({
         ...response,
         status: 'unexpected',
+        type: 'unexpected',
       }),
-    ).toMatchObject({ status: null });
+    ).toMatchObject({ status: null, type: null });
   });
 
   it('rejects labels that collide with Object.prototype members', () => {
@@ -78,8 +82,9 @@ describe('customer response adapter', () => {
       mapCustomerResponse({
         ...response,
         status: 'constructor',
+        type: ' __proto__ ',
       }),
-    ).toMatchObject({ status: null });
+    ).toMatchObject({ status: null, type: null });
   });
 
   it('degrades non-string payload values to null instead of crashing', () => {
@@ -87,7 +92,8 @@ describe('customer response adapter', () => {
       mapCustomerResponse({
         ...response,
         status: 42 as unknown as string,
+        type: {} as unknown as string,
       }),
-    ).toMatchObject({ status: null });
+    ).toMatchObject({ status: null, type: null });
   });
 });

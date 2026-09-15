@@ -4,6 +4,9 @@ export type CustomerStatus = 'ACTIVE' | 'ARCHIVAL';
 /** Lowercase status vocabulary used in URLs and list filters. */
 export type CustomerStatusFilter = 'active' | 'archival';
 
+/** Backend customer type contract — the only value the service emits today. */
+export type CustomerType = 'CORPORATE';
+
 export type SortDirection = 'asc' | 'desc';
 
 /** Raw customer item returned by the backend. Property names and nullability follow the API contract. */
@@ -41,9 +44,10 @@ export interface CustomerResponse {
   status: string;
 }
 
-/** App-facing row with the backend status label normalized for reusable cells. */
-export interface Customer extends Omit<CustomerResponse, 'status'> {
+/** App-facing row with the backend status and type labels normalized for the cells. */
+export interface Customer extends Omit<CustomerResponse, 'status' | 'type'> {
   status: CustomerStatus | null;
+  type: CustomerType | null;
 }
 
 /**
