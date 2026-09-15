@@ -45,19 +45,27 @@ export function formatIsoDmyDate(value: string, locale: string): string {
   return parsed ? formatDmyDate(parsed.date, locale) : value;
 }
 
+const MS_PER_DAY = 86_400_000;
+
 /**
- * Compare ISO local dates as text so the result never shifts with the viewer's
- * timezone. Values that are not valid ISO local dates are not classified.
+ * Whole calendar days from an ISO local date to `today`'s local calendar date:
+ * positive in the past, 0 today, negative in the future. The value's date is
+ * read off the text and both days are projected onto UTC midnight, so neither
+ * the viewer's timezone nor a DST switch (a 23- or 25-hour local day) can move
+ * the count. Values that are not valid ISO local dates are not classified.
  */
-export function isPastIsoDate(value: string | null, today = new Date()): boolean {
+export function daysPastIsoDate(value: string | null, today = new Date()): number | null {
   const parsed = value ? parseIsoLocalDate(value) : null;
-  if (!parsed) return false;
+  if (!parsed) return null;
 
-  const todayText = [
-    String(today.getFullYear()).padStart(4, '0'),
-    String(today.getMonth() + 1).padStart(2, '0'),
-    String(today.getDate()).padStart(2, '0'),
-  ].join('-');
+  const valueDay = Date.UTC(Number(parsed.year), Number(parsed.month) - 1, Number(parsed.day));
+  const todayDay = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
 
-  return `${parsed.year}-${parsed.month}-${parsed.day}` < todayText;
+  return (todayDay - valueDay) / MS_PER_DAY;
+}
+
+/** Whether an ISO local date lies strictly before `today`'s local calendar date. */
+export function isPastIsoDate(value: string | null, today = new Date()): boolean {
+  const daysPast = daysPastIsoDate(value, today);
+  return daysPast !== null && daysPast > 0;
 }
