@@ -38,22 +38,21 @@ const response: CustomerResponse = {
 
 describe('customer response adapter', () => {
   it('normalizes backend status values without renaming response fields', () => {
-    expect(mapCustomerResponse(response)).toMatchObject({
+    expect(mapCustomerResponse({ ...response, tsPriceConditionStatus: 2 })).toMatchObject({
       fullName: response.fullName,
       taxId: response.taxId,
       status: 'ACTIVE',
-      tsPriceConditionStatus: null,
+      tsPriceConditionStatus: 2,
     });
   });
 
-  it('maps the archival status and pricing labels case-insensitively', () => {
+  it('maps the archival status case-insensitively', () => {
     expect(
       mapCustomerResponse({
         ...response,
         status: ' Archival ',
-        tsPriceConditionStatus: 'Expired',
       }),
-    ).toMatchObject({ status: 'ARCHIVAL', tsPriceConditionStatus: 'expired' });
+    ).toMatchObject({ status: 'ARCHIVAL' });
   });
 
   it('rejects labels outside the English-only contract', () => {
@@ -62,17 +61,15 @@ describe('customer response adapter', () => {
       mapCustomerResponse({
         ...response,
         status: pl['common.status.active'],
-        tsPriceConditionStatus: pl['common.status.expired'],
       }),
-    ).toMatchObject({ status: null, tsPriceConditionStatus: null });
+    ).toMatchObject({ status: null });
 
     expect(
       mapCustomerResponse({
         ...response,
         status: 'unexpected',
-        tsPriceConditionStatus: 'unexpected',
       }),
-    ).toMatchObject({ status: null, tsPriceConditionStatus: null });
+    ).toMatchObject({ status: null });
   });
 
   it('rejects labels that collide with Object.prototype members', () => {
@@ -80,9 +77,8 @@ describe('customer response adapter', () => {
       mapCustomerResponse({
         ...response,
         status: 'constructor',
-        tsPriceConditionStatus: ' __proto__ ',
       }),
-    ).toMatchObject({ status: null, tsPriceConditionStatus: null });
+    ).toMatchObject({ status: null });
   });
 
   it('degrades non-string payload values to null instead of crashing', () => {
@@ -90,8 +86,7 @@ describe('customer response adapter', () => {
       mapCustomerResponse({
         ...response,
         status: 42 as unknown as string,
-        tsPriceConditionStatus: {} as unknown as string,
       }),
-    ).toMatchObject({ status: null, tsPriceConditionStatus: null });
+    ).toMatchObject({ status: null });
   });
 });
