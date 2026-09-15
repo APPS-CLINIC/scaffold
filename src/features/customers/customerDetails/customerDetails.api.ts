@@ -7,6 +7,11 @@ import type {
   CustomerDetailsResponse,
 } from './customerDetails.types';
 
+/** True until the query for the current argument has data or has failed. */
+export function isAwaitingData(query: { isError: boolean; currentData?: unknown }): boolean {
+  return !query.isError && query.currentData === undefined;
+}
+
 export function getCustomerDetailsRequest(customerId: string): { url: string } {
   return { url: `v1/customers/${encodeURIComponent(customerId)}` };
 }

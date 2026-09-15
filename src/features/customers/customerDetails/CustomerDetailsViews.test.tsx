@@ -4,15 +4,15 @@ import { makeStore } from '@/app/store';
 import {
   customerAdvisorsResponseFixture,
   customerDetailsResponseFixture,
+  stubCustomerSummaryFetch,
 } from '@/test/customerDetails.fixtures';
 import i18n from '@/i18n';
 import { renderWithProviders } from '@/test/renderWithProviders';
-import type { CustomerSummary } from '../customerSummary';
 import { CustomerCddCrsFatcaView } from './CustomerCddCrsFatcaView';
 import { CustomerGeneralDataView } from './CustomerGeneralDataView';
 import {
-  createEmptyCustomerAdvisors,
-  createEmptyCustomerDetails,
+  EMPTY_CUSTOMER_ADVISORS,
+  EMPTY_CUSTOMER_DETAILS,
   mapCustomerAdvisorsResponse,
   mapCustomerDetailsResponse,
 } from './customerDetails.adapter';
@@ -27,24 +27,6 @@ class AbsoluteTestRequest extends NativeRequest {
     super(typeof input === 'string' ? new URL(input, TEST_ORIGIN) : input, requestInit);
   }
 }
-
-const summary: CustomerSummary = {
-  fullName: 'Preview Customer',
-  grid: '23997',
-  corporateGroupName: null,
-  corporateGroupGrid: null,
-  internalGroupName: null,
-  pamLam: null,
-  homeCountry: null,
-  segmentColor: null,
-  rating: null,
-  status: 'ACTIVE',
-  kkf: null,
-  pamName: null,
-  lendingRatingDate: null,
-  cddRiskLevel: 'Low from summary',
-  cddExpirationDate: '2000-01-02',
-};
 
 function seedDetails(store: ReturnType<typeof makeStore>, customerId = '23997') {
   store.dispatch(
@@ -97,12 +79,12 @@ describe('customer detail views', () => {
         {
           endpointName: 'getCustomerDetails',
           arg: 'empty',
-          value: createEmptyCustomerDetails(),
+          value: EMPTY_CUSTOMER_DETAILS,
         },
         {
           endpointName: 'getCustomerAdvisors',
           arg: 'empty',
-          value: createEmptyCustomerAdvisors(),
+          value: EMPTY_CUSTOMER_ADVISORS,
         },
       ]),
     );
@@ -169,15 +151,14 @@ describe('customer detail views', () => {
     expect(screen.getByText('Customer Service advisor').closest('dl')).toHaveTextContent('–');
   });
 
-  it('uses the Redux summary for CDD and the detail endpoint for CRS/FATCA', () => {
-    const store = makeStore({
-      customerSummary: { customerId: '23997', data: summary, status: 'succeeded' },
-    });
+  it('uses the summary endpoint for CDD and the detail endpoint for CRS/FATCA', async () => {
+    stubCustomerSummaryFetch({ cddRiskLevel: 'Low from summary', cddExpirationDate: '2000-01-02' });
+    const store = makeStore();
     seedDetails(store);
 
     renderWithProviders(<CustomerCddCrsFatcaView customerId="23997" />, { store });
 
-    expect(screen.getByText('Low from summary')).toBeInTheDocument();
+    expect(await screen.findByText('Low from summary')).toBeInTheDocument();
     const cddSection = screen.getByRole('heading', { name: 'CDD' }).closest('section');
     if (!cddSection) throw new Error('Expected a CDD section');
     expect(within(cddSection).getByText('Overdue')).toBeInTheDocument();
@@ -185,10 +166,17 @@ describe('customer detail views', () => {
     expect(screen.getByText('Review')).toBeInTheDocument();
     expect(screen.getAllByText('Completed')).toHaveLength(2);
     expect(screen.getByText('Periodic')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { level: 3, name: 'Segmentation' })).toBeInTheDocument();
-    expect(screen.getByText('Assessment date').closest('dl')).toHaveTextContent('–');
-    expect(screen.getByText('First generation').closest('dl')).toHaveTextContent('–');
-    expect(screen.getByText('Second generation').closest('dl')).toHaveTextContent('–');
+    // Both design groups live inside the single CDD card, separated by one divider.
+    expect(
+      within(cddSection).getByRole('heading', { level: 4, name: 'Data ICBS' }),
+    ).toBeInTheDocument();
+    expect(
+      within(cddSection).getByRole('heading', { level: 4, name: 'Scope file data' }),
+    ).toBeInTheDocument();
+    expect(cddSection.querySelectorAll('hr')).toHaveLength(1);
+    expect(screen.getByText('Approval date').closest('dl')).toHaveTextContent('–');
+    expect(screen.getByText('First pre - exit letter').closest('dl')).toHaveTextContent('–');
+    expect(screen.getByText('Second pre - exit letter').closest('dl')).toHaveTextContent('–');
     expect(screen.getByText('Sprint start date').closest('dl')).toHaveTextContent('–');
   });
 });

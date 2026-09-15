@@ -35,16 +35,21 @@ navigation structure, but page components and lazy loaders remain in the
 separate section-owned page-route registry. They are deliberately not part of
 the manifest.
 
-The customer page-route module also owns a complete, type-checked lazy-loader
-map for the context's stable item IDs. Every configured L2/L3 destination has
-an explicit route-level page without putting presentation imports in the
+The customer page-route module also owns a hand-written `customersDetailRoutes`
+route literal whose static segments equal the context items' `segment` values; a
+co-located test asserts that equality (and the index redirect, and
+`caseSensitive` on every static child) against the manifest rather than
+generating the tree from it, because a fixed, seven-item shape does not
+justify runtime derivation (ADR 0032). Every configured L2/L3 destination has
+an explicit route-level page — or, until a real page exists, an inline
+`SectionPage` placeholder — without putting presentation imports in the
 manifest. `CustomerDetailLayout` is therefore a path-independent persistent
-shell: it keeps the customer-summary synchronization and heading mounted while
-the selected page is replaced through its outlet. The dashboard route is a
-direct child and renders its own page without the shared summary panel. A
-pathless `CustomerSummaryLayout` sibling owns the panel and an outlet for every
-other current customer page, so their content changes without duplicating the
-panel composition.
+shell: it keeps the summary subscription anchor and heading mounted while the
+selected page is replaced through its outlet (ADR 0031). The dashboard route
+is a direct child and renders its own page without the shared summary panel.
+A pathless `CustomerSummaryLayout` sibling owns the panel and an outlet for
+every other current customer page, so their content changes without
+duplicating the panel composition.
 
 Customer-detail `segment` values are canonical English route identifiers, not
 display copy. The manifest currently derives `/customers/:id/dashboard`,
@@ -298,11 +303,11 @@ To add a new section destination:
 7. Add permissions only when the identity integration can evaluate them.
 
 To add a context destination, add a recursive item to the context nested under
-its owning section, add both translations, create its route-level page, and add
-the page's lazy loader to the owning section's context page-route map. The map
-is derived from the manifest's stable recursive item IDs, so an omitted or
-unknown customer destination fails type checking while presentation remains
-outside `navigationManifest`.
+its owning section, add both translations, and add one route object next to
+its siblings in `customersDetailRoutes` — an inline `SectionPage` placeholder
+until a real page exists, or a `lazy` loader once one does.
+`customers.pageRoutes.test.tsx` fails if either half is missing, or if the
+new route omits `caseSensitive: true`.
 
 ## Relevant files
 
@@ -320,7 +325,8 @@ outside `navigationManifest`.
 - [`src/routes/pageRoutes/pageRouteRegistry.ts`](../src/routes/pageRoutes/pageRouteRegistry.ts)
   — page-loader composition kept deliberately outside navigation metadata.
 - [`src/routes/pageRoutes/customers.pageRoutes.tsx`](../src/routes/pageRoutes/customers.pageRoutes.tsx)
-  — lazy page mappings owned by one navigation section.
+  — the `all-customers` lazy mapping, plus the hand-written
+  `customersDetailRoutes` literal for the `/customers/:id/*` tree.
 - [`src/features/urlState/urlState.route.ts`](../src/features/urlState/urlState.route.ts)
   — serializable route snapshot parsing.
 - [`src/features/urlState/UrlStateSync.tsx`](../src/features/urlState/UrlStateSync.tsx)
@@ -330,7 +336,8 @@ outside `navigationManifest`.
 - [`src/routes/pages/customers/CustomerDetailHeading.tsx`](../src/routes/pages/customers/CustomerDetailHeading.tsx)
   — IWA page heading with the manifest-derived customer-list return link.
 - [`src/routes/pages/customers/CustomerDetailLayout.tsx`](../src/routes/pages/customers/CustomerDetailLayout.tsx)
-  — persistent, path-independent customer synchronization and route outlet.
+  — persistent, path-independent summary subscription anchor and route
+  outlet.
 - [`src/routes/pages/customers/CustomerSummaryLayout.tsx`](../src/routes/pages/customers/CustomerSummaryLayout.tsx)
   — pathless panel-and-outlet layout for customer destinations that show the
   summary.
@@ -352,6 +359,8 @@ outside `navigationManifest`.
 - [ADR 0024 — Canonical route transitions in the Redux URL mirror](adr/0024-canonical-route-transitions-in-redux.md)
 - [ADR 0027 — Section-scoped lazy page route modules](adr/0027-section-scoped-lazy-page-route-modules.md)
 - [ADR 0030 — Unified configurable navigation manifest](adr/0030-unified-configurable-navigation-manifest.md)
+- [ADR 0031 — Customer summary read directly from RTK Query](adr/0031-customer-summary-read-directly-from-rtk-query.md)
+- [ADR 0032 — Explicit route objects for the customer detail tree](adr/0032-explicit-route-objects-for-customer-detail-tree.md)
 - [Design brief](../.design/contextual-sidebar-navigation/DESIGN_BRIEF.md)
 - [Information architecture](../.design/contextual-sidebar-navigation/INFORMATION_ARCHITECTURE.md)
 

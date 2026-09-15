@@ -17,21 +17,8 @@ type NavigationItemIdFor<TKey extends NavigationSectionKey> = NavigationItemId<
   Extract<ConfiguredNavigationSection, { readonly id: TKey }>['sidebar']['items'][number]
 >;
 
-type NavigationContextItemIdFor<TKey extends NavigationSectionKey> =
-  Extract<ConfiguredNavigationSection, { readonly id: TKey }> extends {
-    readonly context: {
-      readonly sidebar: { readonly items: infer TItems extends readonly unknown[] };
-    };
-  }
-    ? NavigationItemId<TItems[number]>
-    : never;
-
 type NavigationSectionWithItems = {
   [TKey in NavigationSectionKey]: [NavigationItemIdFor<TKey>] extends [never] ? never : TKey;
-}[NavigationSectionKey];
-
-type NavigationSectionWithContextItems = {
-  [TKey in NavigationSectionKey]: [NavigationContextItemIdFor<TKey>] extends [never] ? never : TKey;
 }[NavigationSectionKey];
 
 export type PageRouteLoader = NonNullable<RouteObject['lazy']>;
@@ -40,29 +27,13 @@ export type SectionPageRoutes<TKey extends NavigationSectionWithItems> = Readonl
   Partial<Record<NavigationItemIdFor<TKey>, PageRouteLoader>>
 >;
 
-/** Exhaustive page-loader map for every item in a section's contextual navigation tree. */
-export type SectionContextPageRoutes<TKey extends NavigationSectionWithContextItems> = Readonly<
-  Record<NavigationContextItemIdFor<TKey>, PageRouteLoader>
->;
-
 export type PageRouteDefinitions = {
   readonly [TKey in NavigationSectionWithItems]?: SectionPageRoutes<TKey>;
 };
 
 /**
- * A section-owned route that is not a navigation destination — e.g. a
- * details page like `/customers/:id`. Declared next to the section's page
- * map and appended to the router after the navigation-generated routes.
- *
- * `children` lets a detail route own a nested route tree (for example the
- * customer context below its runtime id). Navigation segments can be derived
- * from the manifest while page elements and lazy loaders remain plain React
- * Router objects outside navigation metadata.
+ * Section-owned routes that are not navigation destinations — e.g. the customer detail tree below
+ * `/customers/:id`. Hand-written per section (see `customers.pageRoutes.tsx`) and appended to the
+ * router after the navigation-generated routes.
  */
-export interface DetailPageRoute {
-  readonly path: string;
-  readonly lazy: PageRouteLoader;
-  readonly children?: readonly RouteObject[];
-}
-
-export type SectionDetailRoutes = readonly DetailPageRoute[];
+export type SectionDetailRoutes = readonly RouteObject[];

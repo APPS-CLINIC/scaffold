@@ -1,13 +1,8 @@
-import { Navigate } from 'react-router-dom';
-import { buildNavigationItemRoutes } from '@/routes/buildNavigationItemRoutes';
-import { getNavigationContextDefaultItemPath, navigationManifest } from '@/routes/navigation';
-import type { NavigationTreeItemConfig } from '@/routes/navigation';
+import { Navigate, type RouteObject } from 'react-router-dom';
+import type { MessageKey } from '@/i18n/messages/pl';
+import { SectionPage } from '@/routes/pages/SectionPage';
 import { CustomerDetailFallbackPage } from '@/routes/pages/customers/CustomerDetailFallbackPage';
-import type {
-  SectionContextPageRoutes,
-  SectionDetailRoutes,
-  SectionPageRoutes,
-} from './pageRoutes.types';
+import type { SectionPageRoutes } from './pageRoutes.types';
 
 /** Route-level code-split points for the customers navigation section. */
 export const customersPageRoutes = {
@@ -18,93 +13,17 @@ export const customersPageRoutes = {
   },
 } satisfies SectionPageRoutes<'customers'>;
 
-/** Route-level code-split points for every customer-context navigation destination. */
-export const customerDetailPageRoutes = {
-  dashboard: async () => {
-    const { CustomerDashboardPage } =
-      await import('@/routes/pages/customers/CustomerDashboardPage');
-
-    return { Component: CustomerDashboardPage };
-  },
-  'general-data': async () => {
-    const { CustomerGeneralDataPage } =
-      await import('@/routes/pages/customers/CustomerGeneralDataPage');
-
-    return { Component: CustomerGeneralDataPage };
-  },
-  'cdd-crs-fatca': async () => {
-    const { CustomerCddCrsFatcaPage } =
-      await import('@/routes/pages/customers/CustomerCddCrsFatcaPage');
-
-    return { Component: CustomerCddCrsFatcaPage };
-  },
-  reviews: async () => {
-    const { CustomerReviewsPage } = await import('@/routes/pages/customers/CustomerReviewsPage');
-
-    return { Component: CustomerReviewsPage };
-  },
-  'review-details': async () => {
-    const { CustomerReviewDetailsPage } =
-      await import('@/routes/pages/customers/CustomerReviewDetailsPage');
-
-    return { Component: CustomerReviewDetailsPage };
-  },
-  monitoring: async () => {
-    const { CustomerMonitoringPage } =
-      await import('@/routes/pages/customers/CustomerMonitoringPage');
-
-    return { Component: CustomerMonitoringPage };
-  },
-  limits: async () => {
-    const { CustomerLimitsPage } = await import('@/routes/pages/customers/CustomerLimitsPage');
-
-    return { Component: CustomerLimitsPage };
-  },
-  products: async () => {
-    const { CustomerProductsPage } = await import('@/routes/pages/customers/CustomerProductsPage');
-
-    return { Component: CustomerProductsPage };
-  },
-} satisfies SectionContextPageRoutes<'customers'>;
-
-function hasCustomerDetailPageRoute(
-  item: NavigationTreeItemConfig,
-): item is NavigationTreeItemConfig & { id: keyof typeof customerDetailPageRoutes } {
-  return Object.hasOwn(customerDetailPageRoutes, item.id);
-}
-
-const customerDetailNavigationContext = navigationManifest.sections.find(
-  (section) => section.id === 'customers',
-)?.context;
-
-if (!customerDetailNavigationContext) {
-  throw new Error('The navigation manifest must declare the customer-detail context.');
-}
-
-const customerDetailDefaultItemPath = getNavigationContextDefaultItemPath(
-  customerDetailNavigationContext,
-);
-const customerDashboardItem = customerDetailNavigationContext.sidebar.items.find(
-  (item) => item.id === 'dashboard',
-);
-
-if (!customerDashboardItem) {
-  throw new Error('The customer-detail context must declare the dashboard destination.');
-}
-
-const customerSummaryNavigationItems = customerDetailNavigationContext.sidebar.items.filter(
-  (item) => item.id !== customerDashboardItem.id,
-);
+const placeholder = (titleKey: MessageKey) => <SectionPage titleKey={titleKey} headingLevel={2} />;
 
 /**
- * Customer routes that are not navigation destinations. Paths are relative
- * to the section path, matching how React Router nests them. `:id` is a
- * layout route: `CustomerDetailLayout` mounts summary synchronization and the
- * page heading once while its nested tab pages swap under `<Outlet/>`.
+ * Routes below `/customers/:id`. Static segments must equal the manifest's customer-context
+ * segments: the sidebar, breadcrumb and URL mirror derive their state from the pathname alone.
+ * `customers.pageRoutes.test.tsx` guards that equality.
  */
-export const customersDetailRoutes = [
+export const customersDetailRoutes: readonly RouteObject[] = [
   {
-    path: `:${customerDetailNavigationContext.parameter}`,
+    path: ':id',
+    caseSensitive: true,
     lazy: async () => {
       const { CustomerDetailLayout } =
         await import('@/routes/pages/customers/CustomerDetailLayout');
@@ -112,28 +31,16 @@ export const customersDetailRoutes = [
       return { Component: CustomerDetailLayout };
     },
     children: [
-      ...(customerDetailDefaultItemPath
-        ? [
-            {
-              index: true as const,
-              element: <Navigate to={customerDetailDefaultItemPath} replace />,
-            },
-          ]
-        : []),
-      ...buildNavigationItemRoutes([customerDashboardItem], {
-        routeIdPrefix: `context:customers:${customerDetailNavigationContext.id}`,
-        getLazy: (item) =>
-          hasCustomerDetailPageRoute(item) ? customerDetailPageRoutes[item.id] : undefined,
-        placeholderHeadingLevel: 2,
-      }),
-      // Dashboard descendants retain dashboard-owned chrome. This explicit
-      // static branch outranks the generic customer-context fallback below.
+      { index: true, element: <Navigate to="general-data" replace /> },
+      // Dashboard and its future descendants render without the summary panel.
+      // A lone `dashboard/*` also matches bare `/dashboard`.
       {
-        path: `${customerDashboardItem.segment}/*`,
-        lazy: customerDetailPageRoutes.dashboard,
+        path: 'dashboard/*',
+        caseSensitive: true,
+        element: <div className="mt-6">{placeholder('nav.customerDetail.dashboard')}</div>,
       },
       {
-        id: `context:customers:${customerDetailNavigationContext.id}:summary-layout`,
+        // Pathless layout: the persistent summary panel above every other tab.
         lazy: async () => {
           const { CustomerSummaryLayout } =
             await import('@/routes/pages/customers/CustomerSummaryLayout');
@@ -141,18 +48,57 @@ export const customersDetailRoutes = [
           return { Component: CustomerSummaryLayout };
         },
         children: [
-          ...buildNavigationItemRoutes(customerSummaryNavigationItems, {
-            routeIdPrefix: `context:customers:${customerDetailNavigationContext.id}`,
-            getLazy: (item) =>
-              hasCustomerDetailPageRoute(item) ? customerDetailPageRoutes[item.id] : undefined,
-            placeholderHeadingLevel: 2,
-          }),
-          // Keep future/unconfigured L2+ deep links inside the customer layout.
-          // Prefix matching still identifies a configured L2 owner where one
-          // exists, and the resolver preserves every unmatched segment.
+          {
+            path: 'general-data',
+            caseSensitive: true,
+            lazy: async () => {
+              const { CustomerGeneralDataPage } =
+                await import('@/routes/pages/customers/CustomerGeneralDataPage');
+
+              return { Component: CustomerGeneralDataPage };
+            },
+          },
+          {
+            path: 'cdd-crs-fatca',
+            caseSensitive: true,
+            lazy: async () => {
+              const { CustomerCddCrsFatcaPage } =
+                await import('@/routes/pages/customers/CustomerCddCrsFatcaPage');
+
+              return { Component: CustomerCddCrsFatcaPage };
+            },
+          },
+          {
+            path: 'reviews',
+            caseSensitive: true,
+            children: [
+              { index: true, element: placeholder('nav.customerDetail.reviews') },
+              {
+                path: 'details',
+                caseSensitive: true,
+                element: placeholder('nav.customerDetail.reviewDetails'),
+              },
+            ],
+          },
+          {
+            path: 'monitoring',
+            caseSensitive: true,
+            element: placeholder('nav.customerDetail.monitoring'),
+          },
+          {
+            path: 'limits',
+            caseSensitive: true,
+            element: placeholder('nav.customerDetail.limits'),
+          },
+          {
+            path: 'products',
+            caseSensitive: true,
+            element: placeholder('nav.customerDetail.products'),
+          },
+          // Unknown deep links stay inside the customer layout.
           { path: '*', element: <CustomerDetailFallbackPage /> },
         ],
       },
     ],
   },
-] satisfies SectionDetailRoutes;
+];

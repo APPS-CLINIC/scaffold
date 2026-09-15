@@ -1,7 +1,9 @@
+import { vi } from 'vitest';
 import type {
   CustomerAdvisorsResponse,
   CustomerDetailsResponse,
 } from '@/features/customers/customerDetails/customerDetails.types';
+import type { CustomerSummaryResponse } from '@/features/customers/customerDetails/customerSummary.types';
 
 export const customerDetailsResponseFixture: CustomerDetailsResponse = {
   basicData: {
@@ -79,3 +81,58 @@ export const customerAdvisorsResponseFixture: CustomerAdvisorsResponse = {
   implementationAdvisor: 'Avery Collins',
   customerServiceAdvisor: 'Cameron Hayes',
 };
+
+export const customerSummaryResponseFixture: CustomerSummaryResponse = {
+  fullName: 'ACME Corporation',
+  grid: 'PL12345678',
+  corporateGroupName: null,
+  corporateGroupGrid: 'PL87654321',
+  internalGroupName: 'ACME Group',
+  pamLam: 'PAM',
+  homeCountry: 'Poland',
+  segmentColor: 'Orange',
+  rating: 'AAA',
+  status: 'ACTIVE',
+  kkf: null,
+  pamName: 'John Doe',
+  lendingRatingDate: '2026-08-31',
+  cddRiskLevel: null,
+  cddExpirationDate: null,
+};
+
+const NativeRequest = globalThis.Request;
+const TEST_ORIGIN = 'https://app.test';
+
+class AbsoluteTestRequest extends NativeRequest {
+  constructor(input: RequestInfo | URL, init?: RequestInit) {
+    const requestInit = init ? { ...init, signal: undefined } : undefined;
+    super(typeof input === 'string' ? new URL(input, TEST_ORIGIN) : input, requestInit);
+  }
+}
+
+/**
+ * Stubs `Request`/`fetch` so `useGetCustomerSummaryQuery` resolves through the real
+ * RTK Query transport (matching how the production endpoint is reached) instead of a
+ * pre-seeded cache entry. Only `/summary` paths resolve; anything else 404s, so this
+ * stays safe to combine with `*.util.upsertQueryEntries` seeding for the other endpoints.
+ * Call `vi.unstubAllGlobals()` in `afterEach` to restore the originals.
+ */
+export function stubCustomerSummaryFetch(overrides?: Partial<CustomerSummaryResponse>): void {
+  vi.stubGlobal('Request', AbsoluteTestRequest);
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (input: RequestInfo | URL): Promise<Response> => {
+      const request = input instanceof NativeRequest ? input : new NativeRequest(input);
+      if (!new URL(request.url).pathname.endsWith('/summary')) {
+        return new Response(JSON.stringify({ message: 'Not found' }), {
+          status: 404,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+      return new Response(JSON.stringify({ ...customerSummaryResponseFixture, ...overrides }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }),
+  );
+}

@@ -3,7 +3,12 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
-import { mockTableContainerWidth, resizeTableContainer } from '@/test/tableLayout';
+
+import {
+  mockTableContainerWidth,
+  paginatorControl,
+  resizeTableContainer,
+} from '@/test/tableLayout';
 import {
   GenericDataTable,
   type GenericDataTableCellProps,
@@ -409,20 +414,20 @@ describe('GenericDataTable', () => {
     expect(onSortChange).toHaveBeenCalledWith({ field: 'displayName', order: 'asc' });
     expect(renderedNames()).toEqual(['Alice:name:0', 'Bob:name:1']);
 
-    await user.click(screen.getByRole('button', { name: 'Next customer page' }));
+    await user.click(paginatorControl('next'));
     expect(onPageChange).toHaveBeenCalledWith({ page: 2, pageSize: 10 });
   });
 
-  it('exposes first and last page controls in the paginator', async () => {
+  it('maps the first and last page controls onto the controlled page', async () => {
     mockTableContainerWidth(WIDE_CONTAINER);
     const user = userEvent.setup();
     const onPageChange = vi.fn();
     renderTable({ page: 2, onPageChange });
 
-    await user.click(screen.getByRole('button', { name: 'First customer page' }));
+    await user.click(paginatorControl('first'));
     expect(onPageChange).toHaveBeenCalledWith({ page: 1, pageSize: 10 });
 
-    await user.click(screen.getByRole('button', { name: 'Last customer page' }));
+    await user.click(paginatorControl('last'));
     expect(onPageChange).toHaveBeenCalledWith({ page: 3, pageSize: 10 });
   });
 

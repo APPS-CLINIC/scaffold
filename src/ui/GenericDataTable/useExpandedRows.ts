@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import type { GenericDataTableDataKey } from './GenericDataTable.types';
 
 export type ExpandedRowMap = Record<string, boolean>;
@@ -44,6 +44,13 @@ export function useExpandedRows<T extends object>({
     [expandedRowKeys, isControlled],
   );
   const expandedRows = controlledExpandedRows ?? localExpandedRows;
+  // PrimeReact memoizes body cells, so an expander cell whose props did not
+  // change keeps calling the toggleRow from an earlier render. Reading the
+  // controlled keys through a ref makes every toggle start from the latest set.
+  const controlledExpandedRowsRef = useRef(controlledExpandedRows);
+  useLayoutEffect(() => {
+    controlledExpandedRowsRef.current = controlledExpandedRows;
+  }, [controlledExpandedRows]);
 
   const getRowKey = useCallback((row: T) => String(row[dataKey]), [dataKey]);
 
@@ -55,9 +62,10 @@ export function useExpandedRows<T extends object>({
   const toggleRow = useCallback(
     (row: T) => {
       const rowKey = getRowKey(row);
+      const latestControlledExpandedRows = controlledExpandedRowsRef.current;
 
-      if (controlledExpandedRows) {
-        const next = getNextExpandedRows(controlledExpandedRows, rowKey, singleRowExpansion);
+      if (latestControlledExpandedRows) {
+        const next = getNextExpandedRows(latestControlledExpandedRows, rowKey, singleRowExpansion);
         onExpandedRowKeysChange?.(Object.keys(next));
         return;
       }
@@ -67,7 +75,7 @@ export function useExpandedRows<T extends object>({
       setLocalExpandedRows(next);
       onExpandedRowKeysChange?.(Object.keys(next));
     },
-    [controlledExpandedRows, getRowKey, onExpandedRowKeysChange, singleRowExpansion],
+    [getRowKey, onExpandedRowKeysChange, singleRowExpansion],
   );
 
   return { expandedRows, getRowKey, isExpanded, toggleRow };

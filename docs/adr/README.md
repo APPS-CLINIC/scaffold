@@ -31,23 +31,26 @@ keep ADRs at all; use it as the template for new records.
 
 ### Step 02 — Application architecture
 
-| ADR                                                           | Title                                               | Status                 |
-| ------------------------------------------------------------- | --------------------------------------------------- | ---------------------- |
-| [0006](0006-url-as-single-source-of-truth.md)                 | URL as the single source of truth for view state    | Accepted               |
-| [0007](0007-redux-toolkit-and-rtk-query.md)                   | Redux Toolkit + RTK Query for state and caching     | Accepted               |
-| [0008](0008-zod-total-parsing-of-search-params.md)            | Total parsing of search params with Zod             | Superseded by ADR-0026 |
-| [0009](0009-reselect-and-listener-middleware.md)              | Reselect selectors + listener middleware            | Accepted               |
-| [0012](0012-routing-react-router-v7.md)                       | Routing with React Router v7                        | Superseded by ADR-0020 |
-| [0020](0020-routing-react-router-v6-for-iwa-compatibility.md) | React Router v6 for IWA compatibility               | Accepted               |
-| [0022](0022-typed-navigation-manifest.md)                     | Typed frontend manifest for contextual navigation   | Superseded by ADR-0023 |
-| [0023](0023-configurable-navigation-icon-components.md)       | Configurable and persistent contextual navigation   | Accepted               |
-| [0024](0024-canonical-route-transitions-in-redux.md)          | Canonical route transitions in the Redux URL mirror | Accepted               |
-| [0025](0025-configuration-driven-generic-data-tables.md)      | Configuration-driven generic data tables            | Accepted               |
-| [0026](0026-extensible-feature-filters-in-list-urls.md)       | Extensible feature filters in list URLs             | Accepted               |
-| [0027](0027-section-scoped-lazy-page-route-modules.md)        | Section-scoped lazy page route modules              | Accepted               |
-| [0028](0028-development-preview-data-through-rtk-query.md)    | Development preview data through RTK Query          | Accepted               |
-| [0029](0029-customer-summary-redux-mirror-slice.md)           | Customer summary as a read-only Redux mirror slice  | Accepted               |
-| [0030](0030-unified-configurable-navigation-manifest.md)      | Unified configurable navigation manifest            | Accepted               |
+| ADR                                                             | Title                                               | Status                 |
+| --------------------------------------------------------------- | --------------------------------------------------- | ---------------------- |
+| [0006](0006-url-as-single-source-of-truth.md)                   | URL as the single source of truth for view state    | Accepted               |
+| [0007](0007-redux-toolkit-and-rtk-query.md)                     | Redux Toolkit + RTK Query for state and caching     | Accepted               |
+| [0008](0008-zod-total-parsing-of-search-params.md)              | Total parsing of search params with Zod             | Superseded by ADR-0026 |
+| [0009](0009-reselect-and-listener-middleware.md)                | Reselect selectors + listener middleware            | Accepted               |
+| [0012](0012-routing-react-router-v7.md)                         | Routing with React Router v7                        | Superseded by ADR-0020 |
+| [0020](0020-routing-react-router-v6-for-iwa-compatibility.md)   | React Router v6 for IWA compatibility               | Accepted               |
+| [0022](0022-typed-navigation-manifest.md)                       | Typed frontend manifest for contextual navigation   | Superseded by ADR-0023 |
+| [0023](0023-configurable-navigation-icon-components.md)         | Configurable and persistent contextual navigation   | Accepted               |
+| [0024](0024-canonical-route-transitions-in-redux.md)            | Canonical route transitions in the Redux URL mirror | Accepted               |
+| [0025](0025-configuration-driven-generic-data-tables.md)        | Configuration-driven generic data tables            | Accepted               |
+| [0026](0026-extensible-feature-filters-in-list-urls.md)         | Extensible feature filters in list URLs             | Accepted               |
+| [0027](0027-section-scoped-lazy-page-route-modules.md)          | Section-scoped lazy page route modules              | Accepted               |
+| [0028](0028-development-preview-data-through-rtk-query.md)      | Development preview data through RTK Query          | Accepted               |
+| [0029](0029-customer-summary-redux-mirror-slice.md)             | Customer summary as a read-only Redux mirror slice  | Superseded by ADR-0031 |
+| [0030](0030-unified-configurable-navigation-manifest.md)        | Unified configurable navigation manifest            | Accepted               |
+| [0031](0031-customer-summary-read-directly-from-rtk-query.md)   | Customer summary read directly from RTK Query       | Accepted               |
+| [0032](0032-explicit-route-objects-for-customer-detail-tree.md) | Explicit route objects for the customer detail tree | Accepted               |
+| [0033](0033-customer-detail-presentation-feature-local.md)      | Customer detail presentation is feature-local       | Accepted               |
 
 ### Step 03 — Scope alignment (discovery)
 

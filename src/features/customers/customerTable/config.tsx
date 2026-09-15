@@ -15,7 +15,7 @@ import type { GenericDataTableConfig } from '@/ui';
  */
 export const customerTableConfig = {
   dataKey: 'id',
-  singleRowExpansion: true,
+  singleRowExpansion: false,
   fields: [
     {
       field: 'fullName',

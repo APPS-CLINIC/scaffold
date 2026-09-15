@@ -6,7 +6,6 @@ import type { PageRouteLoader } from '@/routes/pageRoutes/pageRoutes.types';
 interface BuildNavigationItemRoutesOptions {
   readonly routeIdPrefix: string;
   readonly getLazy?: (item: NavigationTreeItemConfig) => PageRouteLoader | undefined;
-  readonly placeholderHeadingLevel?: 1 | 2;
 }
 
 /**
@@ -34,12 +33,7 @@ export function buildNavigationItemRoutes(
             id: routeId,
             path: item.segment,
             caseSensitive: true,
-            element: (
-              <SectionPage
-                titleKey={item.labelKey}
-                headingLevel={options.placeholderHeadingLevel}
-              />
-            ),
+            element: <SectionPage titleKey={item.labelKey} />,
           };
     }
 
@@ -48,9 +42,7 @@ export function buildNavigationItemRoutes(
       : {
           id: `${routeId}:index`,
           index: true,
-          element: (
-            <SectionPage titleKey={item.labelKey} headingLevel={options.placeholderHeadingLevel} />
-          ),
+          element: <SectionPage titleKey={item.labelKey} />,
         };
 
     return {

@@ -9,25 +9,55 @@ export function formatDmyDate(date: Date, locale: string): string {
   return new Intl.DateTimeFormat(locale, DATE_DMY_FORMAT_OPTIONS).format(date);
 }
 
-/** Format an ISO local-date value without silently normalizing invalid dates. */
-export function formatIsoDmyDate(value: string, locale: string): string {
-  const match = /^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/.exec(value);
-  if (!match) return value;
+interface IsoLocalDate {
+  year: string;
+  month: string;
+  day: string;
+  date: Date;
+}
 
-  const [, yearPart, monthPart, dayPart] = match;
-  const year = Number(yearPart);
-  const month = Number(monthPart);
-  const day = Number(dayPart);
-  const date = new Date(`${yearPart}-${monthPart}-${dayPart}T12:00:00`);
+/**
+ * Accept an ISO local date only when its parts survive a calendar roundtrip, so
+ * `2026-02-31` is rejected instead of rolling over into March.
+ */
+function parseIsoLocalDate(value: string): IsoLocalDate | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/u.exec(value);
+  if (!match) return null;
+
+  const [, year = '', month = '', day = ''] = match;
+  const date = new Date(`${year}-${month}-${day}T12:00:00`);
 
   if (
     Number.isNaN(date.getTime()) ||
-    date.getFullYear() !== year ||
-    date.getMonth() !== month - 1 ||
-    date.getDate() !== day
+    date.getFullYear() !== Number(year) ||
+    date.getMonth() !== Number(month) - 1 ||
+    date.getDate() !== Number(day)
   ) {
-    return value;
+    return null;
   }
 
-  return formatDmyDate(date, locale);
+  return { year, month, day, date };
+}
+
+/** Format an ISO local-date value without silently normalizing invalid dates. */
+export function formatIsoDmyDate(value: string, locale: string): string {
+  const parsed = parseIsoLocalDate(value);
+  return parsed ? formatDmyDate(parsed.date, locale) : value;
+}
+
+/**
+ * Compare ISO local dates as text so the result never shifts with the viewer's
+ * timezone. Values that are not valid ISO local dates are not classified.
+ */
+export function isPastIsoDate(value: string | null, today = new Date()): boolean {
+  const parsed = value ? parseIsoLocalDate(value) : null;
+  if (!parsed) return false;
+
+  const todayText = [
+    String(today.getFullYear()).padStart(4, '0'),
+    String(today.getMonth() + 1).padStart(2, '0'),
+    String(today.getDate()).padStart(2, '0'),
+  ].join('-');
+
+  return `${parsed.year}-${parsed.month}-${parsed.day}` < todayText;
 }

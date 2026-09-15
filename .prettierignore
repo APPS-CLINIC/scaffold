@@ -13,3 +13,10 @@ conf-installer/
 # Self-contained kickoff doc with an inlined, minified Tailwind runtime —
 # formatting it would explode the embedded JS.
 docs/backend-kickoff.html
+
+# Local-only IWA component reference, excluded per clone via .git/info/exclude.
+# Prettier still walks it, so name it here to keep `format:check` deterministic.
+.design/
+
+# Per-user Claude Code settings; never committed.
+.claude/settings.local.json

@@ -8,10 +8,7 @@ export type CustomerPriceConditionStatus = 'valid' | 'expiring' | 'expired';
 
 export type SortDirection = 'asc' | 'desc';
 
-/**
- * Raw customer item returned by the backend. The property names and nullability
- * intentionally follow the photographed payload.
- */
+/** Raw customer item returned by the backend. Property names and nullability follow the API contract. */
 export interface CustomerResponse {
   id: number;
   fullName: string;
@@ -68,4 +65,4 @@ export interface CustomerQuery {
   type: string;
 }
 
-export type { PageResponse } from '@/api/pagination.types';
+export type { PageResponse, ExportRequest } from '@/api/baseApi.types.ts';
