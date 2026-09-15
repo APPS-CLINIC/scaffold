@@ -39,10 +39,12 @@ describe('customerTableConfig', () => {
   });
 
   it('gives every field the same config shape the fit engine needs', () => {
+    const notServedByBackendYet = new Set(['lendingRating', 'lendingTeam']);
+
     for (const field of customerTableConfig.fields) {
       expect(field.width).toBeGreaterThan(0);
       expect(field.labelKey).toBe(`customers.table.field.${field.field}`);
-      expect(field.sortable).toBe(true);
+      expect(field.sortable).toBe(!notServedByBackendYet.has(field.field));
     }
   });
 

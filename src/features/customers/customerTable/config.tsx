@@ -69,7 +69,9 @@ export const customerTableConfig = {
     {
       field: 'lendingRating',
       labelKey: 'customers.table.field.lendingRating',
-      sortable: true,
+      // The service does not serve this field yet and rejects unknown sort
+      // fields with 400, so the header must not offer sorting until it does.
+      sortable: false,
       width: 128,
     },
     {
@@ -159,7 +161,8 @@ export const customerTableConfig = {
     {
       field: 'lendingTeam',
       labelKey: 'customers.table.field.lendingTeam',
-      sortable: true,
+      // Same as lendingRating: unsortable until the service serves the field.
+      sortable: false,
       width: 176,
     },
   ],
