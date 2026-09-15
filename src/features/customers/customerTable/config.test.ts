@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { customerTableConfig } from './config';
+import { OverdueDateCell } from './OverdueDateCell';
 
 describe('customerTableConfig', () => {
   it('identifies the table so its settings can be persisted', () => {
@@ -43,6 +44,17 @@ describe('customerTableConfig', () => {
       expect(field.labelKey).toBe(`customers.table.field.${field.field}`);
       expect(field.sortable).toBe(true);
     }
+  });
+
+  it('marks the review and pricing dates as overdue-aware', () => {
+    const overdueFields = customerTableConfig.fields
+      .filter((field) => field.component === OverdueDateCell)
+      .map(({ field }) => field);
+    expect(overdueFields).toEqual([
+      'lendingReviewDate',
+      'lendingRatingReviewDate',
+      'tsPriceConditionEndDate',
+    ]);
   });
 
   it('pins only the customer name so it can never drop into the accordion', () => {

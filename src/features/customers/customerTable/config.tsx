@@ -1,6 +1,7 @@
 import type { Customer } from '@/features/customers/customers.types';
-import { ActiveArchivalStatusCell, DateCell, TextCell, UnderlinedTextCell } from '@/ui';
+import { ActiveArchivalStatusCell, TextCell, UnderlinedTextCell } from '@/ui';
 import type { GenericDataTableConfig } from '@/ui';
+import { OverdueDateCell } from './OverdueDateCell';
 
 /**
  * One flat field list: every field can be a column, and whatever does not fit
@@ -53,14 +54,14 @@ export const customerTableConfig = {
     {
       field: 'lendingReviewDate',
       labelKey: 'customers.table.field.lendingReviewDate',
-      component: DateCell,
+      component: OverdueDateCell,
       sortable: true,
       width: 160,
     },
     {
       field: 'lendingRatingReviewDate',
       labelKey: 'customers.table.field.lendingRatingReviewDate',
-      component: DateCell,
+      component: OverdueDateCell,
       sortable: true,
       width: 144,
     },
@@ -73,7 +74,7 @@ export const customerTableConfig = {
     {
       field: 'tsPriceConditionEndDate',
       labelKey: 'customers.table.field.tsPriceConditionEndDate',
-      component: DateCell,
+      component: OverdueDateCell,
       sortable: true,
       width: 160,
     },

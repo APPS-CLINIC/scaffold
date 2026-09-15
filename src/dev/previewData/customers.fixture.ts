@@ -47,6 +47,8 @@ export const customerFirstPageResponse: PageResponse<CustomerResponse> = {
     createCustomerResponseFixture(23997, 'ARCELORMITTAL WARSAW SP. Z O.O.', {
       shortName: 'ARCELORMITTAL WARSAW',
       lendingAdvisor: 'Drewniak Dariusz',
+      lendingReviewDate: '2026-02-10',
+      lendingRatingReviewDate: '2025-12-18',
     }),
     createCustomerResponseFixture(24099, 'COMARCH S.A.'),
     createCustomerResponseFixture(24554, 'ABB SP. Z O.O.'),

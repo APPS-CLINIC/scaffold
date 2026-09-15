@@ -147,6 +147,18 @@ describe('CustomersView', () => {
     });
   });
 
+  it('flags overdue review dates with the number of days overdue', async () => {
+    vi.useFakeTimers({ now: new Date('2026-09-15T12:00:00'), toFake: ['Date'] });
+    try {
+      renderPage();
+      // 2026-02-10 → 2026-09-15 is 217 days; 2025-12-18 → 2026-09-15 is 271 days.
+      expect(await screen.findByText('Overdue by 217 days')).toBeInTheDocument();
+      expect(screen.getByText('Overdue by 271 days')).toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('expands every visible customer through the toolbar control', async () => {
     const user = userEvent.setup();
     renderPage();
