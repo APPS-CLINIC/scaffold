@@ -124,7 +124,7 @@ describe('CustomersView column settings', () => {
     expect(expandedRegions()).toHaveLength(1);
 
     await user.click(screen.getByRole('button', { name: 'List settings' }));
-    expect(usedColumns()).toBe('Used columns: 25 of 25');
+    expect(usedColumns()).toBe('Used columns: 24 of 24');
     expect(rowNames()).toEqual(labelsOf(defaultColumns));
     expect(rowNames()[1]).toBe('GRID');
 
@@ -169,7 +169,7 @@ describe('CustomersView column settings', () => {
 
     await user.click(screen.getByRole('button', { name: 'List settings' }));
     expect(rowNames()).toEqual(['Status', 'Customer name']);
-    expect(usedColumns()).toBe('Used columns: 2 of 25');
+    expect(usedColumns()).toBe('Used columns: 2 of 24');
   });
 
   it('restores the default columns after confirmation and empties the storage', async () => {
@@ -204,12 +204,12 @@ describe('CustomersView column settings', () => {
 
     await user.click(screen.getByRole('button', { name: 'List settings' }));
     await user.click(within(settingsDialog()).getByRole('button', { name: 'Add column' }));
-    expect(columnRows()).toHaveLength(25);
+    expect(columnRows()).toHaveLength(24);
     await user.click(within(settingsDialog()).getByRole('button', { name: 'Cancel' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'List settings' }));
     expect(rowNames()).toEqual(labelsOf(columnsWithout('grid')));
-    expect(usedColumns()).toBe('Used columns: 24 of 25');
+    expect(usedColumns()).toBe('Used columns: 23 of 24');
   });
 });

@@ -23,7 +23,6 @@ describe('customerTableConfig', () => {
       'regon',
       'shortName',
       'rmAdvisor',
-      'corporateGroupGRID',
       'internalGroupName',
       'lendingAdvisor',
       'sfAdvisor',

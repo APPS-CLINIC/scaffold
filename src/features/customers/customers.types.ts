@@ -14,7 +14,6 @@ export interface CustomerResponse {
   grid: string;
   corporateGroupId: number | null;
   corporateGroupName: string | null;
-  corporateGroupGRID: string | null;
   internalGroupId: number | null;
   internalGroupName: string | null;
   kkf: string | null;
@@ -30,10 +29,12 @@ export interface CustomerResponse {
   ebdAdvisor: string | null;
   implementationAdvisor: string | null;
   customerServiceAdvisor: string | null;
+  lendingTeam: string | null;
   extensionReviewDate: string | null;
   lendingReviewDate: string | null;
   lendingRatingDate: string | null;
   lendingRatingReviewDate: string | null;
+  lendingRating: string | null;
   tsPriceConditionEndDate: string | null;
   tsPriceConditionStatus: number | null;
   type: string | null;

@@ -54,6 +54,16 @@ describe('customer API contract', () => {
     expect(toCustomerBackendParams(makeQuery({ sort: 'unexpectedField' })).sort).toBe('id,ASC');
   });
 
+  it('sorts by the new rating and team fields and no longer by the corporate group GRID', () => {
+    expect(toCustomerBackendParams(makeQuery({ sort: 'lendingRating' })).sort).toBe(
+      'lendingRating,ASC',
+    );
+    expect(toCustomerBackendParams(makeQuery({ sort: 'lendingTeam' })).sort).toBe(
+      'lendingTeam,ASC',
+    );
+    expect(toCustomerBackendParams(makeQuery({ sort: 'corporateGroupGRID' })).sort).toBe('id,ASC');
+  });
+
   it('builds the endpoint URL from the complete server query', () => {
     expect(
       getCustomersRequest(

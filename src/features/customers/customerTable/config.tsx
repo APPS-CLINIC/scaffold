@@ -95,12 +95,6 @@ export const customerTableConfig = {
       width: 176,
     },
     {
-      field: 'corporateGroupGRID',
-      labelKey: 'customers.table.field.corporateGroupGRID',
-      sortable: true,
-      width: 160,
-    },
-    {
       field: 'internalGroupName',
       labelKey: 'customers.table.field.internalGroupName',
       sortable: true,
