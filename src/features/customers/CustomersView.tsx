@@ -140,7 +140,7 @@ export function CustomersView() {
           />
           <div className="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2">
             <SearchWithAutocomplete
-              className="w-full max-w-96"
+              className="w-full max-w-96 [&_input]:!bg-[var(--surface)] [&_input]:!border-[var(--border)] [&_input:focus]:!border-[var(--navigation-accent)] [&_input:focus]:![box-shadow:none] [&_input:focus]:!outline-none"
               placeholder={t('customers.search.placeholder')}
             />
             <GenericTableSettings
