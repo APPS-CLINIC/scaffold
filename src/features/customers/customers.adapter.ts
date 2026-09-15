@@ -1,10 +1,5 @@
-import { normalizeDomainValue, priceConditionStatusByDomainValue } from '@/i18n/domainValues';
-import type {
-  Customer,
-  CustomerPriceConditionStatus,
-  CustomerResponse,
-  CustomerStatus,
-} from './customers.types';
+import { normalizeDomainValue } from '@/i18n/domainValues';
+import type { Customer, CustomerResponse, CustomerStatus } from './customers.types';
 
 /** Keys are `normalizeDomainValue` outputs; values are the status contract. */
 export const customerStatusByDomainValue: Readonly<Record<string, CustomerStatus>> = {
@@ -30,15 +25,10 @@ function normalizeCustomerStatus(value: unknown): CustomerStatus | null {
   return lookupDomainValue(customerStatusByDomainValue, value);
 }
 
-function normalizePriceConditionStatus(value: unknown): CustomerPriceConditionStatus | null {
-  return lookupDomainValue(priceConditionStatusByDomainValue, value);
-}
-
 /** Keep transport vocabulary at the RTK Query boundary. */
 export function mapCustomerResponse(response: CustomerResponse): Customer {
   return {
     ...response,
     status: normalizeCustomerStatus(response.status),
-    tsPriceConditionStatus: normalizePriceConditionStatus(response.tsPriceConditionStatus),
   };
 }

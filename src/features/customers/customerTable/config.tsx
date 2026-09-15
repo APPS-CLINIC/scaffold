@@ -1,11 +1,5 @@
 import type { Customer } from '@/features/customers/customers.types';
-import {
-  ActiveArchivalStatusCell,
-  DateCell,
-  TextCell,
-  UnderlinedTextCell,
-  ValidityStatusCell,
-} from '@/ui';
+import { ActiveArchivalStatusCell, DateCell, TextCell, UnderlinedTextCell } from '@/ui';
 import type { GenericDataTableConfig } from '@/ui';
 
 /**
@@ -73,7 +67,7 @@ export const customerTableConfig = {
     {
       field: 'tsPriceConditionStatus',
       labelKey: 'customers.table.field.tsPriceConditionStatus',
-      component: ValidityStatusCell,
+      component: TextCell,
       sortable: true,
       width: 176,
     },
