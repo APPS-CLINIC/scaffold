@@ -51,8 +51,15 @@ An opt-in development preview may synchronously seed a transformed, default
 query result into that same cache before React mounts. It never replaces the
 endpoint or creates a parallel slice, and production builds exclude preview
 profiles and fixtures.
+
+Next to the server cache and the URL mirror, the store holds one slice of
+**user preferences**: `tableSettings`, the chosen columns of each generic table
+keyed by table id. `main.tsx` preloads it from storage before the first render
+through a small storage port (`localStorage` today, a per-user endpoint later),
+and only an explicit Save or Restore defaults writes it back.
 → [ADR 0007](../adr/0007-redux-toolkit-and-rtk-query.md),
-[ADR 0028](../adr/0028-development-preview-data-through-rtk-query.md)
+[ADR 0028](../adr/0028-development-preview-data-through-rtk-query.md),
+[ADR 0034](../adr/0034-user-table-preferences-in-a-persisted-redux-slice.md)
 
 ### 2. URL state — `src/features/urlState`
 
@@ -68,8 +75,12 @@ while `listQueryChanged` carries validated list parameters.
 
 Reselect selectors provide stable, memoized reads (fewer re-renders); listener
 middleware runs reactive side effects — here, **prefetching the next page**
-when the query changes — without thunks in components.
-→ [ADR 0009](../adr/0009-reselect-and-listener-middleware.md)
+when the query changes — without thunks in components. The first listener in
+the codebase persists table settings: because the middleware is a singleton
+shared by every store, the app shell registers that listener after `makeStore`
+instead of a module-scope import, so test stores stay writer-free.
+→ [ADR 0009](../adr/0009-reselect-and-listener-middleware.md),
+[ADR 0034](../adr/0034-user-table-preferences-in-a-persisted-redux-slice.md)
 
 ### 4. Adding a feature
 
@@ -113,7 +124,14 @@ fields with translated labels; response fields are never discovered or exposed
 implicitly. Search, filters, sorting, and pagination stay in the URL, server
 state stays in RTK Query, and transient expanded-row state stays local to the
 table.
-→ [ADR 0025](../adr/0025-configuration-driven-generic-data-tables.md)
+
+Which configured fields a table uses, and in which order, is a user
+preference: the owning feature resolves the static configuration against the
+`tableSettings` slice with `resolveColumnFields` and hands the effective
+configuration to the table, which never reads Redux. The generic "List
+settings" dialog edits that choice.
+→ [ADR 0025](../adr/0025-configuration-driven-generic-data-tables.md),
+[ADR 0034](../adr/0034-user-table-preferences-in-a-persisted-redux-slice.md)
 
 ### 6. UI seam — `src/ui`
 

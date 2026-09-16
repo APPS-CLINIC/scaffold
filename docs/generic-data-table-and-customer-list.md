@@ -19,14 +19,22 @@ and explicitly defines:
 - which fields can be sorted and which backend sort field they use;
 - the single translated label per field (`labelKey`);
 - the pixel `width` each field occupies as a column;
-- which fields are pinned (`alwaysVisible`) and the optional `columnOrder`;
-- whether expansion behaves as a single-row accordion.
+- which fields are pinned (`alwaysVisible`);
+- whether expansion behaves as a single-row accordion;
+- an optional `id` naming the config, so table settings can be stored per
+  table.
 
 Which fields render as columns is decided **at runtime**: the table measures
-its container and shows, in display order, as many columns as fit without
+its container and shows, in `fields` order, as many columns as fit without
 horizontal scrolling; the remaining fields drop into the expanded-row
 accordion (last column drops first). When the currently sorted column drops,
 the table raises `onSortClear` so the owner can reset the sort in the URL.
+A user-chosen subset and order is applied before the config reaches the table:
+the pure `resolveColumnFields(fields, columns)` from `@/ui` maps an ordered
+list of field names to the configured field configs (unknown and repeated
+names dropped, empty result falling back to the configured `fields`), and the
+owner passes a config with the resolved `fields`. The table itself only ever
+sees `fields`.
 
 The result keeps the reusable behavior in one place while allowing each list
 feature to decide how its domain values should look.
@@ -215,6 +223,15 @@ A customer slice should be introduced only for customer-specific client state
 that is neither server cache nor URL state and genuinely needs coordination
 outside the current view.
 
+The one piece of client state the list does keep — which fields the user chose
+as columns, and in what order — is not customer-specific either. It lives in
+the generic `tableSettings` slice (`src/features/tableSettings`), keyed by the
+config's `id`, hydrated from storage before the first render and written only
+when the user saves or restores defaults. `useTableColumnSettings(config)`
+resolves the effective configuration from it; the table itself never reads
+Redux. See
+[ADR 0034](adr/0034-user-table-preferences-in-a-persisted-redux-slice.md).
+
 ## Transport model and response adapter
 
 `CustomerResponse` follows the backend payload, including its strings and
@@ -295,9 +312,15 @@ additional pages without adding feature-specific conditions to the router.
    label, width, and (where needed) cell component per field.
 6. Connect the endpoint, URL callbacks, translated labels, and config in the
    feature view.
-7. Add a route-level page and register its lazy loader in the appropriate
+7. To let users choose and order the columns, give the config an `id`, pass
+   `useTableColumnSettings(config).config` to the table instead of the static
+   config, and render `GenericTableSettings` with `onOpenSettings` plus
+   `TableColumnSettingsDialog` from `@/ui`, whose `onSave` and
+   `onRestoreDefaults` call the hook's `saveColumns` / `restoreDefaults` and
+   collapse the expanded rows (`CustomersView` is the reference).
+8. Add a route-level page and register its lazy loader in the appropriate
    section page-route module.
-8. Add translations and tests for the endpoint mapping, config invariants,
+9. Add translations and tests for the endpoint mapping, config invariants,
    feature integration, and any new reusable cell.
 
 ## Relevant files
@@ -322,6 +345,13 @@ additional pages without adding feature-specific conditions to the router.
   — feature integration.
 - [`src/ui/GenericDataTable/useResponsiveFields.ts`](../src/ui/GenericDataTable/useResponsiveFields.ts)
   — responsive column/accordion fit engine.
+- [`src/ui/GenericDataTable/resolveColumnFields.ts`](../src/ui/GenericDataTable/resolveColumnFields.ts)
+  — pure resolver applying an ordered field-name list to the configured fields.
+- [`src/ui/GenericDataTable/settings`](../src/ui/GenericDataTable/settings)
+  — the "List settings" dialog, its sortable rows and the pure draft reducer.
+- [`src/features/tableSettings`](../src/features/tableSettings)
+  — persisted column settings: slice, schema, storage port, listener and
+  `useTableColumnSettings`.
 - [`src/routes/pages/customers/CustomersPage.tsx`](../src/routes/pages/customers/CustomersPage.tsx)
   — route-level page boundary.
 - [`src/dev/previewData`](../src/dev/previewData)

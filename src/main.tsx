@@ -4,6 +4,11 @@ import { Provider } from 'react-redux';
 import { PrimeReactProvider } from 'primereact/api';
 import { RouterProvider } from 'react-router-dom';
 import { makeStore } from '@/app/store';
+import {
+  createLocalStorageTableSettingsStorage,
+  createTableSettingsState,
+  startTableSettingsPersistence,
+} from '@/features/tableSettings';
 import { createUrlState } from '@/features/urlState/urlState.slice';
 import '@/i18n';
 import { ToastProvider } from '@/ui';
@@ -19,9 +24,12 @@ const container = document.getElementById('root');
 if (!container) throw new Error('Root element #root not found');
 const root = createRoot(container);
 
+const tableSettingsStorage = createLocalStorageTableSettingsStorage();
 const store = makeStore({
   urlState: createUrlState(window.location.pathname, window.location.search),
+  tableSettings: createTableSettingsState(tableSettingsStorage.read()),
 });
+startTableSettingsPersistence(tableSettingsStorage);
 
 async function renderApplication() {
   const previewDataProfile = import.meta.env.VITE_PREVIEW_DATA_PROFILE?.trim();

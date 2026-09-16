@@ -14,6 +14,7 @@ import type { GenericDataTableConfig } from '@/ui';
  * this order). Widths are pixel budgets for the responsive fit engine.
  */
 export const customerTableConfig = {
+  id: 'customers',
   dataKey: 'id',
   singleRowExpansion: false,
   fields: [

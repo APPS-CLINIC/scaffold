@@ -11,6 +11,7 @@ import {
 } from '@/test/tableLayout';
 import {
   GenericDataTable,
+  resolveColumnFields,
   type GenericDataTableCellProps,
   type GenericDataTableConfig,
   type GenericDataTableProps,
@@ -199,9 +200,14 @@ describe('GenericDataTable', () => {
     expect(screen.getByRole('button', { name: 'Expand Alice details' })).toBeInTheDocument();
   });
 
-  it('renders columns in the configured columnOrder', () => {
+  it('renders columns in the order of the resolved fields', () => {
     mockTableContainerWidth(WIDE_CONTAINER);
-    renderTable({ config: { ...config, columnOrder: ['status', 'name'] } });
+    renderTable({
+      config: {
+        ...config,
+        fields: resolveColumnFields(config.fields, ['status', 'name', 'note', 'metadata']),
+      },
+    });
 
     const headers = screen.getAllByRole('columnheader').map((header) => header.textContent);
     expect(headers[0]).toMatch(/status/i);

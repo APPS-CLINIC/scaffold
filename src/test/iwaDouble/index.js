@@ -13,7 +13,7 @@
  * `Table` delegates to PrimeReact because the IWA table is a styled PrimeReact DataTable.
  */
 
-import { createElement, useState } from 'react';
+import { cloneElement, createElement, useState } from 'react';
 import { DataTable } from 'primereact/datatable';
 
 export function Table({ dataTableRef, separatedRows, ...props }) {
@@ -618,6 +618,26 @@ const BUTTON_STYLES = {
   },
 };
 
+export function IconButton({ icon, size = 24, disabled, className, onClick }) {
+  return createElement(
+    'button',
+    {
+      type: 'button',
+      disabled,
+      onClick: () => {
+        if (!disabled) void onClick?.();
+      },
+      className: twMerge(
+        'inline-flex shrink-0 items-center justify-center',
+        disabled ? 'cursor-default text-[#a8a8a8]' : 'text-[#ff6200]',
+        className,
+      ),
+      style: { width: size, height: size },
+    },
+    cloneElement(icon, { width: size, height: size }),
+  );
+}
+
 export function Button({
   label,
   onClick,
@@ -688,7 +708,18 @@ export function Select({
         disabled: disabled || readOnly,
         'data-testid': dataTestId,
         'aria-label': ariaLabel,
-        onChange: (event) => onChange?.(event.target.value || null),
+        // IWA's Select takes PrimeReact Dropdown props: onChange receives a change event
+        // whose `value` is the picked option's value, never the bare value.
+        onChange: (event) => {
+          const picked = event.target.value || null;
+          onChange?.({
+            originalEvent: event,
+            value: picked,
+            stopPropagation: () => event.stopPropagation(),
+            preventDefault: () => event.preventDefault(),
+            target: { name: undefined, id: undefined, value: picked },
+          });
+        },
         className: twMerge(
           'h-10 w-full appearance-none rounded border border-[#c4c9ce] bg-white pl-3 pr-8 text-sm text-[#333333]',
           "bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%226%22><path d=%22M0 0l5 6 5-6z%22 fill=%22%234a4f55%22/></svg>')] bg-[position:right_0.75rem_center] bg-no-repeat",
@@ -800,31 +831,13 @@ export function Chip({ label, selected, onClick, disabled, removable, className,
   );
 }
 
-export function Dialog({
-  headingProps,
-  buttonProps = [],
-  visibility,
-  onSetVisibility,
-  closeButtonIcon = true,
-  onHide,
-  buttonsPosition = 'row',
-  bottomSeparator,
-  children,
-  dataTestId,
-}) {
-  if (!visibility) return null;
-
-  const close = () => {
-    onSetVisibility?.(false);
-    void onHide?.();
-  };
-
+function dialogFrame({ headingProps, closeButtonIcon, onClose, dataTestId, className }, ...body) {
   return createElement(
     'div',
     {
       className: 'fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4',
       onClick: (event) => {
-        if (event.target === event.currentTarget) close();
+        if (event.target === event.currentTarget) onClose();
       },
     },
     createElement(
@@ -834,7 +847,10 @@ export function Dialog({
         'aria-modal': 'true',
         'aria-label': headingProps?.text,
         'data-testid': dataTestId,
-        className: 'flex max-h-[85vh] w-full max-w-xl flex-col rounded bg-white shadow-lg',
+        className: twMerge(
+          'flex max-h-[85vh] w-full max-w-xl flex-col rounded bg-white shadow-lg',
+          className,
+        ),
       },
       createElement(
         'div',
@@ -855,7 +871,7 @@ export function Dialog({
               {
                 type: 'button',
                 'aria-label': 'Zamknij',
-                onClick: close,
+                onClick: onClose,
                 className:
                   'absolute right-4 top-4 flex h-8 w-8 items-center justify-center text-[#333333]',
               },
@@ -874,18 +890,71 @@ export function Dialog({
             )
           : null,
       ),
-      createElement('div', { className: 'min-h-0 flex-1 overflow-y-auto px-6 py-4' }, children),
-      createElement(
-        'div',
-        {
-          className: twMerge(
-            'flex shrink-0 justify-end gap-3 px-6 pb-6 pt-2',
-            buttonsPosition === 'column' && 'flex-col',
-            bottomSeparator && 'border-t border-[#e0e0e0]',
-          ),
-        },
-        buttonProps.map((props, index) => createElement(Button, { key: index, ...props })),
-      ),
+      ...body,
+    ),
+  );
+}
+
+export function Dialog({
+  headingProps,
+  buttonProps = [],
+  visibility,
+  onSetVisibility,
+  closeButtonIcon = true,
+  onHide,
+  buttonsPosition = 'row',
+  bottomSeparator,
+  children,
+  dataTestId,
+}) {
+  if (!visibility) return null;
+
+  const close = () => {
+    onSetVisibility?.(false);
+    void onHide?.();
+  };
+
+  return dialogFrame(
+    { headingProps, closeButtonIcon, onClose: close, dataTestId },
+    createElement('div', { className: 'min-h-0 flex-1 overflow-y-auto px-6 py-4' }, children),
+    createElement(
+      'div',
+      {
+        className: twMerge(
+          'flex shrink-0 justify-end gap-3 px-6 pb-6 pt-2',
+          buttonsPosition === 'column' && 'flex-col',
+          bottomSeparator && 'border-t border-[#e0e0e0]',
+        ),
+      },
+      buttonProps.map((props, index) => createElement(Button, { key: index, ...props })),
+    ),
+  );
+}
+
+export function CustomizableDialog({
+  headingProps,
+  className,
+  contentClassName,
+  visibility,
+  onSetVisibility,
+  closeButtonIcon = true,
+  onHide,
+  children,
+  dataTestId,
+}) {
+  if (!visibility) return null;
+
+  const close = () => {
+    onSetVisibility?.(false);
+    void onHide?.();
+  };
+
+  return dialogFrame(
+    { headingProps, closeButtonIcon, onClose: close, dataTestId, className },
+    createElement(
+      'div',
+      { className: twMerge('min-h-0 flex-1 overflow-y-auto px-6 py-4', contentClassName) },
+      children,
     ),
   );
 }

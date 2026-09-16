@@ -68,7 +68,6 @@ function GenericDataTableInner<T extends object>(
   const tableRows = useMemo(() => rows.map((row) => row as unknown as PrimeDataTableRow), [rows]);
   const { containerRef, containerWidth, visibleFields, accordionFields } = useResponsiveFields({
     fields: config.fields,
-    columnOrder: config.columnOrder,
   });
   const hasDetails = accordionFields.length > 0;
   const paginatorTemplate = useMemo(
