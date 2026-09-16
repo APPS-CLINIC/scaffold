@@ -7,9 +7,28 @@ export const customerStatusByDomainValue: Readonly<Record<string, CustomerStatus
   archival: 'ARCHIVAL',
 };
 
-/** Keys are `normalizeDomainValue` outputs; values are the type contract. */
+/**
+ * Keys are `normalizeDomainValue` outputs of the warehouse labels the service
+ * sends; values are the type contract. A backend enum with other spellings
+ * adds keys here, not members.
+ */
 export const customerTypeByDomainValue: Readonly<Record<string, CustomerType>> = {
   corporate: 'CORPORATE',
+  'corporate_(finansstrukturalne)': 'CORPORATE_STRUCTURED_FINANCE',
+  'instfin_bank inwestycyjny': 'INSTFIN_INVESTMENT_BANK',
+  'instfin_bank n/inwestycyjny': 'INSTFIN_NON_INVESTMENT_BANK',
+  'instfin_dom makl/broker': 'INSTFIN_BROKERAGE_HOUSE',
+  instfin_ubezpieczyciel: 'INSTFIN_INSURER',
+  'instfin_f.leasingowa': 'INSTFIN_LEASING_COMPANY',
+  'instfin_f.faktoringowa': 'INSTFIN_FACTORING_COMPANY',
+  instfin_izbarozliczeniowa: 'INSTFIN_CLEARING_HOUSE',
+  'instfin_f.obrwierzyt n/factoring': 'INSTFIN_NON_FACTORING_DEBT_TRADING',
+  instfin_innainstfin: 'INSTFIN_OTHER',
+  instfin_tfi: 'INSTFIN_INVESTMENT_FUND_COMPANY',
+  'instfin_fund.inwestycyjny': 'INSTFIN_INVESTMENT_FUND',
+  'corporate_(finansnieruchkomerc_constr)': 'CORPORATE_COMMERCIAL_REAL_ESTATE_CONSTRUCTION',
+  'corporate_(finansnieruchkomerc_refinans)': 'CORPORATE_COMMERCIAL_REAL_ESTATE_REFINANCING',
+  'kartoteka techniczna': 'TECHNICAL_RECORD',
 };
 
 /**

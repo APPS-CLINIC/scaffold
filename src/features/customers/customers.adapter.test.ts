@@ -58,6 +58,30 @@ describe('customer response adapter', () => {
     ).toMatchObject({ status: 'ARCHIVAL', type: 'CORPORATE' });
   });
 
+  it('maps every warehouse customer type label to its contract value', () => {
+    const typeOf = (type: string) => mapCustomerResponse({ ...response, type }).type;
+
+    expect(typeOf('Corporate_(FinansStrukturalne)')).toBe('CORPORATE_STRUCTURED_FINANCE');
+    expect(typeOf('InstFin_Bank Inwestycyjny')).toBe('INSTFIN_INVESTMENT_BANK');
+    expect(typeOf('InstFin_Bank n/Inwestycyjny')).toBe('INSTFIN_NON_INVESTMENT_BANK');
+    expect(typeOf('InstFin_Dom makl/Broker')).toBe('INSTFIN_BROKERAGE_HOUSE');
+    expect(typeOf('InstFin_Ubezpieczyciel')).toBe('INSTFIN_INSURER');
+    expect(typeOf('InstFin_F.Leasingowa')).toBe('INSTFIN_LEASING_COMPANY');
+    expect(typeOf('InstFin_F.Faktoringowa')).toBe('INSTFIN_FACTORING_COMPANY');
+    expect(typeOf('InstFin_IzbaRozliczeniowa')).toBe('INSTFIN_CLEARING_HOUSE');
+    expect(typeOf('InstFin_F.ObrWierzyt n/factoring')).toBe('INSTFIN_NON_FACTORING_DEBT_TRADING');
+    expect(typeOf('InstFin_InnaInstFin')).toBe('INSTFIN_OTHER');
+    expect(typeOf('InstFin_TFI')).toBe('INSTFIN_INVESTMENT_FUND_COMPANY');
+    expect(typeOf('InstFin_Fund.Inwestycyjny')).toBe('INSTFIN_INVESTMENT_FUND');
+    expect(typeOf('Corporate_(FinansNieruchKomerc_Constr)')).toBe(
+      'CORPORATE_COMMERCIAL_REAL_ESTATE_CONSTRUCTION',
+    );
+    expect(typeOf('Corporate_(FinansNieruchKomerc_Refinans)')).toBe(
+      'CORPORATE_COMMERCIAL_REAL_ESTATE_REFINANCING',
+    );
+    expect(typeOf('Kartoteka techniczna')).toBe('TECHNICAL_RECORD');
+  });
+
   it('rejects labels outside the English-only contract', () => {
     // Polish labels are no longer part of the backend contract.
     expect(

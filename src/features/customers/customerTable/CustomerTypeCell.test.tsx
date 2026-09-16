@@ -22,6 +22,12 @@ describe('CustomerTypeCell', () => {
     const { rerender } = render(<CustomerTypeCell {...cellProps('CORPORATE')} />);
     expect(screen.getByText('Corporate')).toBeInTheDocument();
 
+    rerender(<CustomerTypeCell {...cellProps('INSTFIN_INVESTMENT_BANK')} />);
+    expect(screen.getByText('Investment bank')).toBeInTheDocument();
+
+    rerender(<CustomerTypeCell {...cellProps('TECHNICAL_RECORD')} />);
+    expect(screen.getByText('Technical record')).toBeInTheDocument();
+
     rerender(<CustomerTypeCell {...cellProps(null)} />);
     expect(screen.getByText('—')).toBeInTheDocument();
   });
