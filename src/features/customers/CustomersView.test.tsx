@@ -58,6 +58,7 @@ describe('CustomersView', () => {
     expect(screen.getByRole('button', { name: 'Dostosuj filtry' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Ustawienia listy' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Szukaj na liście')).toBeInTheDocument();
+    expect(await screen.findAllByText(/^Przekroczona o \d+ dni$/)).toHaveLength(2);
   });
 
   it('renders the development preview cache without an HTTP request', async () => {

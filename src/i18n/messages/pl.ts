@@ -14,12 +14,12 @@ export const pl = {
   'common.results': '{{count}} wyników',
   'common.status.active': 'Aktywny',
   'common.status.archival': 'Archiwalny',
-  // A non-breaking space keeps the number and its unit on one line when the
-  // label wraps inside a narrow table cell.
-  'common.overdueDays_one': 'Zaległy {{count}}\u00A0dzień',
-  'common.overdueDays_few': 'Zaległe {{count}}\u00A0dni',
-  'common.overdueDays_many': 'Zaległe {{count}}\u00A0dni',
-  'common.overdueDays_other': 'Zaległe {{count}}\u00A0dni',
+  // Non-breaking spaces keep the preposition, the number and its unit together
+  // when the label wraps inside a narrow table cell.
+  'common.overdueDays_one': 'Przekroczona o\u00A0{{count}}\u00A0dzień',
+  'common.overdueDays_few': 'Przekroczona o\u00A0{{count}}\u00A0dni',
+  'common.overdueDays_many': 'Przekroczona o\u00A0{{count}}\u00A0dni',
+  'common.overdueDays_other': 'Przekroczona o\u00A0{{count}}\u00A0dni',
   'common.yes': 'Tak',
   'common.no': 'Nie',
   'common.pagination.first': 'Pierwsza strona',
