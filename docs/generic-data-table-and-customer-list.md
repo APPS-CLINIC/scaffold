@@ -128,8 +128,8 @@ public cell component in its own file:
 - `TextCell` for ordinary primitive text;
 - `UnderlinedTextCell` for link-like primary values;
 - `DateCell` for locale-aware date formatting;
-- `OverdueDateCell` for a date that also flags, with the IWA "incomplete"
-  status, how many days it is past;
+- `OverdueDateCell` for a date that shows the IWA "incomplete" overdue status
+  once it is past;
 - `ActiveArchivalStatusCell` for ACTIVE/ARCHIVAL status presentation.
 
 These cells are domain-neutral building blocks exported through `@/ui`. The

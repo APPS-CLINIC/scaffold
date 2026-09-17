@@ -58,7 +58,7 @@ describe('CustomersView', () => {
     expect(screen.getByRole('button', { name: 'Dostosuj filtry' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Ustawienia listy' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Szukaj na liście')).toBeInTheDocument();
-    expect(await screen.findAllByText(/^Przekroczona o \d+ dni$/)).toHaveLength(2);
+    expect(await screen.findAllByText('Przekroczona')).toHaveLength(2);
   });
 
   it('renders the development preview cache without an HTTP request', async () => {
@@ -149,16 +149,10 @@ describe('CustomersView', () => {
     });
   });
 
-  it('flags overdue review dates with the number of days overdue', async () => {
-    vi.useFakeTimers({ now: new Date('2026-09-15T12:00:00'), toFake: ['Date'] });
-    try {
-      renderPage();
-      // 2026-02-10 → 2026-09-15 is 217 days; 2025-12-18 → 2026-09-15 is 271 days.
-      expect(await screen.findByText('Overdue by 217 days')).toBeInTheDocument();
-      expect(screen.getByText('Overdue by 271 days')).toBeInTheDocument();
-    } finally {
-      vi.useRealTimers();
-    }
+  it('flags the overdue review dates of a customer', async () => {
+    renderPage();
+
+    expect(await screen.findAllByText('Overdue')).toHaveLength(2);
   });
 
   it('expands every visible customer through the toolbar control', async () => {

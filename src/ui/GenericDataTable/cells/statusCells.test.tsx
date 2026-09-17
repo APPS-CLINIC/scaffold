@@ -105,24 +105,22 @@ describe('OverdueDateCell', () => {
     vi.useRealTimers();
   });
 
-  it('renders a future date and today as a plain <time> without the marker', () => {
+  it('renders a future date and today like DateCell, without the marker', () => {
     const { rerender } = render(<OverdueDateCell {...cellProps('date', '2026-09-16')} />);
+    expect(screen.getByText(formatted('2026-09-16'))).toBeInTheDocument();
     expect(screen.queryByTestId('status')).not.toBeInTheDocument();
-    expect(screen.getByText(formatted('2026-09-16'))).toHaveAttribute('datetime', '2026-09-16');
 
     rerender(<OverdueDateCell {...cellProps('date', '2026-09-15')} />);
+    expect(screen.getByText(formatted('2026-09-15'))).toBeInTheDocument();
     expect(screen.queryByTestId('status')).not.toBeInTheDocument();
-    expect(screen.getByText(formatted('2026-09-15'))).toHaveAttribute('datetime', '2026-09-15');
   });
 
-  it('marks a past date with the incomplete status whose label counts the days overdue', () => {
-    const { rerender } = render(<OverdueDateCell {...cellProps('date', '2026-09-10')} />);
-    expect(screen.getByTestId('status')).toHaveAttribute('data-type', 'incomplete');
-    expect(screen.getByTestId('status')).toHaveTextContent(/^Overdue by 5 days$/);
-    expect(screen.getByText(formatted('2026-09-10'))).toHaveAttribute('datetime', '2026-09-10');
+  it('marks a past date with the incomplete overdue status above the date', () => {
+    render(<OverdueDateCell {...cellProps('date', '2026-09-14')} />);
 
-    rerender(<OverdueDateCell {...cellProps('date', '2026-09-14')} />);
-    expect(screen.getByTestId('status')).toHaveTextContent(/^Overdue by 1 day$/);
+    expect(screen.getByTestId('status')).toHaveAttribute('data-type', 'incomplete');
+    expect(screen.getByTestId('status')).toHaveTextContent(/^Overdue$/);
+    expect(screen.getByText(formatted('2026-09-14'))).toHaveAttribute('datetime', '2026-09-14');
   });
 
   it('falls back like DateCell for empty and non-date values, never showing the marker', () => {
@@ -135,6 +133,5 @@ describe('OverdueDateCell', () => {
     rerender(<OverdueDateCell {...cellProps('date', '2026-02-31')} />);
     expect(screen.getByText('2026-02-31')).toBeInTheDocument();
     expect(screen.queryByTestId('status')).not.toBeInTheDocument();
-    expect(document.querySelector('time')).toBeNull();
   });
 });

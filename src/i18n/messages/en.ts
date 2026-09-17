@@ -12,12 +12,7 @@ export const en: Record<MessageKey, string> = {
   'common.results': '{{count}} results',
   'common.status.active': 'Active',
   'common.status.archival': 'Archival',
-  // Non-breaking spaces keep the preposition, the number and its unit together
-  // when the label wraps inside a narrow table cell.
-  'common.overdueDays_one': 'Overdue by\u00A0{{count}}\u00A0day',
-  'common.overdueDays_few': 'Overdue by\u00A0{{count}}\u00A0days',
-  'common.overdueDays_many': 'Overdue by\u00A0{{count}}\u00A0days',
-  'common.overdueDays_other': 'Overdue by\u00A0{{count}}\u00A0days',
+  'common.status.overdue': 'Overdue',
   'common.yes': 'Yes',
   'common.no': 'No',
   'common.pagination.first': 'First page',
