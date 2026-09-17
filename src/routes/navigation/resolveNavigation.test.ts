@@ -271,6 +271,7 @@ describe('resolveNavigation', () => {
       'dashboard',
       'general-data',
       'cdd-crs-fatca',
+      'fm-data',
       'reviews',
       'monitoring',
       'limits',

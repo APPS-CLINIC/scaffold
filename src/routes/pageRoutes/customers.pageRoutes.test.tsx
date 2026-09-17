@@ -94,6 +94,23 @@ describe('customers detail routes', () => {
     }
   });
 
+  it('keeps every FM data part inside the summary layout', () => {
+    for (const pathname of [
+      '/customers/42/fm-data',
+      '/customers/42/fm-data/basic-data',
+      '/customers/42/fm-data/mandates',
+    ]) {
+      const matches = matchRoutes(createCustomerTestRoutes(), pathname);
+
+      expect(matches?.map((match) => match.route.path)).toEqual([
+        '/customers',
+        `:${customerDetailNavigationContext.parameter}`,
+        undefined,
+        'fm-data/*',
+      ]);
+    }
+  });
+
   it('matches the reviews > details branch inside the summary layout', () => {
     const matches = matchRoutes(createCustomerTestRoutes(), '/customers/42/reviews/details');
 

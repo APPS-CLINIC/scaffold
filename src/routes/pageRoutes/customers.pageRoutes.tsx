@@ -69,6 +69,18 @@ export const customersDetailRoutes: readonly RouteObject[] = [
             },
           },
           {
+            // One splat route: the part menu inside the page owns the last segment, so
+            // the parts stay out of the manifest sidebar tree.
+            path: 'fm-data/*',
+            caseSensitive: true,
+            lazy: async () => {
+              const { CustomerFmDataPage } =
+                await import('@/routes/pages/customers/CustomerFmDataPage');
+
+              return { Component: CustomerFmDataPage };
+            },
+          },
+          {
             path: 'reviews',
             caseSensitive: true,
             children: [
