@@ -1,7 +1,12 @@
 import type { SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, TabMenu } from '@/ui';
-import { CUSTOMER_FM_DATA_PARTS, type CustomerFmDataPart } from './customerFmData.parts';
+import { CustomerFmBasicData } from './CustomerFmBasicData';
+import {
+  CUSTOMER_FM_DATA_PARTS,
+  DEFAULT_CUSTOMER_FM_DATA_PART,
+  type CustomerFmDataPart,
+} from './customerFmData.parts';
 
 export interface CustomerFmDataViewProps {
   customerId: string;
@@ -13,7 +18,7 @@ export interface CustomerFmDataViewProps {
  * Route content for the FM data tab: one card holding the part menu and the active part.
  * The owner keeps the active part in the URL, so this component never stores it.
  */
-export function CustomerFmDataView({ part, onSelectPart }: CustomerFmDataViewProps) {
+export function CustomerFmDataView({ customerId, part, onSelectPart }: CustomerFmDataViewProps) {
   const { t } = useTranslation();
   const activeIndex = CUSTOMER_FM_DATA_PARTS.findIndex((item) => item.id === part.id);
 
@@ -34,8 +39,16 @@ export function CustomerFmDataView({ part, onSelectPart }: CustomerFmDataViewPro
           />
         </nav>
         <div className="mt-4 min-w-0">
-          <h3 className="m-0 text-lg font-bold leading-6 text-[var(--text)]">{t(part.labelKey)}</h3>
-          <p className="mt-2 text-[var(--muted)]">{t('section.placeholder')}</p>
+          {part.id === DEFAULT_CUSTOMER_FM_DATA_PART.id ? (
+            <CustomerFmBasicData customerId={customerId} />
+          ) : (
+            <>
+              <h3 className="m-0 text-lg font-bold leading-6 text-[var(--text)]">
+                {t(part.labelKey)}
+              </h3>
+              <p className="mt-2 text-[var(--muted)]">{t('section.placeholder')}</p>
+            </>
+          )}
         </div>
       </div>
     </Card>

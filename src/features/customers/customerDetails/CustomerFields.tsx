@@ -86,6 +86,42 @@ type SectionContent =
   | { groups: readonly CustomerFieldGroup[]; rows?: never };
 
 /**
+ * Rows of one card, grouped and separated by a full-width divider. Each group indents its
+ * rows so the labels line up in one right-aligned column across the whole card.
+ */
+export function CustomerFieldGroups({
+  groups,
+  loading,
+}: {
+  groups: readonly CustomerFieldGroup[];
+  loading: boolean;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <>
+      {groups.map((group, index) => (
+        <div key={group.titleKey ?? 'rows'} className="min-w-0">
+          {index > 0 ? (
+            <hr className="my-4 border-0 border-t border-[var(--border-subtle)]" />
+          ) : null}
+          {group.titleKey ? (
+            <h4 className="m-0 mt-3 text-sm font-bold text-[var(--text)]">{t(group.titleKey)}</h4>
+          ) : null}
+          <div className="mt-3 grid min-w-0 grid-cols-1 lg:grid-cols-4">
+            <div className="min-w-0 space-y-1 lg:col-span-3 lg:col-start-2">
+              {group.rows.map((row) => (
+                <CustomerField key={row.labelKey} {...row} loading={loading} />
+              ))}
+            </div>
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+/**
  * One titled card band. The section title sits above its rows (not beside them), and a
  * section may hold several titled groups separated by a full-width divider, as the CDD
  * card does with "Data ICBS" and "Scope file data".
@@ -105,23 +141,7 @@ export function CustomerDetailSection({
         <h3 id={headingId} className="m-0 text-lg font-bold leading-6 text-[var(--text)]">
           {t(titleKey)}
         </h3>
-        {groups.map((group, index) => (
-          <div key={group.titleKey ?? 'rows'} className="min-w-0">
-            {index > 0 ? (
-              <hr className="my-4 border-0 border-t border-[var(--border-subtle)]" />
-            ) : null}
-            {group.titleKey ? (
-              <h4 className="m-0 mt-3 text-sm font-bold text-[var(--text)]">{t(group.titleKey)}</h4>
-            ) : null}
-            <div className="mt-3 grid min-w-0 grid-cols-1 lg:grid-cols-4">
-              <div className="min-w-0 space-y-1 lg:col-span-3 lg:col-start-2">
-                {group.rows.map((row) => (
-                  <CustomerField key={row.labelKey} {...row} loading={loading} />
-                ))}
-              </div>
-            </div>
-          </div>
-        ))}
+        <CustomerFieldGroups groups={groups} loading={loading} />
       </section>
     </Card>
   );

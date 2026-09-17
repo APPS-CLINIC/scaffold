@@ -202,6 +202,37 @@ export const pl = {
   'customers.details.fmData.part.mandates': 'Mandaty',
   'customers.details.fmData.part.contracts': 'Umowy',
   'customers.details.fmData.part.proxies': 'Pełnomocnicy',
+  'customers.details.fmData.section.lei': 'LEI',
+  'customers.details.fmData.section.emir': 'EMIR',
+  'customers.details.fmData.section.cpac': 'CPAC',
+  'customers.details.fmData.section.mifid': 'MIFID',
+  'customers.details.fmData.section.mifidTest': 'Wynik testu odpowiedniości MIFID',
+  'customers.details.fmData.field.leiCode': 'Kod LEI',
+  'customers.details.fmData.field.leiCodeValidityDate': 'Data ważności',
+  'customers.details.fmData.field.emirClassification': 'Klasyfikacja EMIR',
+  'customers.details.fmData.field.emirReporting': 'Raportowanie EMIR w imieniu klienta',
+  'customers.details.fmData.field.cpacClassification': 'Klasyfikacja CPAC',
+  'customers.details.fmData.field.cpacClassificationDate': 'Data klasyfikacji CPAC',
+  'customers.details.fmData.field.mifidClassification': 'Klasyfikacja MIFID',
+  'customers.details.fmData.field.mifidInterestConflictDate':
+    'Data informacji o konflikcie interesów MIFID',
+  'customers.details.fmData.field.mifidPolicyDate': 'Data polityki BEST Execution',
+  'customers.details.fmData.field.mifidTestDate': 'Data testu odpowiedniości MIFID',
+  'customers.details.fmData.field.testM01': 'M01 – Klasyfikacja CPAC',
+  'customers.details.fmData.field.testM02':
+    'M02 – Dłużne papiery wartościowe (np. obligacje skarbowe, korporacyjne, certyfikaty depozytowe)',
+  'customers.details.fmData.field.testM03':
+    'M03 – Zaawansowane walutowe instrumenty pochodne (opcje walutowe, strategie opcyjne)',
+  'customers.details.fmData.field.testM04':
+    'M04 – Proste walutowe instrumenty pochodne (FX Forward, FX NDF)',
+  'customers.details.fmData.field.testM05':
+    'M05 – Instrumenty pochodne stopy procentowej (IRS, Cap, Floor, Collar)',
+  'customers.details.fmData.field.testM06': 'M06 – Swap walutowo-procentowy (CIRS)',
+  'customers.details.fmData.field.testM07': 'M07 – TFI',
+  'customers.details.fmData.field.testM08': 'M08',
+  'customers.details.fmData.field.testM09':
+    'M09 – Produkty strukturyzowane (np. lokata dwuwalutowa)',
+  'customers.details.fmData.field.testM10': 'M10',
   'home.intro': 'Czysty scaffold — dodaj swoją pierwszą funkcję.',
   'nav.title': 'Nawigacja',
   'nav.home': 'Start',
