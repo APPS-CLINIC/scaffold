@@ -62,3 +62,4 @@ keep ADRs at all; use it as the template for new records.
 | [0019](0019-tailwind-utilities.md)                     | Tailwind CSS v4 (utilities layer) alongside CSS modules     | Superseded by ADR-0021 |
 | [0021](0021-tailwind-v3-for-iwa-compatibility.md)      | Tailwind CSS v3 for IWA compatibility                       | Accepted               |
 | [0035](0035-dnd-kit-for-accessible-list-reordering.md) | @dnd-kit for accessible list reordering                     | Accepted               |
+| [0036](0036-date-fns-for-calendar-dates.md)            | date-fns for calendar dates                                 | Accepted               |

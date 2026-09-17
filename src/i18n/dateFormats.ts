@@ -1,3 +1,10 @@
+// Per-function entry points: the package root re-exports every function, and the
+// dev server and the test runner transform each of those modules on first import.
+import { isBefore } from 'date-fns/isBefore';
+import { isValid } from 'date-fns/isValid';
+import { parse } from 'date-fns/parse';
+import { startOfDay } from 'date-fns/startOfDay';
+
 /** Shared numeric day-month-year format used by list views and table cells. */
 export const DATE_DMY_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
   day: '2-digit',
@@ -9,55 +16,23 @@ export function formatDmyDate(date: Date, locale: string): string {
   return new Intl.DateTimeFormat(locale, DATE_DMY_FORMAT_OPTIONS).format(date);
 }
 
-interface IsoLocalDate {
-  year: string;
-  month: string;
-  day: string;
-  date: Date;
-}
-
 /**
- * Accept an ISO local date only when its parts survive a calendar roundtrip, so
- * `2026-02-31` is rejected instead of rolling over into March.
+ * The service sends calendar dates as `yyyy-MM-dd`. A timestamp, or a day the
+ * month does not have such as `2026-02-31`, is not a date here.
  */
-function parseIsoLocalDate(value: string): IsoLocalDate | null {
-  const match = /^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/u.exec(value);
-  if (!match) return null;
-
-  const [, year = '', month = '', day = ''] = match;
-  const date = new Date(`${year}-${month}-${day}T12:00:00`);
-
-  if (
-    Number.isNaN(date.getTime()) ||
-    date.getFullYear() !== Number(year) ||
-    date.getMonth() !== Number(month) - 1 ||
-    date.getDate() !== Number(day)
-  ) {
-    return null;
-  }
-
-  return { year, month, day, date };
+function parseIsoDate(value: string): Date | null {
+  const date = parse(value, 'yyyy-MM-dd', new Date());
+  return isValid(date) ? date : null;
 }
 
-/** Format an ISO local-date value without silently normalizing invalid dates. */
+/** Format an ISO date; a value that is not one is shown as it came. */
 export function formatIsoDmyDate(value: string, locale: string): string {
-  const parsed = parseIsoLocalDate(value);
-  return parsed ? formatDmyDate(parsed.date, locale) : value;
+  const date = parseIsoDate(value);
+  return date ? formatDmyDate(date, locale) : value;
 }
 
-/**
- * Compare ISO local dates as text so the result never shifts with the viewer's
- * timezone. Values that are not valid ISO local dates are not classified.
- */
+/** Whether an ISO date lies before `today`'s calendar day. */
 export function isPastIsoDate(value: string | null, today = new Date()): boolean {
-  const parsed = value ? parseIsoLocalDate(value) : null;
-  if (!parsed) return false;
-
-  const todayText = [
-    String(today.getFullYear()).padStart(4, '0'),
-    String(today.getMonth() + 1).padStart(2, '0'),
-    String(today.getDate()).padStart(2, '0'),
-  ].join('-');
-
-  return `${parsed.year}-${parsed.month}-${parsed.day}` < todayText;
+  const date = value ? parseIsoDate(value) : null;
+  return date !== null && isBefore(date, startOfDay(today));
 }
