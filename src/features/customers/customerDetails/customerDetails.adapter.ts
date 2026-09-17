@@ -5,6 +5,7 @@ import type {
   CustomerAdvisorsResponse,
   CustomerBasicData,
   CustomerConsents,
+  CustomerCpac,
   CustomerCrs,
   CustomerDetails,
   CustomerDetailsResponse,
@@ -42,9 +43,23 @@ const EMPTY_FATCA: CustomerFatca = {
 };
 const EMPTY_MIFID: CustomerMifid = {
   mifidClassification: null,
+  mifidTestDate: null,
+  mifidPolicyDate: null,
+  mifidInterestConflictDate: null,
+  testM01: null,
+  testM02: null,
+  testM03: null,
+  testM04: null,
+  testM05: null,
+  testM06: null,
+  testM07: null,
+  testM08: null,
+  testM09: null,
+  testM10: null,
 };
 const EMPTY_LEI: CustomerLei = { leiCode: null, leiCodeValidityDate: null };
-const EMPTY_EMIR: CustomerEmir = { emirClassification: null };
+const EMPTY_EMIR: CustomerEmir = { emirClassification: null, emirReporting: null };
+const EMPTY_CPAC: CustomerCpac = { cpacClassification: null, cpacClassificationDate: null };
 
 const EMPTY_ADVISORS: CustomerAdvisors = {
   rmAdvisor: null,
@@ -136,6 +151,7 @@ export function mapCustomerDetailsResponse(response: CustomerDetailsResponse): C
     mifid: { ...EMPTY_MIFID, ...(response.mifid ?? {}) },
     lei: { ...EMPTY_LEI, ...(response.lei ?? {}) },
     emir: { ...EMPTY_EMIR, ...(response.emir ?? {}) },
+    cpac: { ...EMPTY_CPAC, ...(response.cpac ?? {}) },
   };
 }
 
@@ -153,6 +169,7 @@ export const EMPTY_CUSTOMER_DETAILS: CustomerDetails = mapCustomerDetailsRespons
   mifid: null,
   lei: null,
   emir: null,
+  cpac: null,
 });
 
 export const EMPTY_CUSTOMER_ADVISORS: CustomerAdvisors = { ...EMPTY_ADVISORS };
