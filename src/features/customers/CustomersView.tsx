@@ -139,10 +139,14 @@ export function CustomersView() {
             label={t('customers.actions.customizeFilters')}
           />
           <div className="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2">
-            <SearchWithAutocomplete
-              className="w-full max-w-96 [&_input]:!bg-[var(--surface)] [&_input]:!border-[var(--border)] [&_input:focus]:!border-[var(--navigation-accent)] [&_input:focus]:![box-shadow:none] [&_input:focus]:!outline-none"
-              placeholder={t('customers.search.placeholder')}
-            />
+            {/* The overrides sit on this wrapper so they reach every element of the IWA
+                field, whichever one receives `className`. */}
+            <div className="w-full max-w-96 [&_*]:!bg-white [&_input]:!border-[var(--border)] [&_input:focus]:!border-[var(--navigation-accent)] [&_input:focus]:![box-shadow:none] [&_input:focus]:!outline-none">
+              <SearchWithAutocomplete
+                className="w-full"
+                placeholder={t('customers.search.placeholder')}
+              />
+            </div>
             <GenericTableSettings
               dataContent={data?.content}
               onExpandedRowKeysChange={setExpandedRowKeys}
