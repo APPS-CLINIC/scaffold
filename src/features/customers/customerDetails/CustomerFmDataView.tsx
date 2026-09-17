@@ -21,6 +21,7 @@ export interface CustomerFmDataViewProps {
 export function CustomerFmDataView({ customerId, part, onSelectPart }: CustomerFmDataViewProps) {
   const { t } = useTranslation();
   const activeIndex = CUSTOMER_FM_DATA_PARTS.findIndex((item) => item.id === part.id);
+  const showsBasicData = part.id === DEFAULT_CUSTOMER_FM_DATA_PART.id;
 
   return (
     <Card>
@@ -39,15 +40,19 @@ export function CustomerFmDataView({ customerId, part, onSelectPart }: CustomerF
           />
         </nav>
         <div className="mt-4 min-w-0">
-          {part.id === DEFAULT_CUSTOMER_FM_DATA_PART.id ? (
+          {/* The menu already names the part on screen, so the shown part titles itself
+              for assistive technology only, above the group headings it owns. */}
+          <h3
+            className={
+              showsBasicData ? 'sr-only' : 'm-0 text-lg font-bold leading-6 text-[var(--text)]'
+            }
+          >
+            {t(part.labelKey)}
+          </h3>
+          {showsBasicData ? (
             <CustomerFmBasicData customerId={customerId} />
           ) : (
-            <>
-              <h3 className="m-0 text-lg font-bold leading-6 text-[var(--text)]">
-                {t(part.labelKey)}
-              </h3>
-              <p className="mt-2 text-[var(--muted)]">{t('section.placeholder')}</p>
-            </>
+            <p className="mt-2 text-[var(--muted)]">{t('section.placeholder')}</p>
           )}
         </div>
       </div>

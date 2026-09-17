@@ -135,7 +135,7 @@ export function CustomerFmBasicData({ customerId }: CustomerFmBasicDataProps) {
   ];
 
   return (
-    <div className="min-w-0">
+    <div className="min-w-0" aria-busy={loading || undefined}>
       {detailsQuery.isError ? (
         <p role="alert" className="sr-only">
           {t('customers.details.data.error')}
