@@ -119,33 +119,33 @@ describe('CustomersView column settings', () => {
     const user = userEvent.setup();
     renderPage();
     await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
-    expect(screen.getByRole('columnheader', { name: 'GRID' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'KKF' })).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /expand details for arcelormittal/i }));
     expect(expandedRegions()).toHaveLength(1);
 
     await user.click(screen.getByRole('button', { name: 'List settings' }));
-    expect(usedColumns()).toBe('Used columns: 25 of 25');
+    expect(usedColumns()).toBe('Used columns: 26 of 26');
     expect(rowNames()).toEqual(labelsOf(defaultColumns));
-    expect(rowNames()[1]).toBe('GRID');
+    expect(rowNames()[1]).toBe('KKF');
 
     await user.click(within(settingsDialog()).getByRole('button', { name: 'Remove column 2' }));
     await user.click(within(settingsDialog()).getByRole('button', { name: 'Save' }));
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(screen.queryByRole('columnheader', { name: 'GRID' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'KKF' })).not.toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Customer name' })).toBeInTheDocument();
     expect(expandedRegions()).toHaveLength(0);
     expect(tableSettingsStorage.read()).toEqual({
       version: 1,
-      tables: { customers: { columns: columnsWithout('grid') } },
+      tables: { customers: { columns: columnsWithout('kkf') } },
     });
   });
 
   it('clears the URL sort once the sorted column is removed', async () => {
     const user = userEvent.setup();
-    renderPage('/customers/all?sort=grid&dir=desc');
+    renderPage('/customers/all?sort=kkf&dir=desc');
     await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
-    expect(currentSearch().get('sort')).toBe('grid');
+    expect(currentSearch().get('sort')).toBe('kkf');
 
     await user.click(screen.getByRole('button', { name: 'List settings' }));
     await user.click(within(settingsDialog()).getByRole('button', { name: 'Remove column 2' }));
@@ -155,7 +155,7 @@ describe('CustomersView column settings', () => {
       expect(currentSearch().get('sort')).toBeNull();
       expect(currentSearch().get('dir')).toBeNull();
     });
-    expect(screen.queryByRole('columnheader', { name: 'GRID' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'KKF' })).not.toBeInTheDocument();
   });
 
   it('renders the stored columns from the first render on', async () => {
@@ -169,15 +169,15 @@ describe('CustomersView column settings', () => {
 
     await user.click(screen.getByRole('button', { name: 'List settings' }));
     expect(rowNames()).toEqual(['Status', 'Customer name']);
-    expect(usedColumns()).toBe('Used columns: 2 of 25');
+    expect(usedColumns()).toBe('Used columns: 2 of 26');
   });
 
   it('restores the default columns after confirmation and empties the storage', async () => {
     const user = userEvent.setup();
-    storePayload([...columnsWithout('grid'), 'grid']);
+    storePayload([...columnsWithout('kkf'), 'kkf']);
     renderPage();
     await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
-    expect(screen.queryByRole('columnheader', { name: 'GRID' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('columnheader', { name: 'KKF' })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: /expand details for arcelormittal/i }));
     expect(expandedRegions()).toHaveLength(1);
 
@@ -187,7 +187,7 @@ describe('CustomersView column settings', () => {
     await user.click(within(confirm).getByRole('button', { name: 'Restore defaults' }));
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    expect(columnHeaderNames()[1]).toBe('GRID');
+    expect(columnHeaderNames()[1]).toBe('KKF');
     expect(expandedRegions()).toHaveLength(0);
     expect(tableSettingsStorage.read()).toBeUndefined();
     expect(memoryStorage.length).toBe(0);
@@ -204,12 +204,12 @@ describe('CustomersView column settings', () => {
 
     await user.click(screen.getByRole('button', { name: 'List settings' }));
     await user.click(within(settingsDialog()).getByRole('button', { name: 'Add column' }));
-    expect(columnRows()).toHaveLength(25);
+    expect(columnRows()).toHaveLength(26);
     await user.click(within(settingsDialog()).getByRole('button', { name: 'Cancel' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'List settings' }));
-    expect(rowNames()).toEqual(labelsOf(columnsWithout('grid')));
-    expect(usedColumns()).toBe('Used columns: 24 of 25');
+    expect(rowNames()).toEqual(labelsOf(columnsWithout('kkf')));
+    expect(usedColumns()).toBe('Used columns: 25 of 26');
   });
 });

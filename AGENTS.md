@@ -57,6 +57,7 @@ Choices only — the rationale for each lives in its ADR:
 | Validation | Zod for URL search params                              | [0008](docs/adr/0008-zod-total-parsing-of-search-params.md)                                                     |
 | Styling    | CSS modules + Tailwind v3 utilities                    | [0021](docs/adr/0021-tailwind-v3-for-iwa-compatibility.md)                                                      |
 | i18n       | i18next + react-i18next (`pl`/`en`)                    | [0014](docs/adr/0014-internationalization-i18n.md)                                                              |
+| Dates      | date-fns for parsing and comparing calendar dates      | [0036](docs/adr/0036-date-fns-for-calendar-dates.md)                                                            |
 | Testing    | Vitest + Testing Library                               | [0005](docs/adr/0005-testing-vitest-testing-library.md)                                                         |
 | UI library | IWA Components / PrimeReact behind the `src/ui` seam   | [0013](docs/adr/0013-iwa-components-primereact.md)                                                              |
 

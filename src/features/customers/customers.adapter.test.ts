@@ -10,7 +10,6 @@ const response: CustomerResponse = {
   grid: '46034616',
   corporateGroupId: 1739,
   corporateGroupName: 'Arcelormittal SA',
-  corporateGroupGRID: '36142003',
   internalGroupId: 53,
   internalGroupName: 'ArcelorMittal',
   kkf: '2203666408',
@@ -26,10 +25,12 @@ const response: CustomerResponse = {
   ebdAdvisor: 'Korniluk Piotr',
   implementationAdvisor: 'Barylska Ewelina',
   customerServiceAdvisor: 'Boguta Magdalena',
+  lendingTeam: 'Zespół Warszawa',
   extensionReviewDate: null,
   lendingReviewDate: '2026-02-10',
   lendingRatingDate: '2025-12-18',
   lendingRatingReviewDate: '2025-12-18',
+  lendingRating: 'BBB-',
   tsPriceConditionEndDate: null,
   tsPriceConditionStatus: null,
   type: 'Corporate',
@@ -38,22 +39,24 @@ const response: CustomerResponse = {
 
 describe('customer response adapter', () => {
   it('normalizes backend status values without renaming response fields', () => {
-    expect(mapCustomerResponse(response)).toMatchObject({
+    expect(
+      mapCustomerResponse({ ...response, tsPriceConditionStatus: 2, type: 'Bank Inwestycyjny' }),
+    ).toMatchObject({
       fullName: response.fullName,
       taxId: response.taxId,
       status: 'ACTIVE',
-      tsPriceConditionStatus: null,
+      tsPriceConditionStatus: 2,
+      type: 'Bank Inwestycyjny',
     });
   });
 
-  it('maps the archival status and pricing labels case-insensitively', () => {
+  it('maps the archival status case-insensitively', () => {
     expect(
       mapCustomerResponse({
         ...response,
         status: ' Archival ',
-        tsPriceConditionStatus: 'Expired',
       }),
-    ).toMatchObject({ status: 'ARCHIVAL', tsPriceConditionStatus: 'expired' });
+    ).toMatchObject({ status: 'ARCHIVAL' });
   });
 
   it('rejects labels outside the English-only contract', () => {
@@ -62,17 +65,15 @@ describe('customer response adapter', () => {
       mapCustomerResponse({
         ...response,
         status: pl['common.status.active'],
-        tsPriceConditionStatus: pl['common.status.expired'],
       }),
-    ).toMatchObject({ status: null, tsPriceConditionStatus: null });
+    ).toMatchObject({ status: null });
 
     expect(
       mapCustomerResponse({
         ...response,
         status: 'unexpected',
-        tsPriceConditionStatus: 'unexpected',
       }),
-    ).toMatchObject({ status: null, tsPriceConditionStatus: null });
+    ).toMatchObject({ status: null });
   });
 
   it('rejects labels that collide with Object.prototype members', () => {
@@ -80,9 +81,8 @@ describe('customer response adapter', () => {
       mapCustomerResponse({
         ...response,
         status: 'constructor',
-        tsPriceConditionStatus: ' __proto__ ',
       }),
-    ).toMatchObject({ status: null, tsPriceConditionStatus: null });
+    ).toMatchObject({ status: null });
   });
 
   it('degrades non-string payload values to null instead of crashing', () => {
@@ -90,8 +90,7 @@ describe('customer response adapter', () => {
       mapCustomerResponse({
         ...response,
         status: 42 as unknown as string,
-        tsPriceConditionStatus: {} as unknown as string,
       }),
-    ).toMatchObject({ status: null, tsPriceConditionStatus: null });
+    ).toMatchObject({ status: null });
   });
 });

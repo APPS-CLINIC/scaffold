@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { OverdueDateCell } from '@/ui';
 import { customerTableConfig } from './config';
 
 describe('customerTableConfig', () => {
@@ -9,39 +10,53 @@ describe('customerTableConfig', () => {
   it('keeps the reference field order explicit', () => {
     expect(customerTableConfig.fields.map(({ field }) => field)).toEqual([
       'fullName',
-      'grid',
+      'kkf',
       'status',
+      'internalGroupName',
       'corporateGroupName',
       'type',
+      'lendingReviewDate',
       'lendingRatingReviewDate',
+      'lendingRating',
       'tsPriceConditionEndDate',
       'tsPriceConditionStatus',
-      'lendingReviewDate',
-      'kkf',
-      'krs',
+      'grid',
       'taxId',
+      'krs',
       'regon',
       'shortName',
       'rmAdvisor',
-      'corporateGroupGRID',
-      'internalGroupName',
       'lendingAdvisor',
       'sfAdvisor',
       'pcmAdvisor',
       'fmAdvisor',
       'tsAdvisor',
-      'ebdAdvisor',
       'implementationAdvisor',
       'customerServiceAdvisor',
+      'ebdAdvisor',
+      'lendingTeam',
     ]);
   });
 
   it('gives every field the same config shape the fit engine needs', () => {
+    const notServedByBackendYet = new Set(['lendingRating', 'lendingTeam']);
+
     for (const field of customerTableConfig.fields) {
       expect(field.width).toBeGreaterThan(0);
       expect(field.labelKey).toBe(`customers.table.field.${field.field}`);
-      expect(field.sortable).toBe(true);
+      expect(field.sortable).toBe(!notServedByBackendYet.has(field.field));
     }
+  });
+
+  it('marks the review and pricing dates as overdue-aware', () => {
+    const overdueFields = customerTableConfig.fields
+      .filter((field) => field.component === OverdueDateCell)
+      .map(({ field }) => field);
+    expect(overdueFields).toEqual([
+      'lendingReviewDate',
+      'lendingRatingReviewDate',
+      'tsPriceConditionEndDate',
+    ]);
   });
 
   it('pins only the customer name so it can never drop into the accordion', () => {

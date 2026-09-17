@@ -4,8 +4,6 @@ export type CustomerStatus = 'ACTIVE' | 'ARCHIVAL';
 /** Lowercase status vocabulary used in URLs and list filters. */
 export type CustomerStatusFilter = 'active' | 'archival';
 
-export type CustomerPriceConditionStatus = 'valid' | 'expiring' | 'expired';
-
 export type SortDirection = 'asc' | 'desc';
 
 /** Raw customer item returned by the backend. Property names and nullability follow the API contract. */
@@ -16,7 +14,6 @@ export interface CustomerResponse {
   grid: string;
   corporateGroupId: number | null;
   corporateGroupName: string | null;
-  corporateGroupGRID: string | null;
   internalGroupId: number | null;
   internalGroupName: string | null;
   kkf: string | null;
@@ -32,20 +29,21 @@ export interface CustomerResponse {
   ebdAdvisor: string | null;
   implementationAdvisor: string | null;
   customerServiceAdvisor: string | null;
+  lendingTeam: string | null;
   extensionReviewDate: string | null;
   lendingReviewDate: string | null;
   lendingRatingDate: string | null;
   lendingRatingReviewDate: string | null;
+  lendingRating: string | null;
   tsPriceConditionEndDate: string | null;
-  tsPriceConditionStatus: string | null;
+  tsPriceConditionStatus: number | null;
   type: string | null;
   status: string;
 }
 
-/** App-facing row with backend status labels normalized for reusable cells. */
-export interface Customer extends Omit<CustomerResponse, 'status' | 'tsPriceConditionStatus'> {
+/** App-facing row with the backend status label normalized for reusable cells. */
+export interface Customer extends Omit<CustomerResponse, 'status'> {
   status: CustomerStatus | null;
-  tsPriceConditionStatus: CustomerPriceConditionStatus | null;
 }
 
 /**

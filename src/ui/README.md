@@ -56,9 +56,8 @@ so its settings can be stored per table.
 
 Reusable, domain-neutral cell components live with the table seam, one public
 cell per file. Features compose `TextCell`, `UnderlinedTextCell`, `DateCell`,
-`ActiveArchivalStatusCell`, or `ValidityStatusCell`; a feature-specific
-renderer is only needed when those building blocks cannot express the domain
-value.
+`OverdueDateCell`, or `ActiveArchivalStatusCell`; a feature-specific renderer is
+only needed when those building blocks cannot express the domain value.
 
 ```tsx
 import { ActiveArchivalStatusCell, UnderlinedTextCell } from '@/ui';

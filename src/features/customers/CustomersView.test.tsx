@@ -33,8 +33,8 @@ function renderPage(initialEntry = '/customers/all', store?: AppStore) {
 }
 
 beforeEach(async () => {
-  // Wide enough for the nine reference columns; identifiers and advisors
-  // stay in the accordion, mirroring the desktop reference layout.
+  // Wide enough for the nine leading columns (name … lending rating); the TS
+  // date and status, the identifiers and the advisors stay in the accordion.
   mockTableContainerWidth(1380);
   installCustomerApiTestTransport();
   vi.spyOn(document.head, 'appendChild').mockImplementation(<T extends Node>(node: T): T => {
@@ -58,6 +58,7 @@ describe('CustomersView', () => {
     expect(screen.getByRole('button', { name: 'Dostosuj filtry' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Ustawienia listy' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Szukaj na liście')).toBeInTheDocument();
+    expect(await screen.findAllByText('Przekroczona')).toHaveLength(2);
   });
 
   it('renders the development preview cache without an HTTP request', async () => {
@@ -134,11 +135,23 @@ describe('CustomersView', () => {
       expect(new URLSearchParams(search).get('sort')).toBe('fullName');
     });
 
+    await user.click(screen.getByRole('columnheader', { name: /customer name/i }));
+    await waitFor(() => {
+      const search = screen.getByRole('status', { name: 'Current customer URL' }).textContent ?? '';
+      expect(new URLSearchParams(search).get('dir')).toBe('desc');
+    });
+
     await user.click(paginatorControl('next'));
     await waitFor(() => {
       const search = screen.getByRole('status', { name: 'Current customer URL' }).textContent ?? '';
       expect(new URLSearchParams(search).get('page')).toBe('2');
     });
+  });
+
+  it('flags the overdue review dates of a customer', async () => {
+    renderPage();
+
+    expect(await screen.findAllByText('Overdue')).toHaveLength(2);
   });
 
   it('expands every visible customer through the toolbar control', async () => {
