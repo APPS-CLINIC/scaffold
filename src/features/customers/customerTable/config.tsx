@@ -1,8 +1,7 @@
 import type { Customer } from '@/features/customers/customers.types';
-import { ActiveArchivalStatusCell, TextCell, UnderlinedTextCell } from '@/ui';
+import { ActiveArchivalStatusCell, OverdueDateCell, TextCell, UnderlinedTextCell } from '@/ui';
 import type { GenericDataTableConfig } from '@/ui';
 import { CustomerTypeCell } from './CustomerTypeCell';
-import { OverdueDateCell } from './OverdueDateCell';
 
 /**
  * One flat field list: every field can be a column, and whatever does not fit

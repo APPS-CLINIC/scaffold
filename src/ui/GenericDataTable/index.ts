@@ -5,6 +5,7 @@ export { TableColumnSettingsDialog } from './settings';
 export {
   ActiveArchivalStatusCell,
   DateCell,
+  OverdueDateCell,
   TextCell,
   UnderlinedTextCell,
   renderCellValue,

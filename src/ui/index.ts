@@ -60,6 +60,7 @@ export {
   TableColumnSettingsDialog,
   ActiveArchivalStatusCell,
   DateCell,
+  OverdueDateCell,
   TextCell,
   UnderlinedTextCell,
   renderCellValue,

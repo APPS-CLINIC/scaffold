@@ -1,19 +1,23 @@
 import { useTranslation } from 'react-i18next';
 import { daysPastIsoDate, formatIsoDmyDate } from '@/i18n/dateFormats';
 import { Status } from '@/ui';
-
-interface OverdueDateProps {
-  /** ISO local date; anything else renders verbatim. */
-  value: string;
-  locale: string;
-}
+import type { GenericDataTableCellProps, GenericDataTableField } from '../GenericDataTable.types';
+import { renderCellValue } from './cellValue';
 
 /**
- * A deadline date. Once it is in the past it gains the IWA "incomplete" status
- * whose label counts the days overdue, with the formatted date below.
+ * A `DateCell` that flags a past date: the IWA "incomplete" status, its label
+ * counting the days overdue, above the formatted date. Empty and non-string
+ * values fall back exactly like `DateCell`.
  */
-export function OverdueDate({ value, locale }: OverdueDateProps) {
+export function OverdueDateCell<
+  T extends object,
+  K extends GenericDataTableField<T> = GenericDataTableField<T>,
+>({ value, locale, notAvailable }: GenericDataTableCellProps<T, K>) {
   const { t } = useTranslation();
+
+  if (value === null || value === undefined || value === '') return notAvailable;
+  if (typeof value !== 'string') return renderCellValue(value, notAvailable);
+
   const formatted = formatIsoDmyDate(value, locale);
   const daysOverdue = daysPastIsoDate(value);
 
@@ -25,7 +29,7 @@ export function OverdueDate({ value, locale }: OverdueDateProps) {
     <span className="flex min-w-0 flex-col items-start gap-0.5">
       <Status
         type="incomplete"
-        label={t('customers.overdueDays', { count: daysOverdue })}
+        label={t('common.overdueDays', { count: daysOverdue })}
         // Table columns are 144–160px wide: the label wraps under the icon
         // instead of being truncated to one line by the library.
         className="min-w-0 !items-start [&_*]:!text-sm [&_*]:!leading-5 [&_*]:!whitespace-normal [&_*]:!break-words"

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { OverdueDateCell } from '@/ui';
 import { customerTableConfig } from './config';
-import { OverdueDateCell } from './OverdueDateCell';
 
 describe('customerTableConfig', () => {
   it('identifies the table so its settings can be persisted', () => {
