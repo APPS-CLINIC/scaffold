@@ -50,7 +50,7 @@ export const customerFirstPageResponse: PageResponse<CustomerResponse> = {
       lendingReviewDate: '2026-02-10',
       lendingRatingReviewDate: '2025-12-18',
     }),
-    createCustomerResponseFixture(24099, 'COMARCH S.A.', { type: 'InstFin_Bank Inwestycyjny' }),
+    createCustomerResponseFixture(24099, 'COMARCH S.A.'),
     createCustomerResponseFixture(24554, 'ABB SP. Z O.O.'),
     createCustomerResponseFixture(24853, 'ENERGY RAIL SERVICES SP. Z O.O.'),
     createCustomerResponseFixture(26606, 'EMITEL S.A.'),

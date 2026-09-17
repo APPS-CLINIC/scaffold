@@ -38,48 +38,25 @@ const response: CustomerResponse = {
 };
 
 describe('customer response adapter', () => {
-  it('normalizes backend status and type values without renaming response fields', () => {
-    expect(mapCustomerResponse({ ...response, tsPriceConditionStatus: 2 })).toMatchObject({
+  it('normalizes backend status values without renaming response fields', () => {
+    expect(
+      mapCustomerResponse({ ...response, tsPriceConditionStatus: 2, type: 'Bank Inwestycyjny' }),
+    ).toMatchObject({
       fullName: response.fullName,
       taxId: response.taxId,
       status: 'ACTIVE',
-      type: 'CORPORATE',
       tsPriceConditionStatus: 2,
+      type: 'Bank Inwestycyjny',
     });
   });
 
-  it('maps the archival status and the customer type case-insensitively', () => {
+  it('maps the archival status case-insensitively', () => {
     expect(
       mapCustomerResponse({
         ...response,
         status: ' Archival ',
-        type: ' corporate ',
       }),
-    ).toMatchObject({ status: 'ARCHIVAL', type: 'CORPORATE' });
-  });
-
-  it('maps every warehouse customer type label to its contract value', () => {
-    const typeOf = (type: string) => mapCustomerResponse({ ...response, type }).type;
-
-    expect(typeOf('Corporate_(FinansStrukturalne)')).toBe('CORPORATE_STRUCTURED_FINANCE');
-    expect(typeOf('InstFin_Bank Inwestycyjny')).toBe('INSTFIN_INVESTMENT_BANK');
-    expect(typeOf('InstFin_Bank n/Inwestycyjny')).toBe('INSTFIN_NON_INVESTMENT_BANK');
-    expect(typeOf('InstFin_Dom makl/Broker')).toBe('INSTFIN_BROKERAGE_HOUSE');
-    expect(typeOf('InstFin_Ubezpieczyciel')).toBe('INSTFIN_INSURER');
-    expect(typeOf('InstFin_F.Leasingowa')).toBe('INSTFIN_LEASING_COMPANY');
-    expect(typeOf('InstFin_F.Faktoringowa')).toBe('INSTFIN_FACTORING_COMPANY');
-    expect(typeOf('InstFin_IzbaRozliczeniowa')).toBe('INSTFIN_CLEARING_HOUSE');
-    expect(typeOf('InstFin_F.ObrWierzyt n/factoring')).toBe('INSTFIN_NON_FACTORING_DEBT_TRADING');
-    expect(typeOf('InstFin_InnaInstFin')).toBe('INSTFIN_OTHER');
-    expect(typeOf('InstFin_TFI')).toBe('INSTFIN_INVESTMENT_FUND_COMPANY');
-    expect(typeOf('InstFin_Fund.Inwestycyjny')).toBe('INSTFIN_INVESTMENT_FUND');
-    expect(typeOf('Corporate_(FinansNieruchKomerc_Constr)')).toBe(
-      'CORPORATE_COMMERCIAL_REAL_ESTATE_CONSTRUCTION',
-    );
-    expect(typeOf('Corporate_(FinansNieruchKomerc_Refinans)')).toBe(
-      'CORPORATE_COMMERCIAL_REAL_ESTATE_REFINANCING',
-    );
-    expect(typeOf('Kartoteka techniczna')).toBe('TECHNICAL_RECORD');
+    ).toMatchObject({ status: 'ARCHIVAL' });
   });
 
   it('rejects labels outside the English-only contract', () => {
@@ -88,17 +65,15 @@ describe('customer response adapter', () => {
       mapCustomerResponse({
         ...response,
         status: pl['common.status.active'],
-        type: 'Korporacyjny',
       }),
-    ).toMatchObject({ status: null, type: null });
+    ).toMatchObject({ status: null });
 
     expect(
       mapCustomerResponse({
         ...response,
         status: 'unexpected',
-        type: 'unexpected',
       }),
-    ).toMatchObject({ status: null, type: null });
+    ).toMatchObject({ status: null });
   });
 
   it('rejects labels that collide with Object.prototype members', () => {
@@ -106,9 +81,8 @@ describe('customer response adapter', () => {
       mapCustomerResponse({
         ...response,
         status: 'constructor',
-        type: ' __proto__ ',
       }),
-    ).toMatchObject({ status: null, type: null });
+    ).toMatchObject({ status: null });
   });
 
   it('degrades non-string payload values to null instead of crashing', () => {
@@ -116,8 +90,7 @@ describe('customer response adapter', () => {
       mapCustomerResponse({
         ...response,
         status: 42 as unknown as string,
-        type: {} as unknown as string,
       }),
-    ).toMatchObject({ status: null, type: null });
+    ).toMatchObject({ status: null });
   });
 });

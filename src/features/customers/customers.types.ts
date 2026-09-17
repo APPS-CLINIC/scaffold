@@ -4,29 +4,6 @@ export type CustomerStatus = 'ACTIVE' | 'ARCHIVAL';
 /** Lowercase status vocabulary used in URLs and list filters. */
 export type CustomerStatusFilter = 'active' | 'archival';
 
-/**
- * Customer type contract. The members are the front end's stable identifiers;
- * the spellings the service actually sends are listed in
- * `customerTypeByDomainValue`.
- */
-export type CustomerType =
-  | 'CORPORATE'
-  | 'CORPORATE_STRUCTURED_FINANCE'
-  | 'INSTFIN_INVESTMENT_BANK'
-  | 'INSTFIN_NON_INVESTMENT_BANK'
-  | 'INSTFIN_BROKERAGE_HOUSE'
-  | 'INSTFIN_INSURER'
-  | 'INSTFIN_LEASING_COMPANY'
-  | 'INSTFIN_FACTORING_COMPANY'
-  | 'INSTFIN_CLEARING_HOUSE'
-  | 'INSTFIN_NON_FACTORING_DEBT_TRADING'
-  | 'INSTFIN_OTHER'
-  | 'INSTFIN_INVESTMENT_FUND_COMPANY'
-  | 'INSTFIN_INVESTMENT_FUND'
-  | 'CORPORATE_COMMERCIAL_REAL_ESTATE_CONSTRUCTION'
-  | 'CORPORATE_COMMERCIAL_REAL_ESTATE_REFINANCING'
-  | 'TECHNICAL_RECORD';
-
 export type SortDirection = 'asc' | 'desc';
 
 /** Raw customer item returned by the backend. Property names and nullability follow the API contract. */
@@ -64,10 +41,9 @@ export interface CustomerResponse {
   status: string;
 }
 
-/** App-facing row with the backend status and type labels normalized for the cells. */
-export interface Customer extends Omit<CustomerResponse, 'status' | 'type'> {
+/** App-facing row with the backend status label normalized for reusable cells. */
+export interface Customer extends Omit<CustomerResponse, 'status'> {
   status: CustomerStatus | null;
-  type: CustomerType | null;
 }
 
 /**

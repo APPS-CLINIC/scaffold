@@ -70,7 +70,6 @@ describe('CustomersView', () => {
 
     expect(await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.')).toBeInTheDocument();
     expect(screen.getByText('15 results')).toBeInTheDocument();
-    expect(screen.getAllByText('Corporate').length).toBeGreaterThan(0);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
