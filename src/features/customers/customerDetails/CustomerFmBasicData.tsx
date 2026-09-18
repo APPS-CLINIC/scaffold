@@ -145,14 +145,28 @@ export function CustomerFmBasicData({ customerId }: CustomerFmBasicDataProps) {
         <span>{t('customers.dataAsOf')}</span>
         <strong className="font-bold text-[var(--text)]">{dataAsOf}</strong>
         <ActionLink
-          icon={<span aria-hidden="true" className="pi pi-refresh text-sm" />}
+          icon={
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-5 w-5 shrink-0 text-[var(--navigation-accent)]"
+            >
+              <path d="M20 7v5h-5M4 17v-5h5" />
+              <path d="M6.1 6.1A8 8 0 0 1 20 12M4 12a8 8 0 0 0 13.9 5.9" />
+            </svg>
+          }
           label={t('customers.actions.refresh')}
           onClick={async () => {
             await refetch();
           }}
         />
       </div>
-      <CustomerFieldGroups groups={groups} loading={loading} />
+      <CustomerFieldGroups groups={groups} loading={loading} layout="balanced" />
     </div>
   );
 }
