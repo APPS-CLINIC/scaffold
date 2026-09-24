@@ -111,15 +111,21 @@ describe('customers detail routes', () => {
     }
   });
 
-  it('matches the reviews tab inside the summary layout', () => {
-    const matches = matchRoutes(createCustomerTestRoutes(), '/customers/42/reviews');
+  it('keeps every reviews part inside the summary layout', () => {
+    for (const pathname of [
+      '/customers/42/reviews',
+      '/customers/42/reviews/review-dates',
+      '/customers/42/reviews/facilities',
+    ]) {
+      const matches = matchRoutes(createCustomerTestRoutes(), pathname);
 
-    expect(matches?.map((match) => match.route.path)).toEqual([
-      '/customers',
-      `:${customerDetailNavigationContext.parameter}`,
-      undefined,
-      'reviews',
-    ]);
+      expect(matches?.map((match) => match.route.path)).toEqual([
+        '/customers',
+        `:${customerDetailNavigationContext.parameter}`,
+        undefined,
+        'reviews/*',
+      ]);
+    }
   });
 
   it('keeps an unconfigured deep link and non-canonical casing inside the customer layout', () => {

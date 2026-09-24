@@ -231,6 +231,11 @@ export const en: Record<MessageKey, string> = {
   'customers.details.fmData.field.testM09':
     'M09 – Structured products (e.g. dual currency deposit)',
   'customers.details.fmData.field.testM10': 'M10',
+  'customers.details.reviews.ariaLabel': 'Customer reviews',
+  'customers.details.reviews.menuAriaLabel': 'Review parts',
+  'customers.details.reviews.part.reviewDates': 'Review dates',
+  'customers.details.reviews.part.facilities': 'Facilities',
+  'customers.details.reviews.part.collaterals': 'Collateral',
   'home.intro': 'Clean scaffold — add your first feature.',
   'nav.title': 'Navigation',
   'nav.home': 'Home',

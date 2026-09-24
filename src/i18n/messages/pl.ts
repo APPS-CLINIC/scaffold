@@ -233,6 +233,11 @@ export const pl = {
   'customers.details.fmData.field.testM09':
     'M09 – Produkty strukturyzowane (np. lokata dwuwalutowa)',
   'customers.details.fmData.field.testM10': 'M10',
+  'customers.details.reviews.ariaLabel': 'Przeglądy klienta',
+  'customers.details.reviews.menuAriaLabel': 'Części przeglądów',
+  'customers.details.reviews.part.reviewDates': 'Daty przeglądu',
+  'customers.details.reviews.part.facilities': 'Facility',
+  'customers.details.reviews.part.collaterals': 'Zabezpieczenia',
   'home.intro': 'Czysty scaffold — dodaj swoją pierwszą funkcję.',
   'nav.title': 'Nawigacja',
   'nav.home': 'Start',
