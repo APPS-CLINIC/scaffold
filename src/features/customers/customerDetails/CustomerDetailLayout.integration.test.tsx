@@ -213,6 +213,39 @@ describe('CustomerDetailLayout routing lifecycle', () => {
     expect(summaryRequestCount()).toBe(1);
 
     await act(async () => {
+      await router.navigate('/customers/first/fm-data');
+    });
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/customers/first/fm-data/basic-data');
+    });
+    expect(
+      view.getByRole('heading', {
+        level: 4,
+        name: i18n.t('customers.details.fmData.section.cpac'),
+      }),
+    ).toBeInTheDocument();
+    expect(view.container.querySelector('.pi-briefcase')).toBe(persistentSummaryIcon);
+    expect(requestedPaths.filter((path) => path.endsWith('/customers/first'))).toHaveLength(1);
+    expect(summaryRequestCount()).toBe(1);
+
+    await act(async () => {
+      await router.navigate('/customers/first/fm-data/mandates');
+    });
+    expect(
+      view.getByRole('heading', {
+        level: 3,
+        name: i18n.t('customers.details.fmData.part.mandates'),
+      }),
+    ).toBeInTheDocument();
+    expect(
+      view.queryByRole('heading', {
+        level: 4,
+        name: i18n.t('customers.details.fmData.section.cpac'),
+      }),
+    ).not.toBeInTheDocument();
+    expect(view.container.querySelector('.pi-briefcase')).toBe(persistentSummaryIcon);
+
+    await act(async () => {
       await router.navigate('/customers/first/reviews');
     });
     expect(

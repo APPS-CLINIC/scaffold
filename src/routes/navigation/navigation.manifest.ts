@@ -9,6 +9,7 @@ import type { NavigationManifest } from './navigation.types';
 const dashboardIcon = createPrimeIcon('home');
 const generalDataIcon = createPrimeIcon('id-card');
 const complianceIcon = createPrimeIcon('shield');
+const fmDataIcon = createPrimeIcon('chart-line');
 const reviewsIcon = createPrimeIcon('calendar');
 const monitoringIcon = createPrimeIcon('eye');
 const limitsIcon = createPrimeIcon('credit-card');
@@ -154,6 +155,12 @@ export const navigationManifest = {
               segment: 'cdd-crs-fatca',
               labelKey: 'nav.customerDetail.cddCrsFatca',
               icon: complianceIcon,
+            },
+            {
+              id: 'fm-data',
+              segment: 'fm-data',
+              labelKey: 'nav.customerDetail.fmData',
+              icon: fmDataIcon,
             },
             {
               id: 'reviews',

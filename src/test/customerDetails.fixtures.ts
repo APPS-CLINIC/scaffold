@@ -60,6 +60,19 @@ export const customerDetailsResponseFixture: CustomerDetailsResponse = {
   },
   mifid: {
     mifidClassification: 'Professional',
+    mifidTestDate: '2026-02-22',
+    mifidPolicyDate: '2025-11-05',
+    mifidInterestConflictDate: '2026-02-22',
+    testM01: true,
+    testM02: true,
+    testM03: true,
+    testM04: true,
+    testM05: true,
+    testM06: true,
+    testM07: false,
+    testM08: false,
+    testM09: true,
+    testM10: null,
   },
   lei: {
     leiCode: '5493001KJTIIGC8Y1R12',
@@ -67,6 +80,11 @@ export const customerDetailsResponseFixture: CustomerDetailsResponse = {
   },
   emir: {
     emirClassification: 'NFC+',
+    emirReporting: true,
+  },
+  cpac: {
+    cpacClassification: 'Professional',
+    cpacClassificationDate: '2026-02-22',
   },
 };
 

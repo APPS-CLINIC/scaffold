@@ -25,6 +25,14 @@ const FIXED = {
   dt: 'min-w-0 break-words text-sm font-bold text-[var(--text)] md:w-[300px] md:shrink-0 md:text-right',
   dd: 'm-0 min-w-0 break-words text-sm text-[var(--text)] md:flex-1',
 };
+// FM basic data uses the full card width with equal label/value columns.
+const BALANCED = {
+  dl: 'm-0 grid min-w-0 grid-cols-1 items-start gap-1 sm:grid-cols-2 sm:gap-x-4',
+  dt: 'min-w-0 break-words text-sm font-bold text-[var(--text)] sm:text-right',
+  dd: 'm-0 min-w-0 break-words text-sm text-[var(--text)]',
+};
+
+type CustomerFieldLayout = 'fixed' | 'balanced';
 
 const isEmpty = (value: CustomerFieldValue): boolean =>
   value === null || value === undefined || (typeof value === 'string' && value.trim() === '');
@@ -38,9 +46,10 @@ export function CustomerField({
   value,
   loading = false,
   compact = false,
-}: CustomerFieldRow & { loading?: boolean; compact?: boolean }) {
+  layout = 'fixed',
+}: CustomerFieldRow & { loading?: boolean; compact?: boolean; layout?: CustomerFieldLayout }) {
   const { t } = useTranslation();
-  const geometry = compact ? COMPACT : FIXED;
+  const geometry = compact ? COMPACT : layout === 'balanced' ? BALANCED : FIXED;
   const empty = isEmpty(value);
   const shown = empty ? t('customers.value.notAvailable') : value;
 
@@ -86,6 +95,56 @@ type SectionContent =
   | { groups: readonly CustomerFieldGroup[]; rows?: never };
 
 /**
+ * Rows of one card, grouped and separated by a full-width divider. The default layout
+ * indents rows; the balanced layout splits the full card into equal label/value columns.
+ */
+export function CustomerFieldGroups({
+  groups,
+  loading,
+  layout = 'fixed',
+}: {
+  groups: readonly CustomerFieldGroup[];
+  loading: boolean;
+  layout?: CustomerFieldLayout;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <>
+      {groups.map((group, index) => (
+        <div key={group.titleKey ?? 'rows'} className="min-w-0">
+          {index > 0 ? (
+            <hr className="my-4 border-0 border-t border-[var(--border-subtle)]" />
+          ) : null}
+          {group.titleKey ? (
+            <h4 className="m-0 mt-3 text-sm font-bold text-[var(--text)]">{t(group.titleKey)}</h4>
+          ) : null}
+          <div
+            className={
+              layout === 'balanced'
+                ? 'mt-3 min-w-0'
+                : 'mt-3 grid min-w-0 grid-cols-1 lg:grid-cols-4'
+            }
+          >
+            <div
+              className={
+                layout === 'balanced'
+                  ? 'min-w-0 space-y-1'
+                  : 'min-w-0 space-y-1 lg:col-span-3 lg:col-start-2'
+              }
+            >
+              {group.rows.map((row) => (
+                <CustomerField key={row.labelKey} {...row} loading={loading} layout={layout} />
+              ))}
+            </div>
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
+/**
  * One titled card band. The section title sits above its rows (not beside them), and a
  * section may hold several titled groups separated by a full-width divider, as the CDD
  * card does with "Data ICBS" and "Scope file data".
@@ -105,23 +164,7 @@ export function CustomerDetailSection({
         <h3 id={headingId} className="m-0 text-lg font-bold leading-6 text-[var(--text)]">
           {t(titleKey)}
         </h3>
-        {groups.map((group, index) => (
-          <div key={group.titleKey ?? 'rows'} className="min-w-0">
-            {index > 0 ? (
-              <hr className="my-4 border-0 border-t border-[var(--border-subtle)]" />
-            ) : null}
-            {group.titleKey ? (
-              <h4 className="m-0 mt-3 text-sm font-bold text-[var(--text)]">{t(group.titleKey)}</h4>
-            ) : null}
-            <div className="mt-3 grid min-w-0 grid-cols-1 lg:grid-cols-4">
-              <div className="min-w-0 space-y-1 lg:col-span-3 lg:col-start-2">
-                {group.rows.map((row) => (
-                  <CustomerField key={row.labelKey} {...row} loading={loading} />
-                ))}
-              </div>
-            </div>
-          </div>
-        ))}
+        <CustomerFieldGroups groups={groups} loading={loading} />
       </section>
     </Card>
   );

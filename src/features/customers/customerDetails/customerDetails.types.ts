@@ -41,6 +41,19 @@ export interface CustomerFatca {
 
 export interface CustomerMifid {
   mifidClassification: CustomerDetailText;
+  mifidTestDate: CustomerDetailText;
+  mifidPolicyDate: CustomerDetailText;
+  mifidInterestConflictDate: CustomerDetailText;
+  testM01: boolean | null;
+  testM02: boolean | null;
+  testM03: boolean | null;
+  testM04: boolean | null;
+  testM05: boolean | null;
+  testM06: boolean | null;
+  testM07: boolean | null;
+  testM08: boolean | null;
+  testM09: boolean | null;
+  testM10: boolean | null;
 }
 
 export interface CustomerLei {
@@ -50,6 +63,12 @@ export interface CustomerLei {
 
 export interface CustomerEmir {
   emirClassification: CustomerDetailText;
+  emirReporting: boolean | null;
+}
+
+export interface CustomerCpac {
+  cpacClassification: CustomerDetailText;
+  cpacClassificationDate: CustomerDetailText;
 }
 
 /** Stable app-facing shape for the basic-data object whose wrapper is transport-specific. */
@@ -85,6 +104,7 @@ export interface CustomerDetailsResponse {
   mifid: CustomerMifid | null;
   lei: CustomerLei | null;
   emir: CustomerEmir | null;
+  cpac: CustomerCpac | null;
 }
 
 /** Normalized view model: every configured group exists even when the API value is null. */
@@ -97,6 +117,7 @@ export interface CustomerDetails {
   mifid: CustomerMifid;
   lei: CustomerLei;
   emir: CustomerEmir;
+  cpac: CustomerCpac;
 }
 
 /** Exact response from `GET /api/v1/customers/{id}/advisors`. */
