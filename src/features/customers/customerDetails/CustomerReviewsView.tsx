@@ -1,6 +1,11 @@
 import { useTranslation } from 'react-i18next';
 import { CustomerPartsCard } from './CustomerPartsCard';
-import { CUSTOMER_REVIEWS_PARTS, type CustomerReviewsPart } from './customerReviews.parts';
+import { CustomerReviewDates } from './CustomerReviewDates';
+import {
+  CUSTOMER_REVIEWS_PARTS,
+  DEFAULT_CUSTOMER_REVIEWS_PART,
+  type CustomerReviewsPart,
+} from './customerReviews.parts';
 
 export interface CustomerReviewsViewProps {
   customerId: string;
@@ -9,7 +14,7 @@ export interface CustomerReviewsViewProps {
 }
 
 /** Route content for the reviews tab: one card holding the part menu and the active part. */
-export function CustomerReviewsView({ part, onSelectPart }: CustomerReviewsViewProps) {
+export function CustomerReviewsView({ customerId, part, onSelectPart }: CustomerReviewsViewProps) {
   const { t } = useTranslation();
 
   return (
@@ -21,7 +26,11 @@ export function CustomerReviewsView({ part, onSelectPart }: CustomerReviewsViewP
       onSelectPart={onSelectPart}
     >
       <h3 className="m-0 text-lg font-bold leading-6 text-[var(--text)]">{t(part.labelKey)}</h3>
-      <p className="mt-2 text-[var(--muted)]">{t('section.placeholder')}</p>
+      {part.id === DEFAULT_CUSTOMER_REVIEWS_PART.id ? (
+        <CustomerReviewDates customerId={customerId} />
+      ) : (
+        <p className="mt-2 text-[var(--muted)]">{t('section.placeholder')}</p>
+      )}
     </CustomerPartsCard>
   );
 }
