@@ -18,7 +18,7 @@ describe('CustomerDetailHeading', () => {
         <CustomerDetailHeading />
         <LocationProbe />
       </>,
-      { initialEntries: ['/customers/42/reviews/details/record-7'] },
+      { initialEntries: ['/customers/42/reviews/record-7'] },
     );
 
     expect(

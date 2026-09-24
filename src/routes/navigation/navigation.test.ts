@@ -89,9 +89,9 @@ describe('navigation configuration', () => {
       'limits',
       'products',
     ]);
-    expect(
-      customerContext?.sidebar.items.find((item) => item.id === 'reviews')?.children?.[0]?.segment,
-    ).toBe('details');
+    expect(customerContext?.sidebar.items.find((item) => item.id === 'reviews')).not.toHaveProperty(
+      'children',
+    );
     expect(customerContext?.defaultItem).toBe('general-data');
     expect(customerContext && getNavigationContextDefaultItemPath(customerContext)).toBe(
       'general-data',
@@ -102,13 +102,31 @@ describe('navigation configuration', () => {
     const customers = navigationSections.find((section) => section.id === 'customers');
     const customerContext = customers?.context;
     if (!customerContext) throw new Error('Expected the customer-detail context.');
+    const TestIcon = () => null;
+    const nestedItems: readonly NavigationTreeItemConfig[] = customerContext.sidebar.items.map(
+      (item): NavigationTreeItemConfig =>
+        item.id === 'reviews'
+          ? {
+              ...item,
+              children: [
+                {
+                  id: 'review-audit',
+                  segment: 'audit',
+                  labelKey: 'nav.portfolio.auditProcess',
+                  icon: TestIcon,
+                },
+              ],
+            }
+          : item,
+    );
 
     expect(
       getNavigationContextDefaultItemPath({
         ...customerContext,
-        defaultItem: 'review-details',
+        sidebar: { type: 'tree', items: nestedItems },
+        defaultItem: 'review-audit',
       }),
-    ).toBe('reviews/details');
+    ).toBe('reviews/audit');
     expect(
       getNavigationContextDefaultItemPath({
         ...customerContext,

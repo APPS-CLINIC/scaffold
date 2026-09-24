@@ -83,14 +83,7 @@ export const customersDetailRoutes: readonly RouteObject[] = [
           {
             path: 'reviews',
             caseSensitive: true,
-            children: [
-              { index: true, element: placeholder('nav.customerDetail.reviews') },
-              {
-                path: 'details',
-                caseSensitive: true,
-                element: placeholder('nav.customerDetail.reviewDetails'),
-              },
-            ],
+            element: placeholder('nav.customerDetail.reviews'),
           },
           {
             path: 'monitoring',

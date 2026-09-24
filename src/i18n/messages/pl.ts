@@ -266,7 +266,6 @@ export const pl = {
   'nav.customerDetail.cddCrsFatca': 'CDD/CRS/FATCA',
   'nav.customerDetail.fmData': 'Dane FM',
   'nav.customerDetail.reviews': 'Przeglądy',
-  'nav.customerDetail.reviewDetails': 'Szczegóły',
   'nav.customerDetail.monitoring': 'Monitoring',
   'nav.customerDetail.limits': 'Limity',
   'nav.customerDetail.products': 'Produkty',

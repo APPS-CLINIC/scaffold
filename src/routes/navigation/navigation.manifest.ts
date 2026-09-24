@@ -167,14 +167,6 @@ export const navigationManifest = {
               segment: 'reviews',
               labelKey: 'nav.customerDetail.reviews',
               icon: reviewsIcon,
-              children: [
-                {
-                  id: 'review-details',
-                  segment: 'details',
-                  labelKey: 'nav.customerDetail.reviewDetails',
-                  icon: reviewsIcon,
-                },
-              ],
             },
             {
               id: 'monitoring',

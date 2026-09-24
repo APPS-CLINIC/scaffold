@@ -111,15 +111,14 @@ describe('customers detail routes', () => {
     }
   });
 
-  it('matches the reviews > details branch inside the summary layout', () => {
-    const matches = matchRoutes(createCustomerTestRoutes(), '/customers/42/reviews/details');
+  it('matches the reviews tab inside the summary layout', () => {
+    const matches = matchRoutes(createCustomerTestRoutes(), '/customers/42/reviews');
 
     expect(matches?.map((match) => match.route.path)).toEqual([
       '/customers',
       `:${customerDetailNavigationContext.parameter}`,
       undefined,
       'reviews',
-      'details',
     ]);
   });
 

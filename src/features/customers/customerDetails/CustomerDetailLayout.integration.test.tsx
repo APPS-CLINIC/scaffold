@@ -255,13 +255,10 @@ describe('CustomerDetailLayout routing lifecycle', () => {
     expect(summaryRequestCount()).toBe(1);
 
     await act(async () => {
-      await router.navigate('/customers/first/reviews/details');
+      await router.navigate('/customers/first/monitoring');
     });
     expect(
-      view.getByRole('heading', {
-        level: 2,
-        name: i18n.t('nav.customerDetail.reviewDetails'),
-      }),
+      view.getByRole('heading', { level: 2, name: i18n.t('nav.customerDetail.monitoring') }),
     ).toBeInTheDocument();
     expect(view.container.querySelector('.pi-briefcase')).toBe(persistentSummaryIcon);
     expect(summaryRequestCount()).toBe(1);

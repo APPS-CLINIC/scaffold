@@ -264,7 +264,6 @@ export const en: Record<MessageKey, string> = {
   'nav.customerDetail.cddCrsFatca': 'CDD/CRS/FATCA',
   'nav.customerDetail.fmData': 'FM data',
   'nav.customerDetail.reviews': 'Reviews',
-  'nav.customerDetail.reviewDetails': 'Details',
   'nav.customerDetail.monitoring': 'Monitoring',
   'nav.customerDetail.limits': 'Limits',
   'nav.customerDetail.products': 'Products',

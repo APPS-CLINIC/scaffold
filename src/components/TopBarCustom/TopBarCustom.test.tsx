@@ -32,35 +32,34 @@ describe('TopBarCustom', () => {
     expect(screen.getByRole('button', { name: i18n.t('topbar.quickSearch') })).toBeInTheDocument();
   });
 
-  it.each([
-    '/customers/42',
-    '/customers/42/general-data',
-    '/customers/42/reviews/details/record-7',
-  ])('keeps the global Customers tab active for customer path %s', (pathname) => {
-    renderWithProviders(
-      <>
-        <TopBarCustom />
-        <LocationProbe />
-      </>,
-      { initialEntries: [pathname] },
-    );
+  it.each(['/customers/42', '/customers/42/general-data', '/customers/42/general-data/record-7'])(
+    'keeps the global Customers tab active for customer path %s',
+    (pathname) => {
+      renderWithProviders(
+        <>
+          <TopBarCustom />
+          <LocationProbe />
+        </>,
+        { initialEntries: [pathname] },
+      );
 
-    expect(screen.getByRole('button', { name: i18n.t('nav.tab.customers') })).toHaveAttribute(
-      'aria-selected',
-      'true',
-    );
-    expect(screen.getByRole('button', { name: i18n.t('nav.tab.portfolio') })).toBeVisible();
-    expect(
-      screen.queryByRole('button', {
-        name: i18n.t('nav.customerDetail.generalData'),
-      }),
-    ).toBeNull();
-    expect(
-      screen.queryByRole('button', {
-        name: i18n.t('nav.customerDetail.cddCrsFatca'),
-      }),
-    ).toBeNull();
-  });
+      expect(screen.getByRole('button', { name: i18n.t('nav.tab.customers') })).toHaveAttribute(
+        'aria-selected',
+        'true',
+      );
+      expect(screen.getByRole('button', { name: i18n.t('nav.tab.portfolio') })).toBeVisible();
+      expect(
+        screen.queryByRole('button', {
+          name: i18n.t('nav.customerDetail.generalData'),
+        }),
+      ).toBeNull();
+      expect(
+        screen.queryByRole('button', {
+          name: i18n.t('nav.customerDetail.cddCrsFatca'),
+        }),
+      ).toBeNull();
+    },
+  );
 
   it('uses configured global destinations when leaving a customer deep link', async () => {
     const user = userEvent.setup();
@@ -69,7 +68,7 @@ describe('TopBarCustom', () => {
         <TopBarCustom />
         <LocationProbe />
       </>,
-      { initialEntries: ['/customers/42/reviews/details/record-7'] },
+      { initialEntries: ['/customers/42/general-data/record-7'] },
     );
 
     await user.click(screen.getByRole('button', { name: i18n.t('nav.tab.portfolio') }));

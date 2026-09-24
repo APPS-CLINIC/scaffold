@@ -21,31 +21,47 @@ function toListNavigationItem(item: NavigationTreeItemConfig): NavigationItemCon
   };
 }
 
-function withRestrictedContextItem(
-  restrict: (item: NavigationTreeItemConfig) => NavigationTreeItemConfig,
+function mapContextItems(
+  manifest: NavigationManifest,
+  mapItem: (item: NavigationTreeItemConfig) => NavigationTreeItemConfig,
 ): NavigationManifest {
-  const customers = navigationManifest.sections.find((section) => section.id === 'customers');
+  const customers = manifest.sections.find((section) => section.id === 'customers');
   const customerDetail = customers?.context;
   if (!customers || !customerDetail) throw new Error('Expected the customer-detail context.');
+  const items: readonly NavigationTreeItemConfig[] = customerDetail.sidebar.items;
 
   return {
-    ...navigationManifest,
-    sections: navigationManifest.sections.map((section) =>
+    ...manifest,
+    sections: manifest.sections.map((section) =>
       section.id === 'customers'
         ? {
             ...customers,
             context: {
               ...customerDetail,
-              sidebar: {
-                type: 'tree',
-                items: customerDetail.sidebar.items.map(restrict),
-              },
+              sidebar: { type: 'tree', items: items.map(mapItem) },
             },
           }
         : section,
     ),
   };
 }
+
+/** The real manifest with one child under Reviews, to exercise nested tree behaviour. */
+const nestedManifest = mapContextItems(navigationManifest, (item) =>
+  item.id === 'reviews'
+    ? {
+        ...item,
+        children: [
+          {
+            id: 'review-audit',
+            segment: 'audit',
+            labelKey: 'nav.portfolio.auditProcess',
+            icon: TestIcon,
+          },
+        ],
+      }
+    : item,
+);
 
 describe('resolveNavigation', () => {
   it('keeps the configured static destination outside entity context', () => {
@@ -80,7 +96,13 @@ describe('resolveNavigation', () => {
     }
   });
 
-  it.each([
+  it.each<{
+    pathname: string;
+    level: number;
+    matchedIds: string[];
+    unmatchedSegments: string[];
+    manifest?: NavigationManifest;
+  }>([
     {
       pathname: '/customers/42',
       level: 1,
@@ -94,16 +116,24 @@ describe('resolveNavigation', () => {
       unmatchedSegments: [],
     },
     {
-      pathname: '/customers/42/reviews/details',
+      pathname: '/customers/42/general-data/record-7',
       level: 3,
-      matchedIds: ['reviews', 'review-details'],
-      unmatchedSegments: [],
+      matchedIds: ['general-data'],
+      unmatchedSegments: ['record-7'],
     },
     {
-      pathname: '/customers/42/reviews/details/record-7',
+      pathname: '/customers/42/reviews/audit',
+      level: 3,
+      matchedIds: ['reviews', 'review-audit'],
+      unmatchedSegments: [],
+      manifest: nestedManifest,
+    },
+    {
+      pathname: '/customers/42/reviews/audit/record-7',
       level: 4,
-      matchedIds: ['reviews', 'review-details'],
+      matchedIds: ['reviews', 'review-audit'],
       unmatchedSegments: ['record-7'],
+      manifest: nestedManifest,
     },
     {
       pathname: '/customers/42/future-tab/record-7',
@@ -113,8 +143,8 @@ describe('resolveNavigation', () => {
     },
   ])(
     'resolves context depth, ancestry, and unknown descendants for $pathname',
-    ({ pathname, level, matchedIds, unmatchedSegments }) => {
-      const navigation = resolveNavigation(pathname);
+    ({ pathname, level, matchedIds, unmatchedSegments, manifest = navigationManifest }) => {
+      const navigation = resolveNavigation(pathname, manifest);
 
       expect(navigation.context).toMatchObject({
         id: 'customer-detail',
@@ -159,15 +189,15 @@ describe('resolveNavigation', () => {
   });
 
   it('normalizes trailing slashes before deriving paths and active state', () => {
-    const navigation = resolveNavigation('/customers/42/reviews/details///');
+    const navigation = resolveNavigation('/customers/42/reviews/audit///', nestedManifest);
 
-    expect(navigation.pathname).toBe('/customers/42/reviews/details');
+    expect(navigation.pathname).toBe('/customers/42/reviews/audit');
     expect(navigation.route.level).toBe(3);
-    expect(navigation.route.matchedItemIds).toEqual(['reviews', 'review-details']);
+    expect(navigation.route.matchedItemIds).toEqual(['reviews', 'review-audit']);
   });
 
   it('resolves global top navigation and a contextual tree sidebar independently', () => {
-    const navigation = resolveNavigation('/customers/42/reviews/details/record-7');
+    const navigation = resolveNavigation('/customers/42/reviews/audit/record-7', nestedManifest);
 
     expect(navigation.topBar).toMatchObject({
       source: 'global',
@@ -182,14 +212,14 @@ describe('resolveNavigation', () => {
     });
     expect(navigation.sidebar?.activePath.map((item) => item.id)).toEqual([
       'reviews',
-      'review-details',
+      'review-audit',
     ]);
     expect(navigation.sidebar?.activePath.map((item) => item.isActive)).toEqual([true, true]);
     expect(navigation.sidebar?.activePath.map((item) => item.isCurrent)).toEqual([false, true]);
   });
 
   it('builds a complete breadcrumb model with a replaceable context parameter', () => {
-    const navigation = resolveNavigation('/customers/42/reviews/details/record-7');
+    const navigation = resolveNavigation('/customers/42/reviews/audit/record-7', nestedManifest);
 
     expect(navigation.breadcrumb.items).toEqual([
       {
@@ -212,24 +242,22 @@ describe('resolveNavigation', () => {
         path: '/customers/42/reviews',
       },
       {
-        id: 'context-item:review-details',
+        id: 'context-item:review-audit',
         kind: 'message',
-        labelKey: 'nav.customerDetail.reviewDetails',
-        path: '/customers/42/reviews/details',
+        labelKey: 'nav.portfolio.auditProcess',
+        path: '/customers/42/reviews/audit',
       },
       {
         id: 'segment:0:record-7',
         kind: 'segment',
         segment: 'record-7',
-        path: '/customers/42/reviews/details/record-7',
+        path: '/customers/42/reviews/audit/record-7',
       },
     ]);
   });
 
   it('supports contextual top navigation and an alternate sidebar presentation', () => {
-    const customersSection = navigationManifest.sections.find(
-      (section) => section.id === 'customers',
-    );
+    const customersSection = nestedManifest.sections.find((section) => section.id === 'customers');
     const customerDetailNavigationContext = customersSection?.context;
     if (!customerDetailNavigationContext) {
       throw new Error('Expected the customer-detail navigation context.');
@@ -244,15 +272,12 @@ describe('resolveNavigation', () => {
       },
     };
     const alternateManifest: NavigationManifest = {
-      ...navigationManifest,
-      sections: navigationManifest.sections.map((section) =>
+      ...nestedManifest,
+      sections: nestedManifest.sections.map((section) =>
         section.id === 'customers' ? { ...section, context: alternateContext } : section,
       ),
     };
-    const navigation = resolveNavigation(
-      '/customers/42/reviews/details/record-7',
-      alternateManifest,
-    );
+    const navigation = resolveNavigation('/customers/42/reviews/audit/record-7', alternateManifest);
 
     expect(navigation.topBar).toMatchObject({
       source: 'context',
@@ -345,20 +370,20 @@ describe('resolveNavigation', () => {
     expect(visible.route.activeItemId).toBe('restricted');
   });
   it('hides a permission-owned context branch together with its permitted descendants', () => {
-    const manifest = withRestrictedContextItem((item) =>
+    const manifest = mapContextItems(nestedManifest, (item) =>
       item.id === 'reviews' ? { ...item, requiredPermissions: ['customers:reviews'] } : item,
     );
 
-    const hidden = resolveNavigation('/customers/42/reviews/details', manifest, {
+    const hidden = resolveNavigation('/customers/42/reviews/audit', manifest, {
       grantedPermissions: new Set(),
     });
-    const visible = resolveNavigation('/customers/42/reviews/details', manifest, {
+    const visible = resolveNavigation('/customers/42/reviews/audit', manifest, {
       grantedPermissions: new Set(['customers:reviews']),
     });
 
     expect(hidden.sidebar?.items.map((item) => item.id)).not.toContain('reviews');
     expect(hidden.route.matchedItemIds).toEqual([]);
-    expect(hidden.route.unmatchedSegments).toEqual(['reviews', 'details']);
+    expect(hidden.route.unmatchedSegments).toEqual(['reviews', 'audit']);
     expect(hidden.breadcrumb.items.map((item) => item.kind)).toEqual([
       'message',
       'parameter',
@@ -367,41 +392,41 @@ describe('resolveNavigation', () => {
     ]);
 
     expect(visible.sidebar?.items.map((item) => item.id)).toContain('reviews');
-    expect(visible.route.matchedItemIds).toEqual(['reviews', 'review-details']);
+    expect(visible.route.matchedItemIds).toEqual(['reviews', 'review-audit']);
   });
 
   it('hides a permission-owned leaf while its permitted parent stays the current item', () => {
-    const manifest = withRestrictedContextItem((item) =>
+    const manifest = mapContextItems(nestedManifest, (item) =>
       item.id === 'reviews'
         ? {
             ...item,
             children: (item.children ?? []).map((child) => ({
               ...child,
-              requiredPermissions: ['customers:reviewDetails'],
+              requiredPermissions: ['customers:reviewAudit'],
             })),
           }
         : item,
     );
 
-    const hidden = resolveNavigation('/customers/42/reviews/details', manifest, {
+    const hidden = resolveNavigation('/customers/42/reviews/audit', manifest, {
       grantedPermissions: new Set(),
     });
 
     expect(hidden.sidebar?.items.find((item) => item.id === 'reviews')?.children).toEqual([]);
     expect(hidden.sidebar?.expandedIds).toEqual([]);
     expect(hidden.route.matchedItemIds).toEqual(['reviews']);
-    expect(hidden.route.unmatchedSegments).toEqual(['details']);
-    expect(hidden.breadcrumb.items.at(-1)).toMatchObject({ kind: 'segment', segment: 'details' });
+    expect(hidden.route.unmatchedSegments).toEqual(['audit']);
+    expect(hidden.breadcrumb.items.at(-1)).toMatchObject({ kind: 'segment', segment: 'audit' });
   });
 
   it('keeps permission-owned items visible when no permission set is supplied', () => {
-    const manifest = withRestrictedContextItem((item) =>
+    const manifest = mapContextItems(nestedManifest, (item) =>
       item.id === 'reviews' ? { ...item, requiredPermissions: ['customers:reviews'] } : item,
     );
 
-    const navigation = resolveNavigation('/customers/42/reviews/details', manifest);
+    const navigation = resolveNavigation('/customers/42/reviews/audit', manifest);
 
     expect(navigation.sidebar?.items.map((item) => item.id)).toContain('reviews');
-    expect(navigation.route.matchedItemIds).toEqual(['reviews', 'review-details']);
+    expect(navigation.route.matchedItemIds).toEqual(['reviews', 'review-audit']);
   });
 });
