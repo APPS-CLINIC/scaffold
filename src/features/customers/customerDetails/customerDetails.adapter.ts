@@ -4,6 +4,7 @@ import type {
   CustomerAdvisors,
   CustomerAdvisorsResponse,
   CustomerBasicData,
+  CustomerCdd,
   CustomerConsents,
   CustomerCpac,
   CustomerCrs,
@@ -12,7 +13,10 @@ import type {
   CustomerEmir,
   CustomerFatca,
   CustomerLei,
+  CustomerLending,
   CustomerMifid,
+  CustomerTsPrice,
+  CustomerTsPriceResponse,
 } from './customerDetails.types';
 
 const EMPTY_ADDRESS: CustomerAddress = { street: null, city: null, postalCode: null };
@@ -60,6 +64,8 @@ const EMPTY_MIFID: CustomerMifid = {
 const EMPTY_LEI: CustomerLei = { leiCode: null, leiCodeValidityDate: null };
 const EMPTY_EMIR: CustomerEmir = { emirClassification: null, emirReporting: null };
 const EMPTY_CPAC: CustomerCpac = { cpacClassification: null, cpacClassificationDate: null };
+const EMPTY_CDD: CustomerCdd = { cddRiskLevel: null, cddExpirationDate: null };
+const EMPTY_LENDING: CustomerLending = { lendingReviewDate: null, lendingRatingReviewDate: null };
 
 const EMPTY_ADVISORS: CustomerAdvisors = {
   rmAdvisor: null,
@@ -110,6 +116,7 @@ function mapBasicData(response: CustomerDetailsResponse): CustomerBasicData {
 
   return {
     catalogOpenDate: readText(source, ['catalogOpenDate']),
+    reviewExtensionDate: readText(source, ['reviewExtensionDate']),
     taxId: readText(source, ['taxId', 'nip']),
     regon: readText(source, ['regon']),
     krs: readText(source, ['krs']),
@@ -133,6 +140,16 @@ function mapAddress(value: CustomerAddress | null): CustomerAddress | null {
   return value ? { ...EMPTY_ADDRESS, ...value } : null;
 }
 
+function mapTsPrice(value: CustomerTsPriceResponse | null): CustomerTsPrice {
+  const status: unknown = value?.tsPriceConditionStatus;
+
+  return {
+    tsPriceConditionStatus:
+      typeof status === 'string' ? status : typeof status === 'number' ? String(status) : null,
+    tsPriceConditionEndDate: value?.tsPriceConditionEndDate ?? null,
+  };
+}
+
 /** Normalize nullable nested response groups into a stable configuration source. */
 export function mapCustomerDetailsResponse(response: CustomerDetailsResponse): CustomerDetails {
   const addresses = response.addresses ?? EMPTY_ADDRESSES;
@@ -147,11 +164,14 @@ export function mapCustomerDetailsResponse(response: CustomerDetailsResponse): C
     },
     consents: { ...EMPTY_CONSENTS, ...(response.consents ?? {}) },
     crs: { ...EMPTY_CRS, ...(response.crs ?? {}) },
+    cdd: { ...EMPTY_CDD, ...(response.cdd ?? {}) },
     fatca: { ...EMPTY_FATCA, ...(response.fatca ?? {}) },
     mifid: { ...EMPTY_MIFID, ...(response.mifid ?? {}) },
     lei: { ...EMPTY_LEI, ...(response.lei ?? {}) },
     emir: { ...EMPTY_EMIR, ...(response.emir ?? {}) },
     cpac: { ...EMPTY_CPAC, ...(response.cpac ?? {}) },
+    tsPrice: mapTsPrice(response.tsPrice),
+    lending: { ...EMPTY_LENDING, ...(response.lending ?? {}) },
   };
 }
 
@@ -160,16 +180,19 @@ export function mapCustomerAdvisorsResponse(response: CustomerAdvisorsResponse):
   return { ...EMPTY_ADVISORS, ...response };
 }
 
-/** Reserved layout for every General data / CDD row while a customer's request is unresolved. */
+/** Reserved layout for every detail row while a customer's request is unresolved. */
 export const EMPTY_CUSTOMER_DETAILS: CustomerDetails = mapCustomerDetailsResponse({
   addresses: null,
   consents: null,
   crs: null,
+  cdd: null,
   fatca: null,
   mifid: null,
   lei: null,
   emir: null,
   cpac: null,
+  tsPrice: null,
+  lending: null,
 });
 
 export const EMPTY_CUSTOMER_ADVISORS: CustomerAdvisors = { ...EMPTY_ADVISORS };
