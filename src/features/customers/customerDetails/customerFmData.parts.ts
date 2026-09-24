@@ -1,10 +1,6 @@
-import type { MessageKey } from '@/i18n/messages/pl';
+import type { CustomerSectionPart } from './CustomerPartsCard';
 
-export interface CustomerFmDataPart {
-  id: string;
-  segment: string;
-  labelKey: MessageKey;
-}
+export type CustomerFmDataPart = CustomerSectionPart;
 
 /**
  * Parts of the FM data section, in menu order. They are not navigation-manifest items:

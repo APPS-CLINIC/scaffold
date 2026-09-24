@@ -112,7 +112,7 @@ export function CustomerFieldGroups({
   return (
     <>
       {groups.map((group, index) => (
-        <div key={group.titleKey ?? 'rows'} className="min-w-0">
+        <div key={group.titleKey ?? index} className="min-w-0">
           {index > 0 ? (
             <hr className="my-4 border-0 border-t border-[var(--border-subtle)]" />
           ) : null}
