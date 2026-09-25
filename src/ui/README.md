@@ -165,6 +165,40 @@ function CustomersList() {
 }
 ```
 
+## `DueDateFilter` and due-date windows
+
+A domain-neutral filter over calendar dates, shown as single-choice IWA chips:
+**All · Up to 30 days · Over 30 days · Overdue** (`common.dueDateFilter.*`). The
+owning view keeps the value in local state and filters its own items. See [ADR 0037](../../docs/adr/0037-generic-due-date-filter-in-the-ui-seam.md).
+
+- `dueDateWindow(date, today?)` returns `'overdue'` (before today),
+  `'upTo30Days'` (today through today + 30 days), `'over30Days'` or `null` for a
+  value that is not a `yyyy-MM-dd` date. It uses `daysPastIsoDate`, so it matches
+  the overdue markers.
+- `filterByDueDate(items, getDate, filter, today?)` keeps the items in the
+  chosen window; `'all'` keeps everything, including items without a date. It
+  filters a **fully loaded** collection. A server-paginated list sends the
+  window to its endpoint instead.
+- `<DueDateFilter value onChange />` is a `role="group"` with a default name
+  ("Due date filter"), which a caller's `aria-label` replaces. IWA `Chip` has no
+  pressed state, so the group also announces the chosen filter in visually
+  hidden text. `className` is merged last.
+
+```tsx
+import { useState } from 'react';
+import {
+  DEFAULT_DUE_DATE_FILTER,
+  DueDateFilter,
+  filterByDueDate,
+  type DueDateFilterValue,
+} from '@/ui';
+
+const [filter, setFilter] = useState<DueDateFilterValue>(DEFAULT_DUE_DATE_FILTER);
+const shown = filterByDueDate(rows, (row) => row.dueDate, filter);
+
+<DueDateFilter value={filter} onChange={setFilter} />;
+```
+
 ## `ScreenHeading`
 
 `ScreenHeading` is the app-facing adapter over IWA's page heading. Items use a

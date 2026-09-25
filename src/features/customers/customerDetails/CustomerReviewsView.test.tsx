@@ -33,6 +33,12 @@ function renderView(part: CustomerReviewsPart, onSelectPart = vi.fn()) {
   return onSelectPart;
 }
 
+/** Picks a due-date window by its chip label. */
+async function chooseDueDate(label: string) {
+  const user = userEvent.setup();
+  await user.click(within(screen.getByRole('group', { name: 'Due date filter' })).getByText(label));
+}
+
 beforeEach(async () => {
   await i18n.changeLanguage('en');
 });
@@ -63,6 +69,12 @@ describe('CustomerReviewsView', () => {
 
     expect(onSelectPart).toHaveBeenCalledWith(collaterals);
     expect(screen.getByRole('heading', { level: 3, name: 'Facilities' })).toBeInTheDocument();
+  });
+
+  it('offers the due-date filter only in the review dates part', () => {
+    renderView(facilities);
+
+    expect(screen.queryByRole('group', { name: 'Due date filter' })).toBeNull();
   });
 
   it('stays quiet when the active part is picked again', async () => {
@@ -106,6 +118,9 @@ describe('Review dates', () => {
       { store },
     );
   }
+
+  const shownLabels = () =>
+    screen.getAllByRole('term').map((term) => term.textContent?.replace(/:$/, ''));
 
   /** The label/value row for a label. */
   function row(label: string) {
@@ -201,7 +216,10 @@ describe('Review dates', () => {
 
     expect(row('Data przeglądu kredytowego')).not.toHaveTextContent('Zaległ');
     expect(row('Data przeglądu ratingu kredytowego')).not.toHaveTextContent('Zaległ');
-    expect(screen.getAllByText(/^Zaległ/)).toHaveLength(1);
+    const markedRows = screen
+      .getAllByRole('term')
+      .filter((term) => term.closest('dl')?.textContent?.includes('Zaległ'));
+    expect(markedRows).toHaveLength(1);
   });
 
   it('shows an en dash where the service sends no value', () => {
@@ -220,15 +238,65 @@ describe('Review dates', () => {
     }
   });
 
-  it('offers no filters, only the refresh', async () => {
+  it('offers the due-date filter above the heading, starting at all', async () => {
     await i18n.changeLanguage('pl');
     renderReviewDates();
 
-    for (const chip of ['Wszystkie', 'Do 30 dni', 'Powyżej 30 dni', 'Zaległe']) {
-      expect(screen.queryByText(chip)).toBeNull();
-    }
-    expect(screen.getByText('Stan na:')).toBeInTheDocument();
+    const filter = screen.getByRole('group', { name: 'Filtr terminów' });
+    const heading = screen.getByRole('heading', { level: 3, name: 'Daty przeglądu' });
+    expect(filter).toHaveTextContent('Wybrany filtr: Wszystkie');
+    expect(filter.compareDocumentPosition(heading)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    expect(screen.getAllByRole('term')).toHaveLength(7);
     expect(screen.getByText('Odśwież')).toBeInTheDocument();
+  });
+
+  it.each([
+    ['Overdue', ['FATCA review date'], 0],
+    ['Up to 30 days', ['Lending rating review date'], 0],
+    [
+      'Over 30 days',
+      [
+        'Lending review date',
+        'Review extension date',
+        'CDD expiration date',
+        'TS pricing conditions end date',
+      ],
+      1,
+    ],
+  ])('shows only the dates of %s', async (chip, labels, separators) => {
+    renderReviewDates();
+
+    await chooseDueDate(chip);
+
+    expect(screen.getByRole('group', { name: 'Due date filter' })).toHaveTextContent(
+      `Selected filter: ${chip}`,
+    );
+    expect(shownLabels()).toEqual(labels);
+    expect(document.querySelectorAll('hr')).toHaveLength(separators);
+    expect(screen.queryByText('TS pricing condition status')).toBeNull();
+  });
+
+  it('shows every row again with All', async () => {
+    renderReviewDates();
+
+    await chooseDueDate('Overdue');
+    await chooseDueDate('All');
+
+    expect(screen.getAllByRole('term')).toHaveLength(7);
+    expect(screen.getByRole('group', { name: 'Due date filter' })).toHaveTextContent(
+      'Selected filter: All',
+    );
+  });
+
+  it('says so when no date falls into the chosen window', async () => {
+    renderReviewDates({
+      lending: { lendingReviewDate: '2026-11-30', lendingRatingReviewDate: null },
+    });
+
+    await chooseDueDate('Up to 30 days');
+
+    expect(screen.getByText('No dates in the chosen range')).toBeInTheDocument();
+    expect(screen.queryAllByRole('term')).toHaveLength(0);
   });
 });
 
@@ -301,6 +369,33 @@ describe('Review dates over the network', () => {
       'Detailed customer data could not be loaded.',
     );
     expect(screen.getByText('FATCA review date').closest('dl')).toHaveTextContent('–');
+  });
+
+  it('keeps every row while the details load, whatever the filter', async () => {
+    stubDetailsFetch(() => new Promise<Response>(() => undefined));
+
+    renderView(reviewDates);
+    await chooseDueDate('Overdue');
+
+    expect(screen.getAllByRole('term')).toHaveLength(7);
+    expect(screen.queryByText('No dates in the chosen range')).toBeNull();
+  });
+
+  it('keeps every row after a failed request, whatever the filter', async () => {
+    stubDetailsFetch(
+      async () =>
+        new Response(JSON.stringify({ message: 'Unavailable' }), {
+          status: 503,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    );
+
+    renderView(reviewDates);
+
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    await chooseDueDate('Overdue');
+    expect(screen.getAllByRole('term')).toHaveLength(7);
+    expect(screen.queryByText('No dates in the chosen range')).toBeNull();
   });
 
   it('asks for the customer details again on refresh', async () => {

@@ -139,6 +139,13 @@ Everything imports UI primitives from `@/ui`, a thin stub layer, so the
 organization's internal UI library can be plugged in within a single folder
 without touching feature code.
 
+Domain-neutral building blocks meant for reuse across views also live here — the
+generic data table and its cells, and the due-date filter (`DueDateFilter`,
+`filterByDueDate`), which carries no customer vocabulary. The view that shows the
+filter keeps its choice in local state; it hides loaded rows and reaches no
+endpoint, so it stays out of the URL.
+→ [ADR 0037](../adr/0037-generic-due-date-filter-in-the-ui-seam.md)
+
 ### 7. Routing — `src/routes`
 
 React Router v6 exposes the URL/search params as observable state and provides
