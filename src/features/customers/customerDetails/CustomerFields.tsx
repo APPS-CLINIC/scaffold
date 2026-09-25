@@ -13,34 +13,18 @@ export interface CustomerFieldRow {
 
 // Row geometry.
 // Compact (summary panel): 2fr/3fr label/value split, content-sized left-aligned label from md.
-// Fixed (detail tabs): stacked below sm, 2fr/3fr from sm, a 300px right-aligned label column
-// from md so the longest configured label stays on one line.
+// Detail tabs: stacked below sm, 2fr/3fr from sm, and from lg a 24rem right-aligned label column
+// at the card's left edge, so the rows do not drift towards the middle of a wide card.
 const COMPACT = {
   dl: 'm-0 grid min-w-0 grid-cols-[minmax(0,2fr)_minmax(0,3fr)] items-start gap-1 md:grid-cols-[max-content_minmax(0,1fr)]',
   dt: 'min-w-0 break-words text-sm font-bold text-[var(--text)]',
   dd: 'm-0 min-w-0 break-words text-sm text-[var(--text)]',
 };
-const FIXED = {
-  dl: 'm-0 grid min-w-0 grid-cols-1 items-start gap-1 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] sm:gap-x-2 md:flex md:gap-4',
-  dt: 'min-w-0 break-words text-sm font-bold text-[var(--text)] md:w-[300px] md:shrink-0 md:text-right',
-  dd: 'm-0 min-w-0 break-words text-sm text-[var(--text)] md:flex-1',
-};
-// FM basic data uses the full card width with equal label/value columns.
-const BALANCED = {
-  dl: 'm-0 grid min-w-0 grid-cols-1 items-start gap-1 sm:grid-cols-2 sm:gap-x-4',
-  dt: 'min-w-0 break-words text-sm font-bold text-[var(--text)] sm:text-right',
-  dd: 'm-0 min-w-0 break-words text-sm text-[var(--text)]',
-};
-// Review dates keep the labels in a 24rem right-aligned column at the card's left edge from lg,
-// so the rows do not drift towards the middle of a wide card.
-const START = {
+const DETAIL = {
   dl: 'm-0 grid min-w-0 grid-cols-1 items-start gap-1 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] sm:gap-x-6 lg:grid-cols-[24rem_minmax(0,1fr)]',
   dt: 'min-w-0 break-words text-sm font-bold text-[var(--text)] sm:text-right',
   dd: 'm-0 min-w-0 break-words text-sm text-[var(--text)]',
 };
-const GEOMETRY = { fixed: FIXED, balanced: BALANCED, start: START };
-
-type CustomerFieldLayout = keyof typeof GEOMETRY;
 
 const isEmpty = (value: CustomerFieldValue): boolean =>
   value === null || value === undefined || (typeof value === 'string' && value.trim() === '');
@@ -54,10 +38,9 @@ export function CustomerField({
   value,
   loading = false,
   compact = false,
-  layout = 'fixed',
-}: CustomerFieldRow & { loading?: boolean; compact?: boolean; layout?: CustomerFieldLayout }) {
+}: CustomerFieldRow & { loading?: boolean; compact?: boolean }) {
   const { t } = useTranslation();
-  const geometry = compact ? COMPACT : GEOMETRY[layout];
+  const geometry = compact ? COMPACT : DETAIL;
   const empty = isEmpty(value);
   const shown = empty ? t('customers.value.notAvailable') : value;
 
@@ -102,19 +85,13 @@ type SectionContent =
   | { rows: readonly CustomerFieldRow[]; groups?: never }
   | { groups: readonly CustomerFieldGroup[]; rows?: never };
 
-/**
- * Rows of one card, grouped and separated by a full-width divider. The default layout
- * indents rows; the balanced layout splits the full card into equal label/value columns; the
- * start layout keeps a fixed label column at the card's left edge.
- */
+/** Rows of one card, grouped and separated by a full-width divider. */
 export function CustomerFieldGroups({
   groups,
   loading,
-  layout = 'fixed',
 }: {
   groups: readonly CustomerFieldGroup[];
   loading: boolean;
-  layout?: CustomerFieldLayout;
 }) {
   const { t } = useTranslation();
 
@@ -128,22 +105,10 @@ export function CustomerFieldGroups({
           {group.titleKey ? (
             <h4 className="m-0 mt-3 text-sm font-bold text-[var(--text)]">{t(group.titleKey)}</h4>
           ) : null}
-          <div
-            className={
-              layout === 'fixed' ? 'mt-3 grid min-w-0 grid-cols-1 lg:grid-cols-4' : 'mt-3 min-w-0'
-            }
-          >
-            <div
-              className={
-                layout === 'fixed'
-                  ? 'min-w-0 space-y-1 lg:col-span-3 lg:col-start-2'
-                  : 'min-w-0 space-y-1'
-              }
-            >
-              {group.rows.map((row) => (
-                <CustomerField key={row.labelKey} {...row} loading={loading} layout={layout} />
-              ))}
-            </div>
+          <div className="mt-3 min-w-0 space-y-1">
+            {group.rows.map((row) => (
+              <CustomerField key={row.labelKey} {...row} loading={loading} />
+            ))}
           </div>
         </div>
       ))}

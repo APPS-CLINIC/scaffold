@@ -133,7 +133,7 @@ export function CustomerFmBasicData({ customerId }: CustomerFmBasicDataProps) {
         fulfilledTimeStamp={detailsQuery.fulfilledTimeStamp}
         onRefresh={detailsQuery.refetch}
       />
-      <CustomerFieldGroups groups={groups} loading={loading} layout="balanced" />
+      <CustomerFieldGroups groups={groups} loading={loading} />
     </div>
   );
 }
