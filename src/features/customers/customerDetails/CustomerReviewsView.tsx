@@ -25,7 +25,7 @@ export function CustomerReviewsView({ customerId, part, onSelectPart }: Customer
       activePart={part}
       onSelectPart={onSelectPart}
     >
-      <h3 className="m-0 text-lg font-bold leading-6 text-[var(--text)]">{t(part.labelKey)}</h3>
+      <h3 className="m-0 text-base font-bold leading-6 text-[var(--text)]">{t(part.labelKey)}</h3>
       {part.id === DEFAULT_CUSTOMER_REVIEWS_PART.id ? (
         <CustomerReviewDates customerId={customerId} />
       ) : (

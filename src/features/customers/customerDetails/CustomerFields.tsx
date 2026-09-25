@@ -100,12 +100,14 @@ export function CustomerFieldGroups({
       {groups.map((group, index) => (
         <div key={group.titleKey ?? index} className="min-w-0">
           {index > 0 ? (
-            <hr className="my-4 border-0 border-t border-[var(--border-subtle)]" />
+            <hr className="mb-0 mt-3 border-0 border-t border-[var(--border-subtle)]" />
           ) : null}
           {group.titleKey ? (
             <h4 className="m-0 mt-3 text-sm font-bold text-[var(--text)]">{t(group.titleKey)}</h4>
           ) : null}
-          <div className="mt-3 min-w-0 space-y-1">
+          <div
+            className={`${group.titleKey ? 'mt-3' : index > 0 ? 'mt-5' : 'mt-2'} min-w-0 space-y-2.5`}
+          >
             {group.rows.map((row) => (
               <CustomerField key={row.labelKey} {...row} loading={loading} />
             ))}

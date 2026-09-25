@@ -26,27 +26,31 @@ export function CustomerDataAsOf({ fulfilledTimeStamp, onRefresh }: CustomerData
     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[var(--muted)]">
       <span>{t('customers.dataAsOf')}</span>
       <strong className="font-bold text-[var(--text)]">{dataAsOf}</strong>
-      <ActionLink
-        icon={
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="h-5 w-5 shrink-0 text-[var(--navigation-accent)]"
-          >
-            <path d="M20 7v5h-5M4 17v-5h5" />
-            <path d="M6.1 6.1A8 8 0 0 1 20 12M4 12a8 8 0 0 0 13.9 5.9" />
-          </svg>
-        }
-        label={t('customers.actions.refresh')}
-        onClick={async () => {
-          await onRefresh();
-        }}
-      />
+      {/* The IWA link box is taller than the line; the fixed-height slot keeps it from pushing
+          the rows below further down. */}
+      <span className="inline-flex h-5 items-center">
+        <ActionLink
+          icon={
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-5 w-5 shrink-0 text-[var(--navigation-accent)]"
+            >
+              <path d="M20 7v5h-5M4 17v-5h5" />
+              <path d="M6.1 6.1A8 8 0 0 1 20 12M4 12a8 8 0 0 0 13.9 5.9" />
+            </svg>
+          }
+          label={t('customers.actions.refresh')}
+          onClick={async () => {
+            await onRefresh();
+          }}
+        />
+      </span>
     </div>
   );
 }

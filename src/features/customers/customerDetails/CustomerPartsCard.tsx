@@ -38,7 +38,8 @@ export function CustomerPartsCard({
   return (
     <Card>
       <div role="group" aria-label={t(groupLabelKey)} className="min-w-0">
-        <nav aria-label={t(menuLabelKey)}>
+        {/* IWA TabMenu takes no className, so its label size is set from this container. */}
+        <nav aria-label={t(menuLabelKey)} className="[&_*]:![font-size:0.875rem]">
           <TabMenu
             activeIndex={activeIndex}
             items={parts.map((item) => ({ label: t(item.labelKey) }))}
