@@ -244,6 +244,7 @@ export const pl = {
   'customers.details.reviews.part.reviewDates': 'Daty przeglądu',
   'customers.details.reviews.part.facilities': 'Facility',
   'customers.details.reviews.part.collaterals': 'Zabezpieczenia',
+  'customers.details.reviews.noDatesInRange': 'Brak dat w wybranym zakresie',
   'customers.details.reviews.field.lendingReviewDate': 'Data przeglądu kredytowego',
   'customers.details.reviews.field.reviewExtensionDate': 'Data review extension',
   'customers.details.reviews.field.lendingRatingReviewDate': 'Data przeglądu ratingu kredytowego',

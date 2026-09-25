@@ -242,6 +242,7 @@ export const en: Record<MessageKey, string> = {
   'customers.details.reviews.part.reviewDates': 'Review dates',
   'customers.details.reviews.part.facilities': 'Facilities',
   'customers.details.reviews.part.collaterals': 'Collateral',
+  'customers.details.reviews.noDatesInRange': 'No dates in the chosen range',
   'customers.details.reviews.field.lendingReviewDate': 'Lending review date',
   'customers.details.reviews.field.reviewExtensionDate': 'Review extension date',
   'customers.details.reviews.field.lendingRatingReviewDate': 'Lending rating review date',
