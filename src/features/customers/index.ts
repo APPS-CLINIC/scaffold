@@ -11,5 +11,13 @@ export {
 } from './customerDetails/customerFmData.parts';
 export { CustomerGeneralDataView } from './customerDetails/CustomerGeneralDataView';
 export type { CustomerGeneralDataViewProps } from './customerDetails/CustomerGeneralDataView';
+export { CustomerReviewsView } from './customerDetails/CustomerReviewsView';
+export type { CustomerReviewsViewProps } from './customerDetails/CustomerReviewsView';
+export {
+  CUSTOMER_REVIEWS_PARTS,
+  DEFAULT_CUSTOMER_REVIEWS_PART,
+  findCustomerReviewsPart,
+  type CustomerReviewsPart,
+} from './customerDetails/customerReviews.parts';
 export { CustomerSummaryPanel } from './customerDetails/CustomerSummaryPanel';
 export { useGetCustomerSummaryQuery } from './customerDetails/customerSummary.api';

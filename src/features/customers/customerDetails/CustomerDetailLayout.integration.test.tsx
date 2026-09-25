@@ -1,5 +1,5 @@
 import { StrictMode } from 'react';
-import { act, render, waitFor, type RenderResult } from '@testing-library/react';
+import { act, render, waitFor, within, type RenderResult } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { PrimeReactProvider } from 'primereact/api';
 import { createMemoryRouter, RouterProvider, type RouteObject } from 'react-router-dom';
@@ -248,20 +248,26 @@ describe('CustomerDetailLayout routing lifecycle', () => {
     await act(async () => {
       await router.navigate('/customers/first/reviews');
     });
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/customers/first/reviews/review-dates');
+    });
     expect(
       view.getByRole('heading', { level: 2, name: i18n.t('nav.customerDetail.reviews') }),
+    ).toBeInTheDocument();
+    expect(
+      view.getByRole('heading', {
+        level: 3,
+        name: i18n.t('customers.details.reviews.part.reviewDates'),
+      }),
     ).toBeInTheDocument();
     expect(view.container.querySelector('.pi-briefcase')).toBe(persistentSummaryIcon);
     expect(summaryRequestCount()).toBe(1);
 
     await act(async () => {
-      await router.navigate('/customers/first/reviews/details');
+      await router.navigate('/customers/first/monitoring');
     });
     expect(
-      view.getByRole('heading', {
-        level: 2,
-        name: i18n.t('nav.customerDetail.reviewDetails'),
-      }),
+      view.getByRole('heading', { level: 2, name: i18n.t('nav.customerDetail.monitoring') }),
     ).toBeInTheDocument();
     expect(view.container.querySelector('.pi-briefcase')).toBe(persistentSummaryIcon);
     expect(summaryRequestCount()).toBe(1);
@@ -269,12 +275,49 @@ describe('CustomerDetailLayout routing lifecycle', () => {
     await act(async () => {
       await router.navigate(-1);
     });
-    expect(router.state.location.pathname).toBe('/customers/first/reviews');
+    expect(router.state.location.pathname).toBe('/customers/first/reviews/review-dates');
     expect(
       view.getByRole('heading', { level: 2, name: i18n.t('nav.customerDetail.reviews') }),
     ).toBeInTheDocument();
     expect(view.container.querySelector('.pi-briefcase')).toBe(persistentSummaryIcon);
     expect(summaryRequestCount()).toBe(1);
+
+    // The redirect from the bare tab replaced its history entry, so going back skips it.
+    await act(async () => {
+      await router.navigate(-1);
+    });
+    expect(router.state.location.pathname).toBe('/customers/first/fm-data/mandates');
+
+    await act(async () => {
+      await router.navigate('/customers/first/reviews/review-dates');
+    });
+    const reviewParts = view.getByRole('navigation', {
+      name: i18n.t('customers.details.reviews.menuAriaLabel'),
+    });
+    await act(async () => {
+      within(reviewParts).getByText(i18n.t('customers.details.reviews.part.facilities')).click();
+    });
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/customers/first/reviews/facilities');
+    });
+    expect(
+      view.getByRole('heading', {
+        level: 3,
+        name: i18n.t('customers.details.reviews.part.facilities'),
+      }),
+    ).toBeInTheDocument();
+    expect(view.container.querySelector('.pi-briefcase')).toBe(persistentSummaryIcon);
+
+    await act(async () => {
+      await router.navigate('/customers/first/reviews/unknown-part');
+    });
+    expect(
+      view.getByRole('heading', { level: 2, name: i18n.t('nav.customerDetail.reviews') }),
+    ).toBeInTheDocument();
+    expect(
+      view.queryByRole('navigation', { name: i18n.t('customers.details.reviews.menuAriaLabel') }),
+    ).not.toBeInTheDocument();
+    expect(view.container.querySelector('.pi-briefcase')).toBe(persistentSummaryIcon);
 
     view.unmount();
     store.dispatch(baseApi.util.resetApiState());

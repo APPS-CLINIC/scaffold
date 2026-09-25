@@ -32,6 +32,13 @@ beforeEach(async () => {
 });
 
 describe('CustomerFmDataView', () => {
+  it('names the section and its part menu for assistive technology', () => {
+    renderView(mandates);
+
+    const section = screen.getByRole('group', { name: 'Customer FM data' });
+    expect(within(section).getByRole('navigation', { name: 'FM data parts' })).toBeInTheDocument();
+  });
+
   it('offers every configured part and shows the one the URL selected', () => {
     renderView(mandates);
 

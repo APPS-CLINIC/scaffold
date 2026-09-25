@@ -81,16 +81,16 @@ export const customersDetailRoutes: readonly RouteObject[] = [
             },
           },
           {
-            path: 'reviews',
+            // One splat route: the part menu inside the page owns the last segment, so
+            // the parts stay out of the manifest sidebar tree.
+            path: 'reviews/*',
             caseSensitive: true,
-            children: [
-              { index: true, element: placeholder('nav.customerDetail.reviews') },
-              {
-                path: 'details',
-                caseSensitive: true,
-                element: placeholder('nav.customerDetail.reviewDetails'),
-              },
-            ],
+            lazy: async () => {
+              const { CustomerReviewsPage } =
+                await import('@/routes/pages/customers/CustomerReviewsPage');
+
+              return { Component: CustomerReviewsPage };
+            },
           },
           {
             path: 'monitoring',

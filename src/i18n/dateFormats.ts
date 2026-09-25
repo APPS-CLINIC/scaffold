@@ -1,9 +1,8 @@
 // Per-function entry points: the package root re-exports every function, and the
 // dev server and the test runner transform each of those modules on first import.
-import { isBefore } from 'date-fns/isBefore';
+import { differenceInCalendarDays } from 'date-fns/differenceInCalendarDays';
 import { isValid } from 'date-fns/isValid';
 import { parse } from 'date-fns/parse';
-import { startOfDay } from 'date-fns/startOfDay';
 
 /** Shared numeric day-month-year format used by list views and table cells. */
 export const DATE_DMY_FORMAT_OPTIONS: Intl.DateTimeFormatOptions = {
@@ -31,8 +30,17 @@ export function formatIsoDmyDate(value: string, locale: string): string {
   return date ? formatDmyDate(date, locale) : value;
 }
 
+/**
+ * Calendar days from an ISO date to `today`: positive in the past, 0 today, negative in the
+ * future. A value that is not a date has no count.
+ */
+export function daysPastIsoDate(value: string | null, today = new Date()): number | null {
+  const date = value ? parseIsoDate(value) : null;
+  return date ? differenceInCalendarDays(today, date) : null;
+}
+
 /** Whether an ISO date lies before `today`'s calendar day. */
 export function isPastIsoDate(value: string | null, today = new Date()): boolean {
-  const date = value ? parseIsoDate(value) : null;
-  return date !== null && isBefore(date, startOfDay(today));
+  const daysPast = daysPastIsoDate(value, today);
+  return daysPast !== null && daysPast > 0;
 }

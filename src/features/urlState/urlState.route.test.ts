@@ -29,8 +29,8 @@ describe('parseUrlRouteState', () => {
       sectionKey: 'customers',
       itemId: 'general-data',
     });
-    expect(parseUrlRouteState('/customers/42/reviews/details/record-7')).toEqual({
-      pathname: '/customers/42/reviews/details/record-7',
+    expect(parseUrlRouteState('/customers/42/reviews/record-7')).toEqual({
+      pathname: '/customers/42/reviews/record-7',
       sectionKey: 'customers',
       itemId: 'reviews',
     });

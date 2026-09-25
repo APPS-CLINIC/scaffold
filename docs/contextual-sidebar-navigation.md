@@ -23,7 +23,7 @@ Navigation has three files with deliberately separate roles:
 An optional context is nested directly under the section that owns its URL
 space. The customer context therefore lives inside the `customers` section,
 and that structure expresses ownership without duplicated context data. Its
-configuration owns `/customers/:id/...`, its seven L2 items and their recursive
+configuration owns `/customers/:id/...`, its L2 items and any recursive
 descendants. Its `defaultItem` selects the contextual destination used when the
 URL contains the customer ID but no tab segment.
 `topBar: 'global'` keeps the application-wide top bar on **Customers**, while
@@ -39,8 +39,8 @@ The customer page-route module also owns a hand-written `customersDetailRoutes`
 route literal whose static segments equal the context items' `segment` values; a
 co-located test asserts that equality (and the index redirect, and
 `caseSensitive` on every static child) against the manifest rather than
-generating the tree from it, because a fixed, seven-item shape does not
-justify runtime derivation (ADR 0032). Every configured L2/L3 destination has
+generating the tree from it, because a fixed, flat shape does not justify
+runtime derivation (ADR 0032). Every configured destination has
 an explicit route-level page — or, until a real page exists, an inline
 `SectionPage` placeholder — without putting presentation imports in the
 manifest. `CustomerDetailLayout` is therefore a path-independent persistent
@@ -54,7 +54,7 @@ duplicating the panel composition.
 Customer-detail `segment` values are canonical English route identifiers, not
 display copy. The manifest currently derives `/customers/:id/dashboard`,
 `/customers/:id/general-data`, `/customers/:id/cdd-crs-fatca`,
-`/customers/:id/reviews`, `/customers/:id/reviews/details`,
+`/customers/:id/fm-data`, `/customers/:id/reviews`,
 `/customers/:id/monitoring`, `/customers/:id/limits`, and
 `/customers/:id/products`. Visible labels come exclusively from `labelKey` and
 the active i18n catalog, so changing language never changes a route or deep

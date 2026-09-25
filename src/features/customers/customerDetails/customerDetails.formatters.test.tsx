@@ -1,6 +1,7 @@
 import { render, renderHook, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
+import { formatIsoDmyDate } from '@/i18n/dateFormats';
 import { useCustomerFormatters } from './customerDetails.formatters';
 
 const formatters = () => renderHook(() => useCustomerFormatters()).result.current;
@@ -76,5 +77,47 @@ describe('useCustomerFormatters().expiry', () => {
 
   it('returns null for a missing expiration date', () => {
     expect(formatters().expiry(null)).toBeNull();
+  });
+});
+
+describe('useCustomerFormatters().reviewDate', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-09-24T12:00:00'));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it.each([
+    ['2026-09-23', 'Zaległy 1 dzień'],
+    ['2026-09-21', 'Zaległe 3 dni'],
+    ['2026-09-02', 'Zaległe 22 dni'],
+    ['2026-05-27', 'Zaległe 120 dni'],
+  ])('marks %s with how many days it is overdue', async (value, label) => {
+    await i18n.changeLanguage('pl');
+
+    render(<>{formatters().reviewDate(value)}</>);
+
+    expect(screen.getByText(label)).toBeInTheDocument();
+    expect(screen.getByText(formatIsoDmyDate(value, 'pl'))).toHaveAttribute('datetime', value);
+  });
+
+  it('words the count in English too', () => {
+    render(<>{formatters().reviewDate('2026-09-23')}</>);
+
+    expect(screen.getByText('Overdue 1 day')).toBeInTheDocument();
+  });
+
+  it.each(['2026-09-24', '2026-09-25'])('leaves %s unmarked', (value) => {
+    render(<>{formatters().reviewDate(value)}</>);
+
+    expect(screen.queryByText(/Overdue/)).not.toBeInTheDocument();
+    expect(screen.getByText(formatIsoDmyDate(value, 'en'))).toHaveAttribute('datetime', value);
+  });
+
+  it('returns null for a missing date', () => {
+    expect(formatters().reviewDate(null)).toBeNull();
   });
 });

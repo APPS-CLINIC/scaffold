@@ -8,7 +8,7 @@ import type { CustomerSummaryResponse } from '@/features/customers/customerDetai
 export const customerDetailsResponseFixture: CustomerDetailsResponse = {
   basicData: {
     catalogOpenDate: '2014-06-12',
-    reviewExtensionDate: null,
+    reviewExtensionDate: '2026-12-15',
     taxId: '5250000000',
     regon: '012345678',
     krs: '0000123456',
@@ -52,6 +52,10 @@ export const customerDetailsResponseFixture: CustomerDetailsResponse = {
     crsReviewDate: '2026-12-12',
     crsClassificationDate: '2025-08-30',
   },
+  cdd: {
+    cddRiskLevel: 'Low',
+    cddExpirationDate: '2027-03-31',
+  },
   fatca: {
     fatcaStatus: 'Completed',
     fatcaClassificationDate: '2025-08-30',
@@ -85,6 +89,14 @@ export const customerDetailsResponseFixture: CustomerDetailsResponse = {
   cpac: {
     cpacClassification: 'Professional',
     cpacClassificationDate: '2026-02-22',
+  },
+  tsPrice: {
+    tsPriceConditionStatus: 'STANDARD_CONTRACT_END_DATE',
+    tsPriceConditionEndDate: '2026-12-31',
+  },
+  lending: {
+    lendingReviewDate: '2026-11-30',
+    lendingRatingReviewDate: '2026-10-15',
   },
 };
 

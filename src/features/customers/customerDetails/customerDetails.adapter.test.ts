@@ -27,11 +27,14 @@ describe('customer details adapter', () => {
       addresses: null,
       consents: null,
       crs: null,
+      cdd: null,
       fatca: null,
       mifid: null,
       lei: null,
       emir: null,
       cpac: null,
+      tsPrice: null,
+      lending: null,
     };
 
     const result = mapCustomerDetailsResponse(response);
@@ -40,9 +43,46 @@ describe('customer details adapter', () => {
     expect(result.consents.outsideBankConsent).toBeNull();
     expect(result.crs.crsStatus).toBeNull();
     expect(result.basicData.catalogOpenDate).toBeNull();
+    expect(result.basicData.reviewExtensionDate).toBeNull();
     expect(result.cpac).toEqual({ cpacClassification: null, cpacClassificationDate: null });
     expect(result.mifid.testM10).toBeNull();
     expect(result.emir.emirReporting).toBeNull();
+    expect(result.cdd).toEqual({ cddRiskLevel: null, cddExpirationDate: null });
+    expect(result.tsPrice).toEqual({ tsPriceConditionStatus: null, tsPriceConditionEndDate: null });
+    expect(result.lending).toEqual({ lendingReviewDate: null, lendingRatingReviewDate: null });
+  });
+
+  it('maps the review dates from their groups and the basic-data object', () => {
+    const result = mapCustomerDetailsResponse(customerDetailsResponseFixture);
+
+    expect(result.basicData.reviewExtensionDate).toBe('2026-12-15');
+    expect(result.cdd).toEqual({ cddRiskLevel: 'Low', cddExpirationDate: '2027-03-31' });
+    expect(result.tsPrice).toEqual({
+      tsPriceConditionStatus: 'STANDARD_CONTRACT_END_DATE',
+      tsPriceConditionEndDate: '2026-12-31',
+    });
+    expect(result.lending).toEqual({
+      lendingReviewDate: '2026-11-30',
+      lendingRatingReviewDate: '2026-10-15',
+    });
+  });
+
+  it('shows a numeric TS price condition status as text', () => {
+    const response: CustomerDetailsResponse = {
+      ...customerDetailsResponseFixture,
+      tsPrice: { tsPriceConditionStatus: 2, tsPriceConditionEndDate: null },
+    };
+
+    expect(mapCustomerDetailsResponse(response).tsPrice.tsPriceConditionStatus).toBe('2');
+  });
+
+  it('drops a TS price condition status that is neither text nor a number', () => {
+    const response = {
+      ...customerDetailsResponseFixture,
+      tsPrice: { tsPriceConditionStatus: true, tsPriceConditionEndDate: null },
+    } as unknown as CustomerDetailsResponse;
+
+    expect(mapCustomerDetailsResponse(response).tsPrice.tsPriceConditionStatus).toBeNull();
   });
 
   it('keeps the suitability tests a response omits available as empty values', () => {

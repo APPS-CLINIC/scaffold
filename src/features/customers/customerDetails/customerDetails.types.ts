@@ -71,9 +71,31 @@ export interface CustomerCpac {
   cpacClassificationDate: CustomerDetailText;
 }
 
+export interface CustomerCdd {
+  cddRiskLevel: CustomerDetailText;
+  cddExpirationDate: CustomerDetailText;
+}
+
+export interface CustomerLending {
+  lendingReviewDate: CustomerDetailText;
+  lendingRatingReviewDate: CustomerDetailText;
+}
+
+/** The status is the service's own code and is shown as sent. */
+export interface CustomerTsPrice {
+  tsPriceConditionStatus: CustomerDetailText;
+  tsPriceConditionEndDate: CustomerDetailText;
+}
+
+/** This endpoint sends the status as text; the customer list sends the same field as a number. */
+export interface CustomerTsPriceResponse extends Omit<CustomerTsPrice, 'tsPriceConditionStatus'> {
+  tsPriceConditionStatus: string | number | null;
+}
+
 /** Stable app-facing shape for the basic-data object whose wrapper is transport-specific. */
 export interface CustomerBasicData {
   catalogOpenDate: CustomerDetailText;
+  reviewExtensionDate: CustomerDetailText;
   taxId: CustomerDetailText;
   regon: CustomerDetailText;
   krs: CustomerDetailText;
@@ -100,11 +122,14 @@ export interface CustomerDetailsResponse {
   addresses: CustomerAddresses | null;
   consents: CustomerConsents | null;
   crs: CustomerCrs | null;
+  cdd: CustomerCdd | null;
   fatca: CustomerFatca | null;
   mifid: CustomerMifid | null;
   lei: CustomerLei | null;
   emir: CustomerEmir | null;
   cpac: CustomerCpac | null;
+  tsPrice: CustomerTsPriceResponse | null;
+  lending: CustomerLending | null;
 }
 
 /** Normalized view model: every configured group exists even when the API value is null. */
@@ -113,11 +138,14 @@ export interface CustomerDetails {
   addresses: CustomerAddresses;
   consents: CustomerConsents;
   crs: CustomerCrs;
+  cdd: CustomerCdd;
   fatca: CustomerFatca;
   mifid: CustomerMifid;
   lei: CustomerLei;
   emir: CustomerEmir;
   cpac: CustomerCpac;
+  tsPrice: CustomerTsPrice;
+  lending: CustomerLending;
 }
 
 /** Exact response from `GET /api/v1/customers/{id}/advisors`. */
