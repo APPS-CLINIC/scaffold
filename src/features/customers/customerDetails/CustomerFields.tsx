@@ -31,8 +31,16 @@ const BALANCED = {
   dt: 'min-w-0 break-words text-sm font-bold text-[var(--text)] sm:text-right',
   dd: 'm-0 min-w-0 break-words text-sm text-[var(--text)]',
 };
+// Review dates keep the labels in a 24rem right-aligned column at the card's left edge from lg,
+// so the rows do not drift towards the middle of a wide card.
+const START = {
+  dl: 'm-0 grid min-w-0 grid-cols-1 items-start gap-1 sm:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] sm:gap-x-6 lg:grid-cols-[24rem_minmax(0,1fr)]',
+  dt: 'min-w-0 break-words text-sm font-bold text-[var(--text)] sm:text-right',
+  dd: 'm-0 min-w-0 break-words text-sm text-[var(--text)]',
+};
+const GEOMETRY = { fixed: FIXED, balanced: BALANCED, start: START };
 
-type CustomerFieldLayout = 'fixed' | 'balanced';
+type CustomerFieldLayout = keyof typeof GEOMETRY;
 
 const isEmpty = (value: CustomerFieldValue): boolean =>
   value === null || value === undefined || (typeof value === 'string' && value.trim() === '');
@@ -49,7 +57,7 @@ export function CustomerField({
   layout = 'fixed',
 }: CustomerFieldRow & { loading?: boolean; compact?: boolean; layout?: CustomerFieldLayout }) {
   const { t } = useTranslation();
-  const geometry = compact ? COMPACT : layout === 'balanced' ? BALANCED : FIXED;
+  const geometry = compact ? COMPACT : GEOMETRY[layout];
   const empty = isEmpty(value);
   const shown = empty ? t('customers.value.notAvailable') : value;
 
@@ -96,7 +104,8 @@ type SectionContent =
 
 /**
  * Rows of one card, grouped and separated by a full-width divider. The default layout
- * indents rows; the balanced layout splits the full card into equal label/value columns.
+ * indents rows; the balanced layout splits the full card into equal label/value columns; the
+ * start layout keeps a fixed label column at the card's left edge.
  */
 export function CustomerFieldGroups({
   groups,
@@ -121,16 +130,14 @@ export function CustomerFieldGroups({
           ) : null}
           <div
             className={
-              layout === 'balanced'
-                ? 'mt-3 min-w-0'
-                : 'mt-3 grid min-w-0 grid-cols-1 lg:grid-cols-4'
+              layout === 'fixed' ? 'mt-3 grid min-w-0 grid-cols-1 lg:grid-cols-4' : 'mt-3 min-w-0'
             }
           >
             <div
               className={
-                layout === 'balanced'
-                  ? 'min-w-0 space-y-1'
-                  : 'min-w-0 space-y-1 lg:col-span-3 lg:col-start-2'
+                layout === 'fixed'
+                  ? 'min-w-0 space-y-1 lg:col-span-3 lg:col-start-2'
+                  : 'min-w-0 space-y-1'
               }
             >
               {group.rows.map((row) => (

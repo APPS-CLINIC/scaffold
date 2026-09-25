@@ -67,7 +67,7 @@ export function CustomerReviewDates({ customerId }: CustomerReviewDatesProps) {
         fulfilledTimeStamp={detailsQuery.fulfilledTimeStamp}
         onRefresh={detailsQuery.refetch}
       />
-      <CustomerFieldGroups groups={groups} loading={loading} layout="balanced" />
+      <CustomerFieldGroups groups={groups} loading={loading} layout="start" />
     </div>
   );
 }
