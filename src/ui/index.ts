@@ -4,6 +4,7 @@ export { Button, type ButtonProps } from './Button';
 export {
   ActionLink,
   Card,
+  Chip,
   DefinitionList,
   IconTextButton,
   InlineLink,
@@ -24,6 +25,7 @@ export {
 export type {
   ActionLinkProps,
   CardProps,
+  ChipProps,
   DefinitionListProps,
   IconTextButtonProps,
   InlineLinkProps,
@@ -96,6 +98,16 @@ export {
   type IconSize,
   type IconTone,
 } from './icon/useCustomIcon';
+export {
+  DEFAULT_DUE_DATE_FILTER,
+  DUE_DATE_FILTERS,
+  DueDateFilter,
+  dueDateWindow,
+  filterByDueDate,
+  type DueDateFilterProps,
+  type DueDateFilterValue,
+  type DueDateWindow,
+} from './DueDateFilter';
 export { cx } from './cx';
 export { ToastProvider } from './toast/ToastProvider';
 export { useToast } from './toast/useToast';
