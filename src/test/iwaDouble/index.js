@@ -1137,7 +1137,7 @@ export function Chips({ value, onChange, multiple, wrap, className, dataTestId, 
   );
 }
 
-function ChipsChip({ label, value, disabled, showSelection }) {
+function ChipsChip({ label, value, disabled }) {
   const group = useContext(ChipsContext);
   const chosen = Array.isArray(group?.value)
     ? group.value
@@ -1149,7 +1149,7 @@ function ChipsChip({ label, value, disabled, showSelection }) {
   return createElement(Chip, {
     label,
     selected,
-    showSelection,
+    showSelection: Boolean(group?.multiple),
     disabled,
     onClick: () => {
       if (!group) return;

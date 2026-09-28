@@ -14,6 +14,15 @@ const LABEL_KEYS: Record<DueDateFilterValue, MessageKey> = {
 const isDueDateFilter = (value: unknown): value is DueDateFilterValue =>
   typeof value === 'string' && (DUE_DATE_FILTERS as readonly string[]).includes(value);
 
+/** The window a multiple-choice change added next to the current one, if any. */
+function newlyPicked(next: unknown, current: DueDateFilterValue): DueDateFilterValue | null {
+  if (!Array.isArray(next)) return null;
+  return (
+    next.find((item): item is DueDateFilterValue => isDueDateFilter(item) && item !== current) ??
+    null
+  );
+}
+
 export interface DueDateFilterProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
   'onChange' | 'defaultValue'
@@ -43,15 +52,19 @@ export const DueDateFilter = forwardRef<HTMLDivElement, DueDateFilterProps>(func
       className={twMerge('min-w-0', className)}
       {...rest}
     >
+      {/* Only multiple mode draws the check mark, so the group runs in it with a one-item
+          value: the last picked window. Unselecting that window is ignored. */}
       <Chips
-        value={value}
+        multiple
+        value={[value]}
         onChange={(next: unknown) => {
-          if (isDueDateFilter(next) && next !== value) onChange(next);
+          const picked = newlyPicked(next, value);
+          if (picked) onChange(picked);
         }}
         wrap
       >
         {DUE_DATE_FILTERS.map((filter) => (
-          <Chips.Chip key={filter} label={t(LABEL_KEYS[filter])} value={filter} showSelection />
+          <Chips.Chip key={filter} label={t(LABEL_KEYS[filter])} value={filter} />
         ))}
       </Chips>
       <span className="sr-only" aria-live="polite">

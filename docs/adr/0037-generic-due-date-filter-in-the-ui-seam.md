@@ -29,10 +29,11 @@ kept simple rather than shareable.
 - The filter is a domain-neutral primitive in `src/ui/DueDateFilter`, exported
   from `@/ui`:
   - `DueDateFilter` renders the four windows through the IWA `Chips` group, one
-    `Chips.Chip` per window with `showSelection`, so the chosen chip carries the
-    design's check mark, and is controlled through `value` and `onChange`. It
-    reports only a newly picked window, so the choice can never be cleared, and
-    it names the chosen filter in visually hidden text.
+    `Chips.Chip` per window, and is controlled through `value` and `onChange`.
+    Only multiple mode draws the design's check mark, so the group runs in it
+    with a one-item value — the last picked window. A change reports the window
+    it added; unselecting the current one is ignored, so the choice can never be
+    cleared. The group also names the chosen filter in visually hidden text.
   - `dueDateWindow(date, today)` places an ISO date in one of three windows:
     `overdue` (before today), `upTo30Days` (today through today + 30 days) or
     `over30Days`. It is built on `daysPastIsoDate`, so it always agrees with
@@ -53,8 +54,8 @@ kept simple rather than shareable.
   `filterByDueDate` call.
 - The choice resets when the view unmounts or the page reloads, and a filtered
   view cannot be shared as a link.
-- The chips take IWA's selected style, with the check mark from `showSelection`.
-  The fill and the mark have to be compared with the design in the work repo.
+- The chips take IWA's selected style and check mark from multiple mode. The fill
+  has to be compared with the design in the work repo.
 
 ## Alternatives considered
 

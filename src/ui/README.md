@@ -183,9 +183,10 @@ owning view keeps the value in local state and filters its own items. See [ADR 0
   ("Due date filter"), which a caller's `aria-label` replaces. The group also
   announces the chosen filter in visually hidden text. `className` is merged
   last.
-- The chips are the IWA `Chips` group with one `Chips.Chip` per window; each chip
-  gets `showSelection`, so the chosen one shows a check mark. Only a newly picked
-  window is reported, so the choice can never be cleared.
+- The chips are the IWA `Chips` group with one `Chips.Chip` per window, run in
+  multiple mode because only that mode draws the check mark. The value is always
+  one item, the last picked window. Unselecting it is ignored, so the choice
+  can never be cleared.
 
 ```tsx
 import { useState } from 'react';

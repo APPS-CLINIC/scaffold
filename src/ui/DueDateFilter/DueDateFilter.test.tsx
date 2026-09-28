@@ -50,9 +50,8 @@ describe('DueDateFilter', () => {
       ['Over 30 days', 'over30Days'],
       ['Overdue', 'overdue'],
     ]);
-    expect(lastChips().every((chip) => chip.showSelection)).toBe(true);
-    expect(lastGroup().value).toBe('upTo30Days');
-    expect(lastGroup().multiple).toBeFalsy();
+    expect(lastGroup().multiple).toBe(true);
+    expect(lastGroup().value).toEqual(['upTo30Days']);
     expect(lastGroup().wrap).toBe(true);
   });
 
@@ -63,23 +62,25 @@ describe('DueDateFilter', () => {
     expect(group).toHaveTextContent('Selected filter: Overdue');
   });
 
-  it('reports a newly picked window', () => {
+  it('reports the window a click adds, wherever the group puts it', () => {
     const onChange = vi.fn();
     render(<DueDateFilter value="all" onChange={onChange} />);
 
-    act(() => lastGroup().onChange('overdue'));
+    act(() => lastGroup().onChange(['all', 'overdue']));
+    act(() => lastGroup().onChange(['over30Days', 'all']));
 
-    expect(onChange).toHaveBeenCalledWith('overdue');
+    expect(onChange.mock.calls).toEqual([['overdue'], ['over30Days']]);
   });
 
-  it('ignores the chosen window again and anything that is not a window', () => {
+  it('keeps the chosen window when it is clicked again or the change is not a window', () => {
     const onChange = vi.fn();
     render(<DueDateFilter value="all" onChange={onChange} />);
 
     act(() => {
-      lastGroup().onChange('all');
-      lastGroup().onChange(['overdue']);
-      lastGroup().onChange('next-week');
+      lastGroup().onChange([]);
+      lastGroup().onChange(['all']);
+      lastGroup().onChange(['all', 'next-week']);
+      lastGroup().onChange('overdue');
     });
 
     expect(onChange).not.toHaveBeenCalled();
