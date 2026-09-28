@@ -52,6 +52,7 @@ keep ADRs at all; use it as the template for new records.
 | [0032](0032-explicit-route-objects-for-customer-detail-tree.md)   | Explicit route objects for the customer detail tree | Accepted               |
 | [0033](0033-customer-detail-presentation-feature-local.md)        | Customer detail presentation is feature-local       | Accepted               |
 | [0034](0034-user-table-preferences-in-a-persisted-redux-slice.md) | User table preferences in a persisted Redux slice   | Accepted               |
+| [0037](0037-generic-due-date-filter-in-the-ui-seam.md)            | Generic due-date filter in the UI seam              | Accepted               |
 
 ### Step 03 — Scope alignment (discovery)
 

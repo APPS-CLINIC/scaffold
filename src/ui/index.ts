@@ -96,6 +96,16 @@ export {
   type IconSize,
   type IconTone,
 } from './icon/useCustomIcon';
+export {
+  ALL_DUE_DATES,
+  DUE_DATE_WINDOWS,
+  DueDateFilter,
+  dueDateWindow,
+  filterByDueDate,
+  type DueDateFilterProps,
+  type DueDateSelection,
+  type DueDateWindow,
+} from './DueDateFilter';
 export { cx } from './cx';
 export { ToastProvider } from './toast/ToastProvider';
 export { useToast } from './toast/useToast';

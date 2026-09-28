@@ -13,7 +13,7 @@
  * `Table` delegates to PrimeReact because the IWA table is a styled PrimeReact DataTable.
  */
 
-import { cloneElement, createElement, useState } from 'react';
+import { cloneElement, createContext, createElement, useContext, useState } from 'react';
 import { DataTable } from 'primereact/datatable';
 
 export function Table({ dataTableRef, separatedRows, ...props }) {
@@ -792,7 +792,16 @@ export function DatePicker({
   );
 }
 
-export function Chip({ label, selected, onClick, disabled, removable, className, dataTestId }) {
+export function Chip({
+  label,
+  selected,
+  showSelection,
+  onClick,
+  disabled,
+  removable,
+  className,
+  dataTestId,
+}) {
   return createElement(
     'button',
     {
@@ -809,6 +818,26 @@ export function Chip({ label, selected, onClick, disabled, removable, className,
         className,
       ),
     },
+    selected && showSelection
+      ? createElement(
+          'span',
+          { 'aria-hidden': 'true', className: 'flex shrink-0 items-center' },
+          svgIcon(
+            [
+              createElement('path', {
+                key: 'check',
+                d: 'M4 10.5l3.5 3.5L16 5.5',
+                stroke: 'currentColor',
+                strokeWidth: 2,
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round',
+                fill: 'none',
+              }),
+            ],
+            { width: 14, height: 14 },
+          ),
+        )
+      : null,
     createElement('span', { className: 'truncate' }, label),
     removable
       ? createElement(
@@ -1086,3 +1115,51 @@ export function NavigationMenuItem({ mainNode, subNodes = [], rootClassName, lis
       : null,
   );
 }
+
+const ChipsContext = createContext(null);
+
+export function Chips({ value, onChange, multiple, wrap, className, dataTestId, children }) {
+  return createElement(
+    ChipsContext.Provider,
+    { value: { value, onChange, multiple } },
+    createElement(
+      'div',
+      {
+        'data-testid': dataTestId,
+        className: twMerge(
+          'flex items-center gap-2',
+          wrap ? 'flex-wrap' : 'overflow-x-auto',
+          className,
+        ),
+      },
+      children,
+    ),
+  );
+}
+
+function ChipsChip({ label, value, disabled }) {
+  const group = useContext(ChipsContext);
+  const chosen = Array.isArray(group?.value)
+    ? group.value
+    : group?.value === undefined || group?.value === null
+      ? []
+      : [group.value];
+  const selected = chosen.includes(value);
+
+  return createElement(Chip, {
+    label,
+    selected,
+    showSelection: Boolean(group?.multiple),
+    disabled,
+    onClick: () => {
+      if (!group) return;
+      if (group.multiple) {
+        group.onChange(selected ? chosen.filter((item) => item !== value) : [...chosen, value]);
+      } else {
+        group.onChange(value);
+      }
+    },
+  });
+}
+
+Chips.Chip = ChipsChip;

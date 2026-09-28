@@ -22,7 +22,9 @@ export function RootLayout() {
       </header>
       <div className="flex min-h-0 min-w-0 overflow-hidden">
         <ContextualSidebar />
-        <main className="min-w-0 flex-1 overflow-x-hidden overflow-y-auto bg-[var(--content-surface)] p-4 sm:p-6">
+        {/* Positioned, so visually hidden (absolutely positioned) text scrolls with the content
+            instead of stretching the document into a second, page-level scrollbar. */}
+        <main className="relative min-w-0 flex-1 overflow-x-hidden overflow-y-auto bg-[var(--content-surface)] p-4 sm:p-6">
           <Outlet />
         </main>
       </div>
