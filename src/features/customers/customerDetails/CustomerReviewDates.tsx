@@ -24,9 +24,9 @@ interface ReviewDateRow {
 }
 
 /**
- * The "Review dates" part of the reviews section. The due-date filter waits for the first
- * details: while none have arrived — still loading, or the first request failed — every row
- * stays in place.
+ * The "Review dates" part of the reviews section. While the details load, every row keeps its
+ * skeleton; otherwise a chosen due-date window hides every row without a date in it, including
+ * the empty ones a failed request leaves.
  */
 export function CustomerReviewDates({ customerId, dueDateFilter }: CustomerReviewDatesProps) {
   const { t } = useTranslation();
@@ -34,7 +34,7 @@ export function CustomerReviewDates({ customerId, dueDateFilter }: CustomerRevie
   const detailsQuery = useGetCustomerDetailsQuery(customerId);
   const details = detailsQuery.currentData ?? EMPTY_CUSTOMER_DETAILS;
   const loading = isAwaitingData(detailsQuery);
-  const filter = detailsQuery.currentData ? dueDateFilter : DEFAULT_DUE_DATE_FILTER;
+  const filter = loading ? DEFAULT_DUE_DATE_FILTER : dueDateFilter;
 
   const dated = (labelKey: MessageKey, date: string | null): ReviewDateRow => ({
     labelKey,

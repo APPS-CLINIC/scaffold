@@ -276,6 +276,19 @@ describe('Review dates', () => {
     expect(screen.queryByText('TS pricing condition status')).toBeNull();
   });
 
+  it('removes the rows showing an en dash once a window is chosen', async () => {
+    renderReviewDates({
+      lending: null,
+      tsPrice: { tsPriceConditionStatus: null, tsPriceConditionEndDate: null },
+    });
+    expect(screen.getAllByRole('term')).toHaveLength(7);
+
+    await chooseDueDate('Overdue');
+
+    expect(shownLabels()).toEqual(['FATCA review date']);
+    expect(screen.queryByText('–')).toBeNull();
+  });
+
   it('shows every row again with All', async () => {
     renderReviewDates();
 
@@ -381,7 +394,7 @@ describe('Review dates over the network', () => {
     expect(screen.queryByText('No dates in the chosen range')).toBeNull();
   });
 
-  it('keeps every row after a failed request, whatever the filter', async () => {
+  it('hides the empty rows a failed request leaves once a window is chosen', async () => {
     stubDetailsFetch(
       async () =>
         new Response(JSON.stringify({ message: 'Unavailable' }), {
@@ -393,9 +406,10 @@ describe('Review dates over the network', () => {
     renderView(reviewDates);
 
     expect(await screen.findByRole('alert')).toBeInTheDocument();
-    await chooseDueDate('Overdue');
     expect(screen.getAllByRole('term')).toHaveLength(7);
-    expect(screen.queryByText('No dates in the chosen range')).toBeNull();
+    await chooseDueDate('Overdue');
+    expect(screen.queryAllByRole('term')).toHaveLength(0);
+    expect(screen.getByText('No dates in the chosen range')).toBeInTheDocument();
   });
 
   it('asks for the customer details again on refresh', async () => {
