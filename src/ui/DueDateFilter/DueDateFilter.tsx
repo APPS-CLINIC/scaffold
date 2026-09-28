@@ -51,7 +51,7 @@ export const DueDateFilter = forwardRef<HTMLDivElement, DueDateFilterProps>(func
         wrap
       >
         {DUE_DATE_FILTERS.map((filter) => (
-          <Chips.Chip key={filter} label={t(LABEL_KEYS[filter])} value={filter} />
+          <Chips.Chip key={filter} label={t(LABEL_KEYS[filter])} value={filter} showSelection />
         ))}
       </Chips>
       <span className="sr-only" aria-live="polite">

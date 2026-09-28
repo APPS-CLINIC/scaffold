@@ -50,6 +50,7 @@ describe('DueDateFilter', () => {
       ['Over 30 days', 'over30Days'],
       ['Overdue', 'overdue'],
     ]);
+    expect(lastChips().every((chip) => chip.showSelection)).toBe(true);
     expect(lastGroup().value).toBe('upTo30Days');
     expect(lastGroup().multiple).toBeFalsy();
     expect(lastGroup().wrap).toBe(true);

@@ -792,7 +792,16 @@ export function DatePicker({
   );
 }
 
-export function Chip({ label, selected, onClick, disabled, removable, className, dataTestId }) {
+export function Chip({
+  label,
+  selected,
+  showSelection,
+  onClick,
+  disabled,
+  removable,
+  className,
+  dataTestId,
+}) {
   return createElement(
     'button',
     {
@@ -809,6 +818,26 @@ export function Chip({ label, selected, onClick, disabled, removable, className,
         className,
       ),
     },
+    selected && showSelection
+      ? createElement(
+          'span',
+          { 'aria-hidden': 'true', className: 'flex shrink-0 items-center' },
+          svgIcon(
+            [
+              createElement('path', {
+                key: 'check',
+                d: 'M4 10.5l3.5 3.5L16 5.5',
+                stroke: 'currentColor',
+                strokeWidth: 2,
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round',
+                fill: 'none',
+              }),
+            ],
+            { width: 14, height: 14 },
+          ),
+        )
+      : null,
     createElement('span', { className: 'truncate' }, label),
     removable
       ? createElement(
@@ -1108,7 +1137,7 @@ export function Chips({ value, onChange, multiple, wrap, className, dataTestId, 
   );
 }
 
-function ChipsChip({ label, value, disabled }) {
+function ChipsChip({ label, value, disabled, showSelection }) {
   const group = useContext(ChipsContext);
   const chosen = Array.isArray(group?.value)
     ? group.value
@@ -1120,6 +1149,7 @@ function ChipsChip({ label, value, disabled }) {
   return createElement(Chip, {
     label,
     selected,
+    showSelection,
     disabled,
     onClick: () => {
       if (!group) return;
