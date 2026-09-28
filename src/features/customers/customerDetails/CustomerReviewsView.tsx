@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { cx, DEFAULT_DUE_DATE_FILTER, DueDateFilter, type DueDateFilterValue } from '@/ui';
+import { DEFAULT_DUE_DATE_FILTER, DueDateFilter, twMerge, type DueDateFilterValue } from '@/ui';
 import { CustomerPartsCard } from './CustomerPartsCard';
 import { CustomerReviewDates } from './CustomerReviewDates';
 import {
@@ -36,7 +36,7 @@ export function CustomerReviewsView({ customerId, part, onSelectPart }: Customer
         <DueDateFilter value={dueDateFilter} onChange={setDueDateFilter} className="pt-5" />
       ) : null}
       <h3
-        className={cx(
+        className={twMerge(
           'm-0 text-base font-bold leading-6 text-[var(--text)]',
           showsReviewDates && 'mt-8',
         )}

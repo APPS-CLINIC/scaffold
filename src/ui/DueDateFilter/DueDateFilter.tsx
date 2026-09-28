@@ -1,8 +1,8 @@
 import { forwardRef, type HTMLAttributes } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MessageKey } from '@/i18n/messages/pl';
+import { twMerge } from 'iwa-react-components';
 import { Chip } from '@/ui';
-import { cx } from '../cx';
 import { DUE_DATE_FILTERS, type DueDateFilterValue } from './dueDateWindows';
 
 const LABEL_KEYS: Record<DueDateFilterValue, MessageKey> = {
@@ -37,7 +37,7 @@ export const DueDateFilter = forwardRef<HTMLDivElement, DueDateFilterProps>(func
       ref={ref}
       role="group"
       aria-label={t('common.dueDateFilter.ariaLabel')}
-      className={cx('flex flex-wrap items-center gap-2', className)}
+      className={twMerge('flex flex-wrap items-center gap-2', className)}
       {...rest}
     >
       {DUE_DATE_FILTERS.map((filter) => (
