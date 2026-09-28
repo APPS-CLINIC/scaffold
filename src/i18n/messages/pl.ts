@@ -20,7 +20,7 @@ export const pl = {
   'common.dueDateFilter.upTo30Days': 'Do 30 dni',
   'common.dueDateFilter.over30Days': 'Powyżej 30 dni',
   'common.dueDateFilter.overdue': 'Zaległe',
-  'common.dueDateFilter.selected': 'Wybrany filtr: {{label}}',
+  'common.dueDateFilter.selected': 'Wybrane filtry: {{labels}}',
   'common.yes': 'Tak',
   'common.no': 'Nie',
   'common.pagination.first': 'Pierwsza strona',

@@ -18,7 +18,7 @@ export const en: Record<MessageKey, string> = {
   'common.dueDateFilter.upTo30Days': 'Up to 30 days',
   'common.dueDateFilter.over30Days': 'Over 30 days',
   'common.dueDateFilter.overdue': 'Overdue',
-  'common.dueDateFilter.selected': 'Selected filter: {{label}}',
+  'common.dueDateFilter.selected': 'Selected filters: {{labels}}',
   'common.yes': 'Yes',
   'common.no': 'No',
   'common.pagination.first': 'First page',

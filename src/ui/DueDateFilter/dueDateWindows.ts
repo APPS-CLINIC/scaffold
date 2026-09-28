@@ -1,13 +1,13 @@
 import { daysPastIsoDate } from '@/i18n/dateFormats';
 
-export const DUE_DATE_FILTERS = ['all', 'upTo30Days', 'over30Days', 'overdue'] as const;
+export const DUE_DATE_WINDOWS = ['upTo30Days', 'over30Days', 'overdue'] as const;
 
-export type DueDateFilterValue = (typeof DUE_DATE_FILTERS)[number];
+export type DueDateWindow = (typeof DUE_DATE_WINDOWS)[number];
 
-/** The window a single date falls into; `all` is a filter, not a window. */
-export type DueDateWindow = Exclude<DueDateFilterValue, 'all'>;
+/** The chosen windows; no window chosen means every item. */
+export type DueDateSelection = readonly DueDateWindow[];
 
-export const DEFAULT_DUE_DATE_FILTER: DueDateFilterValue = 'all';
+export const ALL_DUE_DATES: DueDateSelection = [];
 
 const UPCOMING_DAYS = 30;
 
@@ -24,16 +24,19 @@ export function dueDateWindow(value: string | null, today = new Date()): DueDate
 }
 
 /**
- * Keeps the items whose date falls into the filter's window; `all` keeps every item, with or
- * without a date. It filters a fully loaded collection — a server-paginated list has to send
- * the window to its endpoint instead.
+ * Keeps the items whose date falls into one of the chosen windows; with no window chosen it
+ * keeps every item, with or without a date. It filters a fully loaded collection — a
+ * server-paginated list has to send the windows to its endpoint instead.
  */
 export function filterByDueDate<T>(
   items: readonly T[],
   getDate: (item: T) => string | null,
-  filter: DueDateFilterValue,
+  windows: DueDateSelection,
   today = new Date(),
 ): T[] {
-  if (filter === 'all') return [...items];
-  return items.filter((item) => dueDateWindow(getDate(item), today) === filter);
+  if (windows.length === 0) return [...items];
+  return items.filter((item) => {
+    const window = dueDateWindow(getDate(item), today);
+    return window !== null && windows.includes(window);
+  });
 }

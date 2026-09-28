@@ -244,7 +244,7 @@ describe('Review dates', () => {
 
     const filter = screen.getByRole('group', { name: 'Filtr terminów' });
     const heading = screen.getByRole('heading', { level: 3, name: 'Daty przeglądu' });
-    expect(filter).toHaveTextContent('Wybrany filtr: Wszystkie');
+    expect(filter).toHaveTextContent('Wybrane filtry: Wszystkie');
     expect(filter.compareDocumentPosition(heading)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
     expect(screen.getAllByRole('term')).toHaveLength(7);
     expect(screen.getByText('Odśwież')).toBeInTheDocument();
@@ -269,7 +269,7 @@ describe('Review dates', () => {
     await chooseDueDate(chip);
 
     expect(screen.getByRole('group', { name: 'Due date filter' })).toHaveTextContent(
-      `Selected filter: ${chip}`,
+      `Selected filters: ${chip}`,
     );
     expect(shownLabels()).toEqual(labels);
     expect(document.querySelectorAll('hr')).toHaveLength(separators);
@@ -289,6 +289,30 @@ describe('Review dates', () => {
     expect(screen.queryByText('–')).toBeNull();
   });
 
+  it('shows the dates of every chosen window together', async () => {
+    renderReviewDates();
+
+    await chooseDueDate('Overdue');
+    await chooseDueDate('Up to 30 days');
+
+    expect(shownLabels()).toEqual(['Lending rating review date', 'FATCA review date']);
+    expect(screen.getByRole('group', { name: 'Due date filter' })).toHaveTextContent(
+      'Selected filters: Up to 30 days, Overdue',
+    );
+  });
+
+  it('goes back to every row when the last window is unselected', async () => {
+    renderReviewDates();
+
+    await chooseDueDate('Overdue');
+    await chooseDueDate('Overdue');
+
+    expect(screen.getAllByRole('term')).toHaveLength(7);
+    expect(screen.getByRole('group', { name: 'Due date filter' })).toHaveTextContent(
+      'Selected filters: All',
+    );
+  });
+
   it('shows every row again with All', async () => {
     renderReviewDates();
 
@@ -297,7 +321,7 @@ describe('Review dates', () => {
 
     expect(screen.getAllByRole('term')).toHaveLength(7);
     expect(screen.getByRole('group', { name: 'Due date filter' })).toHaveTextContent(
-      'Selected filter: All',
+      'Selected filters: All',
     );
   });
 

@@ -97,13 +97,13 @@ export {
   type IconTone,
 } from './icon/useCustomIcon';
 export {
-  DEFAULT_DUE_DATE_FILTER,
-  DUE_DATE_FILTERS,
+  ALL_DUE_DATES,
+  DUE_DATE_WINDOWS,
   DueDateFilter,
   dueDateWindow,
   filterByDueDate,
   type DueDateFilterProps,
-  type DueDateFilterValue,
+  type DueDateSelection,
   type DueDateWindow,
 } from './DueDateFilter';
 export { cx } from './cx';

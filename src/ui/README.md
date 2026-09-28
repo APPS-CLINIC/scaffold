@@ -167,40 +167,35 @@ function CustomersList() {
 
 ## `DueDateFilter` and due-date windows
 
-A domain-neutral filter over calendar dates, shown as single-choice IWA `Chips`:
+A domain-neutral filter over calendar dates, shown as multiple-choice IWA `Chips`:
 **All · Up to 30 days · Over 30 days · Overdue** (`common.dueDateFilter.*`). The
-owning view keeps the value in local state and filters its own items. See [ADR 0037](../../docs/adr/0037-generic-due-date-filter-in-the-ui-seam.md).
+user can combine windows. The owning view keeps the chosen windows in local
+state and filters its own items. See [ADR 0037](../../docs/adr/0037-generic-due-date-filter-in-the-ui-seam.md).
 
 - `dueDateWindow(date, today?)` returns `'overdue'` (before today),
   `'upTo30Days'` (today through today + 30 days), `'over30Days'` or `null` for a
   value that is not a `yyyy-MM-dd` date. It uses `daysPastIsoDate`, so it matches
   the overdue markers.
-- `filterByDueDate(items, getDate, filter, today?)` keeps the items in the
-  chosen window; `'all'` keeps everything, including items without a date. It
-  filters a **fully loaded** collection. A server-paginated list sends the
-  window to its endpoint instead.
+- A `DueDateSelection` is the list of chosen windows; `ALL_DUE_DATES` (empty)
+  means all items.
+- `filterByDueDate(items, getDate, windows, today?)` keeps the items whose date
+  falls into any chosen window; with none chosen it keeps everything, including
+  items without a date. It filters a **fully loaded** collection. A
+  server-paginated list sends the windows to its endpoint instead.
 - `<DueDateFilter value onChange />` is a `role="group"` with a default name
-  ("Due date filter"), which a caller's `aria-label` replaces. The group also
-  announces the chosen filter in visually hidden text. `className` is merged
-  last.
-- The chips are the IWA `Chips` group with one `Chips.Chip` per window, run in
-  multiple mode because only that mode draws the check mark. The value is always
-  one item, the last picked window. Unselecting it is ignored, so the choice
-  can never be cleared.
+  ("Due date filter"), which a caller's `aria-label` replaces. "All" is
+  exclusive: picking it clears the windows, picking a window drops it, and
+  unselecting the last window brings it back. The group announces the chosen
+  filters in visually hidden text. `className` is merged last.
 
 ```tsx
 import { useState } from 'react';
-import {
-  DEFAULT_DUE_DATE_FILTER,
-  DueDateFilter,
-  filterByDueDate,
-  type DueDateFilterValue,
-} from '@/ui';
+import { ALL_DUE_DATES, DueDateFilter, filterByDueDate, type DueDateSelection } from '@/ui';
 
-const [filter, setFilter] = useState<DueDateFilterValue>(DEFAULT_DUE_DATE_FILTER);
-const shown = filterByDueDate(rows, (row) => row.dueDate, filter);
+const [windows, setWindows] = useState<DueDateSelection>(ALL_DUE_DATES);
+const shown = filterByDueDate(rows, (row) => row.dueDate, windows);
 
-<DueDateFilter value={filter} onChange={setFilter} />;
+<DueDateFilter value={windows} onChange={setWindows} />;
 ```
 
 ## `ScreenHeading`

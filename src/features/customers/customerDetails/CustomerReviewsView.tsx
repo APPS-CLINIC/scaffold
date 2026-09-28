@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { DEFAULT_DUE_DATE_FILTER, DueDateFilter, twMerge, type DueDateFilterValue } from '@/ui';
+import { ALL_DUE_DATES, DueDateFilter, twMerge, type DueDateSelection } from '@/ui';
 import { CustomerPartsCard } from './CustomerPartsCard';
 import { CustomerReviewDates } from './CustomerReviewDates';
 import {
@@ -21,7 +21,7 @@ export interface CustomerReviewsViewProps {
  */
 export function CustomerReviewsView({ customerId, part, onSelectPart }: CustomerReviewsViewProps) {
   const { t } = useTranslation();
-  const [dueDateFilter, setDueDateFilter] = useState<DueDateFilterValue>(DEFAULT_DUE_DATE_FILTER);
+  const [dueDateWindows, setDueDateWindows] = useState<DueDateSelection>(ALL_DUE_DATES);
   const showsReviewDates = part.id === DEFAULT_CUSTOMER_REVIEWS_PART.id;
 
   return (
@@ -33,7 +33,7 @@ export function CustomerReviewsView({ customerId, part, onSelectPart }: Customer
       onSelectPart={onSelectPart}
     >
       {showsReviewDates ? (
-        <DueDateFilter value={dueDateFilter} onChange={setDueDateFilter} className="pt-5" />
+        <DueDateFilter value={dueDateWindows} onChange={setDueDateWindows} className="pt-5" />
       ) : null}
       <h3
         className={twMerge(
@@ -44,7 +44,7 @@ export function CustomerReviewsView({ customerId, part, onSelectPart }: Customer
         {t(part.labelKey)}
       </h3>
       {showsReviewDates ? (
-        <CustomerReviewDates customerId={customerId} dueDateFilter={dueDateFilter} />
+        <CustomerReviewDates customerId={customerId} dueDateWindows={dueDateWindows} />
       ) : (
         <p className="mt-2 text-[var(--muted)]">{t('section.placeholder')}</p>
       )}

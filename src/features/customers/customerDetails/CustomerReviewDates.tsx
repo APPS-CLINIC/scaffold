@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { MessageKey } from '@/i18n/messages/pl';
-import { DEFAULT_DUE_DATE_FILTER, filterByDueDate, type DueDateFilterValue } from '@/ui';
+import { ALL_DUE_DATES, filterByDueDate, type DueDateSelection } from '@/ui';
 import { CustomerDataAsOf } from './CustomerDataAsOf';
 import {
   CustomerFieldGroups,
@@ -13,7 +13,7 @@ import { useCustomerFormatters } from './customerDetails.formatters';
 
 export interface CustomerReviewDatesProps {
   customerId: string;
-  dueDateFilter: DueDateFilterValue;
+  dueDateWindows: DueDateSelection;
 }
 
 /** A row with the raw date it is filtered by; a row that is not a date has none. */
@@ -25,16 +25,16 @@ interface ReviewDateRow {
 
 /**
  * The "Review dates" part of the reviews section. While the details load, every row keeps its
- * skeleton; otherwise a chosen due-date window hides every row without a date in it, including
- * the empty ones a failed request leaves.
+ * skeleton; otherwise chosen due-date windows hide every row without a date in one of them,
+ * including the empty ones a failed request leaves.
  */
-export function CustomerReviewDates({ customerId, dueDateFilter }: CustomerReviewDatesProps) {
+export function CustomerReviewDates({ customerId, dueDateWindows }: CustomerReviewDatesProps) {
   const { t } = useTranslation();
   const format = useCustomerFormatters();
   const detailsQuery = useGetCustomerDetailsQuery(customerId);
   const details = detailsQuery.currentData ?? EMPTY_CUSTOMER_DETAILS;
   const loading = isAwaitingData(detailsQuery);
-  const filter = loading ? DEFAULT_DUE_DATE_FILTER : dueDateFilter;
+  const windows = loading ? ALL_DUE_DATES : dueDateWindows;
 
   const dated = (labelKey: MessageKey, date: string | null): ReviewDateRow => ({
     labelKey,
@@ -71,7 +71,7 @@ export function CustomerReviewDates({ customerId, dueDateFilter }: CustomerRevie
 
   const groups: readonly CustomerFieldGroup[] = rowGroups
     .map((rows) => ({
-      rows: filterByDueDate(rows, (row) => row.date, filter).map(({ labelKey, value }) => ({
+      rows: filterByDueDate(rows, (row) => row.date, windows).map(({ labelKey, value }) => ({
         labelKey,
         value,
       })),

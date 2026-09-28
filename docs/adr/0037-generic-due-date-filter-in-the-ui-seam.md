@@ -28,24 +28,26 @@ kept simple rather than shareable.
 
 - The filter is a domain-neutral primitive in `src/ui/DueDateFilter`, exported
   from `@/ui`:
-  - `DueDateFilter` renders the four windows through the IWA `Chips` group, one
-    `Chips.Chip` per window, and is controlled through `value` and `onChange`.
-    Only multiple mode draws the design's check mark, so the group runs in it
-    with a one-item value — the last picked window. A change reports the window
-    it added; unselecting the current one is ignored, so the choice can never be
-    cleared. The group also names the chosen filter in visually hidden text.
+  - The user can choose **several windows at once**. The choice is a
+    `DueDateSelection` (a list of windows); an empty list means all items.
+  - `DueDateFilter` renders "All" and the three windows through the IWA `Chips`
+    group in multiple mode, one `Chips.Chip` each, and is controlled through
+    `value` and `onChange`. "All" is exclusive: picking it clears the windows,
+    picking a window drops it, and unselecting the last window brings it back.
+    The group also names the chosen filters in visually hidden text.
   - `dueDateWindow(date, today)` places an ISO date in one of three windows:
     `overdue` (before today), `upTo30Days` (today through today + 30 days) or
     `over30Days`. It is built on `daysPastIsoDate`, so it always agrees with
     the overdue-days marker (`customers.details.reviews.overdueDays`).
-  - `filterByDueDate(items, getDate, filter)` keeps the items in the chosen
-    window. `all` keeps every item, dated or not.
+  - `filterByDueDate(items, getDate, windows)` keeps the items whose date falls
+    into any chosen window. With no window chosen it keeps every item, dated or
+    not.
 - The selection is **local state of the view that shows the filter**
-  (`useState`, default `all`). It is not written to the URL: this is a
+  (`useState`, default `ALL_DUE_DATES`). It is not written to the URL: this is a
   deliberate exception to ADR 0006 for view-local filters over rows that are
   already loaded. Filters that reach an endpoint stay in the URL.
 - `filterByDueDate` works on a **fully loaded collection**. A server-paginated
-  list must send the window to its endpoint as a feature filter in the URL
+  list must send the windows to its endpoint as a feature filter in the URL
   (ADR 0026) instead of filtering one page in the browser.
 
 ## Consequences
@@ -54,8 +56,8 @@ kept simple rather than shareable.
   `filterByDueDate` call.
 - The choice resets when the view unmounts or the page reloads, and a filtered
   view cannot be shared as a link.
-- The chips take IWA's selected style and check mark from multiple mode. The fill
-  has to be compared with the design in the work repo.
+- The chips take IWA's selected style and check mark. The fill has to be
+  compared with the design in the work repo.
 
 ## Alternatives considered
 

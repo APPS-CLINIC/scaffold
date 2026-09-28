@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { dueDateWindow, filterByDueDate, type DueDateFilterValue } from './dueDateWindows';
+import { dueDateWindow, filterByDueDate, type DueDateSelection } from './dueDateWindows';
 
 const today = new Date('2026-09-25T12:00:00');
 
@@ -30,21 +30,26 @@ describe('filterByDueDate', () => {
     { id: 'later', date: '2026-12-01' },
     { id: 'undated', date: null },
   ];
-  const ids = (filter: DueDateFilterValue) =>
-    filterByDueDate(items, (item) => item.date, filter, today).map((item) => item.id);
+  const ids = (windows: DueDateSelection) =>
+    filterByDueDate(items, (item) => item.date, windows, today).map((item) => item.id);
 
-  it('keeps every item, dated or not, for all', () => {
-    expect(ids('all')).toEqual(['overdue', 'soon', 'later', 'undated']);
+  it('keeps every item, dated or not, when no window is chosen', () => {
+    expect(ids([])).toEqual(['overdue', 'soon', 'later', 'undated']);
   });
 
   it('keeps only the items whose date falls into the chosen window', () => {
-    expect(ids('overdue')).toEqual(['overdue']);
-    expect(ids('upTo30Days')).toEqual(['soon']);
-    expect(ids('over30Days')).toEqual(['later']);
+    expect(ids(['overdue'])).toEqual(['overdue']);
+    expect(ids(['upTo30Days'])).toEqual(['soon']);
+    expect(ids(['over30Days'])).toEqual(['later']);
+  });
+
+  it('keeps the items of every chosen window, in their own order', () => {
+    expect(ids(['overdue', 'upTo30Days'])).toEqual(['overdue', 'soon']);
+    expect(ids(['upTo30Days', 'over30Days', 'overdue'])).toEqual(['overdue', 'soon', 'later']);
   });
 
   it('returns a new array and leaves the input alone', () => {
-    const result = filterByDueDate(items, (item) => item.date, 'all', today);
+    const result = filterByDueDate(items, (item) => item.date, [], today);
 
     expect(result).not.toBe(items);
     expect(items).toHaveLength(4);

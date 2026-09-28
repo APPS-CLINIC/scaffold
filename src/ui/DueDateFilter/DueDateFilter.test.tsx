@@ -41,8 +41,8 @@ beforeEach(async () => {
 });
 
 describe('DueDateFilter', () => {
-  it('offers the four windows in order and hands the chosen one to the group', () => {
-    render(<DueDateFilter value="upTo30Days" onChange={vi.fn()} />);
+  it('offers All and the three windows as one multiple-choice group', () => {
+    render(<DueDateFilter value={[]} onChange={vi.fn()} />);
 
     expect(lastChips().map((chip) => [chip.label, chip.value])).toEqual([
       ['All', 'all'],
@@ -51,35 +51,63 @@ describe('DueDateFilter', () => {
       ['Overdue', 'overdue'],
     ]);
     expect(lastGroup().multiple).toBe(true);
-    expect(lastGroup().value).toEqual(['upTo30Days']);
     expect(lastGroup().wrap).toBe(true);
   });
 
-  it('names the group and the chosen filter for assistive technology', () => {
-    render(<DueDateFilter value="overdue" onChange={vi.fn()} />);
+  it('marks All while no window is chosen and the windows once some are', () => {
+    const { rerender } = render(<DueDateFilter value={[]} onChange={vi.fn()} />);
+    expect(lastGroup().value).toEqual(['all']);
 
+    rerender(<DueDateFilter value={['upTo30Days', 'overdue']} onChange={vi.fn()} />);
+    expect(lastGroup().value).toEqual(['upTo30Days', 'overdue']);
+  });
+
+  it('names the group and the chosen filters for assistive technology', () => {
+    const { rerender } = render(<DueDateFilter value={[]} onChange={vi.fn()} />);
     const group = screen.getByRole('group', { name: 'Due date filter' });
-    expect(group).toHaveTextContent('Selected filter: Overdue');
+    expect(group).toHaveTextContent('Selected filters: All');
+
+    rerender(<DueDateFilter value={['upTo30Days', 'overdue']} onChange={vi.fn()} />);
+    expect(group).toHaveTextContent('Selected filters: Up to 30 days, Overdue');
   });
 
-  it('reports the window a click adds, wherever the group puts it', () => {
+  it.each([
+    ['a window picked while All is on replaces it', [], ['all', 'overdue'], ['overdue']],
+    [
+      'a second window joins the first',
+      ['overdue'],
+      ['overdue', 'upTo30Days'],
+      ['upTo30Days', 'overdue'],
+    ],
+    [
+      'All picked clears the windows',
+      ['overdue', 'upTo30Days'],
+      ['upTo30Days', 'overdue', 'all'],
+      [],
+    ],
+    ['unselecting the last window brings All back', ['overdue'], [], []],
+    [
+      'unselecting one of two keeps the other',
+      ['upTo30Days', 'overdue'],
+      ['upTo30Days'],
+      ['upTo30Days'],
+    ],
+  ] as const)('reports the new choice when %s', (_case, value, next, expected) => {
     const onChange = vi.fn();
-    render(<DueDateFilter value="all" onChange={onChange} />);
+    render(<DueDateFilter value={value} onChange={onChange} />);
 
-    act(() => lastGroup().onChange(['all', 'overdue']));
-    act(() => lastGroup().onChange(['over30Days', 'all']));
+    act(() => lastGroup().onChange([...next]));
 
-    expect(onChange.mock.calls).toEqual([['overdue'], ['over30Days']]);
+    expect(onChange).toHaveBeenCalledWith(expected);
   });
 
-  it('keeps the chosen window when it is clicked again or the change is not a window', () => {
+  it('stays quiet when All is clicked again or the change is not a list', () => {
     const onChange = vi.fn();
-    render(<DueDateFilter value="all" onChange={onChange} />);
+    render(<DueDateFilter value={[]} onChange={onChange} />);
 
     act(() => {
       lastGroup().onChange([]);
       lastGroup().onChange(['all']);
-      lastGroup().onChange(['all', 'next-week']);
       lastGroup().onChange('overdue');
     });
 
@@ -89,7 +117,7 @@ describe('DueDateFilter', () => {
   it('lets the caller rename the group and style the container', () => {
     render(
       <DueDateFilter
-        value="all"
+        value={[]}
         onChange={vi.fn()}
         aria-label="Review date filter"
         className="pt-5"
@@ -101,7 +129,7 @@ describe('DueDateFilter', () => {
 
   it('words the chips in Polish', async () => {
     await i18n.changeLanguage('pl');
-    render(<DueDateFilter value="all" onChange={vi.fn()} />);
+    render(<DueDateFilter value={[]} onChange={vi.fn()} />);
 
     expect(lastChips().map((chip) => chip.label)).toEqual([
       'Wszystkie',

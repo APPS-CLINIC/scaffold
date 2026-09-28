@@ -1,9 +1,9 @@
 export { DueDateFilter, type DueDateFilterProps } from './DueDateFilter';
 export {
-  DEFAULT_DUE_DATE_FILTER,
-  DUE_DATE_FILTERS,
+  ALL_DUE_DATES,
+  DUE_DATE_WINDOWS,
   dueDateWindow,
   filterByDueDate,
-  type DueDateFilterValue,
+  type DueDateSelection,
   type DueDateWindow,
 } from './dueDateWindows';
