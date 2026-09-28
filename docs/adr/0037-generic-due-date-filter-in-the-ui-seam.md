@@ -28,14 +28,10 @@ kept simple rather than shareable.
 
 - The filter is a domain-neutral primitive in `src/ui/DueDateFilter`, exported
   from `@/ui`:
-  - `DueDateFilter` renders the four windows as single-choice chips and is
-    controlled through `value` and `onChange`. The group also names the chosen
-    filter in visually hidden text.
-  - The chip is a local `Chip` in `@/ui` for now: `iwa-react-components` does not
-    export its `Chip` correctly. The local one keeps the IWA `ChipProps` names,
-    exposes `aria-pressed` and is marked with a TODO to swap back to IWA once
-    the export is fixed. The hidden text above keeps the choice announced after
-    the swap, since the IWA chip has no pressed state.
+  - `DueDateFilter` renders the four windows through the IWA `Chips` group, one
+    `Chips.Chip` per window, and is controlled through `value` and `onChange`. It
+    reports only a newly picked window, so the choice can never be cleared, and
+    it names the chosen filter in visually hidden text.
   - `dueDateWindow(date, today)` places an ISO date in one of three windows:
     `overdue` (before today), `upTo30Days` (today through today + 30 days) or
     `over30Days`. It is built on `daysPastIsoDate`, so it always agrees with
@@ -56,9 +52,9 @@ kept simple rather than shareable.
   `filterByDueDate` call.
 - The choice resets when the view unmounts or the page reloads, and a filtered
   view cannot be shared as a link.
-- Until the swap, the chip look is ours — the accent fill and check mark of the
-  design — and has to be compared with the IWA chip in the work repo. After the
-  swap, only the export in `src/ui/index.ts` changes.
+- The chips take IWA's selected style. The Storybook story shows a light fill
+  without the design's check mark, so the look has to be compared with the design
+  in the work repo.
 
 ## Alternatives considered
 
@@ -69,8 +65,8 @@ kept simple rather than shareable.
   quick view filter over a few loaded rows that nobody shares as a link.
 - **Filter on the server.** Not needed while the rows arrive in full. A paginated
   consumer takes this route, as stated above.
-- **Wrap the IWA `Chips` group.** Its documented props (`value`, `onChange`,
-  `multiple`, `wrap`) show no check mark for the chosen chip, which the design
-  has, and the local stub does not type it. Single `Chip`s with `showSelection`
-  match the design. If the real `Chips` turns out to render the mark, wrapping it
-  is a drop-in change behind the same `DueDateFilter` contract.
+- **Single IWA `Chip`s or a local chip.** `iwa-react-components` does not export
+  its single `Chip` correctly, and a local chip would duplicate what the `Chips`
+  group already does for single choice.
+- **IWA `ChipInput`.** It is a list of removable values — every chip carries a
+  remove cross and none is selected — not a choice between options.

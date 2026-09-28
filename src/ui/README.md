@@ -167,7 +167,7 @@ function CustomersList() {
 
 ## `DueDateFilter` and due-date windows
 
-A domain-neutral filter over calendar dates, shown as single-choice IWA chips:
+A domain-neutral filter over calendar dates, shown as single-choice IWA `Chips`:
 **All · Up to 30 days · Over 30 days · Overdue** (`common.dueDateFilter.*`). The
 owning view keeps the value in local state and filters its own items. See [ADR 0037](../../docs/adr/0037-generic-due-date-filter-in-the-ui-seam.md).
 
@@ -183,11 +183,8 @@ owning view keeps the value in local state and filters its own items. See [ADR 0
   ("Due date filter"), which a caller's `aria-label` replaces. The group also
   announces the chosen filter in visually hidden text. `className` is merged
   last.
-- The chips are the local `Chip` (`Chip.tsx`): a pill toggle with `aria-pressed`,
-  the accent fill and, with `showSelection`, a check mark. It stands in for the
-  IWA `Chip`, which `iwa-react-components` does not export correctly, and keeps
-  the IWA `ChipProps` names — **TODO:** swap back to the IWA export once it is
-  fixed.
+- The chips are the IWA `Chips` group with one `Chips.Chip` per window. Only a
+  newly picked window is reported, so the choice can never be cleared.
 
 ```tsx
 import { useState } from 'react';

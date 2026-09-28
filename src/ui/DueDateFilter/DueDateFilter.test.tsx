@@ -1,34 +1,58 @@
-import { render, screen, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { act, render, screen } from '@testing-library/react';
+import type * as IwaComponents from 'iwa-react-components';
+import type { ComponentProps } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
 import { DueDateFilter } from './DueDateFilter';
 
-const chips = () => within(screen.getByRole('group')).getAllByRole('button');
+type ChipsProps = ComponentProps<typeof IwaComponents.Chips>;
+type ChipsChipProps = ComponentProps<typeof IwaComponents.Chips.Chip>;
+
+const { chipsSpy, chipSpy } = vi.hoisted(() => ({ chipsSpy: vi.fn(), chipSpy: vi.fn() }));
+
+// The chosen chip and its selected look are IWA's own DOM, which this repo does not control,
+// so the filter is checked by what it hands the Chips group.
+vi.mock('iwa-react-components', async (importOriginal) => {
+  const actual = await importOriginal<typeof IwaComponents>();
+  const Chips = Object.assign(
+    (props: ChipsProps) => {
+      chipsSpy(props);
+      return <div>{props.children}</div>;
+    },
+    {
+      Chip: (props: ChipsChipProps) => {
+        chipSpy(props);
+        return <span>{props.label}</span>;
+      },
+    },
+  );
+
+  return { ...actual, Chips };
+});
+
+const lastGroup = () => chipsSpy.mock.calls.at(-1)?.[0] as ChipsProps;
+const lastChips = () =>
+  (chipSpy.mock.calls.slice(-4) as [ChipsChipProps][]).map(([props]) => props);
 
 beforeEach(async () => {
+  chipsSpy.mockClear();
+  chipSpy.mockClear();
   await i18n.changeLanguage('en');
 });
 
 describe('DueDateFilter', () => {
-  it('offers the four windows in order and marks only the chosen one', () => {
+  it('offers the four windows in order and hands the chosen one to the group', () => {
     render(<DueDateFilter value="upTo30Days" onChange={vi.fn()} />);
 
-    expect(chips().map((chip) => chip.textContent)).toEqual([
-      'All',
-      'Up to 30 days',
-      'Over 30 days',
-      'Overdue',
+    expect(lastChips().map((chip) => [chip.label, chip.value])).toEqual([
+      ['All', 'all'],
+      ['Up to 30 days', 'upTo30Days'],
+      ['Over 30 days', 'over30Days'],
+      ['Overdue', 'overdue'],
     ]);
-    expect(chips().map((chip) => chip.getAttribute('aria-pressed'))).toEqual([
-      'false',
-      'true',
-      'false',
-      'false',
-    ]);
-    expect(
-      screen.getByRole('button', { name: 'Up to 30 days', pressed: true }).querySelector('svg'),
-    ).toBeInTheDocument();
+    expect(lastGroup().value).toBe('upTo30Days');
+    expect(lastGroup().multiple).toBeFalsy();
+    expect(lastGroup().wrap).toBe(true);
   });
 
   it('names the group and the chosen filter for assistive technology', () => {
@@ -38,22 +62,24 @@ describe('DueDateFilter', () => {
     expect(group).toHaveTextContent('Selected filter: Overdue');
   });
 
-  it('reports a newly picked window', async () => {
-    const user = userEvent.setup();
+  it('reports a newly picked window', () => {
     const onChange = vi.fn();
     render(<DueDateFilter value="all" onChange={onChange} />);
 
-    await user.click(screen.getByRole('button', { name: 'Overdue' }));
+    act(() => lastGroup().onChange('overdue'));
 
     expect(onChange).toHaveBeenCalledWith('overdue');
   });
 
-  it('stays quiet when the chosen window is picked again', async () => {
-    const user = userEvent.setup();
+  it('ignores the chosen window again and anything that is not a window', () => {
     const onChange = vi.fn();
     render(<DueDateFilter value="all" onChange={onChange} />);
 
-    await user.click(screen.getByRole('button', { name: 'All' }));
+    act(() => {
+      lastGroup().onChange('all');
+      lastGroup().onChange(['overdue']);
+      lastGroup().onChange('next-week');
+    });
 
     expect(onChange).not.toHaveBeenCalled();
   });
@@ -64,18 +90,18 @@ describe('DueDateFilter', () => {
         value="all"
         onChange={vi.fn()}
         aria-label="Review date filter"
-        className="mt-5"
+        className="pt-5"
       />,
     );
 
-    expect(screen.getByRole('group', { name: 'Review date filter' })).toHaveClass('mt-5', 'flex');
+    expect(screen.getByRole('group', { name: 'Review date filter' })).toHaveClass('pt-5');
   });
 
   it('words the chips in Polish', async () => {
     await i18n.changeLanguage('pl');
     render(<DueDateFilter value="all" onChange={vi.fn()} />);
 
-    expect(chips().map((chip) => chip.textContent)).toEqual([
+    expect(lastChips().map((chip) => chip.label)).toEqual([
       'Wszystkie',
       'Do 30 dni',
       'Powyżej 30 dni',

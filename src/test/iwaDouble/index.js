@@ -13,7 +13,7 @@
  * `Table` delegates to PrimeReact because the IWA table is a styled PrimeReact DataTable.
  */
 
-import { cloneElement, createElement, useState } from 'react';
+import { cloneElement, createContext, createElement, useContext, useState } from 'react';
 import { DataTable } from 'primereact/datatable';
 
 export function Table({ dataTableRef, separatedRows, ...props }) {
@@ -1086,3 +1086,50 @@ export function NavigationMenuItem({ mainNode, subNodes = [], rootClassName, lis
       : null,
   );
 }
+
+const ChipsContext = createContext(null);
+
+export function Chips({ value, onChange, multiple, wrap, className, dataTestId, children }) {
+  return createElement(
+    ChipsContext.Provider,
+    { value: { value, onChange, multiple } },
+    createElement(
+      'div',
+      {
+        'data-testid': dataTestId,
+        className: twMerge(
+          'flex items-center gap-2',
+          wrap ? 'flex-wrap' : 'overflow-x-auto',
+          className,
+        ),
+      },
+      children,
+    ),
+  );
+}
+
+function ChipsChip({ label, value, disabled }) {
+  const group = useContext(ChipsContext);
+  const chosen = Array.isArray(group?.value)
+    ? group.value
+    : group?.value === undefined || group?.value === null
+      ? []
+      : [group.value];
+  const selected = chosen.includes(value);
+
+  return createElement(Chip, {
+    label,
+    selected,
+    disabled,
+    onClick: () => {
+      if (!group) return;
+      if (group.multiple) {
+        group.onChange(selected ? chosen.filter((item) => item !== value) : [...chosen, value]);
+      } else {
+        group.onChange(value);
+      }
+    },
+  });
+}
+
+Chips.Chip = ChipsChip;
