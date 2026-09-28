@@ -28,9 +28,14 @@ kept simple rather than shareable.
 
 - The filter is a domain-neutral primitive in `src/ui/DueDateFilter`, exported
   from `@/ui`:
-  - `DueDateFilter` renders the four windows as single-choice IWA `Chip`s and
-    is controlled through `value` and `onChange`. IWA `Chip` exposes no pressed
-    state, so the group names the chosen filter in visually hidden text.
+  - `DueDateFilter` renders the four windows as single-choice chips and is
+    controlled through `value` and `onChange`. The group also names the chosen
+    filter in visually hidden text.
+  - The chip is a local `Chip` in `@/ui` for now: `iwa-react-components` does not
+    export its `Chip` correctly. The local one keeps the IWA `ChipProps` names,
+    exposes `aria-pressed` and is marked with a TODO to swap back to IWA once
+    the export is fixed. The hidden text above keeps the choice announced after
+    the swap, since the IWA chip has no pressed state.
   - `dueDateWindow(date, today)` places an ISO date in one of three windows:
     `overdue` (before today), `upTo30Days` (today through today + 30 days) or
     `over30Days`. It is built on `daysPastIsoDate`, so it always agrees with
@@ -51,9 +56,9 @@ kept simple rather than shareable.
   `filterByDueDate` call.
 - The choice resets when the view unmounts or the page reloads, and a filtered
   view cannot be shared as a link.
-- The chip visuals and the check mark come from IWA. Their look and any native
-  pressed state have to be checked against the real library, because tests run
-  on the local double.
+- Until the swap, the chip look is ours — the accent fill and check mark of the
+  design — and has to be compared with the IWA chip in the work repo. After the
+  swap, only the export in `src/ui/index.ts` changes.
 
 ## Alternatives considered
 

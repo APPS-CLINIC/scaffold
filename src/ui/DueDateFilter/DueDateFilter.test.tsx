@@ -1,32 +1,12 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import type * as IwaComponents from 'iwa-react-components';
-import type { ChipProps } from 'iwa-react-components';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
 import { DueDateFilter } from './DueDateFilter';
 
-const { chipSpy } = vi.hoisted(() => ({ chipSpy: vi.fn() }));
-
-// The chips' selected and check-mark state are props IWA renders in its own DOM, which this
-// repo does not control, so they are asserted where they cross into the library.
-vi.mock('iwa-react-components', async (importOriginal) => {
-  const actual = await importOriginal<typeof IwaComponents>();
-
-  return {
-    ...actual,
-    Chip: (props: ChipProps) => {
-      chipSpy(props);
-      return <actual.Chip {...props} />;
-    },
-  };
-});
-
-/** The props of the four chips from the latest render, in render order. */
-const lastChips = () => (chipSpy.mock.calls.slice(-4) as [ChipProps][]).map(([props]) => props);
+const chips = () => within(screen.getByRole('group')).getAllByRole('button');
 
 beforeEach(async () => {
-  chipSpy.mockClear();
   await i18n.changeLanguage('en');
 });
 
@@ -34,14 +14,21 @@ describe('DueDateFilter', () => {
   it('offers the four windows in order and marks only the chosen one', () => {
     render(<DueDateFilter value="upTo30Days" onChange={vi.fn()} />);
 
-    expect(lastChips().map((chip) => chip.label)).toEqual([
+    expect(chips().map((chip) => chip.textContent)).toEqual([
       'All',
       'Up to 30 days',
       'Over 30 days',
       'Overdue',
     ]);
-    expect(lastChips().map((chip) => chip.selected)).toEqual([false, true, false, false]);
-    expect(lastChips().every((chip) => chip.showSelection)).toBe(true);
+    expect(chips().map((chip) => chip.getAttribute('aria-pressed'))).toEqual([
+      'false',
+      'true',
+      'false',
+      'false',
+    ]);
+    expect(
+      screen.getByRole('button', { name: 'Up to 30 days', pressed: true }).querySelector('svg'),
+    ).toBeInTheDocument();
   });
 
   it('names the group and the chosen filter for assistive technology', () => {
@@ -56,7 +43,7 @@ describe('DueDateFilter', () => {
     const onChange = vi.fn();
     render(<DueDateFilter value="all" onChange={onChange} />);
 
-    await user.click(screen.getByText('Overdue'));
+    await user.click(screen.getByRole('button', { name: 'Overdue' }));
 
     expect(onChange).toHaveBeenCalledWith('overdue');
   });
@@ -66,7 +53,7 @@ describe('DueDateFilter', () => {
     const onChange = vi.fn();
     render(<DueDateFilter value="all" onChange={onChange} />);
 
-    await user.click(screen.getByText('All'));
+    await user.click(screen.getByRole('button', { name: 'All' }));
 
     expect(onChange).not.toHaveBeenCalled();
   });
@@ -88,7 +75,7 @@ describe('DueDateFilter', () => {
     await i18n.changeLanguage('pl');
     render(<DueDateFilter value="all" onChange={vi.fn()} />);
 
-    expect(lastChips().map((chip) => chip.label)).toEqual([
+    expect(chips().map((chip) => chip.textContent)).toEqual([
       'Wszystkie',
       'Do 30 dni',
       'Powyżej 30 dni',

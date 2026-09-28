@@ -2,7 +2,7 @@ import { forwardRef, type HTMLAttributes } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MessageKey } from '@/i18n/messages/pl';
 import { twMerge } from 'iwa-react-components';
-import { Chip } from '@/ui';
+import { Chip } from '../Chip';
 import { DUE_DATE_FILTERS, type DueDateFilterValue } from './dueDateWindows';
 
 const LABEL_KEYS: Record<DueDateFilterValue, MessageKey> = {
@@ -21,10 +21,11 @@ export interface DueDateFilterProps extends Omit<
 }
 
 /**
- * Single-choice IWA chips over the due-date windows: all, up to 30 days, over 30 days, overdue.
+ * Single-choice chips over the due-date windows: all, up to 30 days, over 30 days, overdue.
  * Controlled — the owning view keeps the value and filters its items with `filterByDueDate`.
- * IWA Chip exposes no pressed state, so the group names the chosen filter in visually hidden
- * text. A caller's `aria-label` replaces the default group name.
+ * The group also names the chosen filter in visually hidden text, which keeps the choice
+ * announced once the IWA Chip, which has no pressed state, replaces the local one. A caller's
+ * `aria-label` replaces the default group name.
  */
 export const DueDateFilter = forwardRef<HTMLDivElement, DueDateFilterProps>(function DueDateFilter(
   { value, onChange, className, ...rest },

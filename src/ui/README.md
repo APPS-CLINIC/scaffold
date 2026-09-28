@@ -180,9 +180,14 @@ owning view keeps the value in local state and filters its own items. See [ADR 0
   filters a **fully loaded** collection. A server-paginated list sends the
   window to its endpoint instead.
 - `<DueDateFilter value onChange />` is a `role="group"` with a default name
-  ("Due date filter"), which a caller's `aria-label` replaces. IWA `Chip` has no
-  pressed state, so the group also announces the chosen filter in visually
-  hidden text. `className` is merged last.
+  ("Due date filter"), which a caller's `aria-label` replaces. The group also
+  announces the chosen filter in visually hidden text. `className` is merged
+  last.
+- The chips are the local `Chip` (`Chip.tsx`): a pill toggle with `aria-pressed`,
+  the accent fill and, with `showSelection`, a check mark. It stands in for the
+  IWA `Chip`, which `iwa-react-components` does not export correctly, and keeps
+  the IWA `ChipProps` names — **TODO:** swap back to the IWA export once it is
+  fixed.
 
 ```tsx
 import { useState } from 'react';

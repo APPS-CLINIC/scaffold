@@ -1,10 +1,10 @@
 export { Button, type ButtonProps } from './Button';
+export { Chip, type ChipProps } from './Chip';
 // IWA design-system components consumed by the app, re-exported so feature
 // code imports them from '@/ui' like every other UI building block.
 export {
   ActionLink,
   Card,
-  Chip,
   DefinitionList,
   IconTextButton,
   InlineLink,
@@ -25,7 +25,6 @@ export {
 export type {
   ActionLinkProps,
   CardProps,
-  ChipProps,
   DefinitionListProps,
   IconTextButtonProps,
   InlineLinkProps,
