@@ -56,6 +56,7 @@ export {
 export { NavigationPanel, type NavigationPanelProps } from './NavigationPanel';
 export {
   GenericDataTable,
+  GenericTableSearch,
   GenericTableSettings,
   TableColumnSettingsDialog,
   ActiveArchivalStatusCell,
@@ -79,6 +80,7 @@ export {
   type GenericDataTableProps,
   type GenericDataTableSortChange,
   type GenericDataTableSortOrder,
+  type GenericTableSearchProps,
   type GenericTableSettingsProps,
   type TableColumnOption,
   type TableColumnSettingsDialogProps,

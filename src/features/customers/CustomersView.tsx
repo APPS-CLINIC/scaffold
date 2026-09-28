@@ -9,9 +9,9 @@ import {
   ActionLink,
   Card,
   GenericDataTable,
+  GenericTableSearch,
   GenericTableSettings,
   IconTextButton,
-  SearchWithAutocomplete,
   TableColumnSettingsDialog,
   type GenericDataTableField,
   type GenericDataTableLabels,
@@ -130,8 +130,7 @@ export function CustomersView() {
           />
         </div>
 
-        {/* Filter section: controls only for now — no filtering or search
-            actions are wired yet (deferred with the rest of the filter model). */}
+        {/* "Customize filters" has no action yet: it waits for the filter model. */}
         <div className="mb-4 flex flex-col items-start gap-8 rounded bg-[var(--surface-muted)] p-3">
           <IconTextButton
             secondary
@@ -139,14 +138,11 @@ export function CustomersView() {
             label={t('customers.actions.customizeFilters')}
           />
           <div className="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2">
-            {/* The overrides sit on this wrapper so they reach every element of the IWA
-                field, whichever one receives `className`. */}
-            <div className="w-full max-w-96 [&_*]:!bg-white [&_input]:!border-[var(--border)] [&_input:focus]:!border-[var(--navigation-accent)] [&_input:focus]:![box-shadow:none] [&_input:focus]:!outline-none">
-              <SearchWithAutocomplete
-                className="w-full"
-                placeholder={t('customers.search.placeholder')}
-              />
-            </div>
+            <GenericTableSearch
+              value={listQuery.q}
+              placeholder={t('customers.search.placeholder')}
+              onSearch={(q) => setQuery({ q }, { replace: true })}
+            />
             <GenericTableSettings
               dataContent={data?.content}
               onExpandedRowKeysChange={setExpandedRowKeys}

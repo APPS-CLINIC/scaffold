@@ -1,4 +1,5 @@
 export { GenericDataTable } from './GenericDataTable';
+export { GenericTableSearch } from './GenericTableSearch';
 export { GenericTableSettings } from './GenericTableSettings';
 export { resolveColumnFields } from './resolveColumnFields';
 export { TableColumnSettingsDialog } from './settings';
@@ -25,6 +26,7 @@ export type {
   GenericDataTableProps,
   GenericDataTableSortChange,
   GenericDataTableSortOrder,
+  GenericTableSearchProps,
   GenericTableSettingsProps,
   TableColumnOption,
   TableColumnSettingsDialogProps,
