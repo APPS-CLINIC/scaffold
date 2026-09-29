@@ -1,22 +1,29 @@
 import { useEffect, useRef, useState } from 'react';
 import { SearchWithAutocomplete, twMerge } from '@/ui';
-import type { GenericTableSearchProps } from './GenericDataTable.types';
 
 const SEARCH_DELAY_MS = 300;
 const MIN_SEARCH_LENGTH = 3;
 
-/** The text a table is searched by: trimmed, and empty until it is long enough. */
+export interface GenericSearchProps {
+  /** The search applied now, e.g. the list URL's `q`. */
+  value: string;
+  /**
+   * Called a moment after typing pauses with the trimmed text, or with `''` while it is
+   * shorter than three characters.
+   */
+  onSearch: (search: string) => void;
+  placeholder: string;
+  className?: string;
+}
+
+/** The text searched for: trimmed, and empty until it is long enough. */
 function searchText(input: string): string {
   const trimmed = input.trim();
   return trimmed.length >= MIN_SEARCH_LENGTH ? trimmed : '';
 }
 
-export function GenericTableSearch({
-  value,
-  onSearch,
-  placeholder,
-  className,
-}: GenericTableSearchProps) {
+/** Search field that reports what to search for once the user stops typing. */
+export function GenericSearch({ value, onSearch, placeholder, className }: GenericSearchProps) {
   const [input, setInput] = useState(value);
   const [shownValue, setShownValue] = useState(value);
   const onSearchRef = useRef(onSearch);

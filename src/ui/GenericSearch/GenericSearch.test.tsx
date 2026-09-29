@@ -3,7 +3,7 @@ import type * as IwaComponents from 'iwa-react-components';
 import type { AutoCompleteChangeEvent } from 'primereact/autocomplete';
 import type { ComponentProps } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { GenericTableSearch } from './GenericTableSearch';
+import { GenericSearch } from './GenericSearch';
 
 type SearchProps = ComponentProps<typeof IwaComponents.SearchWithAutocomplete>;
 
@@ -34,11 +34,9 @@ function wait(ms: number) {
 
 function renderSearch(value = '') {
   const onSearch = vi.fn();
-  const view = render(
-    <GenericTableSearch value={value} onSearch={onSearch} placeholder="Search" />,
-  );
+  const view = render(<GenericSearch value={value} onSearch={onSearch} placeholder="Search" />);
   const setValue = (next: string) =>
-    view.rerender(<GenericTableSearch value={next} onSearch={onSearch} placeholder="Search" />);
+    view.rerender(<GenericSearch value={next} onSearch={onSearch} placeholder="Search" />);
   return { onSearch, setValue };
 }
 
@@ -51,7 +49,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('GenericTableSearch', () => {
+describe('GenericSearch', () => {
   it('shows the applied search and the placeholder', () => {
     renderSearch('carrefour');
 
@@ -147,11 +145,11 @@ describe('GenericTableSearch', () => {
   it('calls the latest onSearch when a parent re-renders with a new callback', () => {
     const first = vi.fn();
     const second = vi.fn();
-    const view = render(<GenericTableSearch value="" onSearch={first} placeholder="Search" />);
+    const view = render(<GenericSearch value="" onSearch={first} placeholder="Search" />);
 
     change('orlen');
     wait(100);
-    view.rerender(<GenericTableSearch value="" onSearch={second} placeholder="Search" />);
+    view.rerender(<GenericSearch value="" onSearch={second} placeholder="Search" />);
     wait(200);
 
     expect(first).not.toHaveBeenCalled();

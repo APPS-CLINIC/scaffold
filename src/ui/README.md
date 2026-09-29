@@ -165,30 +165,6 @@ function CustomersList() {
 }
 ```
 
-### Search
-
-`GenericTableSearch` is the search field above a table, built on IWA
-`SearchWithAutocomplete`. It is controlled by the search the table applies:
-`value` is that search and `onSearch` receives the next one 300 ms after typing
-pauses. The text is trimmed, and anything shorter than three characters
-searches for `''`, the full list. The field keeps what the user typed, and it
-takes over `value` when the search changes from outside, e.g. on Back. The
-owner decides where the search lives: a server-paged list keeps it in the URL's
-`q` (ADR 0006), and `replace` keeps typing out of the browser history.
-
-```tsx
-import { GenericTableSearch } from '@/ui';
-
-const listQuery = useAppSelector(selectListQuery);
-const { setQuery } = useListQueryState();
-
-<GenericTableSearch
-  value={listQuery.q}
-  placeholder={t('customers.search.placeholder')}
-  onSearch={(q) => setQuery({ q }, { replace: true })}
-/>;
-```
-
 ## `DueDateFilter` and due-date windows
 
 A domain-neutral filter over calendar dates, shown as multiple-choice IWA `Chips`:
@@ -220,6 +196,31 @@ const [windows, setWindows] = useState<DueDateSelection>(ALL_DUE_DATES);
 const shown = filterByDueDate(rows, (row) => row.dueDate, windows);
 
 <DueDateFilter value={windows} onChange={setWindows} />;
+```
+
+## `GenericSearch`
+
+`GenericSearch` is a search field built on IWA `SearchWithAutocomplete`, for
+any list or table; it knows nothing about either. It is controlled by the
+search applied now: `value` is that search and `onSearch` receives the next one
+300 ms after typing pauses. The text is trimmed, and anything shorter than
+three characters searches for `''`, the full list. The field keeps what the
+user typed, and it takes over `value` when the search changes from outside,
+e.g. on Back. The owner decides where the search lives: a server-paged list
+keeps it in the URL's `q` (ADR 0006), and `replace` keeps typing out of the
+browser history.
+
+```tsx
+import { GenericSearch } from '@/ui';
+
+const listQuery = useAppSelector(selectListQuery);
+const { setQuery } = useListQueryState();
+
+<GenericSearch
+  value={listQuery.q}
+  placeholder={t('customers.search.placeholder')}
+  onSearch={(q) => setQuery({ q }, { replace: true })}
+/>;
 ```
 
 ## `ScreenHeading`

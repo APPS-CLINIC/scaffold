@@ -148,18 +148,6 @@ export interface GenericTableSettingsProps<T extends object> extends Omit<
   onOpenSettings?: () => void;
 }
 
-export interface GenericTableSearchProps {
-  /** The search the table applies now, e.g. the list URL's `q`. */
-  value: string;
-  /**
-   * Called a moment after typing pauses with the trimmed text, or with `''` while it is
-   * shorter than three characters.
-   */
-  onSearch: (search: string) => void;
-  placeholder: string;
-  className?: string;
-}
-
 /** What the settings dialog needs to know about a field. */
 export type TableColumnOption<T extends object> = Pick<
   GenericDataTableFieldConfig<T>,

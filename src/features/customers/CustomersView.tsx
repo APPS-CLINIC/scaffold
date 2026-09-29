@@ -9,7 +9,7 @@ import {
   ActionLink,
   Card,
   GenericDataTable,
-  GenericTableSearch,
+  GenericSearch,
   GenericTableSettings,
   IconTextButton,
   TableColumnSettingsDialog,
@@ -138,7 +138,7 @@ export function CustomersView() {
             label={t('customers.actions.customizeFilters')}
           />
           <div className="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2">
-            <GenericTableSearch
+            <GenericSearch
               value={listQuery.q}
               placeholder={t('customers.search.placeholder')}
               onSearch={(q) => setQuery({ q }, { replace: true })}

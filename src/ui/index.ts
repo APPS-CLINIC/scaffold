@@ -56,7 +56,6 @@ export {
 export { NavigationPanel, type NavigationPanelProps } from './NavigationPanel';
 export {
   GenericDataTable,
-  GenericTableSearch,
   GenericTableSettings,
   TableColumnSettingsDialog,
   ActiveArchivalStatusCell,
@@ -80,7 +79,6 @@ export {
   type GenericDataTableProps,
   type GenericDataTableSortChange,
   type GenericDataTableSortOrder,
-  type GenericTableSearchProps,
   type GenericTableSettingsProps,
   type TableColumnOption,
   type TableColumnSettingsDialogProps,
@@ -108,6 +106,7 @@ export {
   type DueDateSelection,
   type DueDateWindow,
 } from './DueDateFilter';
+export { GenericSearch, type GenericSearchProps } from './GenericSearch';
 export { cx } from './cx';
 export { ToastProvider } from './toast/ToastProvider';
 export { useToast } from './toast/useToast';
