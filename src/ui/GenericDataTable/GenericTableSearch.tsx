@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { SearchWithAutocomplete, twMerge } from 'iwa-react-components';
+import { SearchWithAutocomplete, twMerge } from '@/ui';
 import type { GenericTableSearchProps } from './GenericDataTable.types';
 
 const SEARCH_DELAY_MS = 300;
