@@ -9,7 +9,8 @@ type SearchProps = ComponentProps<typeof IwaComponents.SearchWithAutocomplete>;
 
 const { searchSpy } = vi.hoisted(() => ({ searchSpy: vi.fn() }));
 
-// The field's markup is IWA's own, so the search is driven through the props it hands the field.
+// Mock SearchWithAutocomplete and test GenericSearch through its props,
+// without depending on the third-party component's HTML.
 vi.mock('iwa-react-components', async (importOriginal) => ({
   ...(await importOriginal<typeof IwaComponents>()),
   SearchWithAutocomplete: (props: SearchProps) => {

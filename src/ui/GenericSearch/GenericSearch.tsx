@@ -46,8 +46,8 @@ export function GenericSearch({ value, onSearch, placeholder, className }: Gener
   }, [search, value]);
 
   return (
-    // The overrides sit on this wrapper so they reach every element of the IWA field,
-    // whichever one receives `className`.
+    // The style overrides sit on this wrapper so they reach every element the IWA component
+    // renders, whichever one receives `className`.
     <div
       className={twMerge(
         'w-full max-w-96 [&_*]:!bg-white [&_input]:!border-[var(--border)] [&_input:focus]:!border-[var(--navigation-accent)] [&_input:focus]:![box-shadow:none] [&_input:focus]:!outline-none',
