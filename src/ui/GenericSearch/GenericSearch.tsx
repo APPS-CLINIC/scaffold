@@ -16,8 +16,7 @@ export interface GenericSearchProps {
   className?: string;
 }
 
-/** The text searched for: trimmed, and empty until it is long enough. */
-function searchText(input: string): string {
+function normalizeSearch(input: string): string {
   const trimmed = input.trim();
   return trimmed.length >= MIN_SEARCH_LENGTH ? trimmed : '';
 }
@@ -36,12 +35,12 @@ export function GenericSearch({ value, onSearch, placeholder, className }: Gener
   // it already searches the same text.
   if (value !== shownValue) {
     setShownValue(value);
-    if (searchText(input) !== searchText(value)) setInput(value);
+    if (normalizeSearch(input) !== normalizeSearch(value)) setInput(value);
   }
 
-  const search = searchText(input);
+  const search = normalizeSearch(input);
   useEffect(() => {
-    if (search === searchText(value)) return;
+    if (search === normalizeSearch(value)) return;
     const timer = setTimeout(() => onSearchRef.current(search), SEARCH_DELAY_MS);
     return () => clearTimeout(timer);
   }, [search, value]);

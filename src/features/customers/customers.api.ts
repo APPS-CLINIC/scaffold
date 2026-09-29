@@ -60,7 +60,7 @@ export function toCustomerBackendParams(query: CustomerQuery) {
   const requestedSortField = query.sort.trim();
   const sortField = isCustomerField(requestedSortField) ? requestedSortField : 'id';
   const sortDirection: 'ASC' | 'DESC' = query.dir === 'desc' ? 'DESC' : 'ASC';
-  const search = query.q.trim();
+  const q = query.q.trim();
   const type = query.type.trim();
   // The URL keeps the lowercase filter vocabulary; the service expects the
   // uppercase status values.
@@ -71,7 +71,7 @@ export function toCustomerBackendParams(query: CustomerQuery) {
     page,
     size,
     sort: `${sortField},${sortDirection}` as const,
-    ...(search ? { query: search } : {}),
+    ...(q ? { query: q } : {}),
     ...(status ? { status } : {}),
     ...(type ? { type } : {}),
   };
