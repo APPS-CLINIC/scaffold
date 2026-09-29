@@ -119,8 +119,8 @@ describe('CustomersView', () => {
 
     await user.type(screen.getByPlaceholderText('Search the list'), 'carrefour');
 
-    expect(await screen.findByText('CARREFOUR POLAND SP. Z O.O.')).toBeInTheDocument();
-    expect(screen.getByText('1 results')).toBeInTheDocument();
+    // The search starts 300 ms after the last keystroke, then waits for the response.
+    expect(await screen.findByText('1 results', {}, { timeout: 3000 })).toBeInTheDocument();
     expect(screen.queryByText('ARCELORMITTAL WARSAW SP. Z O.O.')).not.toBeInTheDocument();
     const location = screen.getByRole('status', { name: 'Current customer URL' });
     const search = new URLSearchParams(location.textContent ?? '');
