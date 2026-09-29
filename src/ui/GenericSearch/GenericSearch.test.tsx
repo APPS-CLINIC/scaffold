@@ -1,30 +1,9 @@
-import { act, render } from '@testing-library/react';
-import type * as IwaComponents from 'iwa-react-components';
-import type { AutoCompleteChangeEvent } from 'primereact/autocomplete';
-import type { ComponentProps } from 'react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { GenericSearch } from './GenericSearch';
 
-type SearchProps = ComponentProps<typeof IwaComponents.SearchWithAutocomplete>;
-
-const { searchSpy } = vi.hoisted(() => ({ searchSpy: vi.fn() }));
-
-// Mock SearchWithAutocomplete and test GenericSearch through its props,
-// without depending on the third-party component's HTML.
-vi.mock('iwa-react-components', async (importOriginal) => ({
-  ...(await importOriginal<typeof IwaComponents>()),
-  SearchWithAutocomplete: (props: SearchProps) => {
-    searchSpy(props);
-    return null;
-  },
-}));
-
-const lastField = () => searchSpy.mock.calls.at(-1)?.[0] as SearchProps;
-
-function change(value: unknown) {
-  act(() => {
-    lastField().onChange?.({ value } as AutoCompleteChangeEvent);
-  });
+function type(field: HTMLElement, text: string) {
+  fireEvent.change(field, { target: { value: text } });
 }
 
 function wait(ms: number) {
@@ -38,12 +17,11 @@ function renderSearch(value = '') {
   const view = render(<GenericSearch value={value} onSearch={onSearch} placeholder="Search" />);
   const setValue = (next: string) =>
     view.rerender(<GenericSearch value={next} onSearch={onSearch} placeholder="Search" />);
-  return { onSearch, setValue };
+  return { onSearch, setValue, field: screen.getByPlaceholderText('Search') };
 }
 
 beforeEach(() => {
   vi.useFakeTimers();
-  searchSpy.mockClear();
 });
 
 afterEach(() => {
@@ -51,17 +29,16 @@ afterEach(() => {
 });
 
 describe('GenericSearch', () => {
-  it('shows the applied search and the placeholder', () => {
-    renderSearch('carrefour');
+  it('shows the applied search', () => {
+    const { field } = renderSearch('carrefour');
 
-    expect(lastField().value).toBe('carrefour');
-    expect(lastField().placeholder).toBe('Search');
+    expect(field).toHaveValue('carrefour');
   });
 
   it('searches once typing pauses', () => {
-    const { onSearch } = renderSearch();
+    const { onSearch, field } = renderSearch();
 
-    change('orlen');
+    type(field, 'orlen');
     wait(299);
     expect(onSearch).not.toHaveBeenCalled();
 
@@ -71,13 +48,13 @@ describe('GenericSearch', () => {
   });
 
   it('waits for the last keystroke, so a burst of typing searches once', () => {
-    const { onSearch } = renderSearch();
+    const { onSearch, field } = renderSearch();
 
-    change('orl');
+    type(field, 'orl');
     wait(200);
-    change('orle');
+    type(field, 'orle');
     wait(200);
-    change('orlen');
+    type(field, 'orlen');
     wait(300);
 
     expect(onSearch).toHaveBeenCalledOnce();
@@ -85,61 +62,61 @@ describe('GenericSearch', () => {
   });
 
   it('searches the trimmed text and keeps the field as typed', () => {
-    const { onSearch, setValue } = renderSearch();
+    const { onSearch, setValue, field } = renderSearch();
 
-    change('  orlen  ');
+    type(field, '  orlen  ');
     wait(300);
     expect(onSearch).toHaveBeenCalledWith('orlen');
 
     setValue('orlen');
-    expect(lastField().value).toBe('  orlen  ');
+    expect(field).toHaveValue('  orlen  ');
   });
 
   it('searches from three characters and drops the search when the text gets shorter', () => {
-    const { onSearch, setValue } = renderSearch();
+    const { onSearch, setValue, field } = renderSearch();
 
-    change('or');
+    type(field, 'or');
     wait(300);
     expect(onSearch).not.toHaveBeenCalled();
 
-    change('orl');
+    type(field, 'orl');
     wait(300);
     expect(onSearch).toHaveBeenLastCalledWith('orl');
     setValue('orl');
 
-    change('or');
+    type(field, 'or');
     wait(300);
     expect(onSearch).toHaveBeenLastCalledWith('');
     setValue('');
-    expect(lastField().value).toBe('or');
+    expect(field).toHaveValue('or');
   });
 
   it('does not search again while the searched text stays the same', () => {
-    const { onSearch } = renderSearch('orl');
+    const { onSearch, field } = renderSearch('orl');
 
-    change('orl ');
+    type(field, 'orl ');
     wait(300);
 
     expect(onSearch).not.toHaveBeenCalled();
   });
 
   it('follows a search changed from outside, e.g. by Back', () => {
-    const { onSearch, setValue } = renderSearch('orlen');
+    const { onSearch, setValue, field } = renderSearch('orlen');
 
     setValue('carrefour');
     wait(300);
 
-    expect(lastField().value).toBe('carrefour');
+    expect(field).toHaveValue('carrefour');
     expect(onSearch).not.toHaveBeenCalled();
   });
 
-  it('empties the field and the search when the field is cleared', () => {
-    const { onSearch } = renderSearch('orlen');
+  it('empties the search when the field is cleared', () => {
+    const { onSearch, field } = renderSearch('orlen');
 
-    change(undefined);
+    type(field, '');
     wait(300);
 
-    expect(lastField().value).toBe('');
+    expect(field).toHaveValue('');
     expect(onSearch).toHaveBeenCalledWith('');
   });
 
@@ -148,7 +125,7 @@ describe('GenericSearch', () => {
     const second = vi.fn();
     const view = render(<GenericSearch value="" onSearch={first} placeholder="Search" />);
 
-    change('orlen');
+    type(screen.getByPlaceholderText('Search'), 'orlen');
     wait(100);
     view.rerender(<GenericSearch value="" onSearch={second} placeholder="Search" />);
     wait(200);
