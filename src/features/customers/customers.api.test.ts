@@ -121,20 +121,21 @@ describe('customer export contract', () => {
     vi.restoreAllMocks();
   });
 
-  it('builds a GET export URL with the locale and only the known customer columns', () => {
+  it('builds a GET export URL with the known customer columns and adds Accept-Language header', () => {
     const request = exportCustomersRequest({
       locale: 'pl',
       columnSelection: ['fullName', 'secretToken', 'grid'],
     });
 
     expect(request.method).toBe('GET');
-    expect(request.url).toBe('customers/export?locale=pl&columnSelection=fullName%2Cgrid');
+    expect(request.url).toBe('customers/export?columnSelection=fullName%2Cgrid');
+    expect(request.headers).toEqual({ 'Accept-Language': 'pl' });
   });
 
   it('omits the column selection when no known column is requested', () => {
-    expect(exportCustomersRequest({ locale: 'en' }).url).toBe('customers/export?locale=en');
+    expect(exportCustomersRequest({ locale: 'en' }).url).toBe('customers/export');
     expect(exportCustomersRequest({ locale: 'en', columnSelection: ['unknown'] }).url).toBe(
-      'customers/export?locale=en',
+      'customers/export',
     );
   });
 
@@ -170,8 +171,8 @@ describe('customer export contract', () => {
 
     expect(request.method).toBe('GET');
     expect(url.pathname).toBe('/api/customers/export');
-    expect(url.searchParams.get('locale')).toBe('en');
     expect(url.searchParams.get('columnSelection')).toBe('fullName');
+    expect(request.headers.get('Accept-Language')).toBe('en');
     expect(download).toHaveBeenCalledTimes(1);
 
     store.dispatch(customersApi.util.resetApiState());

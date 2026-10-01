@@ -58,7 +58,7 @@ describe('CustomersView table settings', () => {
           request instanceof Request && new URL(request.url).pathname === '/api/customers/export',
       );
     expect(exportRequest).toBeDefined();
-    expect(new URL(exportRequest!.url).searchParams.get('locale')).toBe('en');
+    expect(exportRequest!.headers.get('Accept-Language')).toBe('en');
   });
 
   it('keeps several customers expanded at the same time', async () => {

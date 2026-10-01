@@ -125,18 +125,23 @@ export function mapCustomerPageResponse(
 export function exportCustomersRequest(params: ExportRequest): {
   url: string;
   method: string;
+  headers: Record<string, string>;
   responseHandler: (response: Response) => Promise<void>;
 } {
   const columnSelection = (params.columnSelection ?? []).filter(isCustomerField).join(',');
 
   const exportParams = new URLSearchParams({
-    locale: params.locale,
     ...(columnSelection ? { columnSelection } : {}),
   });
 
+  const query = exportParams.toString();
+
   return {
-    url: `customers/export?${exportParams.toString()}`,
+    url: query ? `customers/export?${query}` : 'customers/export',
     method: 'GET',
+    headers: {
+      'Accept-Language': params.locale,
+    },
     responseHandler: (response) => downloadFileFromResponse(response, 'customers.xlsx'),
   };
 }
