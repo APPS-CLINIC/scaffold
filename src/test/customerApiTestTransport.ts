@@ -36,7 +36,7 @@ const archivalPage: PageResponse<CustomerResponse> = {
 };
 
 function getTestResponse(searchParams: URLSearchParams): PageResponse<CustomerResponse> {
-  if (searchParams.get('q') === 'carrefour') return carrefourPage;
+  if (searchParams.get('query') === 'carrefour') return carrefourPage;
   if (searchParams.get('status') === 'ARCHIVAL') return archivalPage;
   return customerFirstPageResponse;
 }

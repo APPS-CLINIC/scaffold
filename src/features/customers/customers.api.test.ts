@@ -36,7 +36,7 @@ describe('customer API contract', () => {
       page: 0,
       size: 10,
       sort: 'id,ASC',
-      q: 'bank',
+      query: 'bank',
       status: 'ACTIVE',
       type: 'Corporate',
     });
@@ -44,10 +44,18 @@ describe('customer API contract', () => {
       ['page', '0'],
       ['size', '10'],
       ['sort', 'id,ASC'],
-      ['q', 'bank'],
+      ['query', 'bank'],
       ['status', 'ACTIVE'],
       ['type', 'Corporate'],
     ]);
+  });
+
+  it('sends the trimmed search text and leaves a blank search out', () => {
+    expect(toCustomerBackendParams(makeQuery({ q: '  bank  ' })).query).toBe('bank');
+    expect(toCustomerBackendParams(makeQuery({ q: '   ' }))).not.toHaveProperty('query');
+    expect(getCustomersRequest(makeQuery({ q: '' })).url).toBe(
+      'customers?page=0&size=10&sort=id%2CASC',
+    );
   });
 
   it('falls back to the allowlisted default for an unknown sort field', () => {
@@ -78,7 +86,7 @@ describe('customer API contract', () => {
         }),
       ),
     ).toEqual({
-      url: 'customers?page=1&size=25&sort=fullName%2CDESC&q=bank+group&status=ACTIVE&type=Corporate',
+      url: 'customers?page=1&size=25&sort=fullName%2CDESC&query=bank+group&status=ACTIVE&type=Corporate',
     });
   });
 
@@ -95,7 +103,8 @@ describe('customer API contract', () => {
     expect(request).toBeInstanceOf(Request);
     if (!(request instanceof Request)) throw new Error('Expected fetch to receive a Request');
 
-    expect(new URL(request.url).searchParams.get('q')).toBe('carrefour');
+    expect(new URL(request.url).searchParams.get('query')).toBe('carrefour');
+    expect(new URL(request.url).searchParams.has('q')).toBe(false);
     expect(response.content.map(({ shortName }) => shortName)).toEqual(['CARREFOUR POLAND']);
     expect(response.content[0]?.status).toBe('ACTIVE');
     expect(response.page.totalElements).toBe(1);

@@ -483,6 +483,8 @@ export function SearchWithAutocomplete({
   suggestOnFocus,
   valueReturnedOnClear,
   dataTestId,
+  value,
+  onChange,
 }) {
   return createElement(
     'div',
@@ -494,6 +496,18 @@ export function SearchWithAutocomplete({
       readOnly,
       onBlur,
       'data-testid': dataTestId,
+      ...(value === undefined ? {} : { value: value ?? '' }),
+      // IWA's SearchWithAutocomplete takes PrimeReact AutoComplete props: onChange receives a
+      // change event whose `value` is the typed text.
+      onChange: (event) => {
+        onChange?.({
+          originalEvent: event,
+          value: event.target.value,
+          stopPropagation: () => event.stopPropagation(),
+          preventDefault: () => event.preventDefault(),
+          target: { name: undefined, id: undefined, value: event.target.value },
+        });
+      },
       className: twMerge(
         'h-10 w-full rounded border border-[#c9c9c9] bg-white pl-3 pr-10 text-sm text-[#333333] placeholder:text-[#8a8a8a] focus:border-[#ff6200] focus:outline-none',
         disabled && 'opacity-50',

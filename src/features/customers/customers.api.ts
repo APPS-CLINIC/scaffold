@@ -71,7 +71,7 @@ export function toCustomerBackendParams(query: CustomerQuery) {
     page,
     size,
     sort: `${sortField},${sortDirection}` as const,
-    ...(q ? { q } : {}),
+    ...(q ? { query: q } : {}),
     ...(status ? { status } : {}),
     ...(type ? { type } : {}),
   };
@@ -93,7 +93,7 @@ export function customerBackendParamsToSearchParams(
     sort: params.sort,
   });
 
-  if (params.q) searchParams.set('q', params.q);
+  if (params.query) searchParams.set('query', params.query);
   if (params.status) searchParams.set('status', params.status);
   if (params.type) searchParams.set('type', params.type);
 

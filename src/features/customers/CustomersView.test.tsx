@@ -1,6 +1,6 @@
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigationType } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeStore, type AppStore } from '@/app/store';
 import { seedCustomerPreviewData } from '@/dev/previewData/customers.preview';
@@ -18,7 +18,11 @@ const appendToHead = document.head.appendChild.bind(document.head);
 
 function LocationProbe() {
   const { search } = useLocation();
-  return <output aria-label="Current customer URL">{search}</output>;
+  return (
+    <output aria-label="Current customer URL" data-navigation-type={useNavigationType()}>
+      {search}
+    </output>
+  );
 }
 
 function renderPage(initialEntry = '/customers/all', store?: AppStore) {
@@ -76,9 +80,7 @@ describe('CustomersView', () => {
   it('uses the deep-link query for the first and only initial RTK Query request', async () => {
     const { store } = renderPage('/customers/all?q=carrefour&filter.status=active&pageSize=10');
 
-    // The search input renders but is not wired yet: a deep-linked q param
-    // must not populate it.
-    expect(screen.getByPlaceholderText('Search the list')).toHaveValue('');
+    expect(screen.getByPlaceholderText('Search the list')).toHaveValue('carrefour');
     expect(await screen.findByText('CARREFOUR POLAND SP. Z O.O.')).toBeInTheDocument();
     expect(screen.getByText('1 results')).toBeInTheDocument();
 
@@ -92,7 +94,7 @@ describe('CustomersView', () => {
     });
   });
 
-  it('keeps deep-linked filters working while the filter controls stay inert', async () => {
+  it('keeps deep-linked filters working while the filter button stays inert', async () => {
     const user = userEvent.setup();
     const { store } = renderPage('/customers/all?filter.status=archival');
 
@@ -103,15 +105,30 @@ describe('CustomersView', () => {
       expect(selectCustomerQuery(store.getState()).status).toBe('archival');
     });
 
-    // The filter button and search input render, but neither is wired yet:
-    // interacting with them must not touch the URL or the query.
     await user.click(screen.getByRole('button', { name: 'Customize filters' }));
-    await user.type(screen.getByPlaceholderText('Search the list'), 'orlen');
 
     const search = screen.getByRole('status', { name: 'Current customer URL' }).textContent ?? '';
-    expect(new URLSearchParams(search).get('q')).toBeNull();
+    expect(search).toBe('?filter.status=archival');
     expect(selectCustomerQuery(store.getState()).status).toBe('archival');
-    expect(selectCustomerQuery(store.getState()).q).toBeFalsy();
+  });
+
+  it('narrows the table to the typed search, back on page 1, without a history entry', async () => {
+    const user = userEvent.setup();
+    renderPage('/customers/all?page=2&sort=fullName&filter.status=active');
+    expect(await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.')).toBeInTheDocument();
+
+    await user.type(screen.getByPlaceholderText('Search the list'), 'carrefour');
+
+    // The search starts 300 ms after the last keystroke, then waits for the response.
+    expect(await screen.findByText('1 results', {}, { timeout: 3000 })).toBeInTheDocument();
+    expect(screen.queryByText('ARCELORMITTAL WARSAW SP. Z O.O.')).not.toBeInTheDocument();
+    const location = screen.getByRole('status', { name: 'Current customer URL' });
+    const search = new URLSearchParams(location.textContent ?? '');
+    expect(search.get('q')).toBe('carrefour');
+    expect(search.has('page')).toBe(false);
+    expect(search.get('sort')).toBe('fullName');
+    expect(search.get('filter.status')).toBe('active');
+    expect(location).toHaveAttribute('data-navigation-type', 'REPLACE');
   });
 
   it('links each customer name to its details page in a new tab', async () => {
