@@ -235,7 +235,8 @@ describe('TableFilters', () => {
       within(dialog).getByRole('heading', { level: 2, name: i18n.t('table.filters.title') }),
     ).toBeInTheDocument();
     expect(dialogProps.current?.className).toContain('!w-[824px]');
-    expect(dialogProps.current?.className).toContain('!h-[660px]');
+    expect(dialogProps.current?.className).not.toContain('!h-[660px]');
+    expect(dialogProps.current?.contentClassName).toContain('!h-[660px]');
     expect(buttonProps.current[i18n.t('table.filters.cancel')]).toMatchObject({
       style: 'outline',
       size: 'medium',

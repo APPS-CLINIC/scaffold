@@ -1,7 +1,7 @@
 import type * as DndKitCore from '@dnd-kit/core';
 import type { DndContextProps } from '@dnd-kit/core';
 import type { ComponentProps } from 'react';
-import { act, render, screen, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type * as IwaComponents from 'iwa-react-components';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -22,30 +22,37 @@ vi.mock('@dnd-kit/core', async (importOriginal) => ({
   },
 }));
 
-// The dialog frame is a set of props handed to the library, so the fake records them per
-// heading. It closes with a function updater to prove both forms of the setter contract are
-// honoured. The button fake exposes its style props as data attributes.
+// The dialog frame is a set of props handed to the library, so the fake exposes its class
+// names as data attributes; the dialog's own heading names it. The fake closes with a
+// function updater to prove both forms of the setter contract are honoured. The button fake
+// exposes its style props as data attributes.
 // The library types `children` on the component, not on its exported props interface.
 type DialogComponentProps = ComponentProps<typeof IwaComponents.CustomizableDialog>;
 type ButtonComponentProps = ComponentProps<typeof IwaComponents.Button>;
 
-const dialogProps: { current: Record<string, DialogComponentProps> } = { current: {} };
-
 vi.mock('iwa-react-components', async (importOriginal) => ({
   ...(await importOriginal<typeof IwaComponents>()),
-  CustomizableDialog: (props: DialogComponentProps) => {
-    const { headingProps, visibility, onSetVisibility, children } = props;
-    if (headingProps?.text) dialogProps.current[headingProps.text] = props;
-
-    return visibility ? (
-      <section aria-label={headingProps?.text}>
+  CustomizableDialog: ({
+    headingProps,
+    visibility,
+    onSetVisibility,
+    className,
+    contentClassName,
+    children,
+  }: DialogComponentProps) =>
+    visibility ? (
+      <div
+        role="dialog"
+        data-heading-props={headingProps === undefined ? undefined : 'set'}
+        data-class-name={className}
+        data-content-class-name={contentClassName}
+      >
         <button type="button" onClick={() => onSetVisibility((current) => !current)}>
-          Close {headingProps?.text}
+          Close
         </button>
         {children}
-      </section>
-    ) : null;
-  },
+      </div>
+    ) : null,
   Button: ({ label, style, size, className, onClick }: ButtonComponentProps) => (
     <button
       type="button"
@@ -95,17 +102,14 @@ function captured(): DndContextProps {
   return dndProps.current;
 }
 
-function dialog(heading: string): DialogComponentProps {
-  const props = dialogProps.current[heading];
-  if (props === undefined) throw new Error(`Dialog "${heading}" did not render.`);
-
-  return props;
-}
+const dialog = (heading: string) => screen.getByRole('dialog', { name: heading });
 
 const classesOf = (className: string | undefined) => className?.split(' ') ?? [];
+const frameClasses = (heading: string) => classesOf(dialog(heading).dataset.className);
+const contentClasses = (heading: string) => classesOf(dialog(heading).dataset.contentClassName);
 
 function footerButtons(heading: string): HTMLElement[] {
-  return within(screen.getByRole('region', { name: heading }))
+  return within(dialog(heading))
     .getAllByRole('button')
     .filter((button) => button.dataset.style !== undefined);
 }
@@ -123,7 +127,6 @@ function dragEnd(activeId: number, overId: number | null) {
 
 beforeEach(async () => {
   dndProps.current = null;
-  dialogProps.current = {};
   await i18n.changeLanguage('en');
 });
 
@@ -185,33 +188,34 @@ describe('TableColumnSettingsForm drag and drop', () => {
 });
 
 describe('TableColumnSettingsForm dialog layout', () => {
-  it('gives the settings dialog a fixed 600 by 835 frame capped by the viewport', () => {
+  it('gives the settings dialog a 600 wide frame around 835 high content, capped by the viewport', () => {
     renderForm();
 
-    const settings = dialog('List settings');
-    expect(settings.headingProps).toMatchObject({ centered: true });
-    expect(classesOf(settings.className)).toEqual(
-      expect.arrayContaining([
-        '!w-[600px]',
-        '!max-w-[calc(100vw-2rem)]',
-        '!h-[835px]',
-        '!max-h-[calc(100vh-2rem)]',
-      ]),
+    expect(dialog('List settings')).not.toHaveAttribute('data-heading-props');
+    expect(
+      within(dialog('List settings')).getByRole('heading', { level: 2, name: 'List settings' }),
+    ).toHaveClass('text-center');
+    expect(frameClasses('List settings')).toEqual(
+      expect.arrayContaining(['!w-[600px]', '!max-w-[calc(100vw-2rem)]']),
+    );
+    expect(frameClasses('List settings')).not.toContain('!h-[835px]');
+    expect(contentClasses('List settings')).toEqual(
+      expect.arrayContaining(['!h-[835px]', '!max-h-[calc(100vh-2rem)]']),
     );
   });
 
   it('drops the content padding so the tab line and the footer separator span the dialog', () => {
     renderForm();
 
-    expect(classesOf(dialog('List settings').contentClassName)).toContain('!p-0');
-    // The fake renders children straight into the region, which stands in for the content.
-    const region = screen.getByRole('region', { name: 'List settings' });
-    const tabRow = within(region).getByText('Customize columns').parentElement;
+    expect(contentClasses('List settings')).toContain('!p-0');
+    // The fake renders children straight into the dialog, which stands in for the content.
+    const content = dialog('List settings');
+    const tabRow = within(content).getByText('Customize columns').parentElement;
     expect(tabRow).toHaveClass('border-b', 'px-6');
-    expect(tabRow?.parentElement).toBe(region);
+    expect(tabRow?.parentElement).toBe(content);
     const footer = footerButtons('List settings')[0]?.parentElement;
     expect(footer).toHaveClass('border-t', 'px-6');
-    expect(footer?.parentElement).toBe(region);
+    expect(footer?.parentElement).toBe(content);
   });
 
   it('puts restore on the left of cancel and save in the footer', () => {
@@ -231,11 +235,13 @@ describe('TableColumnSettingsForm dialog layout', () => {
     renderForm();
     await user.click(screen.getByRole('button', { name: 'Restore defaults' }));
 
-    const confirm = dialog('Restoring default settings');
-    expect(classesOf(confirm.className)).toEqual(
-      expect.arrayContaining(['!w-[420px]', '!max-w-[calc(100vw-2rem)]', '!min-h-[296px]']),
+    expect(frameClasses('Restoring default settings')).toEqual(
+      expect.arrayContaining(['!w-[420px]', '!max-w-[calc(100vw-2rem)]']),
     );
-    expect(classesOf(confirm.contentClassName)).toContain('!p-0');
+    expect(frameClasses('Restoring default settings')).not.toContain('!min-h-[296px]');
+    expect(contentClasses('Restoring default settings')).toEqual(
+      expect.arrayContaining(['!p-0', '!min-h-[296px]']),
+    );
     const buttons = footerButtons('Restoring default settings');
     expect(describeButtons(buttons)).toEqual([
       ['Restore defaults', 'filled', 'medium'],
@@ -243,8 +249,20 @@ describe('TableColumnSettingsForm dialog layout', () => {
     ]);
     expect(buttons.every((button) => button.classList.contains('w-full'))).toBe(true);
     expect(buttons[0]?.parentElement).toHaveClass('border-t', 'flex-col');
-    expect(buttons[0]?.parentElement?.parentElement).toBe(
-      screen.getByRole('region', { name: 'Restoring default settings' }),
+    expect(buttons[0]?.parentElement?.parentElement).toBe(dialog('Restoring default settings'));
+  });
+
+  it('starts the confirmation on its safe choice', async () => {
+    const user = userEvent.setup();
+    renderForm();
+    await user.click(screen.getByRole('button', { name: 'Restore defaults' }));
+
+    await waitFor(() =>
+      expect(
+        within(dialog('Restoring default settings')).getByRole('button', {
+          name: 'Back to settings',
+        }),
+      ).toHaveFocus(),
     );
   });
 });
@@ -254,7 +272,7 @@ describe('TableColumnSettingsForm dialog visibility', () => {
     const user = userEvent.setup();
     const { onCancel } = renderForm();
 
-    await user.click(screen.getByRole('button', { name: 'Close List settings' }));
+    await user.click(within(dialog('List settings')).getByRole('button', { name: 'Close' }));
 
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
@@ -263,12 +281,14 @@ describe('TableColumnSettingsForm dialog visibility', () => {
     const user = userEvent.setup();
     renderForm();
     await user.click(screen.getByRole('button', { name: 'Restore defaults' }));
-    expect(screen.getByRole('region', { name: 'Restoring default settings' })).toBeInTheDocument();
+    expect(dialog('Restoring default settings')).toBeInTheDocument();
 
-    await user.click(screen.getByRole('button', { name: 'Close Restoring default settings' }));
+    await user.click(
+      within(dialog('Restoring default settings')).getByRole('button', { name: 'Close' }),
+    );
 
     expect(
-      screen.queryByRole('region', { name: 'Restoring default settings' }),
+      screen.queryByRole('dialog', { name: 'Restoring default settings' }),
     ).not.toBeInTheDocument();
   });
 });
