@@ -1,4 +1,4 @@
-import { Fragment, useId, useState, type SetStateAction } from 'react';
+import { Fragment, useEffect, useId, useState, type SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button, CustomizableDialog, twMerge } from '@/ui';
 import {
@@ -42,8 +42,10 @@ export function TableFilterDialog({ fields, values, onSave, onCancel }: TableFil
       className={FILTER_DIALOG_CLASS_NAME}
       contentClassName={DIALOG_CONTENT_CLASS_NAME}
     >
-      {/* Only the rows scroll, so the heading and the footer stay in view; the bar is hidden. */}
-      <div className="relative min-h-0 flex-1 overflow-y-auto px-6 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {fields[0] === undefined ? null : <FocusOnOpen targetId={`${idPrefix}-${fields[0].field}`} />}
+      {/* Only the rows scroll, so the heading and the footer stay in view; the bar is hidden.
+          The top border is the line under the heading, edge to edge. */}
+      <div className="relative min-h-0 flex-1 overflow-y-auto border-t border-[var(--border-subtle)] px-6 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="grid grid-cols-[minmax(0,1fr)_24rem] items-center gap-x-6 gap-y-4">
           {fields.map((field) => {
             const inputId = `${idPrefix}-${field.field}`;
@@ -54,7 +56,7 @@ export function TableFilterDialog({ fields, values, onSave, onCancel }: TableFil
                 <label
                   id={labelId}
                   htmlFor={inputId}
-                  className="text-right text-sm text-[var(--text)]"
+                  className="text-right text-base text-[var(--text)]"
                 >
                   {t(field.labelKey)}
                 </label>
@@ -89,4 +91,17 @@ export function TableFilterDialog({ fields, values, onSave, onCancel }: TableFil
       </div>
     </CustomizableDialog>
   );
+}
+
+/**
+ * Focuses the first field once the dialog is open. The library's focus trap puts focus on
+ * the close button in its own mount effect, which runs after this one, so the move waits
+ * for a microtask: it then lands after the trap, and the trap keeps focus that is already
+ * inside the dialog.
+ */
+function FocusOnOpen({ targetId }: { targetId: string }) {
+  useEffect(() => {
+    queueMicrotask(() => document.getElementById(targetId)?.focus());
+  }, [targetId]);
+  return null;
 }

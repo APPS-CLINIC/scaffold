@@ -250,9 +250,10 @@ component and one hook. `tableFilter` builds each field's chip component around
 that hook, so call it once per field where the config is defined.
 
 `TableFilters` renders "Customize filters", the "Clear filters (n)" link, one
-IWA `ChipInput` chip per applied filter and the dialog (824 × 660; the rows
-scroll under a fixed heading and footer, without a visible scrollbar; Cancel
-and closing discard the draft). It is controlled: `values` are the current
+IWA `ChipInput` chip per applied filter and the dialog (824 × 660; a line under
+the heading; the rows scroll under a fixed heading and footer, without a visible
+scrollbar; focus starts on the first field and returns to the button on close;
+Cancel and closing discard the draft). It is controlled: `values` are the current
 filter values by param and `onChange` receives the next values of the filters
 shown. Pass the fields the table uses —
 `useTableColumnSettings(config).config.fields` — so the filters follow the

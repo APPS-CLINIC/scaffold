@@ -197,6 +197,14 @@ describe('TableFilters', () => {
     },
   );
 
+  it('puts focus on the first field when the dialog opens', async () => {
+    renderFilters({}, [...fields].reverse());
+
+    const dialog = await openDialog();
+
+    expect(within(dialog).getByLabelText(typeLabel)).toHaveFocus();
+  });
+
   it.each(['Save', 'Cancel'] as const)(
     'gives focus back to "Customize filters" after %s',
     async (action) => {
