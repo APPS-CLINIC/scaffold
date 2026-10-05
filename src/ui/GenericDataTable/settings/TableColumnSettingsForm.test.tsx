@@ -94,7 +94,8 @@ function renderForm() {
   return { onCancel };
 }
 
-const rowNames = () => screen.getAllByRole('listitem').map((row) => row.textContent);
+// The library's row controls add whitespace around their markup, so only the trimmed text counts.
+const rowNames = () => screen.getAllByRole('listitem').map((row) => row.textContent?.trim());
 
 function captured(): DndContextProps {
   if (dndProps.current === null) throw new Error('DndContext did not render.');
