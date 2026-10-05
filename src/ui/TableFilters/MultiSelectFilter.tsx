@@ -13,6 +13,9 @@ const MULTI_SELECT_CLASS_NAME = [
   '[&.p-focus]:!border-[var(--navigation-accent)] [&.p-focus]:![box-shadow:none] [&_.p-focus]:!border-[var(--navigation-accent)] [&_.p-focus]:![box-shadow:none] [&_input:focus]:!outline-none',
 ].join(' ');
 
+/** Up to five options fit at a glance, so the panel offers a search from the sixth on. */
+const MIN_OPTIONS_FOR_SEARCH = 6;
+
 // The option panel opens on the document body, outside the class name above.
 const MULTI_SELECT_PANEL_CLASS_NAME =
   '[&_input:focus]:!border-[var(--navigation-accent)] [&_input:focus]:![box-shadow:none] [&_input:focus]:!outline-none';
@@ -43,8 +46,9 @@ function toStringValues(value: unknown): string[] {
 }
 
 /**
- * Picks any number of options; typing in the list narrows it to labels containing the text.
- * A value without an option is not shown, and leaves the filter once the user picks again.
+ * Picks any number of options. A longer list has a search that narrows it to labels
+ * containing the text. A value without an option is not shown, and leaves the filter once
+ * the user picks again.
  */
 export function MultiSelectFilter({
   inputId,
@@ -65,7 +69,7 @@ export function MultiSelectFilter({
       optionLabel="label"
       optionValue="value"
       onChange={(event) => onChange({ [param]: toStringValues(event.value) })}
-      filter
+      filter={items.length >= MIN_OPTIONS_FOR_SEARCH}
       filterMatchMode="contains"
       showHeader
       showSelectAll={false}

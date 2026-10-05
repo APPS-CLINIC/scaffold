@@ -230,8 +230,9 @@ service params (ADR 0038): the field's name, or `filterParam` when the service
 calls it differently. The built-in controls:
 
 - `MultiSelectFilter` (`options`: `{ value, labelKey }` or `{ value, label }`,
-  optional `selectionLimit`): IWA `MultiSelect`, one repeated param; typing in
-  the open list keeps the options whose label contains the text.
+  optional `selectionLimit`): IWA `MultiSelect`, one repeated param. From six
+  options on, the open list has a search that keeps the options whose label
+  contains the text.
 - `DateRangeFilter`: two IWA `DatePicker`s writing `<param>.from` and
   `<param>.to` as `yyyy-MM-dd`; either end may stay empty. The calendars open
   on `document.body`, so the scrolling dialog rows do not clip them.

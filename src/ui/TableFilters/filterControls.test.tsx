@@ -77,7 +77,7 @@ describe('MultiSelectFilter', () => {
     return onChange;
   }
 
-  it('offers the translated options and narrows the list by contained text', () => {
+  it('offers the translated options and no search for a short list', () => {
     renderMultiSelect({ status: ['ACTIVE'], type: ['SME'] }, { selectionLimit: 100 });
 
     expect(multiSelectProps()).toMatchObject({
@@ -89,13 +89,25 @@ describe('MultiSelectFilter', () => {
       ],
       optionLabel: 'label',
       optionValue: 'value',
-      filter: true,
-      filterMatchMode: 'contains',
+      filter: false,
       showHeader: true,
       showSelectAll: false,
       selectionLimit: 100,
       placeholder: i18n.t('table.filters.placeholder'),
     });
+  });
+
+  it.each([
+    [5, false],
+    [6, true],
+  ])('with %i options offers a search narrowing by contained text: %s', (count, search) => {
+    const optionList = Array.from({ length: count }, (_, index) => ({
+      value: String(index),
+      label: `Option ${index}`,
+    }));
+    renderMultiSelect({}, { options: optionList });
+
+    expect(multiSelectProps()).toMatchObject({ filter: search, filterMatchMode: 'contains' });
   });
 
   it('shows only values that have an option', () => {
