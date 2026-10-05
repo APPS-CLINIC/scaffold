@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigationType } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   TABLE_SETTINGS_STORAGE_KEY,
@@ -50,7 +50,11 @@ function createMemoryStorage(): Storage {
 
 function LocationProbe() {
   const { search } = useLocation();
-  return <output aria-label="Current customer URL">{search}</output>;
+  return (
+    <output aria-label="Current customer URL" data-navigation-type={useNavigationType()}>
+      {search}
+    </output>
+  );
 }
 
 let memoryStorage: Storage;
@@ -156,6 +160,25 @@ describe('CustomersView column settings', () => {
       expect(currentSearch().get('dir')).toBeNull();
     });
     expect(screen.queryByRole('columnheader', { name: 'KKF' })).not.toBeInTheDocument();
+  });
+
+  it('drops the filter of a removed column from the URL and keeps the others', async () => {
+    const user = userEvent.setup();
+    renderPage('/customers/all?status=ARCHIVAL&type=CORPORATE');
+    await screen.findByText('Clear filters (2)');
+
+    await user.click(screen.getByRole('button', { name: 'List settings' }));
+    expect(rowNames()[2]).toBe('Status');
+    await user.click(within(settingsDialog()).getByRole('button', { name: 'Remove column 3' }));
+    await user.click(within(settingsDialog()).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(currentSearch().has('status')).toBe(false));
+    expect(currentSearch().getAll('type')).toEqual(['CORPORATE']);
+    expect(screen.getByText('Clear filters (1)')).toBeInTheDocument();
+    expect(screen.getByRole('status', { name: 'Current customer URL' })).toHaveAttribute(
+      'data-navigation-type',
+      'REPLACE',
+    );
   });
 
   it('renders the stored columns from the first render on', async () => {

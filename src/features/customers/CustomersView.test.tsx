@@ -95,7 +95,7 @@ describe('CustomersView', () => {
     });
   });
 
-  it('keeps deep-linked filters working while the filter button stays inert', async () => {
+  it('keeps deep-linked filters and leaves the URL alone when the filter dialog is cancelled', async () => {
     const user = userEvent.setup();
     const { store } = renderPage('/customers/all?status=ARCHIVAL');
 
@@ -107,7 +107,9 @@ describe('CustomersView', () => {
     });
 
     await user.click(screen.getByRole('button', { name: 'Customize filters' }));
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     const search = screen.getByRole('status', { name: 'Current customer URL' }).textContent ?? '';
     expect(search).toBe('?status=ARCHIVAL');
     expect(selectCustomerQuery(store.getState()).filters.status).toEqual(['ARCHIVAL']);

@@ -3,6 +3,8 @@ import { makeStore } from '@/app/store';
 import { createTableSettingsState } from '@/features/tableSettings';
 import { listQueryChanged } from '@/features/urlState/urlState.slice';
 import { defaultListQuery } from '@/features/urlState/urlState.schema';
+import { isFilterableField, tableFilterParam } from '@/ui';
+import { customerTableConfig } from './customerTable';
 import { parseCustomerFilters, selectCustomerQuery } from './customers.filters';
 
 describe('customer URL filters', () => {
@@ -99,5 +101,12 @@ describe('customer URL filters', () => {
 
     expect(filters.status).toEqual([]);
     expect(filters.type).toEqual(['CORPORATE']);
+  });
+
+  it('reads exactly the params the table declares filters for', () => {
+    const declared = customerTableConfig.fields.filter(isFilterableField).map(tableFilterParam);
+    const read = Object.keys(parseCustomerFilters({})).map((key) => key.split('.')[0]);
+
+    expect(new Set(read)).toEqual(new Set(declared));
   });
 });
