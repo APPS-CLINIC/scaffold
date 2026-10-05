@@ -32,7 +32,7 @@ export function DateRangeFilter({ inputId, labelId, param, values, onChange }: T
         maxDate={toDate ?? undefined}
         onChange={(date) => change(date, toDate)}
         appendTo={document.body}
-        className="min-w-0 flex-1"
+        className="w-40 shrink-0"
         inputClassName="w-full min-w-0"
       />
       <span aria-hidden="true" className="text-[var(--muted)]">
@@ -47,7 +47,7 @@ export function DateRangeFilter({ inputId, labelId, param, values, onChange }: T
         minDate={fromDate ?? undefined}
         onChange={(date) => change(fromDate, date)}
         appendTo={document.body}
-        className="min-w-0 flex-1"
+        className="w-40 shrink-0"
         inputClassName="w-full min-w-0"
       />
     </div>

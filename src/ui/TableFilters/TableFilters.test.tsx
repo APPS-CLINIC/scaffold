@@ -225,10 +225,10 @@ describe('TableFilters', () => {
     renderFilters({});
     const dialog = await openDialog();
 
-    expect(dialogProps.current?.headingProps).toEqual({
-      text: i18n.t('table.filters.title'),
-      centered: true,
-    });
+    expect(dialogProps.current?.headingProps).toBeUndefined();
+    expect(
+      within(dialog).getByRole('heading', { level: 2, name: i18n.t('table.filters.title') }),
+    ).toBeInTheDocument();
     expect(dialogProps.current?.className).toContain('!w-[824px]');
     expect(dialogProps.current?.className).toContain('!h-[660px]');
     expect(buttonProps.current[i18n.t('table.filters.cancel')]).toMatchObject({

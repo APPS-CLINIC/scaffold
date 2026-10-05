@@ -28,6 +28,7 @@ interface TableFilterDialogProps {
 export function TableFilterDialog({ fields, values, onSave, onCancel }: TableFilterDialogProps) {
   const { t } = useTranslation();
   const idPrefix = useId();
+  const titleId = `${idPrefix}-title`;
   const [draft, setDraft] = useState<TableFilterValues>(() => pickTableFilters(values, fields));
 
   const handleSetVisibility = (next: SetStateAction<boolean>) => {
@@ -36,16 +37,26 @@ export function TableFilterDialog({ fields, values, onSave, onCancel }: TableFil
 
   return (
     <CustomizableDialog
-      headingProps={{ text: t('table.filters.title'), centered: true }}
       visibility
       onSetVisibility={handleSetVisibility}
       className={FILTER_DIALOG_CLASS_NAME}
       contentClassName={DIALOG_CONTENT_CLASS_NAME}
     >
       {fields[0] === undefined ? null : <FocusOnOpen targetId={`${idPrefix}-${fields[0].field}`} />}
-      {/* Only the rows scroll, so the heading and the footer stay in view; the bar is hidden.
-          The top border is the line under the heading, edge to edge. */}
-      <div className="relative min-h-0 flex-1 overflow-y-auto border-t border-[var(--border-subtle)] px-6 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      {/* The heading is part of the unpadded content, so its line runs edge to edge; it sits
+          in the band of the library's close button. The library names the dialog only after
+          its own heading, so the dialog element is pointed at this one. */}
+      <h2
+        ref={(heading) => {
+          heading?.closest('[role="dialog"]')?.setAttribute('aria-labelledby', titleId);
+        }}
+        id={titleId}
+        className="m-0 shrink-0 border-b border-[var(--border-subtle)] px-14 py-4 text-center text-2xl font-bold leading-8 text-[var(--text)]"
+      >
+        {t('table.filters.title')}
+      </h2>
+      {/* Only the rows scroll, so the heading and the footer stay in view; the bar is hidden. */}
+      <div className="relative min-h-0 flex-1 overflow-y-auto px-6 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         <div className="grid grid-cols-[minmax(0,1fr)_24rem] items-center gap-x-6 gap-y-4">
           {fields.map((field) => {
             const inputId = `${idPrefix}-${field.field}`;

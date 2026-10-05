@@ -1000,17 +1000,19 @@ function dialogFrame({ headingProps, closeButtonIcon, onClose, dataTestId, class
       },
       createElement(
         'div',
-        { className: 'relative shrink-0 px-6 pb-2 pt-6' },
-        createElement(
-          'h2',
-          {
-            className: twMerge(
-              'm-0 text-xl font-bold text-[#333333]',
-              headingProps?.centered && 'text-center',
-            ),
-          },
-          headingProps?.text,
-        ),
+        { className: twMerge('relative shrink-0', headingProps?.text && 'px-6 pb-2 pt-6') },
+        headingProps?.text
+          ? createElement(
+              'h2',
+              {
+                className: twMerge(
+                  'm-0 text-xl font-bold text-[#333333]',
+                  headingProps?.centered && 'text-center',
+                ),
+              },
+              headingProps.text,
+            )
+          : null,
         closeButtonIcon
           ? createElement(
               'button',

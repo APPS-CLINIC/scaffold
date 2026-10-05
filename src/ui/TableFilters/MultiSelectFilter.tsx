@@ -3,6 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { MultiSelect } from '@/ui';
 import type { TableFilterOption, TableFilterProps, TableFilterValues } from './TableFilters.types';
 
+// The library draws the multiselect taller than its other fields; the filter rows give every
+// field one 40px height. The classes reach the PrimeReact parts whether the class name lands
+// on the multiselect itself or on a wrapper around it.
+const MULTI_SELECT_CLASS_NAME =
+  'w-full !h-auto !min-h-0 [&_.p-multiselect]:!h-auto [&_.p-multiselect]:!min-h-0 [&_.p-multiselect-label]:!px-3 [&_.p-multiselect-label]:!py-[7px] [&_.p-multiselect-label]:!text-base [&_.p-multiselect-label]:!leading-6';
+
 export interface MultiSelectFilterProps {
   options: readonly TableFilterOption[];
   /** The most values the user may pick; the list stops offering more. */
@@ -61,7 +67,7 @@ export function MultiSelectFilter({
       filterPlaceholder={t('table.filters.search')}
       emptyFilterMessage={t('table.filters.noResults')}
       emptyMessage={t('table.filters.noOptions')}
-      className="w-full"
+      className={MULTI_SELECT_CLASS_NAME}
     />
   );
 }
