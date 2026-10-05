@@ -10,11 +10,13 @@
  *
  * Keep the rendered structure faithful to the real components. Tests query it by role and
  * accessible name, so a shape that drifts from the library makes them assert a fiction.
- * `Table` delegates to PrimeReact because the IWA table is a styled PrimeReact DataTable.
+ * `Table` and `MultiSelect` delegate to PrimeReact because the IWA components are styled
+ * PrimeReact components that take PrimeReact props.
  */
 
 import { cloneElement, createContext, createElement, useContext, useState } from 'react';
 import { DataTable } from 'primereact/datatable';
+import { MultiSelect as PrimeMultiSelect } from 'primereact/multiselect';
 
 export function Table({ dataTableRef, separatedRows, ...props }) {
   return createElement(DataTable, { ...props, ref: dataTableRef ?? undefined });
@@ -765,19 +767,24 @@ export function DatePicker({
   inputClassName,
   id,
   name,
-  dataTestId,
+  inputContainerDataTestId = 'date-input-container',
   dateInputTestId = 'ing-date-input',
-  'aria-label': ariaLabel,
 }) {
+  const pad = (number) => String(number).padStart(2, '0');
   const toIso = (input) => {
     if (!input) return '';
-    if (input instanceof Date) return input.toISOString().slice(0, 10);
+    if (input instanceof Date) {
+      return `${input.getFullYear()}-${pad(input.getMonth() + 1)}-${pad(input.getDate())}`;
+    }
     return String(input).slice(0, 10);
   };
 
   return createElement(
     'span',
-    { className: twMerge('relative inline-block', className), 'data-testid': dataTestId },
+    {
+      className: twMerge('relative inline-block', className),
+      'data-testid': inputContainerDataTestId,
+    },
     createElement('input', {
       type: 'date',
       id,
@@ -787,7 +794,6 @@ export function DatePicker({
       max: toIso(maxDate),
       disabled,
       readOnly,
-      'aria-label': ariaLabel,
       'data-testid': dateInputTestId,
       onChange: (event) => {
         const raw = event.target.value;
@@ -796,6 +802,103 @@ export function DatePicker({
       className: twMerge(
         'h-10 w-full rounded border border-[#c4c9ce] bg-white px-3 text-sm text-[#333333]',
         (disabled || readOnly) && 'opacity-50',
+        errorMessage && 'border-[#d70000]',
+        inputClassName,
+      ),
+    }),
+    errorMessage
+      ? createElement('p', { className: 'm-0 mt-1 text-xs text-[#d70000]' }, errorMessage)
+      : null,
+  );
+}
+
+export function MultiSelect({
+  errorMessage,
+  showHeader = true,
+  dataTestId,
+  sortSelected,
+  showSelectedItemsList,
+  filterSize,
+  className,
+  ...props
+}) {
+  return createElement(
+    'div',
+    { className: twMerge('inline-block', className), 'data-testid': dataTestId },
+    createElement(PrimeMultiSelect, {
+      ...props,
+      // jsdom cannot parse the layered stylesheet PrimeReact injects for styled mode.
+      unstyled: true,
+      className: twMerge('w-full', errorMessage && 'p-invalid'),
+      ...(showHeader ? {} : { panelHeaderTemplate: () => null }),
+    }),
+    errorMessage
+      ? createElement('p', { className: 'm-0 mt-1 text-xs text-[#d70000]' }, errorMessage)
+      : null,
+  );
+}
+
+export function ChipInput({ chips, onChange, disabled, className }) {
+  return createElement(
+    'div',
+    { className: twMerge('flex flex-wrap gap-2', className) },
+    chips.map((chip, index) =>
+      createElement(
+        'span',
+        {
+          key: index,
+          className:
+            'inline-flex items-center gap-1.5 rounded-full border border-[#c9c8d4] bg-[#f4f3f8] px-3 py-1 text-sm text-[#333333]',
+        },
+        createElement('span', null, chip.label),
+        createElement(
+          'button',
+          {
+            type: 'button',
+            disabled,
+            onClick: () => onChange(chips.filter((other) => other !== chip)),
+            className: 'flex items-center text-[#333333]',
+          },
+          svgIcon(
+            [
+              createElement('path', {
+                key: 'x',
+                d: 'M6 6l8 8M14 6l-8 8',
+                stroke: 'currentColor',
+                strokeWidth: 2,
+                strokeLinecap: 'round',
+              }),
+            ],
+            { width: 14, height: 14 },
+          ),
+        ),
+      ),
+    ),
+  );
+}
+
+export function TextInput({
+  value,
+  onChange,
+  errorMessage,
+  underline,
+  className,
+  inputClassName,
+  dataTestId,
+  ...props
+}) {
+  return createElement(
+    'div',
+    { className: twMerge('inline-block', className) },
+    createElement('input', {
+      type: 'text',
+      ...props,
+      value,
+      onChange,
+      'data-testid': dataTestId,
+      className: twMerge(
+        'h-10 w-full rounded border border-[#c4c9ce] bg-white px-3 text-sm text-[#333333]',
+        underline && 'rounded-none border-0 border-b',
         errorMessage && 'border-[#d70000]',
         inputClassName,
       ),

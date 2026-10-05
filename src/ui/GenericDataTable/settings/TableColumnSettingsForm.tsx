@@ -18,6 +18,11 @@ import {
 } from '@dnd-kit/sortable';
 import { Button, CustomizableDialog } from 'iwa-react-components';
 import { useTranslation } from 'react-i18next';
+import {
+  DIALOG_CONTENT_CLASS_NAME,
+  DIALOG_FOOTER_CLASS_NAME,
+  resolveVisibility,
+} from '../../dialogFrame';
 import type {
   GenericDataTableField,
   TableColumnSettingsDialogProps,
@@ -40,15 +45,9 @@ export type TableColumnSettingsFormProps<T extends object> = Omit<
   'open'
 >;
 
-// The library pads the content and sizes the dialog itself, hence the important modifiers.
-// Without the padding the tab line and the footer separators reach the dialog edges, so
-// every section pads itself.
-const DIALOG_CONTENT_CLASS_NAME = 'flex min-h-0 flex-col !p-0';
 const SETTINGS_DIALOG_CLASS_NAME =
   '!h-[835px] !max-h-[calc(100vh-2rem)] !w-[600px] !max-w-[calc(100vw-2rem)]';
 const RESTORE_DIALOG_CLASS_NAME = '!min-h-[296px] !w-[420px] !max-w-[calc(100vw-2rem)]';
-const DIALOG_FOOTER_CLASS_NAME =
-  'flex shrink-0 gap-3 border-t border-[var(--border-subtle)] px-6 py-4';
 
 /**
  * The settings dialog body with its draft. Mounted only while the dialog is
@@ -155,9 +154,6 @@ export function TableColumnSettingsForm<T extends object>({
     listRef.current?.children.item(firstEmpty)?.scrollIntoView({ block: 'nearest' });
   };
 
-  // The library's setter contract is a state setter, so a function updater must be resolved.
-  const resolveVisibility = (next: SetStateAction<boolean>, current: boolean) =>
-    typeof next === 'function' ? next(current) : next;
   const handleSetVisibility = (next: SetStateAction<boolean>) => {
     if (!resolveVisibility(next, true)) onCancel();
   };

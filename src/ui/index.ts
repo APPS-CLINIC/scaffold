@@ -1,14 +1,18 @@
-export { Button, type ButtonProps } from './Button';
 // IWA design-system components consumed by the app, re-exported so feature
 // code imports them from '@/ui' like every other UI building block.
 export {
   ActionLink,
+  Button,
   Card,
+  ChipInput,
+  CustomizableDialog,
+  DatePicker,
   DefinitionList,
   IconTextButton,
   InlineLink,
   Label,
   MenuList,
+  MultiSelect,
   NavigationMenuItem,
   PaginatorTable,
   SearchWithAutocomplete,
@@ -18,11 +22,13 @@ export {
   Status,
   Switch,
   TabMenu,
+  TextInput,
   TopBar,
   twMerge,
 } from 'iwa-react-components';
 export type {
   ActionLinkProps,
+  ButtonProps,
   CardProps,
   DefinitionListProps,
   IconTextButtonProps,
@@ -42,10 +48,10 @@ export type {
   StatusType,
   SwitchProps,
   TableProps,
+  TextInputProps,
 } from 'iwa-react-components';
 export { BreadCrumb, type BreadCrumbItem, type BreadCrumbProps } from 'iwa-react-components';
 export { ScreenHeading, type ScreenHeadingItem, type ScreenHeadingProps } from './ScreenHeading';
-export { TextInput, type TextInputProps } from './TextInput';
 export { PrimeIcon, type PrimeIconName, type PrimeIconProps } from './PrimeIcon';
 export { createPrimeIcon } from './createPrimeIcon';
 export {
@@ -107,6 +113,24 @@ export {
   type DueDateWindow,
 } from './DueDateFilter';
 export { GenericSearch, type GenericSearchProps } from './GenericSearch';
+export {
+  createMultiSelectFilter,
+  DateRangeFilter,
+  isFilterableField,
+  MultiSelectFilter,
+  pickTableFilters,
+  replaceTableFilters,
+  tableFilter,
+  tableFilterParam,
+  TableFilters,
+  TextFilter,
+  type MultiSelectFilterProps,
+  type TableFilterField,
+  type TableFilterOption,
+  type TableFilterProps,
+  type TableFiltersProps,
+  type TableFilterValues,
+} from './TableFilters';
 export { cx } from './cx';
 export { ToastProvider } from './toast/ToastProvider';
 export { useToast } from './toast/useToast';

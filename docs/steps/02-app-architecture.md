@@ -134,8 +134,16 @@ preference: the owning feature resolves the static configuration against the
 `tableSettings` slice with `resolveColumnFields` and hands the effective
 configuration to the table, which never reads Redux. The generic "List
 settings" dialog edits that choice.
+
+A field can also declare the control that filters it
+(`filter: tableFilter(MultiSelectFilter, { options })`). The generic
+`TableFilters` offers a filter for each field the table uses, in the table's
+order, with removable chips for the applied ones; a field removed in the list
+settings has no filter. The feature keeps the values in the URL as
+service-named params and sends only the filters of fields in use.
 → [ADR 0025](../adr/0025-configuration-driven-generic-data-tables.md),
-[ADR 0034](../adr/0034-user-table-preferences-in-a-persisted-redux-slice.md)
+[ADR 0034](../adr/0034-user-table-preferences-in-a-persisted-redux-slice.md),
+[ADR 0039](../adr/0039-table-filters-declared-in-the-field-config.md)
 
 ### 6. UI seam — `src/ui`
 
@@ -144,7 +152,8 @@ organization's internal UI library can be plugged in within a single folder
 without touching feature code.
 
 Domain-neutral building blocks meant for reuse across views also live here — the
-generic data table and its cells, and the due-date filter (`DueDateFilter`,
+generic data table and its cells, the table filters (`TableFilters` and its
+controls), and the due-date filter (`DueDateFilter`,
 `filterByDueDate`), which carries no customer vocabulary. The view that shows the
 filter keeps its choice in local state; it hides loaded rows and reaches no
 endpoint, so it stays out of the URL.

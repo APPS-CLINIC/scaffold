@@ -54,6 +54,7 @@ keep ADRs at all; use it as the template for new records.
 | [0034](0034-user-table-preferences-in-a-persisted-redux-slice.md) | User table preferences in a persisted Redux slice   | Accepted               |
 | [0037](0037-generic-due-date-filter-in-the-ui-seam.md)            | Generic due-date filter in the UI seam              | Accepted               |
 | [0038](0038-list-filters-as-service-named-url-params.md)          | List filters as service-named URL params            | Accepted               |
+| [0039](0039-table-filters-declared-in-the-field-config.md)        | Table filters declared in the field config          | Accepted               |
 
 ### Step 03 — Scope alignment (discovery)
 
