@@ -167,7 +167,7 @@ describe('CustomersView filters', () => {
 
   it('writes the saved filters to the URL, back on page 1, and sends them to the service', async () => {
     const user = userEvent.setup();
-    renderPage('/customers/all?page=2&sort=fullName');
+    renderPage('/customers/all?page=2&sort=fullName', ['fullName', 'status', 'lendingReviewDate']);
     await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
 
     await user.click(filtersButton());
@@ -231,10 +231,7 @@ describe('CustomersView filters', () => {
 
   it('neither shows nor applies the filter of a column the user removed, and drops it on save', async () => {
     const user = userEvent.setup();
-    const withoutStatus = customerTableConfig.fields
-      .map((field) => field.field as string)
-      .filter((field) => field !== 'status');
-    renderPage('/customers/all?status=ARCHIVAL&type=CORPORATE', withoutStatus);
+    renderPage('/customers/all?status=ARCHIVAL&type=CORPORATE', ['fullName', 'type']);
     await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
 
     expectChips([`${label('type')}: Corporate`]);
@@ -251,7 +248,7 @@ describe('CustomersView filters', () => {
 
   it('offers dictionary entries by name, with a choice for customers without an own group', async () => {
     const user = userEvent.setup();
-    renderPage();
+    renderPage('/customers/all', ['fullName', 'internalGroupName', 'rmAdvisor']);
     await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
 
     await user.click(filtersButton());
