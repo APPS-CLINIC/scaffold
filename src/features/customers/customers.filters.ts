@@ -2,6 +2,8 @@ import { createSelector } from '@reduxjs/toolkit';
 import { z } from 'zod';
 import { selectListQuery } from '@/features/urlState/urlState.selectors';
 import type { ListQuery } from '@/features/urlState/urlState.schema';
+
+type ListFilters = ListQuery['filters'];
 import type { CustomerQuery } from './customers.types';
 
 export const customerFiltersSchema = z.object({
@@ -11,24 +13,24 @@ export const customerFiltersSchema = z.object({
 
 export type CustomerFilters = z.infer<typeof customerFiltersSchema>;
 
-export function parseCustomerFilters(filters: Readonly<Record<string, string>>): CustomerFilters {
-  return customerFiltersSchema.parse(filters);
+export function parseCustomerFilters(filters: Readonly<ListFilters>): CustomerFilters {
+  return customerFiltersSchema.parse({ status: filters.status?.[0], type: filters.type?.[0] });
 }
 
 /** Update only customer-owned keys while preserving filters owned by another feature. */
 export function updateCustomerUrlFilters(
-  current: Readonly<Record<string, string>>,
+  current: Readonly<ListFilters>,
   patch: Partial<CustomerFilters>,
-): Record<string, string> {
+): ListFilters {
   const next = { ...current };
 
   if (patch.status !== undefined) {
-    if (patch.status) next.status = patch.status;
+    if (patch.status) next.status = [patch.status];
     else delete next.status;
   }
 
   if (patch.type !== undefined) {
-    if (patch.type) next.type = patch.type;
+    if (patch.type) next.type = [patch.type];
     else delete next.type;
   }
 

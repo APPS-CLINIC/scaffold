@@ -98,8 +98,11 @@ write API. Backend responses use a data-only endpoint contract and never carry
 rendering instructions. The browser receives only the requested page and never
 processes the complete collection.
 
-Feature filters use readable `filter.<key>` search parameters. The shared URL
-layer validates their generic syntax, and the owning feature validates its
+Every search parameter other than the list's own (`q`, `sort`, `dir`, `page`,
+`pageSize`) is a feature filter, named like the service parameter it becomes
+and repeated once per chosen value (`status=ACTIVE&status=ARCHIVAL`,
+`lendingReviewDate.to=2026-10-01`), kept sorted without duplicates. The shared
+URL layer validates their generic syntax, and the owning feature validates its
 domain values with Zod before deriving RTK Query arguments.
 
 The customer-detail summary reads RTK Query directly, with no Redux mirror.
@@ -112,6 +115,7 @@ evicts the transport cache when the layout leaves or the customer id changes,
 so nothing retains historical customers. Switching between that customer's
 L2/L3 pages does not remount the anchor or issue another request.
 → [ADR 0026](../adr/0026-extensible-feature-filters-in-list-urls.md),
+[ADR 0038](../adr/0038-list-filters-as-service-named-url-params.md),
 [ADR 0031](../adr/0031-customer-summary-read-directly-from-rtk-query.md)
 
 ### 5. Generic data tables

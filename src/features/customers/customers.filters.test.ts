@@ -10,7 +10,7 @@ import {
 
 describe('customer URL filters', () => {
   it('validates feature values without leaking them into the generic URL schema', () => {
-    expect(parseCustomerFilters({ status: 'unsupported', type: 'Corporate' })).toEqual({
+    expect(parseCustomerFilters({ status: ['unsupported'], type: ['Corporate'] })).toEqual({
       status: '',
       type: 'Corporate',
     });
@@ -19,10 +19,10 @@ describe('customer URL filters', () => {
   it('updates customer keys and preserves unrelated generic filters', () => {
     expect(
       updateCustomerUrlFilters(
-        { owner: 'mine', status: 'active', type: 'Corporate' },
+        { owner: ['mine'], status: ['active'], type: ['Corporate'] },
         { status: '', type: 'Institutional' },
       ),
-    ).toEqual({ owner: 'mine', type: 'Institutional' });
+    ).toEqual({ owner: ['mine'], type: ['Institutional'] });
   });
 
   it('derives endpoint arguments from the Redux URL mirror', () => {
@@ -31,7 +31,7 @@ describe('customer URL filters', () => {
       listQueryChanged({
         ...defaultListQuery,
         q: 'bank',
-        filters: { status: 'archival', type: 'Corporate' },
+        filters: { status: ['archival'], type: ['Corporate'] },
         page: 2,
       }),
     );

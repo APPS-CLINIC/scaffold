@@ -15,14 +15,11 @@ describe('urlState route mirror', () => {
 
   it('creates the initial Redux mirror from the browser URL', () => {
     expect(
-      createUrlState(
-        '/customers/all',
-        '?q=bank&filter.status=active&filter.sector=Corporate&page=3&pageSize=10',
-      ),
+      createUrlState('/customers/all', '?q=bank&status=active&sector=Corporate&page=3&pageSize=10'),
     ).toMatchObject({
       list: {
         q: 'bank',
-        filters: { status: 'active', sector: 'Corporate' },
+        filters: { status: ['active'], sector: ['Corporate'] },
         page: 3,
         pageSize: 10,
       },
