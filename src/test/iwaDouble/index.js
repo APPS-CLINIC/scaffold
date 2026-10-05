@@ -590,8 +590,12 @@ export function IconTextButton({
     'button',
     {
       type: 'button',
+      // The library names the button with aria-label and replaces its role with a custom one,
+      // so assistive technology and role queries do not see a button.
+      role: 'icon-text-button',
+      'aria-label': label,
       disabled: blocked,
-      'data-testid': dataTestId,
+      'data-testid': dataTestId ?? 'ing-icon-text-button',
       onClick: () => {
         if (blocked) return;
         const result = onClick?.();

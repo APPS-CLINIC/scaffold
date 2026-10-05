@@ -59,7 +59,7 @@ describe('CustomersView', () => {
 
     expect(screen.getByRole('heading', { name: 'Klienci oraz ich doradcy' })).toBeInTheDocument();
     expect(await screen.findByRole('columnheader', { name: 'Nazwa klienta' })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Dostosuj filtry' })).toBeInTheDocument();
+    expect(screen.getByLabelText('Dostosuj filtry', { selector: 'button' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Ustawienia listy' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Szukaj na liście')).toBeInTheDocument();
     expect(await screen.findAllByText('Przekroczona')).toHaveLength(2);
@@ -106,7 +106,7 @@ describe('CustomersView', () => {
       expect(selectCustomerQuery(store.getState()).filters.status).toEqual(['ARCHIVAL']);
     });
 
-    await user.click(screen.getByRole('button', { name: 'Customize filters' }));
+    await user.click(screen.getByLabelText('Customize filters', { selector: 'button' }));
     await user.click(screen.getByRole('button', { name: 'Cancel' }));
 
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();

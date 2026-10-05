@@ -101,6 +101,8 @@ const label = (field: string) => {
 };
 
 const filterDialog = () => screen.getByRole('dialog', { name: 'Customize filters' });
+// The library's icon-text button has a custom role; its aria-label names it.
+const filtersButton = () => screen.getByLabelText('Customize filters', { selector: 'button' });
 const rowLabels = () =>
   Array.from(filterDialog().querySelectorAll('label:not(.sr-only)')).map(
     (element) => element.textContent,
@@ -158,7 +160,7 @@ describe('CustomersView filters', () => {
     renderPage('/customers/all', ['type', 'fullName', 'lendingRating', 'status', 'kkf']);
     await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
 
-    await user.click(screen.getByRole('button', { name: 'Customize filters' }));
+    await user.click(filtersButton());
 
     expect(rowLabels()).toEqual([label('type'), label('lendingRating'), label('status')]);
   });
@@ -168,7 +170,7 @@ describe('CustomersView filters', () => {
     renderPage('/customers/all?page=2&sort=fullName');
     await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
 
-    await user.click(screen.getByRole('button', { name: 'Customize filters' }));
+    await user.click(filtersButton());
     act(() => {
       multiSelect('status').onChange?.({ value: ['ARCHIVAL'] } as MultiSelectChangeEvent);
     });
@@ -239,7 +241,7 @@ describe('CustomersView filters', () => {
     expect(lastListRequest().has('status')).toBe(false);
     expect(lastListRequest().getAll('type')).toEqual(['CORPORATE']);
 
-    await user.click(screen.getByRole('button', { name: 'Customize filters' }));
+    await user.click(filtersButton());
     expect(rowLabels()).not.toContain(label('status'));
 
     await user.click(within(filterDialog()).getByRole('button', { name: 'Save' }));
@@ -252,7 +254,7 @@ describe('CustomersView filters', () => {
     renderPage();
     await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
 
-    await user.click(screen.getByRole('button', { name: 'Customize filters' }));
+    await user.click(filtersButton());
     await waitFor(() => expect(multiSelect('internalGroupName').options).toHaveLength(4));
 
     expect(multiSelect('internalGroupName').options?.[0]).toEqual({

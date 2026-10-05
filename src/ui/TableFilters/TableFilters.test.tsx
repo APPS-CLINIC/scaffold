@@ -85,8 +85,13 @@ function renderFilters(values: TableFilterValues, tableFields = fields) {
   return onChange;
 }
 
+// The library names its icon-text button with aria-label and gives it a custom role, so the
+// button is found by its label rather than by the button role.
+const filtersButton = () =>
+  screen.getByLabelText(i18n.t('table.filters.open'), { selector: 'button' });
+
 const openDialog = async () => {
-  await userEvent.click(screen.getByRole('button', { name: i18n.t('table.filters.open') }));
+  await userEvent.click(filtersButton());
   return screen.getByRole('dialog', { name: i18n.t('table.filters.title') });
 };
 
@@ -217,7 +222,7 @@ describe('TableFilters', () => {
         }),
       );
 
-      expect(screen.getByRole('button', { name: i18n.t('table.filters.open') })).toHaveFocus();
+      expect(filtersButton()).toHaveFocus();
     },
   );
 
