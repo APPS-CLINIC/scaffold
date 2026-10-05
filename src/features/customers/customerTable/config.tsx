@@ -33,12 +33,14 @@ export const customerTableConfig = {
     {
       field: 'internalGroupName',
       labelKey: 'customers.table.field.internalGroupName',
+      filterParam: 'internalGroupId',
       sortable: true,
       width: 192,
     },
     {
       field: 'corporateGroupName',
       labelKey: 'customers.table.field.corporateGroupName',
+      filterParam: 'corporateGroupId',
       component: UnderlinedTextCell,
       sortable: true,
       width: 160,

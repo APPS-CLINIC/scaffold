@@ -78,7 +78,7 @@ describe('CustomersView', () => {
   });
 
   it('uses the deep-link query for the first and only initial RTK Query request', async () => {
-    const { store } = renderPage('/customers/all?q=carrefour&status=active&pageSize=10');
+    const { store } = renderPage('/customers/all?q=carrefour&status=ACTIVE&pageSize=10');
 
     expect(screen.getByPlaceholderText('Search the list')).toHaveValue('carrefour');
     expect(await screen.findByText('CARREFOUR POLAND SP. Z O.O.')).toBeInTheDocument();
@@ -86,7 +86,8 @@ describe('CustomersView', () => {
 
     await waitFor(() => {
       const query = selectCustomerQuery(store.getState());
-      expect(query).toMatchObject({ q: 'carrefour', status: 'active', pageSize: 10 });
+      expect(query).toMatchObject({ q: 'carrefour', pageSize: 10 });
+      expect(query.filters.status).toEqual(['ACTIVE']);
       expect(customersApi.endpoints.getCustomers.select(query)(store.getState()).status).toBe(
         'fulfilled',
       );
@@ -96,25 +97,25 @@ describe('CustomersView', () => {
 
   it('keeps deep-linked filters working while the filter button stays inert', async () => {
     const user = userEvent.setup();
-    const { store } = renderPage('/customers/all?status=archival');
+    const { store } = renderPage('/customers/all?status=ARCHIVAL');
 
     expect(await screen.findByText('OZAROW CEMENT S.A.')).toBeInTheDocument();
     expect(screen.getByText('4 results')).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(selectCustomerQuery(store.getState()).status).toBe('archival');
+      expect(selectCustomerQuery(store.getState()).filters.status).toEqual(['ARCHIVAL']);
     });
 
     await user.click(screen.getByRole('button', { name: 'Customize filters' }));
 
     const search = screen.getByRole('status', { name: 'Current customer URL' }).textContent ?? '';
-    expect(search).toBe('?status=archival');
-    expect(selectCustomerQuery(store.getState()).status).toBe('archival');
+    expect(search).toBe('?status=ARCHIVAL');
+    expect(selectCustomerQuery(store.getState()).filters.status).toEqual(['ARCHIVAL']);
   });
 
   it('narrows the table to the typed search, back on page 1, without a history entry', async () => {
     const user = userEvent.setup();
-    renderPage('/customers/all?page=2&sort=fullName&status=active');
+    renderPage('/customers/all?page=2&sort=fullName&status=ACTIVE');
     expect(await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.')).toBeInTheDocument();
 
     await user.type(screen.getByPlaceholderText('Search the list'), 'carrefour');
@@ -127,7 +128,7 @@ describe('CustomersView', () => {
     expect(search.get('q')).toBe('carrefour');
     expect(search.has('page')).toBe(false);
     expect(search.get('sort')).toBe('fullName');
-    expect(search.get('status')).toBe('active');
+    expect(search.get('status')).toBe('ACTIVE');
     expect(location).toHaveAttribute('data-navigation-type', 'REPLACE');
   });
 

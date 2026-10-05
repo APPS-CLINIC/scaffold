@@ -1,10 +1,10 @@
 import { baseApi, downloadFileFromResponse } from '@/api/baseApi';
 import { mapCustomerResponse } from './customers.adapter';
+import type { CustomerFilters } from './customers.filters';
 import type {
   Customer,
   CustomerQuery,
   CustomerResponse,
-  CustomerStatus,
   PageResponse,
   ExportRequest,
 } from './customers.types';
@@ -53,6 +53,13 @@ function isCustomerField(field: string): field is keyof Customer {
   return customerFields.has(field as keyof Customer);
 }
 
+/** The filter params as the service reads them: each value repeats its param. */
+function toCustomerFilterParams(filters: CustomerFilters): [string, string][] {
+  return Object.entries(filters).flatMap(([param, values]) =>
+    values.map((value): [string, string] => [param, value]),
+  );
+}
+
 /** Convert the app's 1-based page to the Spring service's 0-based contract. */
 export function toCustomerBackendParams(query: CustomerQuery) {
   const page = toPositiveInteger(query.page, 1) - 1;
@@ -61,19 +68,13 @@ export function toCustomerBackendParams(query: CustomerQuery) {
   const sortField = isCustomerField(requestedSortField) ? requestedSortField : 'id';
   const sortDirection: 'ASC' | 'DESC' = query.dir === 'desc' ? 'DESC' : 'ASC';
   const q = query.q.trim();
-  const type = query.type.trim();
-  // The URL keeps the lowercase filter vocabulary; the service expects the
-  // uppercase status values.
-  const status: CustomerStatus | undefined =
-    query.status === 'active' ? 'ACTIVE' : query.status === 'archival' ? 'ARCHIVAL' : undefined;
 
   return {
     page,
     size,
     sort: `${sortField},${sortDirection}` as const,
     ...(q ? { query: q } : {}),
-    ...(status ? { status } : {}),
-    ...(type ? { type } : {}),
+    filters: toCustomerFilterParams(query.filters),
   };
 }
 
@@ -94,8 +95,7 @@ export function customerBackendParamsToSearchParams(
   });
 
   if (params.query) searchParams.set('query', params.query);
-  if (params.status) searchParams.set('status', params.status);
-  if (params.type) searchParams.set('type', params.type);
+  for (const [name, value] of params.filters) searchParams.append(name, value);
 
   return searchParams;
 }
