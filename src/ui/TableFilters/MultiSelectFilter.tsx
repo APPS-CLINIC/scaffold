@@ -5,9 +5,17 @@ import type { TableFilterOption, TableFilterProps, TableFilterValues } from './T
 
 // The library draws the multiselect taller than its other fields; the filter rows give every
 // field one 40px height. The classes reach the PrimeReact parts whether the class name lands
-// on the multiselect itself or on a wrapper around it.
-const MULTI_SELECT_CLASS_NAME =
-  'w-full !h-auto !min-h-0 [&_.p-multiselect]:!h-auto [&_.p-multiselect]:!min-h-0 [&_.p-multiselect-label]:!px-3 [&_.p-multiselect-label]:!py-[7px] [&_.p-multiselect-label]:!text-base [&_.p-multiselect-label]:!leading-6';
+// on the multiselect itself or on a wrapper around it. Focus shows as an accent border with
+// no halo, like the list search.
+const MULTI_SELECT_CLASS_NAME = [
+  'w-full !h-auto !min-h-0 [&_.p-multiselect]:!h-auto [&_.p-multiselect]:!min-h-0',
+  '[&_.p-multiselect-label]:!px-3 [&_.p-multiselect-label]:!py-[7px] [&_.p-multiselect-label]:!text-base [&_.p-multiselect-label]:!leading-6',
+  '[&.p-focus]:!border-[var(--navigation-accent)] [&.p-focus]:![box-shadow:none] [&_.p-focus]:!border-[var(--navigation-accent)] [&_.p-focus]:![box-shadow:none] [&_input:focus]:!outline-none',
+].join(' ');
+
+// The option panel opens on the document body, outside the class name above.
+const MULTI_SELECT_PANEL_CLASS_NAME =
+  '[&_input:focus]:!border-[var(--navigation-accent)] [&_input:focus]:![box-shadow:none] [&_input:focus]:!outline-none';
 
 export interface MultiSelectFilterProps {
   options: readonly TableFilterOption[];
@@ -68,6 +76,7 @@ export function MultiSelectFilter({
       emptyFilterMessage={t('table.filters.noResults')}
       emptyMessage={t('table.filters.noOptions')}
       className={MULTI_SELECT_CLASS_NAME}
+      panelClassName={MULTI_SELECT_PANEL_CLASS_NAME}
     />
   );
 }
