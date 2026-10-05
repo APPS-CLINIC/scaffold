@@ -47,7 +47,7 @@ vi.mock('iwa-react-components', async (importOriginal) => ({
         data-class-name={className}
         data-content-class-name={contentClassName}
       >
-        <button type="button" onClick={() => onSetVisibility((current) => !current)}>
+        <button type="button" onClick={() => onSetVisibility((current: boolean) => !current)}>
           Close
         </button>
         {children}
