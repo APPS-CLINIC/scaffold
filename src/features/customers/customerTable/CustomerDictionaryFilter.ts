@@ -12,7 +12,7 @@ interface CustomerDictionaryFilterProps {
   noneOption?: TableFilterOption;
 }
 
-function useDictionaryOptions({
+function useCustomerDictionaryOptions({
   dictionary,
   noneOption,
 }: CustomerDictionaryFilterProps): readonly TableFilterOption[] {
@@ -27,6 +27,6 @@ function useDictionaryOptions({
 }
 
 /** Picks entries of a customer dictionary by name and filters by their ids. */
-export const CustomerDictionaryFilter = createMultiSelectFilter(useDictionaryOptions, {
+export const CustomerDictionaryFilter = createMultiSelectFilter(useCustomerDictionaryOptions, {
   selectionLimit: MAX_FILTER_VALUES,
 });
