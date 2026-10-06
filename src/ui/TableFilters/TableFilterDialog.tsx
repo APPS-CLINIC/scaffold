@@ -1,4 +1,5 @@
-import { Fragment, useId, useState, type SetStateAction } from 'react';
+import { Fragment, useContext, useId, useState, type ReactNode, type SetStateAction } from 'react';
+import { PrimeReactContext, PrimeReactProvider } from 'primereact/api';
 import { useTranslation } from 'react-i18next';
 import { Button, CustomizableDialog, twMerge } from '@/ui';
 import { DialogHeading } from '../DialogHeading';
@@ -38,61 +39,77 @@ export function TableFilterDialog({ fields, values, onSave, onCancel }: TableFil
   };
 
   return (
-    <CustomizableDialog
-      visibility
-      onSetVisibility={handleSetVisibility}
-      className={FILTER_DIALOG_CLASS_NAME}
-      contentClassName={FILTER_DIALOG_CONTENT_CLASS_NAME}
-    >
-      {firstInputId === undefined ? null : (
-        <FocusOnOpen target={() => document.getElementById(firstInputId)} />
-      )}
-      <DialogHeading text={t('table.filters.title')} centered divided />
-      {/* Only the rows scroll, so the heading and the footer stay in view; the bar is hidden. */}
-      <div className="relative min-h-0 flex-1 overflow-y-auto px-6 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <div className="grid grid-cols-[minmax(0,1fr)_24rem] items-center gap-x-6 gap-y-4">
-          {fields.map((field) => {
-            const inputId = `${idPrefix}-${field.field}`;
-            const labelId = `${inputId}-label`;
+    <HideOverlaysOnScroll>
+      <CustomizableDialog
+        visibility
+        onSetVisibility={handleSetVisibility}
+        className={FILTER_DIALOG_CLASS_NAME}
+        contentClassName={FILTER_DIALOG_CONTENT_CLASS_NAME}
+      >
+        {firstInputId === undefined ? null : (
+          <FocusOnOpen target={() => document.getElementById(firstInputId)} />
+        )}
+        <DialogHeading text={t('table.filters.title')} centered divided />
+        {/* Only the rows scroll, so the heading and the footer stay in view; the bar is hidden. */}
+        <div className="relative min-h-0 flex-1 overflow-y-auto px-6 py-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="grid grid-cols-[minmax(0,1fr)_24rem] items-center gap-x-6 gap-y-4">
+            {fields.map((field) => {
+              const inputId = `${idPrefix}-${field.field}`;
+              const labelId = `${inputId}-label`;
 
-            return (
-              <Fragment key={field.field}>
-                <label
-                  id={labelId}
-                  htmlFor={inputId}
-                  className="text-right text-base text-[var(--text)]"
-                >
-                  {t(field.labelKey)}
-                </label>
-                <div className="min-w-0">
-                  {field.filter.render({
-                    inputId,
-                    labelId,
-                    param: tableFilterParam(field),
-                    values: pickTableFilters(draft, [field]),
-                    onChange: (next) =>
-                      setDraft((current) => replaceTableFilters(current, [field], next)),
-                  })}
-                </div>
-              </Fragment>
-            );
-          })}
+              return (
+                <Fragment key={field.field}>
+                  <label
+                    id={labelId}
+                    htmlFor={inputId}
+                    className="justify-self-end text-right text-base text-[var(--text)]"
+                  >
+                    {t(field.labelKey)}
+                  </label>
+                  <div className="min-w-0">
+                    {field.filter.render({
+                      inputId,
+                      labelId,
+                      param: tableFilterParam(field),
+                      values: pickTableFilters(draft, [field]),
+                      onChange: (next) =>
+                        setDraft((current) => replaceTableFilters(current, [field], next)),
+                    })}
+                  </div>
+                </Fragment>
+              );
+            })}
+          </div>
         </div>
-      </div>
-      <div className={twMerge(DIALOG_FOOTER_CLASS_NAME, 'justify-end')}>
-        <Button
-          label={t('table.filters.cancel')}
-          style="outline"
-          size="medium"
-          onClick={onCancel}
-        />
-        <Button
-          label={t('table.filters.save')}
-          style="filled"
-          size="medium"
-          onClick={() => onSave(pickTableFilters(draft, fields))}
-        />
-      </div>
-    </CustomizableDialog>
+        <div className={twMerge(DIALOG_FOOTER_CLASS_NAME, 'justify-end')}>
+          <Button
+            label={t('table.filters.cancel')}
+            style="outline"
+            size="medium"
+            onClick={onCancel}
+          />
+          <Button
+            label={t('table.filters.save')}
+            style="filled"
+            size="medium"
+            onClick={() => onSave(pickTableFilters(draft, fields))}
+          />
+        </div>
+      </CustomizableDialog>
+    </HideOverlaysOnScroll>
+  );
+}
+
+/**
+ * Closes the option lists and calendars when the dialog rows scroll. They open on the
+ * document body, so they would otherwise follow their field over the other rows. The
+ * library's settings are passed on unchanged; only this one is switched on.
+ */
+function HideOverlaysOnScroll({ children }: { children: ReactNode }) {
+  const settings = useContext(PrimeReactContext);
+  return (
+    <PrimeReactProvider value={{ ...settings, hideOverlaysOnDocumentScrolling: true }}>
+      {children}
+    </PrimeReactProvider>
   );
 }
