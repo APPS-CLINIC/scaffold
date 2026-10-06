@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   DATE_DMY_FORMAT_OPTIONS,
   daysPastIsoDate,
+  formatIsoDate,
   formatIsoDmyDate,
   isPastIsoDate,
+  parseIsoDate,
 } from './dateFormats';
 
 describe('formatIsoDmyDate', () => {
@@ -63,4 +65,28 @@ describe('daysPastIsoDate', () => {
     expect(daysPastIsoDate('2025-02-31', today)).toBeNull();
     expect(daysPastIsoDate('2026-09-01T23:59:59Z', today)).toBeNull();
   });
+});
+
+describe('parseIsoDate and formatIsoDate', () => {
+  it('round-trips a calendar day through a local date', () => {
+    const date = parseIsoDate('2026-02-01');
+
+    expect(date).not.toBeNull();
+    expect(date?.getFullYear()).toBe(2026);
+    expect(date?.getMonth()).toBe(1);
+    expect(date?.getDate()).toBe(1);
+    expect(formatIsoDate(date!)).toBe('2026-02-01');
+  });
+
+  it('writes the local calendar day, whatever the time of day', () => {
+    expect(formatIsoDate(new Date(2026, 1, 1, 0, 0, 1))).toBe('2026-02-01');
+    expect(formatIsoDate(new Date(2026, 1, 1, 23, 59, 59))).toBe('2026-02-01');
+  });
+
+  it.each(['2026-02-31', '2026-02-01T00:00:00Z', '2026-1-5', '2026-01-05 ', '26-02-01'])(
+    'parses no other spelling than yyyy-MM-dd: %j',
+    (value) => {
+      expect(parseIsoDate(value)).toBeNull();
+    },
+  );
 });

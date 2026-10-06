@@ -1,12 +1,13 @@
 import type { AppStore } from '@/app/store';
 import { defaultListQuery } from '@/features/urlState/urlState.schema';
 import { customersApi, mapCustomerPageResponse } from '@/features/customers/customers.api';
+import { customerTableConfig } from '@/features/customers/customerTable';
 import { toCustomerQuery } from '@/features/customers/customers.filters';
 import { customerFirstPageResponse } from './customers.fixture';
 
 /** Seed and retain only the default query; every different query still uses the backend. */
 export function seedCustomerPreviewData(store: AppStore): void {
-  const query = toCustomerQuery(defaultListQuery);
+  const query = toCustomerQuery(defaultListQuery, customerTableConfig.fields);
 
   store.dispatch(
     customersApi.util.upsertQueryEntries([

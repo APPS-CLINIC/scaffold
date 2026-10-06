@@ -6,21 +6,19 @@ local primitives stay here until they are replaced with thin IWA wrappers.
 
 ## How to evolve the seam
 
-1. Replace the implementations of `Button`, `TextInput`, etc. with re-exports
-   (or thin wrappers) of your org components; `Select` already comes straight
-   from IWA (see [IWA re-exports](#iwa-re-exports)).
+1. Components the org library already provides come straight from IWA through
+   `index.ts` (`Button`, `TextInput`, `Select`, … — see
+   [IWA re-exports](#iwa-re-exports)); local primitives stay only where IWA has
+   no equivalent.
 2. **Keep the exported names and prop contracts** from `index.ts`. Everything
    in `src/features/**` and `src/routes/**` imports from `@/ui`, so as long as
    the contracts hold, no feature code changes.
-3. Delete `ui.module.css` once your library brings its own styling.
-
-Example wrapper:
+3. To swap a library, replace the re-export with a thin wrapper that keeps the
+   contract:
 
 ```tsx
-// src/ui/Button.tsx
-import { Button as OrgButton } from '@my-org/ui';
-export const Button = OrgButton;
-export type { ButtonProps } from '@my-org/ui';
+// src/ui/index.ts
+export { Button, type ButtonProps } from '@my-org/ui';
 ```
 
 Keeping every UI import funneled through `@/ui` means the rest of the codebase
@@ -223,6 +221,130 @@ const { setQuery } = useListQueryState();
 />;
 ```
 
+## `TableFilters`
+
+A table field declares the control that filters it, next to its cell
+component: `filter: tableFilter(Component, props)`. `tableFilter` checks the
+props against the control's type. A filter works on URL params named like the
+service params (ADR 0038): the field's name, or `filterParam` when the service
+calls it differently. The built-in controls:
+
+- `MultiSelectFilter` (`options`: `{ value, labelKey }` or `{ value, label }`,
+  optional `selectionLimit`): IWA `MultiSelect`, one repeated param. From six
+  options on, the open list has a search that keeps the options whose label
+  contains the text.
+- `DateRangeFilter`: two IWA `DatePicker`s writing `<param>.from` and
+  `<param>.to` as `yyyy-MM-dd`; either end may stay empty. The calendars open
+  on `document.body`, so the scrolling dialog rows do not clip them.
+- `TextFilter`: IWA `TextInput`, one param; blank text is no filter.
+- `createMultiSelectFilter(useOptions, { selectionLimit })`: a multiselect whose
+  options come from a hook, such as a list the service serves. The hook gets the
+  props the field declares and runs in the control and in its chip alike; the
+  owner keeps the hook, and with it the request, in its feature.
+
+Every control receives `TableFilterProps` — `inputId` for the row label,
+`labelId` for controls with several inputs, `param`, the `values` of the params
+it owns (`param` and any `param.<part>`) and `onChange` with their next values —
+plus its own props. A control also has a static `useSummary(values, props)` hook
+that puts its values into words for the chip, so a new kind of filter is one
+component and one hook. `tableFilter` builds each field's chip component around
+that hook, so call it once per field where the config is defined.
+
+`TableFilters` renders "Customize filters", the "Clear filters (n)" link, one
+IWA `ChipInput` chip per applied filter and the dialog (824 × 660; a line under
+the heading; the rows scroll under a fixed heading and footer, without a visible
+scrollbar; focus starts on the first field and returns to the button on close;
+Cancel and closing discard the draft). It is controlled: `values` are the current
+filter values by param and `onChange` receives the next values of the filters
+shown. Pass the fields the table uses —
+`useTableColumnSettings(config).config.fields` — so the filters follow the
+column order and a removed field has no row and no chip, and pass the values
+the owner actually applies, so every chip is a filter in effect. The owner
+keeps the values (a server-paged list keeps them in the URL, ADR 0038), decides
+what happens to the value of a removed field, and uses
+`replaceTableFilters(current, fields, next)` to write the params of its fields
+while keeping others. See
+[ADR 0039](../../docs/adr/0039-table-filters-declared-in-the-field-config.md).
+
+```tsx
+import {
+  isFilterableField,
+  MultiSelectFilter,
+  replaceTableFilters,
+  tableFilter,
+  TableFilters,
+} from '@/ui';
+
+// In the table config:
+{
+  field: 'status',
+  labelKey: 'customers.table.field.status',
+  filter: tableFilter(MultiSelectFilter, {
+    options: [{ value: 'ACTIVE', labelKey: 'common.status.active' }],
+  }),
+}
+
+// In the view. `appliedFilters` are the validated values the request carries;
+// rewriting every filterable field also drops a removed field's value.
+const filterableFields = config.fields.filter(isFilterableField);
+
+<TableFilters
+  fields={tableSettings.config.fields}
+  values={appliedFilters}
+  onChange={(next) =>
+    setQuery({ filters: replaceTableFilters(listQuery.filters, filterableFields, next) })
+  }
+/>;
+```
+
+## Dialogs on IWA `CustomizableDialog`
+
+A dialog that needs its own layout — separators from edge to edge, a fixed
+size, its own footer — builds on IWA `CustomizableDialog` with these pieces:
+
+- `DIALOG_CONTENT_CLASS_NAME` for `contentClassName`: it drops the library's
+  content padding, so every section pads itself and separators reach the
+  edges. Put a height (`!h-…`, `!min-h-…`) on `contentClassName` too, never on
+  `className`: the library paints only the content white, so a taller frame
+  shows as an empty shadowed band. `className` takes the width.
+- `DialogHeading` instead of `headingProps`: without the content padding the
+  library's heading loses its spacing and runs into the close button. It sits
+  in the close button's band, `centered` or from the left, optionally
+  `divided` by an edge-to-edge line, and names the dialog for assistive
+  technology.
+- `DIALOG_FOOTER_CLASS_NAME` for a footer with a top separator.
+- `FocusOnOpen` to start on a chosen control: the library's focus trap puts
+  focus on the close button, and `FocusOnOpen` moves it once the trap has run.
+- `resolveVisibility(next, current)` for `onSetVisibility`, whose argument may
+  be a value or an updater.
+
+```tsx
+import {
+  Button,
+  CustomizableDialog,
+  DIALOG_CONTENT_CLASS_NAME,
+  DIALOG_FOOTER_CLASS_NAME,
+  DialogHeading,
+  FocusOnOpen,
+  resolveVisibility,
+  twMerge,
+} from '@/ui';
+
+<CustomizableDialog
+  visibility
+  onSetVisibility={(next) => {
+    if (!resolveVisibility(next, true)) onCancel();
+  }}
+  className="!w-[420px] !max-w-[calc(100vw-2rem)]"
+  contentClassName={`${DIALOG_CONTENT_CLASS_NAME} !min-h-[296px]`}
+>
+  <FocusOnOpen target={() => document.getElementById(backId)} />
+  <DialogHeading text={t('table.settings.restore.title')} />
+  <p className="m-0 flex-1 px-6 pb-6 pt-2">{t('table.settings.restore.body')}</p>
+  <div className={twMerge(DIALOG_FOOTER_CLASS_NAME, 'justify-end')}>…</div>
+</CustomizableDialog>;
+```
+
 ## `ScreenHeading`
 
 `ScreenHeading` is the app-facing adapter over IWA's page heading. Items use a
@@ -274,8 +396,9 @@ neutral | accent | brand` (default `outline` — light surface with a subtle
 ## IWA re-exports
 
 Components the app consumes from IWA without an adapter are re-exported
-verbatim from `index.ts` (`ActionLink`, `Card`, `Select`, `Switch`, `TabMenu`,
-`TopBar`, …); `index.ts` is the complete list. Feature code imports them from
+verbatim from `index.ts` (`ActionLink`, `Button`, `Card`, `ChipInput`,
+`CustomizableDialog`, `DatePicker`, `MultiSelect`, `Select`, `Switch`,
+`TabMenu`, `TextInput`, `TopBar`, …); `index.ts` is the complete list. Feature code imports them from
 `@/ui` like every local primitive.
 
 ### `Select`

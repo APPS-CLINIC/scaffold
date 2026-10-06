@@ -45,6 +45,9 @@ export default defineConfig(({ mode }) => {
       },
       globals: true,
       environment: 'jsdom',
+      // Page tests render the real design system in the work repo, which runs them many times
+      // slower than this repo's test double does.
+      testTimeout: 15_000,
       setupFiles: ['./vitest.setup.ts'],
       css: false,
       restoreMocks: true,
