@@ -6,9 +6,9 @@ export type TableFilterValues = Readonly<Record<string, readonly string[]>>;
 
 /** Props the filter dialog gives every filter control. */
 export interface TableFilterProps {
-  /** Id of the control's first input; the row label points at it. */
+  /** Id of the control's first input; focus starts there when the dialog opens. */
   inputId: string;
-  /** Id of the row label, for controls built from several inputs. */
+  /** Id of the row label; the control takes its accessible name from it. */
   labelId: string;
   /** The param the field filters by; a control may also own `param.<part>` params. */
   param: string;

@@ -82,6 +82,7 @@ describe('MultiSelectFilter', () => {
 
     expect(multiSelectProps()).toMatchObject({
       inputId: 'status',
+      'aria-labelledby': 'status-label',
       value: ['ACTIVE'],
       options: [
         { value: 'ACTIVE', label: i18n.t('common.status.active') },
@@ -108,6 +109,24 @@ describe('MultiSelectFilter', () => {
     renderMultiSelect({}, { options: optionList });
 
     expect(multiSelectProps()).toMatchObject({ filter: search, filterMatchMode: 'contains' });
+  });
+
+  it('takes its accessible name from the row label', () => {
+    render(
+      <>
+        <span id="status-label">Status</span>
+        <MultiSelectFilter
+          inputId="status"
+          labelId="status-label"
+          param="status"
+          values={{}}
+          onChange={vi.fn()}
+          options={options}
+        />
+      </>,
+    );
+
+    expect(screen.getByRole('combobox', { name: 'Status' })).toBeInTheDocument();
   });
 
   it('shows only values that have an option', () => {
@@ -268,7 +287,7 @@ describe('TextFilter', () => {
     const onChange = vi.fn();
     render(
       <>
-        <label htmlFor="rating">Rating</label>
+        <span id="rating-label">Rating</span>
         <TextFilter
           inputId="rating"
           labelId="rating-label"

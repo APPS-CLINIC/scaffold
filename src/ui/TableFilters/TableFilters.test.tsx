@@ -45,10 +45,17 @@ beforeEach(() => {
 });
 
 /** A plain text field holding comma-separated values, so the dialog runs without vendor markup. */
-function CommaFilter({ inputId, param, values, onChange }: TableFilterProps & { suffix: string }) {
+function CommaFilter({
+  inputId,
+  labelId,
+  param,
+  values,
+  onChange,
+}: TableFilterProps & { suffix: string }) {
   return (
     <input
       id={inputId}
+      aria-labelledby={labelId}
       value={(values[param] ?? []).join(',')}
       onChange={(event) =>
         onChange({ [param]: event.target.value ? event.target.value.split(',') : [] })
@@ -201,6 +208,15 @@ describe('TableFilters', () => {
       expect(onChange).not.toHaveBeenCalled();
     },
   );
+
+  it('opens nothing when the row label is clicked', async () => {
+    renderFilters({});
+    const dialog = await openDialog();
+
+    await userEvent.click(within(dialog).getByText(statusLabel, { selector: 'label' }));
+
+    expect(within(dialog).getByLabelText(statusLabel)).not.toHaveFocus();
+  });
 
   it('puts focus on the first field when the dialog opens', async () => {
     renderFilters({}, [...fields].reverse());

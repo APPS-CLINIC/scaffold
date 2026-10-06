@@ -52,6 +52,7 @@ function toStringValues(value: unknown): string[] {
  */
 export function MultiSelectFilter({
   inputId,
+  labelId,
   param,
   values,
   onChange,
@@ -64,6 +65,7 @@ export function MultiSelectFilter({
   return (
     <MultiSelect
       inputId={inputId}
+      aria-labelledby={labelId}
       value={(values[param] ?? []).filter((value) => items.some((item) => item.value === value))}
       options={items}
       optionLabel="label"

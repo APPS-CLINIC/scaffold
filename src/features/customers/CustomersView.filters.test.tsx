@@ -20,8 +20,9 @@ type ChipInputProps = ComponentProps<typeof IwaComponents.ChipInput>;
 
 // Values are set and chips removed through the props handed to the library: the option
 // panels, calendars and chip controls are vendor markup that differs between the test
-// double and the real library. Controls are recorded by input id and found through the id
-// their row label points at; chips are recorded by param.
+// double and the real library. A multiselect is recorded by the label that names it, and
+// the start of a date range by its input id, read from the range's own "From" label; chips
+// are recorded by param.
 const captured: {
   multiSelects: Record<string, MultiSelectProps>;
   datePickers: Record<string, DatePickerProps>;
@@ -33,7 +34,8 @@ vi.mock('iwa-react-components', async (importOriginal) => {
   return {
     ...actual,
     MultiSelect: (props: MultiSelectProps) => {
-      if (props.inputId) captured.multiSelects[props.inputId] = props;
+      const labelledBy = props['aria-labelledby'];
+      if (labelledBy) captured.multiSelects[labelledBy] = props;
       return <actual.MultiSelect {...props} />;
     },
     DatePicker: (props: DatePickerProps) => {
@@ -120,19 +122,21 @@ function chip(param: string): ChipInputProps {
   return props;
 }
 
-/** The id of the control the field's row label points at. */
-const controlId = (field: string) =>
-  within(filterDialog()).getByText(label(field), { selector: 'label' }).getAttribute('for') ?? '';
+/** The id of the field's row label, which names its control. */
+const labelId = (field: string) =>
+  within(filterDialog()).getByText(label(field), { selector: 'label' }).id;
 
 function multiSelect(field: string): MultiSelectProps {
-  const props = captured.multiSelects[controlId(field)];
+  const props = captured.multiSelects[labelId(field)];
   if (props === undefined) throw new Error(`No multiselect for ${field}`);
   return props;
 }
 
-/** The calendar of a date range's start, which the row label points at. */
+/** The calendar of a date range's start. */
 function dateFrom(field: string): DatePickerProps {
-  const props = captured.datePickers[controlId(field)];
+  const range = within(filterDialog()).getByRole('group', { name: label(field) });
+  const fromId = within(range).getByText('From', { selector: 'label' }).getAttribute('for') ?? '';
+  const props = captured.datePickers[fromId];
   if (props === undefined) throw new Error(`No date picker for ${field}`);
   return props;
 }

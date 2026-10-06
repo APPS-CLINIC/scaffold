@@ -59,9 +59,10 @@ export function TableFilterDialog({ fields, values, onSave, onCancel }: TableFil
 
               return (
                 <Fragment key={field.field}>
+                  {/* Not tied to its control with htmlFor, so a click on it opens nothing; the
+                      control takes its name from the label through aria-labelledby. */}
                   <label
                     id={labelId}
-                    htmlFor={inputId}
                     className="justify-self-end text-right text-base text-[var(--text)]"
                   >
                     {t(field.labelKey)}
