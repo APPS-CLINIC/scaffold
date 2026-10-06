@@ -297,6 +297,54 @@ const filterableFields = config.fields.filter(isFilterableField);
 />;
 ```
 
+## Dialogs on IWA `CustomizableDialog`
+
+A dialog that needs its own layout — separators from edge to edge, a fixed
+size, its own footer — builds on IWA `CustomizableDialog` with these pieces:
+
+- `DIALOG_CONTENT_CLASS_NAME` for `contentClassName`: it drops the library's
+  content padding, so every section pads itself and separators reach the
+  edges. Put a height (`!h-…`, `!min-h-…`) on `contentClassName` too, never on
+  `className`: the library paints only the content white, so a taller frame
+  shows as an empty shadowed band. `className` takes the width.
+- `DialogHeading` instead of `headingProps`: without the content padding the
+  library's heading loses its spacing and runs into the close button. It sits
+  in the close button's band, `centered` or from the left, optionally
+  `divided` by an edge-to-edge line, and names the dialog for assistive
+  technology.
+- `DIALOG_FOOTER_CLASS_NAME` for a footer with a top separator.
+- `FocusOnOpen` to start on a chosen control: the library's focus trap puts
+  focus on the close button, and `FocusOnOpen` moves it once the trap has run.
+- `resolveVisibility(next, current)` for `onSetVisibility`, whose argument may
+  be a value or an updater.
+
+```tsx
+import {
+  Button,
+  CustomizableDialog,
+  DIALOG_CONTENT_CLASS_NAME,
+  DIALOG_FOOTER_CLASS_NAME,
+  DialogHeading,
+  FocusOnOpen,
+  resolveVisibility,
+  twMerge,
+} from '@/ui';
+
+<CustomizableDialog
+  visibility
+  onSetVisibility={(next) => {
+    if (!resolveVisibility(next, true)) onCancel();
+  }}
+  className="!w-[420px] !max-w-[calc(100vw-2rem)]"
+  contentClassName={`${DIALOG_CONTENT_CLASS_NAME} !min-h-[296px]`}
+>
+  <FocusOnOpen target={() => document.getElementById(backId)} />
+  <DialogHeading text={t('table.settings.restore.title')} />
+  <p className="m-0 flex-1 px-6 pb-6 pt-2">{t('table.settings.restore.body')}</p>
+  <div className={twMerge(DIALOG_FOOTER_CLASS_NAME, 'justify-end')}>…</div>
+</CustomizableDialog>;
+```
+
 ## `ScreenHeading`
 
 `ScreenHeading` is the app-facing adapter over IWA's page heading. Items use a

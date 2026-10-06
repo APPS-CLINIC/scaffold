@@ -113,6 +113,13 @@ export {
   type DueDateWindow,
 } from './DueDateFilter';
 export { GenericSearch, type GenericSearchProps } from './GenericSearch';
+export { DialogHeading, type DialogHeadingProps } from './DialogHeading';
+export { FocusOnOpen, type FocusOnOpenProps } from './FocusOnOpen';
+export {
+  DIALOG_CONTENT_CLASS_NAME,
+  DIALOG_FOOTER_CLASS_NAME,
+  resolveVisibility,
+} from './dialogFrame';
 export {
   createMultiSelectFilter,
   DateRangeFilter,

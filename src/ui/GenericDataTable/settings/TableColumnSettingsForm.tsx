@@ -16,7 +16,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Button, CustomizableDialog } from 'iwa-react-components';
+import { Button, CustomizableDialog } from '@/ui';
 import { useTranslation } from 'react-i18next';
 import { DialogHeading } from '../../DialogHeading';
 import {
