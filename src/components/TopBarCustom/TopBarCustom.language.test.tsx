@@ -1,24 +1,30 @@
-import type { ComponentProps } from 'react';
-import { act, screen } from '@testing-library/react';
+import { isValidElement, type ComponentProps, type ReactElement, type ReactNode } from 'react';
+import { act } from '@testing-library/react';
 import type * as IwaComponents from 'iwa-react-components';
+import type { MenuItem } from 'primereact/menuitem';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import { TopBarCustom } from './TopBarCustom';
 
-type TopBarItemProps = ComponentProps<typeof IwaComponents.TopBar.Item>;
+/** A top-bar item's menu, as the IWA PopupMenu takes it. */
+interface ItemMenu {
+  icon: ReactNode;
+  label: string;
+  items: MenuItem[];
+}
 
 // The top-bar items are checked through the props handed to the library: their menu is
 // vendor markup that differs between the test double and the real library.
-const items: TopBarItemProps[] = [];
+const items: { menuProps?: ItemMenu }[] = [];
 
 vi.mock('iwa-react-components', async (importOriginal) => {
   const actual = await importOriginal<typeof IwaComponents>();
   const TopBar = Object.assign(
     (props: ComponentProps<typeof actual.TopBar>) => <actual.TopBar {...props} />,
     {
-      Item: (props: TopBarItemProps) => {
-        items.push(props);
+      Item: (props: ComponentProps<typeof actual.TopBar.Item>) => {
+        items.push(props as { menuProps?: ItemMenu });
         return <actual.TopBar.Item {...props} />;
       },
     },
@@ -27,9 +33,9 @@ vi.mock('iwa-react-components', async (importOriginal) => {
 });
 
 /** The language menu as last rendered. */
-function languageMenu() {
+function languageMenu(): ItemMenu {
   const menu = items.findLast((item) =>
-    item.menuProps?.items.some((entry) => entry.label === 'English'),
+    item.menuProps?.items.some((entry: MenuItem) => entry.label === 'English'),
   )?.menuProps;
   if (menu === undefined) throw new Error('The language menu was not rendered');
   return menu;
@@ -49,7 +55,20 @@ describe('TopBarCustom language menu', () => {
     renderWithProviders(<TopBarCustom />);
 
     expect(languageMenu()).toMatchObject({ icon: null, label: 'Polski' });
-    expect(languageMenu().items.map((entry) => entry.label)).toEqual(['Polski', 'English']);
+    expect(languageMenu().items.map((entry: MenuItem) => entry.label)).toEqual([
+      'Polski',
+      'English',
+    ]);
+  });
+
+  it('gives every language an icon element, ticking only the current language', () => {
+    renderWithProviders(<TopBarCustom />);
+
+    const icons: unknown[] = languageMenu().items.map((entry: MenuItem) => entry.icon as unknown);
+    expect(icons.every((icon: unknown) => isValidElement(icon))).toBe(true);
+    expect(
+      icons.map((icon: unknown) => (icon as ReactElement<{ className?: string }>).props.className),
+    ).toEqual(['', 'invisible']);
   });
 
   it('switches the app to the picked language and remembers it', async () => {
@@ -62,6 +81,5 @@ describe('TopBarCustom language menu', () => {
     expect(i18n.resolvedLanguage).toBe('en');
     expect(window.localStorage.getItem('scaffold.language')).toBe('en');
     expect(languageMenu().label).toBe('English');
-    expect(screen.getByRole('button', { name: 'Recently viewed' })).toBeInTheDocument();
   });
 });

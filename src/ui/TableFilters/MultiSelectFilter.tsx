@@ -107,6 +107,8 @@ export function MultiSelectFilter({
       loading={loading}
       showHeader
       showSelectAll={false}
+      // The library labels its header itself, in Polish, unless given the label.
+      selectAllLabel={t('table.filters.selectAll')}
       selectionLimit={selectionLimit}
       display="comma"
       placeholder={t('table.filters.placeholder')}
