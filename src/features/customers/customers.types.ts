@@ -1,8 +1,37 @@
-/** Backend customer status contract — the only two values the service emits. */
-export type CustomerStatus = 'ACTIVE' | 'ARCHIVAL';
+import type { CustomerFilters } from './customers.filters';
 
-/** Lowercase status vocabulary used in URLs and list filters. */
-export type CustomerStatusFilter = 'active' | 'archival';
+/** Backend customer status contract — the only two values the service emits. */
+export const CUSTOMER_STATUSES = ['ACTIVE', 'ARCHIVAL'] as const;
+export type CustomerStatus = (typeof CUSTOMER_STATUSES)[number];
+
+/** Customer types the list endpoint filters by. */
+export const CUSTOMER_TYPES = [
+  'CORPORATE',
+  'CORPORATE_STRUCTURED_FINANCE',
+  'INVESTMENT_BANK',
+  'NON_INVESTMENT_BANK',
+  'BROKERAGE_HOUSE',
+  'INSURANCE_COMPANY',
+  'LEASING_COMPANY',
+  'FACTORING_COMPANY',
+  'CLEARING_HOUSE',
+  'RECEIVABLES_TRADING_COMPANY',
+  'OTHER_FINANCIAL_INSTITUTION',
+  'INVESTMENT_FUND_MANAGEMENT_COMPANY',
+  'INVESTMENT_FUND',
+  'COMMERCIAL_REAL_ESTATE_CONSTRUCTION_FINANCE',
+  'COMMERCIAL_REAL_ESTATE_REFINANCING',
+  'TECHNICAL_RECORD',
+] as const;
+export type CustomerType = (typeof CUSTOMER_TYPES)[number];
+
+/** TS price condition statuses the list endpoint filters by. */
+export const TS_PRICE_CONDITION_STATUSES = [
+  'STANDARD_CONTRACT_END_DATE',
+  'NON_STANDARD_CONTRACT_END_DATE',
+  'NO_CONTRACT_END_DATE',
+] as const;
+export type TsPriceConditionStatus = (typeof TS_PRICE_CONDITION_STATUSES)[number];
 
 export type SortDirection = 'asc' | 'desc';
 
@@ -47,11 +76,9 @@ export interface Customer extends Omit<CustomerResponse, 'status'> {
 }
 
 /**
- * App-facing list query. `page` is always 1-based at this boundary. The
- * optional `status`/`type` values are the customer-specific list filters
- * (empty string means "no filter"); the backend transport shape (0-based
- * page, Spring `sort` syntax) is derived from this single source in
- * `toCustomerBackendParams`.
+ * App-facing list query. `page` is always 1-based at this boundary. The backend
+ * transport shape (0-based page, Spring `sort` syntax, repeated filter params) is
+ * derived from this single source in `toCustomerBackendParams`.
  */
 export interface CustomerQuery {
   q: string;
@@ -59,8 +86,7 @@ export interface CustomerQuery {
   pageSize: number;
   sort: string;
   dir: SortDirection;
-  status: '' | CustomerStatusFilter;
-  type: string;
+  filters: CustomerFilters;
 }
 
 export type { PageResponse, ExportRequest } from '@/api/baseApi.types.ts';

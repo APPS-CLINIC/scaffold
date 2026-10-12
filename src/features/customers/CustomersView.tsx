@@ -11,17 +11,22 @@ import {
   GenericDataTable,
   GenericSearch,
   GenericTableSettings,
-  IconTextButton,
+  isFilterableField,
+  replaceTableFilters,
   TableColumnSettingsDialog,
+  TableFilters,
   type GenericDataTableField,
   type GenericDataTableLabels,
   type GenericDataTablePageChange,
   type GenericDataTableSortChange,
+  type TableFilterValues,
 } from '@/ui';
 import { customerTableConfig } from './customerTable';
 import { useGetCustomersQuery, useExportCustomersMutation } from './customers.api';
 import { selectCustomerQuery } from './customers.filters';
 import type { Customer } from './customers.types';
+
+const filterableFields = customerTableConfig.fields.filter(isFilterableField);
 
 export function CustomersView() {
   const { t, i18n } = useTranslation();
@@ -89,9 +94,20 @@ export function CustomersView() {
     });
   };
 
-  // A changed column set changes what the accordion shows, so open rows close.
+  // Every filterable field is rewritten, so a filter of a field the table no longer uses goes too.
+  const handleFiltersChange = (next: TableFilterValues) => {
+    setQuery({ filters: replaceTableFilters(listQuery.filters, filterableFields, next) });
+  };
+
+  // A changed column set changes what the accordion shows, so open rows close. A field left
+  // out of the table also loses its filter, without a new history entry.
   const handleSettingsSave = (columns: readonly GenericDataTableField<Customer>[]) => {
     tableSettings.saveColumns(columns);
+    const unusedFields = filterableFields.filter((field) => !columns.includes(field.field));
+    setQuery(
+      { filters: replaceTableFilters(listQuery.filters, unusedFields, {}) },
+      { replace: true },
+    );
     setExpandedRowKeys([]);
     setSettingsOpen(false);
   };
@@ -130,12 +146,11 @@ export function CustomersView() {
           />
         </div>
 
-        {/* "Customize filters" has no action yet: it waits for the filter model. */}
         <div className="mb-4 flex flex-col items-start gap-8 rounded bg-[var(--surface-muted)] p-3">
-          <IconTextButton
-            secondary
-            icon={<span aria-hidden="true" className="pi pi-sliders-h text-sm" />}
-            label={t('customers.actions.customizeFilters')}
+          <TableFilters
+            fields={tableSettings.config.fields}
+            values={customerQuery.filters}
+            onChange={handleFiltersChange}
           />
           <div className="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2">
             <GenericSearch

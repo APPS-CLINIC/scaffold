@@ -98,8 +98,11 @@ write API. Backend responses use a data-only endpoint contract and never carry
 rendering instructions. The browser receives only the requested page and never
 processes the complete collection.
 
-Feature filters use readable `filter.<key>` search parameters. The shared URL
-layer validates their generic syntax, and the owning feature validates its
+Every search parameter other than the list's own (`q`, `sort`, `dir`, `page`,
+`pageSize`) is a feature filter, named like the service parameter it becomes
+and repeated once per chosen value (`status=ACTIVE&status=ARCHIVAL`,
+`lendingReviewDate.to=2026-10-01`), kept sorted without duplicates. The shared
+URL layer validates their generic syntax, and the owning feature validates its
 domain values with Zod before deriving RTK Query arguments.
 
 The customer-detail summary reads RTK Query directly, with no Redux mirror.
@@ -112,6 +115,7 @@ evicts the transport cache when the layout leaves or the customer id changes,
 so nothing retains historical customers. Switching between that customer's
 L2/L3 pages does not remount the anchor or issue another request.
 → [ADR 0026](../adr/0026-extensible-feature-filters-in-list-urls.md),
+[ADR 0038](../adr/0038-list-filters-as-service-named-url-params.md),
 [ADR 0031](../adr/0031-customer-summary-read-directly-from-rtk-query.md)
 
 ### 5. Generic data tables
@@ -130,8 +134,16 @@ preference: the owning feature resolves the static configuration against the
 `tableSettings` slice with `resolveColumnFields` and hands the effective
 configuration to the table, which never reads Redux. The generic "List
 settings" dialog edits that choice.
+
+A field can also declare the control that filters it
+(`filter: tableFilter(MultiSelectFilter, { options })`). The generic
+`TableFilters` offers a filter for each field the table uses, in the table's
+order, with removable chips for the applied ones; a field removed in the list
+settings has no filter. The feature keeps the values in the URL as
+service-named params and sends only the filters of fields in use.
 → [ADR 0025](../adr/0025-configuration-driven-generic-data-tables.md),
-[ADR 0034](../adr/0034-user-table-preferences-in-a-persisted-redux-slice.md)
+[ADR 0034](../adr/0034-user-table-preferences-in-a-persisted-redux-slice.md),
+[ADR 0039](../adr/0039-table-filters-declared-in-the-field-config.md)
 
 ### 6. UI seam — `src/ui`
 
@@ -140,7 +152,8 @@ organization's internal UI library can be plugged in within a single folder
 without touching feature code.
 
 Domain-neutral building blocks meant for reuse across views also live here — the
-generic data table and its cells, and the due-date filter (`DueDateFilter`,
+generic data table and its cells, the table filters (`TableFilters` and its
+controls), and the due-date filter (`DueDateFilter`,
 `filterByDueDate`), which carries no customer vocabulary. The view that shows the
 filter keeps its choice in local state; it hides loaded rows and reaches no
 endpoint, so it stays out of the URL.

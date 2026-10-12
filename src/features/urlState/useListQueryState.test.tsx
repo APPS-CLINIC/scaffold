@@ -10,8 +10,14 @@ function QueryControls() {
 
   return (
     <>
-      <button type="button" onClick={() => setQuery({ filters: { status: 'active' } })}>
+      <button type="button" onClick={() => setQuery({ filters: { status: ['active'] } })}>
         Show active
+      </button>
+      <button
+        type="button"
+        onClick={() => setQuery({ filters: { status: ['ARCHIVAL', 'ACTIVE'] } })}
+      >
+        Show both statuses
       </button>
       <button type="button" onClick={() => setQuery({ page: 4 })}>
         Open page four
@@ -40,7 +46,7 @@ describe('useListQueryState', () => {
     await user.click(screen.getByRole('button', { name: 'Show active' }));
 
     expect(screen.getByRole('status', { name: 'Current search parameters' })).toHaveTextContent(
-      '?filter.status=active',
+      '?status=active',
     );
   });
 
@@ -52,13 +58,49 @@ describe('useListQueryState', () => {
         <QueryControls />
         <LocationProbe />
       </>,
-      { initialEntries: ['/customers/all?filter.status=active'] },
+      { initialEntries: ['/customers/all?status=active'] },
     );
 
     await user.click(screen.getByRole('button', { name: 'Open page four' }));
 
     expect(screen.getByRole('status', { name: 'Current search parameters' })).toHaveTextContent(
-      '?page=4&filter.status=active',
+      '?page=4&status=active',
+    );
+  });
+
+  it('writes each filter value as a repeated param', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <>
+        <QueryControls />
+        <LocationProbe />
+      </>,
+      { initialEntries: ['/customers/all'] },
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Show both statuses' }));
+
+    expect(screen.getByRole('status', { name: 'Current search parameters' })).toHaveTextContent(
+      '?status=ACTIVE&status=ARCHIVAL',
+    );
+  });
+
+  it('neither navigates nor resets the page when the patch changes nothing', async () => {
+    const user = userEvent.setup();
+
+    renderWithProviders(
+      <>
+        <QueryControls />
+        <LocationProbe />
+      </>,
+      { initialEntries: ['/customers/all?page=3&status=ACTIVE&status=ARCHIVAL'] },
+    );
+
+    await user.click(screen.getByRole('button', { name: 'Show both statuses' }));
+
+    expect(screen.getByRole('status', { name: 'Current search parameters' })).toHaveTextContent(
+      '?page=3&status=ACTIVE&status=ARCHIVAL',
     );
   });
 });

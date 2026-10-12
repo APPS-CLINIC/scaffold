@@ -1,6 +1,11 @@
 import { useCallback, useMemo } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { parseListQuery, serializeListQuery, type ListQuery } from './urlState.schema';
+import { createSearchParams, useSearchParams } from 'react-router-dom';
+import {
+  areListQueriesEqual,
+  parseListQuery,
+  serializeListQuery,
+  type ListQuery,
+} from './urlState.schema';
 
 export interface SetQueryOptions {
   /**
@@ -14,7 +19,10 @@ export interface SetQueryOptions {
 }
 
 /**
- * The write-side counterpart to the URL-as-source-of-truth pattern.
+ * The write-side counterpart to the URL-as-source-of-truth pattern. A patch that leaves the
+ * query as it is does nothing: no navigation and no reset to page 1. A `filters` patch
+ * replaces every filter param, also those the caller does not own (another feature's, or
+ * `utm_source`), so build it from the current filters to keep them.
  *
  * Reading state from this hook is fine, but most components should read the
  * mirrored value via `useAppSelector(selectListQuery)` so they benefit from
@@ -28,7 +36,9 @@ export function useListQueryState() {
   const setQuery = useCallback(
     (patch: Partial<ListQuery>, options: SetQueryOptions = {}) => {
       const touchesPage = 'page' in patch;
-      const next: ListQuery = { ...query, ...patch };
+      // The round trip gives the patch the URL's canonical form, so an equal query is noticed.
+      const next = parseListQuery(createSearchParams(serializeListQuery({ ...query, ...patch })));
+      if (areListQueriesEqual(next, query)) return;
 
       if ((options.resetPage ?? !touchesPage) && !touchesPage) {
         next.page = 1;

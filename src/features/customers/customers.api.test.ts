@@ -9,17 +9,22 @@ import {
   getCustomersRequest,
   toCustomerBackendParams,
 } from './customers.api';
+import { parseCustomerFilters, type CustomerFilters } from './customers.filters';
 import type { CustomerQuery, ExportRequest } from './customers.types';
 
-const makeQuery = (overrides: Partial<CustomerQuery> = {}): CustomerQuery => ({
+const noFilters = parseCustomerFilters({});
+
+const makeQuery = (
+  overrides: Partial<Omit<CustomerQuery, 'filters'>> = {},
+  filters: Partial<CustomerFilters> = {},
+): CustomerQuery => ({
   q: '',
   page: 1,
   pageSize: 10,
   sort: 'id',
   dir: 'asc',
-  status: '',
-  type: '',
   ...overrides,
+  filters: { ...noFilters, ...filters },
 });
 
 afterEach(() => {
@@ -29,7 +34,7 @@ afterEach(() => {
 describe('customer API contract', () => {
   it('maps app page 1 to backend page 0 and builds Spring query parameters', () => {
     const backendParams = toCustomerBackendParams(
-      makeQuery({ q: 'bank', status: 'active', type: 'Corporate' }),
+      makeQuery({ q: 'bank' }, { status: ['ACTIVE'], type: ['CORPORATE'] }),
     );
 
     expect(backendParams).toEqual({
@@ -37,8 +42,10 @@ describe('customer API contract', () => {
       size: 10,
       sort: 'id,ASC',
       query: 'bank',
-      status: 'ACTIVE',
-      type: 'Corporate',
+      filters: [
+        ['status', 'ACTIVE'],
+        ['type', 'CORPORATE'],
+      ],
     });
     expect([...customerBackendParamsToSearchParams(backendParams).entries()]).toEqual([
       ['page', '0'],
@@ -46,8 +53,30 @@ describe('customer API contract', () => {
       ['sort', 'id,ASC'],
       ['query', 'bank'],
       ['status', 'ACTIVE'],
-      ['type', 'Corporate'],
+      ['type', 'CORPORATE'],
     ]);
+  });
+
+  it('repeats a filter param once per value and sends a range end under its dotted name', () => {
+    const backendParams = toCustomerBackendParams(
+      makeQuery(
+        {},
+        {
+          status: ['ACTIVE', 'ARCHIVAL'],
+          internalGroupId: ['NONE', '17'],
+          'lendingReviewDate.from': ['2026-02-01'],
+        },
+      ),
+    );
+
+    expect(customerBackendParamsToSearchParams(backendParams).toString()).toBe(
+      'page=0&size=10&sort=id%2CASC&status=ACTIVE&status=ARCHIVAL' +
+        '&internalGroupId=NONE&internalGroupId=17&lendingReviewDate.from=2026-02-01',
+    );
+  });
+
+  it('sends no filter params without filters', () => {
+    expect(toCustomerBackendParams(makeQuery()).filters).toEqual([]);
   });
 
   it('sends the trimmed search text and leaves a blank search out', () => {
@@ -75,18 +104,13 @@ describe('customer API contract', () => {
   it('builds the endpoint URL from the complete server query', () => {
     expect(
       getCustomersRequest(
-        makeQuery({
-          q: 'bank group',
-          page: 2,
-          pageSize: 25,
-          sort: 'fullName',
-          dir: 'desc',
-          status: 'active',
-          type: 'Corporate',
-        }),
+        makeQuery(
+          { q: 'bank group', page: 2, pageSize: 25, sort: 'fullName', dir: 'desc' },
+          { status: ['ACTIVE'], type: ['CORPORATE'] },
+        ),
       ),
     ).toEqual({
-      url: 'customers?page=1&size=25&sort=fullName%2CDESC&query=bank+group&status=ACTIVE&type=Corporate',
+      url: 'customers?page=1&size=25&sort=fullName%2CDESC&query=bank+group&status=ACTIVE&type=CORPORATE',
     });
   });
 

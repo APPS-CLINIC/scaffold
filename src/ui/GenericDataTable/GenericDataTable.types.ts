@@ -1,5 +1,6 @@
 import type { ComponentType, HTMLAttributes, ReactNode } from 'react';
 import type { MessageKey } from '@/i18n/messages/pl';
+import type { TableFilterDeclaration } from '../TableFilters/TableFilters.types';
 
 export type GenericDataTableField<T extends object> = Extract<keyof T, string>;
 
@@ -43,6 +44,10 @@ interface GenericDataTableFieldConfigBase<T extends object, K extends GenericDat
   sortField?: string;
   /** Never moved to the accordion, regardless of available width. */
   alwaysVisible?: boolean;
+  /** The control that filters this field, offered while the table uses the field. */
+  filter?: TableFilterDeclaration;
+  /** The param the field filters by when it differs from `field`. */
+  filterParam?: string;
   headerClassName?: string;
   cellClassName?: string;
 }

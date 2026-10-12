@@ -38,6 +38,32 @@ describe('customerTableConfig', () => {
     ]);
   });
 
+  it('filters the fields in the default order the list filters are specified in', () => {
+    expect(
+      customerTableConfig.fields.filter((field) => field.filter).map(({ field }) => field),
+    ).toEqual([
+      'status',
+      'internalGroupName',
+      'corporateGroupName',
+      'type',
+      'lendingReviewDate',
+      'lendingRatingReviewDate',
+      'lendingRating',
+      'tsPriceConditionEndDate',
+      'tsPriceConditionStatus',
+      'rmAdvisor',
+      'lendingAdvisor',
+      'sfAdvisor',
+      'pcmAdvisor',
+      'fmAdvisor',
+      'tsAdvisor',
+      'implementationAdvisor',
+      'customerServiceAdvisor',
+      'ebdAdvisor',
+      'lendingTeam',
+    ]);
+  });
+
   it('gives every field the same config shape the fit engine needs', () => {
     const notServedByBackendYet = new Set(['lendingRating', 'lendingTeam']);
 

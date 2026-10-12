@@ -16,8 +16,15 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { Button, CustomizableDialog } from 'iwa-react-components';
+import { Button, CustomizableDialog } from '@/ui';
 import { useTranslation } from 'react-i18next';
+import { DialogHeading } from '../../DialogHeading';
+import {
+  DIALOG_CONTENT_CLASS_NAME,
+  DIALOG_FOOTER_CLASS_NAME,
+  resolveVisibility,
+} from '../../dialogFrame';
+import { FocusOnOpen } from '../../FocusOnOpen';
 import type {
   GenericDataTableField,
   TableColumnSettingsDialogProps,
@@ -40,15 +47,10 @@ export type TableColumnSettingsFormProps<T extends object> = Omit<
   'open'
 >;
 
-// The library pads the content and sizes the dialog itself, hence the important modifiers.
-// Without the padding the tab line and the footer separators reach the dialog edges, so
-// every section pads itself.
-const DIALOG_CONTENT_CLASS_NAME = 'flex min-h-0 flex-col !p-0';
-const SETTINGS_DIALOG_CLASS_NAME =
-  '!h-[835px] !max-h-[calc(100vh-2rem)] !w-[600px] !max-w-[calc(100vw-2rem)]';
-const RESTORE_DIALOG_CLASS_NAME = '!min-h-[296px] !w-[420px] !max-w-[calc(100vw-2rem)]';
-const DIALOG_FOOTER_CLASS_NAME =
-  'flex shrink-0 gap-3 border-t border-[var(--border-subtle)] px-6 py-4';
+const SETTINGS_DIALOG_CLASS_NAME = '!w-[600px] !max-w-[calc(100vw-2rem)]';
+const SETTINGS_DIALOG_CONTENT_CLASS_NAME = `${DIALOG_CONTENT_CLASS_NAME} !h-[835px] !max-h-[calc(100vh-2rem)]`;
+const RESTORE_DIALOG_CLASS_NAME = '!w-[420px] !max-w-[calc(100vw-2rem)]';
+const RESTORE_DIALOG_CONTENT_CLASS_NAME = `${DIALOG_CONTENT_CLASS_NAME} !min-h-[296px]`;
 
 /**
  * The settings dialog body with its draft. Mounted only while the dialog is
@@ -76,6 +78,7 @@ export function TableColumnSettingsForm<T extends object>({
   );
   const [confirmOpen, setConfirmOpen] = useState(false);
   const listRef = useRef<HTMLOListElement>(null);
+  const restoreActionsRef = useRef<HTMLDivElement>(null);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -155,9 +158,6 @@ export function TableColumnSettingsForm<T extends object>({
     listRef.current?.children.item(firstEmpty)?.scrollIntoView({ block: 'nearest' });
   };
 
-  // The library's setter contract is a state setter, so a function updater must be resolved.
-  const resolveVisibility = (next: SetStateAction<boolean>, current: boolean) =>
-    typeof next === 'function' ? next(current) : next;
   const handleSetVisibility = (next: SetStateAction<boolean>) => {
     if (!resolveVisibility(next, true)) onCancel();
   };
@@ -170,12 +170,12 @@ export function TableColumnSettingsForm<T extends object>({
   return (
     <>
       <CustomizableDialog
-        headingProps={{ text: t('table.settings.title'), centered: true }}
         visibility
         onSetVisibility={handleSetVisibility}
         className={SETTINGS_DIALOG_CLASS_NAME}
-        contentClassName={DIALOG_CONTENT_CLASS_NAME}
+        contentClassName={SETTINGS_DIALOG_CONTENT_CLASS_NAME}
       >
+        <DialogHeading text={t('table.settings.title')} centered />
         <div className="border-b border-[var(--border-subtle)] px-6 pt-4">
           <span className="-mb-px inline-block border-b-[3px] border-[var(--navigation-accent)] px-6 pb-2 text-base font-bold text-[var(--text)]">
             {t('table.settings.tab.columns')}
@@ -262,16 +262,23 @@ export function TableColumnSettingsForm<T extends object>({
         </div>
       </CustomizableDialog>
       <CustomizableDialog
-        headingProps={{ text: t('table.settings.restore.title') }}
         visibility={confirmOpen}
         onSetVisibility={handleSetConfirmVisibility}
         className={RESTORE_DIALOG_CLASS_NAME}
-        contentClassName={DIALOG_CONTENT_CLASS_NAME}
+        contentClassName={RESTORE_DIALOG_CONTENT_CLASS_NAME}
       >
+        {/* The safe choice takes focus, as the confirmation discards the user's columns. */}
+        <FocusOnOpen
+          target={() => {
+            const buttons = restoreActionsRef.current?.querySelectorAll('button');
+            return buttons?.[buttons.length - 1];
+          }}
+        />
+        <DialogHeading text={t('table.settings.restore.title')} />
         <p className="m-0 flex-1 px-6 pb-6 pt-2 text-sm text-[var(--text)]">
           {t('table.settings.restore.body')}
         </p>
-        <div className={`${DIALOG_FOOTER_CLASS_NAME} flex-col`}>
+        <div ref={restoreActionsRef} className={`${DIALOG_FOOTER_CLASS_NAME} flex-col`}>
           <Button
             label={t('table.settings.restore.confirm')}
             style="filled"

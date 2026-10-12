@@ -1,6 +1,7 @@
 # ADR 0026 — Extensible feature filters in list URLs
 
-- **Status:** Accepted
+- **Status:** Accepted; its `filter.<key>` naming is replaced by
+  [ADR 0038](0038-list-filters-as-service-named-url-params.md)
 - **Date:** 2026-08-04
 - **Supersedes:** [ADR 0008](0008-zod-total-parsing-of-search-params.md)
 

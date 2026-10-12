@@ -29,8 +29,10 @@ function`, thrown from the manifest rather than from the cycle.
   `bg-[var(--surface)]`, `border-[var(--border)]`, `text-[var(--muted)]`.
 - Do not add Tailwind directives or global styles from this folder;
   `src/styles/global.css` is the only global base layer.
-- Join class names with `cx()` from `./cx` and always merge a caller-provided
-  `className` last so callers can override styling.
+- Join class names with `twMerge` from `@/ui` (the IWA re-export), never `cx`:
+  the work repo has no `cx`, and `twMerge` also resolves conflicting Tailwind
+  utilities. Always merge a caller-provided `className` last so callers can
+  override styling.
 - Follow the established component shape: `forwardRef`, props interface
   extending the matching `HTMLAttributes`, sensible defaults, JSDoc on the
   export explaining the contract.
