@@ -60,8 +60,46 @@ function TopBarBase({ logo, items = [], children, onLogoClick, ...props }) {
   );
 }
 
-TopBarBase.Item = function TopBarItem({ label, icon, onClick }) {
-  return createElement('button', { type: 'button', onClick }, icon, label);
+TopBarBase.Item = function TopBarItem({ label, icon, onClick, menu, menuProps }) {
+  const [open, setOpen] = useState(false);
+  if (!menu || !menuProps) return createElement('button', { type: 'button', onClick }, icon, label);
+  return createElement(
+    'div',
+    null,
+    createElement(
+      'button',
+      {
+        type: 'button',
+        'aria-haspopup': 'menu',
+        'aria-expanded': open,
+        onClick: () => setOpen((value) => !value),
+      },
+      menuProps.icon,
+      menuProps.label,
+    ),
+    open
+      ? createElement(
+          'div',
+          { role: 'menu' },
+          menuProps.items.map((item, index) =>
+            createElement(
+              'button',
+              {
+                key: index,
+                type: 'button',
+                role: 'menuitem',
+                onClick: (event) => {
+                  setOpen(false);
+                  item.command?.({ originalEvent: event, item });
+                },
+              },
+              item.icon,
+              item.label,
+            ),
+          ),
+        )
+      : null,
+  );
 };
 
 export const TopBar = TopBarBase;

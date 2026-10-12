@@ -4,6 +4,7 @@ import { Hide, Logout, Settings } from 'ing-react-icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/app/hooks';
+import { chooseLanguage, LANGUAGES } from '@/i18n';
 import { selectPathname } from '@/features/urlState/urlState.selectors';
 import { resolveNavigation } from '@/routes/navigation';
 import { Logo } from '@/components/Logo';
@@ -18,10 +19,11 @@ import { Logo } from '@/components/Logo';
  * therefore reconstruct the same state without policy branches in JSX.
  */
 export const TopBarCustom = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const pathname = useAppSelector(selectPathname);
   const topNavigation = resolveNavigation(pathname).topBar;
+  const language = LANGUAGES.find(({ code }) => code === i18n.resolvedLanguage) ?? LANGUAGES[0];
 
   return (
     <TopBar
@@ -44,6 +46,21 @@ export const TopBarCustom = () => {
           icon={<Settings className="text-fg-primary" />}
           label={t('topbar.quickSearch')}
           onClick={() => {}}
+        />,
+        // The design names the language in itself, with no icon.
+        <TopBar.Item
+          key="language"
+          menu
+          menuProps={{
+            icon: null,
+            label: language.name,
+            items: LANGUAGES.map(({ code, name }) => ({
+              label: name,
+              command: () => {
+                void chooseLanguage(code);
+              },
+            })),
+          }}
         />,
         <TopBar.Item
           key="my-profile"
