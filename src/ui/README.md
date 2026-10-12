@@ -409,9 +409,16 @@ neutral | accent | brand` (default `outline` — light surface with a subtle
 
 Components the app consumes from IWA without an adapter are re-exported
 verbatim from `index.ts` (`ActionLink`, `Button`, `Card`, `ChipInput`,
-`CustomizableDialog`, `DatePicker`, `MultiSelect`, `Select`, `Switch`,
-`TabMenu`, `TextInput`, `TopBar`, …); `index.ts` is the complete list. Feature code imports them from
+`CustomizableDialog`, `DatePicker`, `MultiSelect`, `RadioGroup`, `Select`,
+`Snackbar`, `Switch`, `TabMenu`, `TextInput`, `TopBar`, …); `index.ts` is the complete list. Feature code imports them from
 `@/ui` like every local primitive.
+
+### `Snackbar`
+
+The IWA `Snackbar` is controlled and needs no provider: the owner keeps
+`visibility` and clears it in `onHide`. With `closable` (the default) it stays
+until closed. The local `useToast` placeholder is not in the work repo, so
+feature code uses `Snackbar`.
 
 ### `Select`
 

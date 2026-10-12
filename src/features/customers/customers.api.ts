@@ -4,9 +4,9 @@ import type { CustomerFilters } from './customers.filters';
 import type {
   Customer,
   CustomerQuery,
+  CustomerExportRequest,
   CustomerResponse,
   PageResponse,
-  ExportRequest,
 } from './customers.types';
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -117,12 +117,11 @@ export function mapCustomerPageResponse(
 }
 
 /**
- * Export customers request. The backend returns a binary file, so the
+ * Export customers request: the known columns, the search and the filters, with the column
+ * headers in `locale`. The service does not sort the file. It returns a binary file, so the
  * `responseHandler` is provided to handle the download.
- * @param params The export request parameters.
- * @returns An object containing the URL, HTTP method, and response handler.
  */
-export function exportCustomersRequest(params: ExportRequest): {
+export function exportCustomersRequest(params: CustomerExportRequest): {
   url: string;
   method: string;
   headers: Record<string, string>;
@@ -130,9 +129,17 @@ export function exportCustomersRequest(params: ExportRequest): {
 } {
   const columnSelection = (params.columnSelection ?? []).filter(isCustomerField).join(',');
 
+  const q = params.q?.trim() ?? '';
+
   const exportParams = new URLSearchParams({
     ...(columnSelection ? { columnSelection } : {}),
+    ...(q ? { query: q } : {}),
   });
+  if (params.filters) {
+    for (const [name, value] of toCustomerFilterParams(params.filters)) {
+      exportParams.append(name, value);
+    }
+  }
 
   const query = exportParams.toString();
 
@@ -152,7 +159,7 @@ export const customersApi = baseApi.injectEndpoints({
       query: getCustomersRequest,
       transformResponse: mapCustomerPageResponse,
     }),
-    exportCustomers: builder.mutation<void, ExportRequest>({
+    exportCustomers: builder.mutation<void, CustomerExportRequest>({
       query: exportCustomersRequest,
     }),
   }),

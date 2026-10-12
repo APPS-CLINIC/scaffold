@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/app/hooks';
 import { DATE_DMY_FORMAT_OPTIONS } from '@/i18n/dateFormats';
@@ -13,6 +13,7 @@ import {
   GenericTableSettings,
   isFilterableField,
   replaceTableFilters,
+  Snackbar,
   TableColumnSettingsDialog,
   TableFilters,
   type GenericDataTableField,
@@ -21,6 +22,7 @@ import {
   type GenericDataTableSortChange,
   type TableFilterValues,
 } from '@/ui';
+import { CustomerExportDialog } from './CustomerExportDialog';
 import { customerTableConfig } from './customerTable';
 import { useGetCustomersQuery, useExportCustomersMutation } from './customers.api';
 import { selectCustomerQuery } from './customers.filters';
@@ -88,10 +90,35 @@ export function CustomersView() {
   );
 
   const [exportCustomers] = useExportCustomersMutation();
-  const handleExport = async () => {
-    await exportCustomers({
-      locale: i18n.resolvedLanguage ?? i18n.language,
-    });
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportNotice, setExportNotice] = useState<'started' | 'failed' | null>(null);
+  const exportOpenerRef = useRef<Element | null>(null);
+
+  const openExport = () => {
+    exportOpenerRef.current = document.activeElement;
+    setExportOpen(true);
+  };
+  // The dialog unmounts instead of hiding, so focus goes back to the control that opened it.
+  const closeExport = () => {
+    setExportOpen(false);
+    if (exportOpenerRef.current instanceof HTMLElement) exportOpenerRef.current.focus();
+  };
+
+  // The file holds what the table shows: its columns in their order, the search and the
+  // filters in effect, but not the sorting.
+  const handleExportDownload = async () => {
+    closeExport();
+    setExportNotice('started');
+    try {
+      await exportCustomers({
+        locale: i18n.resolvedLanguage ?? i18n.language,
+        columnSelection: tableSettings.config.fields.map(({ field }) => field),
+        q: customerQuery.q,
+        filters: customerQuery.filters,
+      }).unwrap();
+    } catch {
+      setExportNotice('failed');
+    }
   };
 
   // Every filterable field is rewritten, so a filter of a field the table no longer uses goes too.
@@ -162,7 +189,7 @@ export function CustomersView() {
               dataContent={data?.content}
               onExpandedRowKeysChange={setExpandedRowKeys}
               expandedRowKeys={expandedRowKeys}
-              handleExport={handleExport}
+              handleExport={openExport}
               onOpenSettings={() => setSettingsOpen(true)}
             />
           </div>
@@ -191,6 +218,16 @@ export function CustomersView() {
           onSortClear={handleSortClear}
           aria-busy={isLoading || isFetching}
         />
+
+        <Snackbar
+          visibility={exportNotice !== null}
+          onHide={() => setExportNotice(null)}
+          type={exportNotice === 'failed' ? 'error' : 'info'}
+          message={t(
+            exportNotice === 'failed' ? 'customers.export.failed' : 'customers.export.started',
+          )}
+          className="mt-4 w-full"
+        />
       </Card>
 
       <TableColumnSettingsDialog
@@ -201,6 +238,10 @@ export function CustomersView() {
         onCancel={() => setSettingsOpen(false)}
         onRestoreDefaults={handleSettingsRestore}
       />
+
+      {exportOpen ? (
+        <CustomerExportDialog onDownload={handleExportDownload} onCancel={closeExport} />
+      ) : null}
     </section>
   );
 }
