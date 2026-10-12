@@ -239,7 +239,14 @@ export function CustomersView() {
       />
 
       {exportOpen ? (
-        <CustomerExportDialog onDownload={handleExportDownload} onCancel={closeExport} />
+        <CustomerExportDialog
+          narrowed={
+            customerQuery.q.trim() !== '' ||
+            Object.values(customerQuery.filters).some((values) => values.length > 0)
+          }
+          onDownload={handleExportDownload}
+          onCancel={closeExport}
+        />
       ) : null}
     </section>
   );

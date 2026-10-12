@@ -18,20 +18,26 @@ const EXPORT_DIALOG_CONTENT_CLASS_NAME = `${DIALOG_CONTENT_CLASS_NAME} !min-h-[2
 export type CustomerExportScope = 'filtered' | 'all';
 
 interface CustomerExportDialogProps {
+  /** A search or a filter narrows the list; without one, only all customers can be picked. */
+  narrowed: boolean;
   /** Downloads the full customer list in the table's columns, for the picked scope. */
   onDownload: (scope: CustomerExportScope) => void;
   onCancel: () => void;
 }
 
 /**
- * Asks which customer list to download: the full list by the filters (picked first) or
- * without them. The list with limits is offered disabled, as the service does not serve it
- * yet. Mount it only while it is open.
+ * Asks which customer list to download: the full list by the filters, picked first while
+ * something narrows the list and disabled otherwise, or all customers. The list with limits
+ * is offered disabled, as the service does not serve it yet. Mount it only while it is open.
  */
-export function CustomerExportDialog({ onDownload, onCancel }: CustomerExportDialogProps) {
+export function CustomerExportDialog({
+  narrowed,
+  onDownload,
+  onCancel,
+}: CustomerExportDialogProps) {
   const { t } = useTranslation();
   const actionsRef = useRef<HTMLDivElement>(null);
-  const [scope, setScope] = useState<CustomerExportScope>('filtered');
+  const [scope, setScope] = useState<CustomerExportScope>(narrowed ? 'filtered' : 'all');
 
   const handleSetVisibility = (next: SetStateAction<boolean>) => {
     if (!resolveVisibility(next, true)) onCancel();
@@ -50,7 +56,7 @@ export function CustomerExportDialog({ onDownload, onCancel }: CustomerExportDia
         <RadioGroup
           label={t('customers.export.choice')}
           options={[
-            { label: t('customers.export.fullList'), value: 'filtered' },
+            { label: t('customers.export.fullList'), value: 'filtered', disabled: !narrowed },
             { label: t('customers.export.fullListUnfiltered'), value: 'all' },
             { label: t('customers.export.withLimits'), value: 'withLimits', disabled: true },
           ]}

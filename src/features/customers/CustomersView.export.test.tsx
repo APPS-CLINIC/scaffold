@@ -96,24 +96,46 @@ afterEach(() => {
 });
 
 describe('CustomersView export', () => {
-  it('asks which list to download, with the filtered list picked and the list with limits disabled', async () => {
+  it('asks which list to download, with the filtered list picked while a filter applies', async () => {
+    const user = userEvent.setup();
+    renderPage('/customers/all?status=ARCHIVAL');
+    await screen.findByText('OZAROW CEMENT S.A.');
+
+    await user.click(exportButton());
+
+    expect(exportDialog()).toBeInTheDocument();
+    expect(radioGroup()).toMatchObject({
+      label: 'I want to download',
+      selectedOption: 'filtered',
+      options: [
+        { label: 'The full customer list by the filters', value: 'filtered', disabled: false },
+        { label: 'The full customer list without filters', value: 'all' },
+        { label: 'The customer list with limits', value: 'withLimits', disabled: true },
+      ],
+    });
+    expect(exportRequests()).toEqual([]);
+  });
+
+  it('offers the filtered list for a search alone', async () => {
+    const user = userEvent.setup();
+    renderPage('/customers/all?q=carrefour');
+    await screen.findByText('CARREFOUR POLAND SP. Z O.O.');
+
+    await user.click(exportButton());
+
+    expect(radioGroup().selectedOption).toBe('filtered');
+    expect(radioGroup().options[0]).toMatchObject({ value: 'filtered', disabled: false });
+  });
+
+  it('disables the filtered list and picks all customers when nothing narrows the list', async () => {
     const user = userEvent.setup();
     renderPage();
     await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
 
     await user.click(exportButton());
 
-    expect(exportDialog()).toBeInTheDocument();
-    expect(captured.radioGroup).toMatchObject({
-      label: 'I want to download',
-      selectedOption: 'filtered',
-      options: [
-        { label: 'The full customer list by the filters', value: 'filtered' },
-        { label: 'The full customer list without filters', value: 'all' },
-        { label: 'The customer list with limits', value: 'withLimits', disabled: true },
-      ],
-    });
-    expect(exportRequests()).toEqual([]);
+    expect(radioGroup().selectedOption).toBe('all');
+    expect(radioGroup().options[0]).toMatchObject({ value: 'filtered', disabled: true });
   });
 
   it('downloads what the table shows: its columns, the search and the filters, without sorting', async () => {
