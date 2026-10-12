@@ -34,7 +34,7 @@ export const TS_PRICE_CONDITION_STATUSES = [
 export type TsPriceConditionStatus = (typeof TS_PRICE_CONDITION_STATUSES)[number];
 
 /** The filter value that picks customers without a value in the field, such as no own group. */
-export const NO_VALUE = 'NONE';
+export const NO_VALUE = 'null';
 
 export type SortDirection = 'asc' | 'desc';
 

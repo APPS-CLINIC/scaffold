@@ -51,7 +51,8 @@ without a value.
 - A picked entry of a long list takes its name from any cached search of the
   same list. Without one — after a reload or from a shared link — its id
   stands in for the name.
-- "No value" is the value `NONE` in the field's param, offered first.
+- "No value" is the value `null` in the field's param, offered first. The
+  service reads it the same way in every filter.
 - While options load, the multiselect shows a spinner and the chip says
   "Loading…"; when they fail, the open list says so.
 
@@ -66,7 +67,6 @@ without a value.
 - The open list also filters the service's matches by the typed text. A
   service that matched more loosely, ignoring accents for example, would have
   hits hidden.
-- The service does not document `NONE`; the value must be confirmed with it.
 - Table cells keep their own labels: the status cell translates, and the type
   and TS status cells show the text the customer list returns.
 

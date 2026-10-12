@@ -63,7 +63,7 @@ describe('customer API contract', () => {
         {},
         {
           status: ['ACTIVE', 'ARCHIVAL'],
-          internalGroupId: ['NONE', '17'],
+          internalGroupId: ['null', '17'],
           'lendingReviewDate.from': ['2026-02-01'],
         },
       ),
@@ -71,7 +71,7 @@ describe('customer API contract', () => {
 
     expect(customerBackendParamsToSearchParams(backendParams).toString()).toBe(
       'page=0&size=10&sort=id%2CASC&status=ACTIVE&status=ARCHIVAL' +
-        '&internalGroupId=NONE&internalGroupId=17&lendingReviewDate.from=2026-02-01',
+        '&internalGroupId=null&internalGroupId=17&lendingReviewDate.from=2026-02-01',
     );
   });
 

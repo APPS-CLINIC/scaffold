@@ -263,14 +263,14 @@ describe('CustomersView filters', () => {
     await waitFor(() => expect(multiSelect('rmAdvisor').options).toHaveLength(4));
 
     expect(multiSelect('rmAdvisor').options).toEqual([
-      { value: 'NONE', label: 'No advisor' },
+      { value: 'null', label: 'No advisor' },
       { value: '101', label: 'Kowalska Anna' },
       { value: '102', label: 'Nowak Piotr' },
       { value: '103', label: 'Wiśniewski Tomasz' },
     ]);
     await waitFor(() =>
       expect(multiSelect('tsPriceConditionStatus').options).toEqual([
-        { value: 'NONE', label: 'No status' },
+        { value: 'null', label: 'No status' },
         { value: 'STANDARD_CONTRACT_END_DATE', label: '1 - Contract end date, standard terms' },
         { value: 'NO_CONTRACT_END_DATE', label: '3 - No contract end date, no terms' },
       ]),
@@ -282,19 +282,19 @@ describe('CustomersView filters', () => {
     act(() => {
       multiSelect('rmAdvisor').onChange?.({ value: ['102'] } as MultiSelectChangeEvent);
       multiSelect('tsPriceConditionStatus').onChange?.({
-        value: ['NONE'],
+        value: ['null'],
       } as MultiSelectChangeEvent);
     });
     await user.click(within(filterDialog()).getByRole('button', { name: 'Save' }));
 
     await waitFor(() => expect(currentSearch().get('rmAdvisor')).toBe('102'));
-    expect(currentSearch().getAll('tsPriceConditionStatus')).toEqual(['NONE']);
+    expect(currentSearch().getAll('tsPriceConditionStatus')).toEqual(['null']);
     expectChips([
       `${label('rmAdvisor')}: Nowak Piotr`,
       `${label('tsPriceConditionStatus')}: No status`,
     ]);
     await waitFor(() => expect(lastListRequest().getAll('rmAdvisor')).toEqual(['102']));
-    expect(lastListRequest().getAll('tsPriceConditionStatus')).toEqual(['NONE']);
+    expect(lastListRequest().getAll('tsPriceConditionStatus')).toEqual(['null']);
   });
 
   it('searches a long list on the service and keeps the name of the picked entry', async () => {
@@ -304,7 +304,7 @@ describe('CustomersView filters', () => {
 
     await user.click(filtersButton());
     expect(multiSelect('internalGroupName').options).toEqual([
-      { value: 'NONE', label: 'No own group' },
+      { value: 'null', label: 'No own group' },
     ]);
     expect(requestsTo('/api/v1/internalGroups')).toEqual([]);
 
@@ -313,7 +313,7 @@ describe('CustomersView filters', () => {
     });
     await waitFor(() =>
       expect(multiSelect('internalGroupName').options).toEqual([
-        { value: 'NONE', label: 'No own group' },
+        { value: 'null', label: 'No own group' },
         { value: '12', label: 'Grupa Południe' },
       ]),
     );
@@ -355,7 +355,7 @@ describe('CustomersView filters', () => {
     search('półn');
     await waitFor(() =>
       expect(multiSelect('internalGroupName').options).toEqual([
-        { value: 'NONE', label: 'No own group' },
+        { value: 'null', label: 'No own group' },
         { value: '12', label: 'Grupa Południe' },
         { value: '11', label: 'Grupa Północ' },
       ]),
@@ -365,7 +365,7 @@ describe('CustomersView filters', () => {
     search('');
     await waitFor(() =>
       expect(multiSelect('internalGroupName').options).toEqual([
-        { value: 'NONE', label: 'No own group' },
+        { value: 'null', label: 'No own group' },
         { value: '12', label: 'Grupa Południe' },
       ]),
     );
@@ -397,7 +397,7 @@ describe('CustomersView filters', () => {
 
   it('names a picked entry of a long list by its id until a search finds it', async () => {
     const user = userEvent.setup();
-    renderPage('/customers/all?corporateGroupId=22&corporateGroupId=NONE');
+    renderPage('/customers/all?corporateGroupId=22&corporateGroupId=null');
     await screen.findByText('Clear filters (1)');
 
     expectChips([`${label('corporateGroupName')}: 22, No corporate group`]);
