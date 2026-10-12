@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { ContextualSidebar } from '@/components/ContextualSidebar';
 import { TopBarCustom } from '@/components/TopBarCustom';
 import { UrlStateSync } from '@/features/urlState/UrlStateSync';
+import { ToastProvider } from '@/ui';
 
 /**
  * App shell: header on top, side menu + routed content in the middle, footer
@@ -10,7 +11,8 @@ import { UrlStateSync } from '@/features/urlState/UrlStateSync';
  * footer to the viewport — only `<main>` scrolls (`min-h-0`/`overflow-y-auto`).
  *
  * `UrlStateSync` lives here (inside the router context) so the URL -> Redux
- * mirror is active on every route.
+ * mirror is active on every route. `ToastProvider` wraps the routed content, so
+ * toasts span the content, not the whole window.
  */
 export function RootLayout() {
   const { t } = useTranslation();
@@ -25,7 +27,9 @@ export function RootLayout() {
         {/* Positioned, so visually hidden (absolutely positioned) text scrolls with the content
             instead of stretching the document into a second, page-level scrollbar. */}
         <main className="relative min-w-0 flex-1 overflow-x-hidden overflow-y-auto bg-[var(--content-surface)] p-4 sm:p-6">
-          <Outlet />
+          <ToastProvider>
+            <Outlet />
+          </ToastProvider>
         </main>
       </div>
       <footer className="border-t border-border bg-surface px-4 py-2 text-sm text-muted">

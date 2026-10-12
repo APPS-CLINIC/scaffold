@@ -13,7 +13,6 @@ import {
   GenericTableSettings,
   isFilterableField,
   replaceTableFilters,
-  Snackbar,
   TableColumnSettingsDialog,
   TableFilters,
   type GenericDataTableField,
@@ -21,6 +20,7 @@ import {
   type GenericDataTablePageChange,
   type GenericDataTableSortChange,
   type TableFilterValues,
+  useToast,
 } from '@/ui';
 import { CustomerExportDialog, type CustomerExportScope } from './CustomerExportDialog';
 import { customerTableConfig } from './customerTable';
@@ -90,8 +90,8 @@ export function CustomersView() {
   );
 
   const [exportCustomers] = useExportCustomersMutation();
+  const toast = useToast();
   const [exportOpen, setExportOpen] = useState(false);
-  const [exportNotice, setExportNotice] = useState<'started' | 'failed' | null>(null);
   const exportOpenerRef = useRef<Element | null>(null);
 
   const openExport = () => {
@@ -108,7 +108,7 @@ export function CustomersView() {
   // customers, only those the search and the filters leave. It is never sorted.
   const handleExportDownload = async (scope: CustomerExportScope) => {
     closeExport();
-    setExportNotice('started');
+    toast.show({ type: 'info', message: t('customers.export.started') });
     try {
       await exportCustomers({
         locale: i18n.resolvedLanguage ?? i18n.language,
@@ -116,7 +116,7 @@ export function CustomersView() {
         ...(scope === 'filtered' ? { q: customerQuery.q, filters: customerQuery.filters } : {}),
       }).unwrap();
     } catch {
-      setExportNotice('failed');
+      toast.show({ type: 'error', message: t('customers.export.failed') });
     }
   };
 
@@ -216,16 +216,6 @@ export function CustomersView() {
           onSortChange={handleSortChange}
           onSortClear={handleSortClear}
           aria-busy={isLoading || isFetching}
-        />
-
-        <Snackbar
-          visibility={exportNotice !== null}
-          onHide={() => setExportNotice(null)}
-          type={exportNotice === 'failed' ? 'error' : 'info'}
-          message={t(
-            exportNotice === 'failed' ? 'customers.export.failed' : 'customers.export.started',
-          )}
-          className="mt-4 w-full"
         />
       </Card>
 

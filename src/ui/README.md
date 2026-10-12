@@ -413,12 +413,16 @@ verbatim from `index.ts` (`ActionLink`, `Button`, `Card`, `ChipInput`,
 `Snackbar`, `Switch`, `TabMenu`, `TextInput`, `TopBar`, …); `index.ts` is the complete list. Feature code imports them from
 `@/ui` like every local primitive.
 
-### `Snackbar`
+### Toasts (`useToast`)
 
-The IWA `Snackbar` is controlled and needs no provider: the owner keeps
-`visibility` and clears it in `onHide`. With `closable` (the default) it stays
-until closed. The local `useToast` placeholder is not in the work repo, so
-feature code uses `Snackbar`.
+Features show a toast with `useToast().show({ type, message })` (`type` is
+`info`, `success` or `error`) and close it with `hide()`; they never render a
+`Snackbar` themselves. `ToastProvider` wraps the routed content in
+`RootLayout` and shows one toast at a time as the IWA `Snackbar`, pinned to the
+bottom of the screen across the content it wraps, not the whole window
+([ADR 0041](../../docs/adr/0041-toasts-span-the-page-content.md)).
+`renderWithProviders` includes the host, so tests need nothing extra; a test
+that mocks the `@/ui` barrel adds `Snackbar` to the mock.
 
 ### `Select`
 
