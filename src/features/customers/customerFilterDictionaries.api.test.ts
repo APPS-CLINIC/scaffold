@@ -54,7 +54,7 @@ describe('customer filter dictionaries API', () => {
     expect(dictionaries['customer-status']?.[0]).toEqual({ value: 'ACTIVE', label: 'Aktywny' });
   });
 
-  it('reports a failure in Polish without asking again', async () => {
+  it('reports the error without asking again when the service rejects Polish', async () => {
     fetchMock.mockImplementation(
       async () => new Response(JSON.stringify({ message: 'Bad request' }), { status: 400 }),
     );
@@ -66,7 +66,7 @@ describe('customer filter dictionaries API', () => {
     expect(fetchMock).toHaveBeenCalledOnce();
   });
 
-  it('asks again in Polish only when the service rejects the language', async () => {
+  it('reports the error without asking again when the service fails for another reason', async () => {
     fetchMock.mockImplementation(
       async () => new Response(JSON.stringify({ message: 'Unavailable' }), { status: 503 }),
     );
