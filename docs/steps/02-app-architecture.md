@@ -140,10 +140,13 @@ A field can also declare the control that filters it
 `TableFilters` offers a filter for each field the table uses, in the table's
 order, with removable chips for the applied ones; a field removed in the list
 settings has no filter. The feature keeps the values in the URL as
-service-named params and sends only the filters of fields in use.
+service-named params and sends only the filters of fields in use. Options come
+from the service: short lists load whole and are searched in the browser, long
+ones are searched on the service as the user types.
 → [ADR 0025](../adr/0025-configuration-driven-generic-data-tables.md),
 [ADR 0034](../adr/0034-user-table-preferences-in-a-persisted-redux-slice.md),
-[ADR 0039](../adr/0039-table-filters-declared-in-the-field-config.md)
+[ADR 0039](../adr/0039-table-filters-declared-in-the-field-config.md),
+[ADR 0040](../adr/0040-filter-options-from-the-service.md)
 
 ### 6. UI seam — `src/ui`
 

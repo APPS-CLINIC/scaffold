@@ -13,8 +13,8 @@ describe('customer URL filters', () => {
       parseCustomerFilters({
         status: ['ACTIVE', 'active', 'UNKNOWN'],
         type: ['CORPORATE', 'Corporate'],
-        tsPriceConditionStatus: ['NO_CONTRACT_END_DATE', '1'],
-        rmAdvisor: ['rm-1', 'not an id'],
+        tsPriceConditionStatus: ['NO_CONTRACT_END_DATE', '1', 'NONE'],
+        rmAdvisor: ['101', 'NONE', 'not an id'],
         internalGroupId: ['NONE', '17'],
         'lendingReviewDate.from': ['2026-02-01'],
         'lendingReviewDate.to': ['2026-03-31'],
@@ -24,8 +24,8 @@ describe('customer URL filters', () => {
     ).toMatchObject({
       status: ['ACTIVE'],
       type: ['CORPORATE'],
-      tsPriceConditionStatus: ['NO_CONTRACT_END_DATE'],
-      rmAdvisor: ['rm-1'],
+      tsPriceConditionStatus: ['NO_CONTRACT_END_DATE', 'NONE'],
+      rmAdvisor: ['101', 'NONE'],
       internalGroupId: ['NONE', '17'],
       'lendingReviewDate.from': ['2026-02-01'],
       'lendingReviewDate.to': ['2026-03-31'],

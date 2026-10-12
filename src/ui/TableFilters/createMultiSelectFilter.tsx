@@ -1,18 +1,18 @@
 import { MultiSelectFilter, type MultiSelectFilterProps } from './MultiSelectFilter';
 import type {
+  LoadedFilterOptions,
   TableFilterComponent,
-  TableFilterOption,
   TableFilterProps,
   TableFilterValues,
 } from './TableFilters.types';
 
 /**
- * A multiselect filter whose options come from a hook, such as a list the service serves.
- * The hook gets the props the field declares, and runs both in the control and in its chip,
- * so they show the same labels. Create it once, where the hook is defined.
+ * A multiselect whose options come from a hook, such as a list the service serves. The hook
+ * gets the props the field declares, and runs both in the control and in its chip, so they
+ * show the same labels. Create it once, where the hook is defined.
  */
 export function createMultiSelectFilter<P extends object>(
-  useOptions: (props: P) => readonly TableFilterOption[],
+  useOptions: (props: P) => LoadedFilterOptions,
   { selectionLimit }: Pick<MultiSelectFilterProps, 'selectionLimit'> = {},
 ): TableFilterComponent<P> {
   function LoadedOptionsMultiSelectFilter(props: TableFilterProps & P) {
@@ -24,7 +24,7 @@ export function createMultiSelectFilter<P extends object>(
         param={param}
         values={values}
         onChange={onChange}
-        options={useOptions(props)}
+        {...useOptions(props)}
         selectionLimit={selectionLimit}
       />
     );
@@ -34,7 +34,7 @@ export function createMultiSelectFilter<P extends object>(
     values: TableFilterValues,
     props: P & { param: string },
   ): string {
-    return MultiSelectFilter.useSummary(values, { param: props.param, options: useOptions(props) });
+    return MultiSelectFilter.useSummary(values, { param: props.param, ...useOptions(props) });
   };
 
   return LoadedOptionsMultiSelectFilter;

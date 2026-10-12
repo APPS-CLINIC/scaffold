@@ -15,6 +15,7 @@ import { customerTableConfig } from './customerTable';
 import {
   CUSTOMER_STATUSES,
   CUSTOMER_TYPES,
+  NO_VALUE,
   TS_PRICE_CONDITION_STATUSES,
   type CustomerQuery,
 } from './customers.types';
@@ -75,7 +76,7 @@ export const customerFiltersSchema = z
     lendingRating: textParam,
     'tsPriceConditionEndDate.from': dayParam,
     'tsPriceConditionEndDate.to': dayParam,
-    tsPriceConditionStatus: enumParam(TS_PRICE_CONDITION_STATUSES),
+    tsPriceConditionStatus: enumParam([...TS_PRICE_CONDITION_STATUSES, NO_VALUE]),
     rmAdvisor: idParam,
     lendingAdvisor: idParam,
     sfAdvisor: idParam,

@@ -77,7 +77,7 @@ describe('CustomersView', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('uses the deep-link query for the first and only initial RTK Query request', async () => {
+  it('uses the deep-link query for the first and only initial customer list request', async () => {
     const { store } = renderPage('/customers/all?q=carrefour&status=ACTIVE&pageSize=10');
 
     expect(screen.getByPlaceholderText('Search the list')).toHaveValue('carrefour');
@@ -91,7 +91,9 @@ describe('CustomersView', () => {
       expect(customersApi.endpoints.getCustomers.select(query)(store.getState()).status).toBe(
         'fulfilled',
       );
-      expect(Object.keys(store.getState().api.queries)).toHaveLength(1);
+      expect(
+        Object.keys(store.getState().api.queries).filter((key) => key.startsWith('getCustomers(')),
+      ).toHaveLength(1);
     });
   });
 

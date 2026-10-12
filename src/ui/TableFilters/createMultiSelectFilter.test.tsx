@@ -2,8 +2,9 @@ import type { ComponentProps } from 'react';
 import { render, renderHook } from '@testing-library/react';
 import type * as IwaComponents from 'iwa-react-components';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import i18n from '@/i18n';
 import { createMultiSelectFilter } from './createMultiSelectFilter';
-import type { TableFilterOption } from './TableFilters.types';
+import type { LoadedFilterOptions } from './TableFilters.types';
 
 type MultiSelectProps = ComponentProps<typeof IwaComponents.MultiSelect>;
 
@@ -34,13 +35,15 @@ function multiSelectProps(): MultiSelectProps {
 describe('createMultiSelectFilter', () => {
   interface TeamProps {
     city: string;
+    state?: 'loading' | 'failed';
   }
-  const useTeamOptions = ({ city }: TeamProps): readonly TableFilterOption[] => [
-    { value: `${city}-1`, label: `Team ${city}` },
-  ];
+  const useTeamOptions = ({ city, state }: TeamProps): LoadedFilterOptions =>
+    state === undefined
+      ? { options: [{ value: `${city}-1`, label: `Team ${city}` }], loading: false, failed: false }
+      : { options: [], loading: state === 'loading', failed: state === 'failed' };
   const TeamFilter = createMultiSelectFilter(useTeamOptions, { selectionLimit: 100 });
 
-  it('offers the options its hook returns for the declared props', () => {
+  function renderTeamFilter(props: Partial<TeamProps> = {}) {
     render(
       <TeamFilter
         inputId="team"
@@ -49,14 +52,39 @@ describe('createMultiSelectFilter', () => {
         values={{ teamId: ['waw-1'] }}
         onChange={vi.fn()}
         city="waw"
+        {...props}
       />,
     );
+  }
+
+  it('offers the options its hook returns for the declared props', () => {
+    renderTeamFilter();
 
     expect(multiSelectProps()).toMatchObject({
       inputId: 'team',
       value: ['waw-1'],
       options: [{ value: 'waw-1', label: 'Team waw' }],
       selectionLimit: 100,
+      loading: false,
+    });
+  });
+
+  it('shows a spinner while the options load', () => {
+    renderTeamFilter({ state: 'loading' });
+
+    expect(multiSelectProps()).toMatchObject({
+      loading: true,
+      emptyMessage: i18n.t('table.filters.loading'),
+    });
+  });
+
+  it('says so in the open list when the options could not be loaded', () => {
+    renderTeamFilter({ state: 'failed' });
+
+    expect(multiSelectProps()).toMatchObject({
+      loading: false,
+      emptyMessage: i18n.t('table.filters.loadFailed'),
+      emptyFilterMessage: i18n.t('table.filters.loadFailed'),
     });
   });
 
@@ -66,5 +94,16 @@ describe('createMultiSelectFilter', () => {
     );
 
     expect(result.current).toBe('Team waw, gone');
+  });
+
+  it('summarises the values as loading until the options arrive', () => {
+    const { result } = renderHook(() =>
+      TeamFilter.useSummary(
+        { teamId: ['waw-1'] },
+        { param: 'teamId', city: 'waw', state: 'loading' },
+      ),
+    );
+
+    expect(result.current).toBe(i18n.t('table.filters.loading'));
   });
 });
