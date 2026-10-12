@@ -23,7 +23,7 @@ afterEach(() => {
 describe('customer summary API contract', () => {
   it('builds the versioned endpoint and encodes the path parameter', () => {
     expect(getCustomerSummaryRequest('customer/42 #main')).toEqual({
-      url: 'v1/customers/customer%2F42%20%23main/summary',
+      url: 'customers/customer%2F42%20%23main/summary',
     });
   });
 

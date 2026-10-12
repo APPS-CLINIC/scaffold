@@ -230,17 +230,29 @@ service params (ADR 0038): the field's name, or `filterParam` when the service
 calls it differently. The built-in controls:
 
 - `MultiSelectFilter` (`options`: `{ value, labelKey }` or `{ value, label }`,
-  optional `selectionLimit`): IWA `MultiSelect`, one repeated param. From six
+  optional `selectionLimit`, `loading`, `failed`, `onSearch`,
+  `searchPlaceholder`): IWA `MultiSelect`, one repeated param. From six
   options on, the open list has a search that keeps the options whose label
-  contains the text.
+  contains the text. `loading` shows a spinner and makes the chip say
+  "Loading…"; `failed` makes the open list say the options could not be
+  loaded. With `onSearch` the list always has its search and reports the typed
+  text, for options searched elsewhere.
 - `DateRangeFilter`: two IWA `DatePicker`s writing `<param>.from` and
   `<param>.to` as `yyyy-MM-dd`; either end may stay empty. The calendars open
   on `document.body`, so the scrolling dialog rows do not clip them.
 - `TextFilter`: IWA `TextInput`, one param; blank text is no filter.
 - `createMultiSelectFilter(useOptions, { selectionLimit })`: a multiselect whose
-  options come from a hook, such as a list the service serves. The hook gets the
-  props the field declares and runs in the control and in its chip alike; the
-  owner keeps the hook, and with it the request, in its feature.
+  options come from a hook, such as a list the service serves whole. The hook
+  gets the props the field declares, returns `{ options, loading, failed }` and
+  runs in the control and in its chip alike; the owner keeps the hook, and with
+  it the request, in its feature.
+- `createSearchMultiSelectFilter(useSearchOptions, { selectionLimit })`: the
+  same for a list too long to load whole. The hook also gets
+  `{ text, values }`: the text typed into the open list, trimmed, from three
+  characters on and 300 ms after typing pauses (`''` before that), and the
+  picked values, which it must return options for too. The chip runs the hook
+  with `text: ''`. See
+  [ADR 0040](../../docs/adr/0040-filter-options-from-the-service.md).
 
 Every control receives `TableFilterProps` — `inputId` for the row label,
 `labelId` for controls with several inputs, `param`, the `values` of the params

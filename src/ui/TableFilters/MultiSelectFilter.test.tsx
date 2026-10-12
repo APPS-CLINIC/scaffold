@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react';
 import { act, render, renderHook, screen } from '@testing-library/react';
 import type * as IwaComponents from 'iwa-react-components';
-import type { MultiSelectChangeEvent } from 'primereact/multiselect';
+import type { MultiSelectChangeEvent, MultiSelectFilterEvent } from 'primereact/multiselect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
 import { MultiSelectFilter, type MultiSelectFilterProps } from './MultiSelectFilter';
@@ -90,6 +90,17 @@ describe('MultiSelectFilter', () => {
     renderMultiSelect({}, { options: optionList });
 
     expect(multiSelectProps()).toMatchObject({ filter: search, filterMatchMode: 'contains' });
+  });
+
+  it('searching elsewhere, always offers the search and reports the typed text', () => {
+    const onSearch = vi.fn();
+    renderMultiSelect({}, { onSearch, searchPlaceholder: 'Type more' });
+
+    expect(multiSelectProps()).toMatchObject({ filter: true, filterPlaceholder: 'Type more' });
+    act(() => {
+      multiSelectProps().onFilter?.({ filter: 'grup' } as MultiSelectFilterEvent);
+    });
+    expect(onSearch).toHaveBeenCalledWith('grup');
   });
 
   it('takes its accessible name from the row label', () => {

@@ -57,6 +57,23 @@ export type FilterableTableField = TableFilterField & { filter: TableFilterDecla
 export type TableFilterOption =
   { value: string; labelKey: MessageKey } | { value: string; label: string };
 
+/** Options that arrive after the control renders, such as a list the service serves. */
+export interface LoadedFilterOptions {
+  options: readonly TableFilterOption[];
+  /** The options are on their way. */
+  loading: boolean;
+  /** The options could not be loaded. */
+  failed: boolean;
+}
+
+/** What a multiselect that searches elsewhere asks its options hook for. */
+export interface FilterOptionSearch {
+  /** The trimmed search text, or `''` while it is shorter than three characters. */
+  text: string;
+  /** The picked values; the hook names them too, so they stay picked whatever the search. */
+  values: readonly string[];
+}
+
 export interface TableFiltersProps {
   /** The fields the table uses, in display order; fields without a `filter` are skipped. */
   fields: readonly TableFilterField[];

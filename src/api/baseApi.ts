@@ -26,12 +26,21 @@ export async function downloadFileFromResponse(
   return;
 }
 
+/** The API root of this environment; the version sits below it. */
+const API_ROOT_URL = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/$/, '');
+
+/** The API version every endpoint path is relative to. */
+const API_VERSION = 'v1';
+
+// Add `prepareHeaders` here to attach auth tokens once you wire auth.
+const createBaseQuery = (baseUrl: string) => fetchBaseQuery({ baseUrl });
+
+/** Reaches the few endpoints outside the versioned API, such as `GET /api/dictionaries`. */
+export const apiRootBaseQuery = createBaseQuery(API_ROOT_URL);
+
 export const baseApi = createApi({
   reducerPath: 'api',
-  baseQuery: fetchBaseQuery({
-    baseUrl: import.meta.env.VITE_API_BASE_URL ?? '/api',
-    // Add `prepareHeaders` here to attach auth tokens once you wire auth.
-  }),
+  baseQuery: createBaseQuery(`${API_ROOT_URL}/${API_VERSION}`),
   // Register cache tags here as features add endpoints, so invalidation stays
   // coordinated across the app.
   tagTypes: [],

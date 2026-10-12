@@ -63,7 +63,7 @@ describe('customer API contract', () => {
         {},
         {
           status: ['ACTIVE', 'ARCHIVAL'],
-          internalGroupId: ['NONE', '17'],
+          internalGroupId: ['null', '17'],
           'lendingReviewDate.from': ['2026-02-01'],
         },
       ),
@@ -71,7 +71,7 @@ describe('customer API contract', () => {
 
     expect(customerBackendParamsToSearchParams(backendParams).toString()).toBe(
       'page=0&size=10&sort=id%2CASC&status=ACTIVE&status=ARCHIVAL' +
-        '&internalGroupId=NONE&internalGroupId=17&lendingReviewDate.from=2026-02-01',
+        '&internalGroupId=null&internalGroupId=17&lendingReviewDate.from=2026-02-01',
     );
   });
 
@@ -194,7 +194,7 @@ describe('customer export contract', () => {
     const url = new URL(request.url);
 
     expect(request.method).toBe('GET');
-    expect(url.pathname).toBe('/api/customers/export');
+    expect(url.pathname).toBe('/api/v1/customers/export');
     expect(url.searchParams.get('columnSelection')).toBe('fullName');
     expect(request.headers.get('Accept-Language')).toBe('en');
     expect(download).toHaveBeenCalledTimes(1);

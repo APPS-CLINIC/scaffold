@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+import type { MessageKey } from '@/i18n/messages/pl';
 import { MultiSelect } from '@/ui';
 import type { TableFilterOption, TableFilterProps, TableFilterValues } from './TableFilters.types';
 
@@ -24,6 +25,19 @@ export interface MultiSelectFilterProps {
   options: readonly TableFilterOption[];
   /** The most values the user may pick; the list stops offering more. */
   selectionLimit?: number;
+  /** The options are on their way: the field shows a spinner and the chip says so. */
+  loading?: boolean;
+  /** The options could not be loaded: the open list says so. */
+  failed?: boolean;
+  /**
+   * Searches somewhere else, such as on the service: the list always offers its search and
+   * reports the typed text here, and the options follow the search.
+   */
+  onSearch?: (text: string) => void;
+  /** The search field placeholder, such as how much to type. */
+  searchPlaceholder?: string;
+  /** What the open list says when no option matches the search, such as how much to type. */
+  searchMessage?: string;
 }
 
 /** The options with their labels in the active language. */
@@ -45,6 +59,16 @@ function toStringValues(value: unknown): string[] {
     : [];
 }
 
+/** Why an open list has no matching option, while loading or after a failure. */
+function emptyListReason({
+  loading,
+  failed,
+}: Pick<MultiSelectFilterProps, 'loading' | 'failed'>): MessageKey | undefined {
+  if (failed) return 'table.filters.loadFailed';
+  if (loading) return 'table.filters.loading';
+  return undefined;
+}
+
 /**
  * Picks any number of options. A longer list has a search that narrows it to labels
  * containing the text. A value without an option is not shown, and leaves the filter once
@@ -58,9 +82,15 @@ export function MultiSelectFilter({
   onChange,
   options,
   selectionLimit,
+  loading = false,
+  failed = false,
+  onSearch,
+  searchPlaceholder,
+  searchMessage,
 }: TableFilterProps & MultiSelectFilterProps) {
   const { t } = useTranslation();
   const items = useOptionItems(options);
+  const reason = emptyListReason({ loading, failed });
 
   return (
     <MultiSelect
@@ -71,16 +101,18 @@ export function MultiSelectFilter({
       optionLabel="label"
       optionValue="value"
       onChange={(event) => onChange({ [param]: toStringValues(event.value) })}
-      filter={items.length >= MIN_OPTIONS_FOR_SEARCH}
+      filter={onSearch !== undefined || items.length >= MIN_OPTIONS_FOR_SEARCH}
       filterMatchMode="contains"
+      onFilter={onSearch && ((event) => onSearch(event.filter))}
+      loading={loading}
       showHeader
       showSelectAll={false}
       selectionLimit={selectionLimit}
       display="comma"
       placeholder={t('table.filters.placeholder')}
-      filterPlaceholder={t('table.filters.search')}
-      emptyFilterMessage={t('table.filters.noResults')}
-      emptyMessage={t('table.filters.noOptions')}
+      filterPlaceholder={searchPlaceholder ?? t('table.filters.search')}
+      emptyFilterMessage={reason ? t(reason) : (searchMessage ?? t('table.filters.noResults'))}
+      emptyMessage={t(reason ?? 'table.filters.noOptions')}
       className={MULTI_SELECT_CLASS_NAME}
       panelClassName={MULTI_SELECT_PANEL_CLASS_NAME}
     />
@@ -89,9 +121,11 @@ export function MultiSelectFilter({
 
 MultiSelectFilter.useSummary = function useMultiSelectSummary(
   values: TableFilterValues,
-  { param, options }: MultiSelectFilterProps & { param: string },
+  { param, options, loading = false }: MultiSelectFilterProps & { param: string },
 ): string {
+  const { t } = useTranslation();
   const items = useOptionItems(options);
+  if (loading) return t('table.filters.loading');
   return (values[param] ?? [])
     .map((value) => items.find((item) => item.value === value)?.label ?? value)
     .join(', ');

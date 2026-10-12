@@ -2,7 +2,6 @@ import type { Customer } from '@/features/customers/customers.types';
 import {
   ActiveArchivalStatusCell,
   DateRangeFilter,
-  MultiSelectFilter,
   OverdueDateCell,
   tableFilter,
   TextCell,
@@ -11,18 +10,21 @@ import {
 } from '@/ui';
 import type { GenericDataTableConfig } from '@/ui';
 import { CustomerDictionaryFilter } from './CustomerDictionaryFilter';
+import { CustomerSearchFilter } from './CustomerSearchFilter';
 import {
-  CUSTOMER_STATUS_OPTIONS,
-  CUSTOMER_TYPE_OPTIONS,
+  NO_ADVISOR_OPTION,
+  NO_CORPORATE_GROUP_OPTION,
   NO_INTERNAL_GROUP_OPTION,
-  TS_PRICE_CONDITION_STATUS_OPTIONS,
-} from './filterOptions';
+  NO_TS_PRICE_CONDITION_STATUS_OPTION,
+} from './noValueOptions';
 
 /**
  * One flat field list: every field can be a column, and whatever does not fit
  * the viewport without horizontal scrolling drops into the row accordion (in
  * this order). Widths are pixel budgets for the responsive fit engine. A field
- * with a `filter` gets that control in the filter dialog while the table uses it.
+ * with a `filter` gets that control in the filter dialog while the table uses it:
+ * `CustomerDictionaryFilter` for a list the service serves whole, `CustomerSearchFilter`
+ * for one too long for that, which the service searches as the user types.
  */
 export const customerTableConfig = {
   id: 'customers',
@@ -43,7 +45,7 @@ export const customerTableConfig = {
     {
       field: 'status',
       labelKey: 'customers.table.field.status',
-      filter: tableFilter(MultiSelectFilter, { options: CUSTOMER_STATUS_OPTIONS }),
+      filter: tableFilter(CustomerDictionaryFilter, { dictionary: 'customer-status' }),
       component: ActiveArchivalStatusCell,
       sortable: true,
       width: 112,
@@ -51,8 +53,8 @@ export const customerTableConfig = {
     {
       field: 'internalGroupName',
       labelKey: 'customers.table.field.internalGroupName',
-      filter: tableFilter(CustomerDictionaryFilter, {
-        dictionary: 'internalGroups',
+      filter: tableFilter(CustomerSearchFilter, {
+        list: 'internalGroups',
         noneOption: NO_INTERNAL_GROUP_OPTION,
       }),
       filterParam: 'internalGroupId',
@@ -62,7 +64,10 @@ export const customerTableConfig = {
     {
       field: 'corporateGroupName',
       labelKey: 'customers.table.field.corporateGroupName',
-      filter: tableFilter(CustomerDictionaryFilter, { dictionary: 'corporateGroups' }),
+      filter: tableFilter(CustomerSearchFilter, {
+        list: 'corporateGroups',
+        noneOption: NO_CORPORATE_GROUP_OPTION,
+      }),
       filterParam: 'corporateGroupId',
       component: UnderlinedTextCell,
       sortable: true,
@@ -71,7 +76,7 @@ export const customerTableConfig = {
     {
       field: 'type',
       labelKey: 'customers.table.field.type',
-      filter: tableFilter(MultiSelectFilter, { options: CUSTOMER_TYPE_OPTIONS }),
+      filter: tableFilter(CustomerDictionaryFilter, { dictionary: 'customer-type' }),
       component: TextCell,
       sortable: true,
       width: 128,
@@ -112,7 +117,10 @@ export const customerTableConfig = {
     {
       field: 'tsPriceConditionStatus',
       labelKey: 'customers.table.field.tsPriceConditionStatus',
-      filter: tableFilter(MultiSelectFilter, { options: TS_PRICE_CONDITION_STATUS_OPTIONS }),
+      filter: tableFilter(CustomerDictionaryFilter, {
+        dictionary: 'ts-price-condition-status',
+        noneOption: NO_TS_PRICE_CONDITION_STATUS_OPTION,
+      }),
       component: TextCell,
       sortable: true,
       width: 176,
@@ -136,63 +144,90 @@ export const customerTableConfig = {
     {
       field: 'rmAdvisor',
       labelKey: 'customers.table.field.rmAdvisor',
-      filter: tableFilter(CustomerDictionaryFilter, { dictionary: 'rmAdvisors' }),
+      filter: tableFilter(CustomerDictionaryFilter, {
+        dictionary: 'rmAdvisors',
+        noneOption: NO_ADVISOR_OPTION,
+      }),
       sortable: true,
       width: 176,
     },
     {
       field: 'lendingAdvisor',
       labelKey: 'customers.table.field.lendingAdvisor',
-      filter: tableFilter(CustomerDictionaryFilter, { dictionary: 'lendingAdvisors' }),
+      filter: tableFilter(CustomerDictionaryFilter, {
+        dictionary: 'lendingAdvisors',
+        noneOption: NO_ADVISOR_OPTION,
+      }),
       sortable: true,
       width: 176,
     },
     {
       field: 'sfAdvisor',
       labelKey: 'customers.table.field.sfAdvisor',
-      filter: tableFilter(CustomerDictionaryFilter, { dictionary: 'sfAdvisors' }),
+      filter: tableFilter(CustomerDictionaryFilter, {
+        dictionary: 'sfAdvisors',
+        noneOption: NO_ADVISOR_OPTION,
+      }),
       sortable: true,
       width: 176,
     },
     {
       field: 'pcmAdvisor',
       labelKey: 'customers.table.field.pcmAdvisor',
-      filter: tableFilter(CustomerDictionaryFilter, { dictionary: 'pcmAdvisors' }),
+      filter: tableFilter(CustomerDictionaryFilter, {
+        dictionary: 'pcmAdvisors',
+        noneOption: NO_ADVISOR_OPTION,
+      }),
       sortable: true,
       width: 176,
     },
     {
       field: 'fmAdvisor',
       labelKey: 'customers.table.field.fmAdvisor',
-      filter: tableFilter(CustomerDictionaryFilter, { dictionary: 'fmAdvisors' }),
+      filter: tableFilter(CustomerDictionaryFilter, {
+        dictionary: 'fmAdvisors',
+        noneOption: NO_ADVISOR_OPTION,
+      }),
       sortable: true,
       width: 176,
     },
     {
       field: 'tsAdvisor',
       labelKey: 'customers.table.field.tsAdvisor',
-      filter: tableFilter(CustomerDictionaryFilter, { dictionary: 'tsAdvisors' }),
+      filter: tableFilter(CustomerDictionaryFilter, {
+        dictionary: 'tsAdvisors',
+        noneOption: NO_ADVISOR_OPTION,
+      }),
       sortable: true,
       width: 176,
     },
     {
       field: 'implementationAdvisor',
       labelKey: 'customers.table.field.implementationAdvisor',
-      filter: tableFilter(CustomerDictionaryFilter, { dictionary: 'implementationAdvisors' }),
+      filter: tableFilter(CustomerDictionaryFilter, {
+        dictionary: 'implementationAdvisors',
+        noneOption: NO_ADVISOR_OPTION,
+      }),
       sortable: true,
       width: 192,
     },
     {
       field: 'customerServiceAdvisor',
       labelKey: 'customers.table.field.customerServiceAdvisor',
-      filter: tableFilter(CustomerDictionaryFilter, { dictionary: 'customerServiceAdvisors' }),
+      filter: tableFilter(CustomerDictionaryFilter, {
+        dictionary: 'customerServiceAdvisors',
+        noneOption: NO_ADVISOR_OPTION,
+      }),
       sortable: true,
       width: 192,
     },
     {
       field: 'ebdAdvisor',
       labelKey: 'customers.table.field.ebdAdvisor',
-      filter: tableFilter(CustomerDictionaryFilter, { dictionary: 'ebdAdvisors' }),
+      filter: tableFilter(CustomerDictionaryFilter, {
+        dictionary: 'ebdAdvisors',
+        noneOption: NO_ADVISOR_OPTION,
+      }),
       sortable: true,
       width: 176,
     },

@@ -55,6 +55,7 @@ keep ADRs at all; use it as the template for new records.
 | [0037](0037-generic-due-date-filter-in-the-ui-seam.md)            | Generic due-date filter in the UI seam              | Accepted               |
 | [0038](0038-list-filters-as-service-named-url-params.md)          | List filters as service-named URL params            | Accepted               |
 | [0039](0039-table-filters-declared-in-the-field-config.md)        | Table filters declared in the field config          | Accepted               |
+| [0040](0040-filter-options-from-the-service.md)                   | Filter options from the service                     | Accepted               |
 
 ### Step 03 — Scope alignment (discovery)
 

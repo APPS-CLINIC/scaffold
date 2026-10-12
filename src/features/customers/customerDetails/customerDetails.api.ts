@@ -13,11 +13,11 @@ export function isAwaitingData(query: { isError: boolean; currentData?: unknown 
 }
 
 export function getCustomerDetailsRequest(customerId: string): { url: string } {
-  return { url: `v1/customers/${encodeURIComponent(customerId)}` };
+  return { url: `customers/${encodeURIComponent(customerId)}` };
 }
 
 export function getCustomerAdvisorsRequest(customerId: string): { url: string } {
-  return { url: `v1/customers/${encodeURIComponent(customerId)}/advisors` };
+  return { url: `customers/${encodeURIComponent(customerId)}/advisors` };
 }
 
 /** Detailed customer endpoints share the existing RTK Query transport/cache. */

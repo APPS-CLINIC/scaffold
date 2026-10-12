@@ -28,10 +28,10 @@ afterEach(() => {
 describe('customer details API contract', () => {
   it('builds both versioned endpoints and encodes the customer id', () => {
     expect(getCustomerDetailsRequest('customer/42 #main')).toEqual({
-      url: 'v1/customers/customer%2F42%20%23main',
+      url: 'customers/customer%2F42%20%23main',
     });
     expect(getCustomerAdvisorsRequest('customer/42 #main')).toEqual({
-      url: 'v1/customers/customer%2F42%20%23main/advisors',
+      url: 'customers/customer%2F42%20%23main/advisors',
     });
   });
 

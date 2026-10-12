@@ -56,7 +56,7 @@ describe('preview data profiles', () => {
     expect(fetchMock).toHaveBeenCalledOnce();
     expect(vi.mocked(fetchMock).mock.calls[0]?.[0]).toEqual(
       expect.objectContaining({
-        url: expect.stringContaining('/api/customers?page=1&size=10&sort=id%2CASC'),
+        url: expect.stringContaining('/api/v1/customers?page=1&size=10&sort=id%2CASC'),
       }),
     );
     subscription.unsubscribe();

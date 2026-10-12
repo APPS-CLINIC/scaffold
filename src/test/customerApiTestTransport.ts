@@ -4,9 +4,15 @@ import {
   customerFirstPageResponse,
 } from '@/dev/previewData/customers.fixture';
 import type { CustomerResponse, PageResponse } from '@/features/customers/customers.types';
+import {
+  advisorsByType,
+  groupsByList,
+  lendingTeams,
+  staticDictionariesByLanguage,
+} from './customerFilterDictionaries.fixture';
 
 const NativeRequest = globalThis.Request;
-const CUSTOMER_API_PATH = '/api/customers';
+const CUSTOMER_API_PATH = '/api/v1/customers';
 const TEST_ORIGIN = 'https://app.test';
 
 class AbsoluteTestRequest extends NativeRequest {
@@ -41,6 +47,33 @@ function getTestResponse(searchParams: URLSearchParams): PageResponse<CustomerRe
   return customerFirstPageResponse;
 }
 
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+
+const nameContains = (search: string | null) => (entry: { name: string }) =>
+  search === null || entry.name.toLowerCase().includes(search.toLowerCase());
+
+/** The dictionary endpoints the customer filters read, or `undefined` for another path. */
+function getDictionaryResponse(request: Request, url: URL): Response | undefined {
+  if (url.pathname === '/api/dictionaries') {
+    const dictionaries = staticDictionariesByLanguage[request.headers.get('Accept-Language') ?? ''];
+    return dictionaries === undefined
+      ? json({ message: 'Unsupported language code' }, 400)
+      : json(dictionaries);
+  }
+  const groupList = /^\/api\/v1\/(internalGroups|corporateGroups)$/.exec(url.pathname)?.[1];
+  if (groupList !== undefined) {
+    return json((groupsByList[groupList] ?? []).filter(nameContains(url.searchParams.get('name'))));
+  }
+  if (url.pathname === '/api/v1/teams') return json(lendingTeams);
+  if (url.pathname === '/api/v1/users') {
+    return json(
+      url.searchParams.getAll('advisorType').flatMap((type) => advisorsByType[type] ?? []),
+    );
+  }
+  return undefined;
+}
+
 /** Install a static HTTP test double; production code always calls the real backend. */
 export function installCustomerApiTestTransport() {
   vi.stubGlobal('Request', AbsoluteTestRequest);
@@ -50,6 +83,9 @@ export function installCustomerApiTestTransport() {
       const request =
         input instanceof NativeRequest ? input : new NativeRequest(new URL(String(input)), init);
       const requestUrl = new URL(request.url);
+
+      const dictionaryResponse = getDictionaryResponse(request, requestUrl);
+      if (dictionaryResponse !== undefined) return dictionaryResponse;
 
       if (requestUrl.pathname !== CUSTOMER_API_PATH) {
         return new Response(JSON.stringify({ message: 'Not found' }), {

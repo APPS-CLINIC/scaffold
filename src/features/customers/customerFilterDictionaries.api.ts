@@ -1,54 +1,139 @@
-import { baseApi } from '@/api/baseApi';
+import type { FetchArgs } from '@reduxjs/toolkit/query/react';
+import { apiRootBaseQuery, baseApi } from '@/api/baseApi';
+import type { RootState } from '@/app/store';
+import type { TableFilterOption } from '@/ui';
 
-/** One choice of a dictionary: the filter sends `id`, the user sees `name`. */
-interface DictionaryEntry {
-  id: string;
+/** The language every dictionary has labels in. */
+const DEFAULT_LANGUAGE = 'pl';
+
+/** Dictionaries change with releases, not with what the user does, so they stay cached. */
+const DICTIONARY_CACHE_SECONDS = 60 * 60;
+
+/** The dictionaries `GET /api/dictionaries` serves, by the service's names. */
+export const STATIC_DICTIONARIES = [
+  'customer-status',
+  'customer-type',
+  'ts-price-condition-status',
+] as const;
+export type StaticDictionary = (typeof STATIC_DICTIONARIES)[number];
+
+const advisors = (advisorType: string): FetchArgs => ({
+  url: 'users',
+  params: { advisorType },
+});
+
+/** Lists short enough to load whole, and where they come from. */
+const LIST_REQUESTS = {
+  rmAdvisors: advisors('RM'),
+  lendingAdvisors: advisors('LENDING'),
+  sfAdvisors: advisors('SF'),
+  pcmAdvisors: advisors('PCM'),
+  fmAdvisors: advisors('FM'),
+  tsAdvisors: advisors('TS'),
+  implementationAdvisors: advisors('IMPLEMENTATION'),
+  customerServiceAdvisors: advisors('CUSTOMER_SERVICE'),
+  ebdAdvisors: advisors('EBD'),
+  lendingTeams: { url: 'teams', params: { productGroup: 'LENDING' } },
+} satisfies Record<string, FetchArgs>;
+export type FilterList = keyof typeof LIST_REQUESTS;
+
+/** Lists too long to load whole; the service searches them by a part of the name. */
+const SEARCH_URLS = {
+  internalGroups: 'internalGroups',
+  corporateGroups: 'corporateGroups',
+};
+export type SearchableFilterList = keyof typeof SEARCH_URLS;
+
+export interface FilterListSearch {
+  list: SearchableFilterList;
   name: string;
 }
 
-const advisors = (role: string, names: readonly string[]): readonly DictionaryEntry[] =>
-  names.map((name, index) => ({ id: `${role}-${index + 1}`, name }));
+interface StaticDictionaryEntry {
+  code: string;
+  label: string;
+}
 
-/** Stand-in dictionaries for the filters until the service serves them. */
-const localDictionaries = {
-  internalGroups: [
-    { id: '101', name: 'Grupa Północ' },
-    { id: '102', name: 'Grupa Południe' },
-    { id: '103', name: 'Grupa Centrum' },
-  ],
-  corporateGroups: [
-    { id: '201', name: 'ArcelorMittal' },
-    { id: '202', name: 'Comarch' },
-    { id: '203', name: 'ABB' },
-  ],
-  rmAdvisors: advisors('rm', ['Kowalska Anna', 'Nowak Piotr', 'Wiśniewski Tomasz']),
-  lendingAdvisors: advisors('lending', ['Drewniak Dariusz', 'Zając Monika']),
-  sfAdvisors: advisors('sf', ['Lewandowska Ewa', 'Kamiński Marek']),
-  pcmAdvisors: advisors('pcm', ['Wójcik Agnieszka', 'Kowalczyk Paweł']),
-  fmAdvisors: advisors('fm', ['Kozłowski Adam', 'Jankowska Joanna']),
-  tsAdvisors: advisors('ts', ['Mazur Krzysztof', 'Krawczyk Magdalena']),
-  implementationAdvisors: advisors('implementation', ['Piotrowski Jan', 'Grabowska Karolina']),
-  customerServiceAdvisors: advisors('customer-service', ['Pawlak Barbara', 'Michalski Robert']),
-  ebdAdvisors: advisors('ebd', ['Król Michał', 'Wieczorek Natalia']),
-  lendingTeams: [
-    { id: 'team-1', name: 'Zespół Warszawa' },
-    { id: 'team-2', name: 'Zespół Kraków' },
-    { id: 'team-3', name: 'Zespół Poznań' },
-  ],
-} satisfies Record<string, readonly DictionaryEntry[]>;
+interface FilterListEntry {
+  id: number;
+  name: string;
+}
 
-/** The lists the customer filters choose from. */
-export type CustomerFilterDictionary = keyof typeof localDictionaries;
+export type StaticDictionaryOptions = Partial<Record<string, readonly TableFilterOption[]>>;
+
+function toStaticDictionaryOptions(
+  response: Partial<Record<string, readonly StaticDictionaryEntry[]>>,
+): StaticDictionaryOptions {
+  return Object.fromEntries(
+    Object.entries(response).map(([dictionary, entries = []]) => [
+      dictionary,
+      entries.map(({ code, label }) => ({ value: code, label })),
+    ]),
+  );
+}
+
+/** The filters send the id as text, like every value they keep in the URL. */
+function toFilterListOptions(entries: readonly FilterListEntry[]): readonly TableFilterOption[] {
+  return entries.map(({ id, name }) => ({ value: String(id), label: name }));
+}
 
 export const customerFilterDictionariesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getCustomerFilterDictionary: builder.query<
-      readonly DictionaryEntry[],
-      CustomerFilterDictionary
-    >({
-      queryFn: (dictionary) => ({ data: localDictionaries[dictionary] }),
+    /** Every static dictionary, labelled in `language`, or in Polish when the service has none in it. */
+    getStaticDictionaries: builder.query<StaticDictionaryOptions, string>({
+      async queryFn(language, api, extraOptions) {
+        const fetchIn = (acceptLanguage: string) =>
+          apiRootBaseQuery(
+            { url: 'dictionaries', headers: { 'Accept-Language': acceptLanguage } },
+            api,
+            extraOptions,
+          );
+        let result = await fetchIn(language);
+        if (result.error?.status === 400 && language !== DEFAULT_LANGUAGE) {
+          result = await fetchIn(DEFAULT_LANGUAGE);
+        }
+        if (result.error) return { error: result.error };
+        return {
+          data: toStaticDictionaryOptions(
+            result.data as Partial<Record<string, readonly StaticDictionaryEntry[]>>,
+          ),
+        };
+      },
+      keepUnusedDataFor: DICTIONARY_CACHE_SECONDS,
+    }),
+    getFilterList: builder.query<readonly TableFilterOption[], FilterList>({
+      query: (list) => LIST_REQUESTS[list],
+      transformResponse: toFilterListOptions,
+      keepUnusedDataFor: DICTIONARY_CACHE_SECONDS,
+    }),
+    searchFilterList: builder.query<readonly TableFilterOption[], FilterListSearch>({
+      query: ({ list, name }) => ({ url: SEARCH_URLS[list], params: { name } }),
+      transformResponse: toFilterListOptions,
+      keepUnusedDataFor: DICTIONARY_CACHE_SECONDS,
     }),
   }),
 });
 
-export const { useGetCustomerFilterDictionaryQuery } = customerFilterDictionariesApi;
+export const { useGetStaticDictionariesQuery, useGetFilterListQuery, useSearchFilterListQuery } =
+  customerFilterDictionariesApi;
+
+/**
+ * The label the service gave `value` in any search of `list` still cached, so a picked entry
+ * keeps its name after the search that found it is over.
+ */
+export function selectSearchedLabel(
+  state: RootState,
+  list: SearchableFilterList,
+  value: string,
+): string | undefined {
+  for (const search of customerFilterDictionariesApi.util.selectCachedArgsForQuery(
+    state,
+    'searchFilterList',
+  )) {
+    if (search.list !== list) continue;
+    const { data } = customerFilterDictionariesApi.endpoints.searchFilterList.select(search)(state);
+    const option = data?.find((entry) => entry.value === value);
+    if (option !== undefined && 'label' in option) return option.label;
+  }
+  return undefined;
+}

@@ -122,6 +122,7 @@ export {
 } from './dialogFrame';
 export {
   createMultiSelectFilter,
+  createSearchMultiSelectFilter,
   DateRangeFilter,
   isFilterableField,
   MultiSelectFilter,
@@ -131,6 +132,8 @@ export {
   tableFilterParam,
   TableFilters,
   TextFilter,
+  type FilterOptionSearch,
+  type LoadedFilterOptions,
   type MultiSelectFilterProps,
   type TableFilterField,
   type TableFilterOption,

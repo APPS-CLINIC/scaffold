@@ -84,7 +84,7 @@ export function toCustomerBackendParams(query: CustomerQuery) {
  */
 export type CustomerBackendParams = ReturnType<typeof toCustomerBackendParams>;
 
-/** Build URL parameters for the `/api/customers` endpoint. */
+/** Build URL parameters for the `/api/v1/customers` endpoint. */
 export function customerBackendParamsToSearchParams(
   params: CustomerBackendParams,
 ): URLSearchParams {

@@ -2,7 +2,7 @@ import type { ComponentProps } from 'react';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type * as IwaComponents from 'iwa-react-components';
-import type { MultiSelectChangeEvent } from 'primereact/multiselect';
+import type { MultiSelectChangeEvent, MultiSelectFilterEvent } from 'primereact/multiselect';
 import { useLocation, useNavigationType } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createTableSettingsState } from '@/features/tableSettings';
@@ -83,17 +83,19 @@ function renderPage(initialEntry = '/customers/all', columns?: readonly string[]
 const location = () => screen.getByRole('status', { name: 'Current customer URL' });
 const currentSearch = () => new URLSearchParams(location().textContent ?? '');
 
+/** The URLs of the requests sent to `pathname`, in order. */
+const requestsTo = (pathname: string) =>
+  fetchMock.mock.calls
+    .map(([request]) => request)
+    .filter((request): request is Request => request instanceof Request)
+    .map((request) => new URL(request.url))
+    .filter((url) => url.pathname === pathname);
+
 /** The search params of the last customer list request. */
 const lastListRequest = () => {
-  const requests = fetchMock.mock.calls
-    .map(([request]) => request)
-    .filter(
-      (request): request is Request =>
-        request instanceof Request && new URL(request.url).pathname === '/api/customers',
-    );
-  const last = requests.at(-1);
+  const last = requestsTo('/api/v1/customers').at(-1);
   if (last === undefined) throw new Error('No customer list request was sent');
-  return new URL(last.url).searchParams;
+  return last.searchParams;
 };
 
 const label = (field: string) => {
@@ -196,25 +198,27 @@ describe('CustomersView filters', () => {
   it('shows the applied filters as chips and removes them one by one or all at once', async () => {
     const user = userEvent.setup();
     renderPage(
-      '/customers/all?q=ozarow&rmAdvisor=rm-1&status=ARCHIVAL&lendingReviewDate.from=2026-02-01',
+      '/customers/all?q=ozarow&rmAdvisor=101&status=ARCHIVAL&lendingReviewDate.from=2026-02-01',
     );
     await screen.findByText('Clear filters (3)');
 
-    expectChips([
-      `${label('status')}: Archival`,
-      `${label('lendingReviewDate')}: ${i18n.t('table.filters.range.from', {
-        date: new Intl.DateTimeFormat('en', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-        }).format(new Date(2026, 1, 1)),
-      })}`,
-      `${label('rmAdvisor')}: Kowalska Anna`,
-    ]);
+    await waitFor(() =>
+      expectChips([
+        `${label('status')}: Archival`,
+        `${label('lendingReviewDate')}: ${i18n.t('table.filters.range.from', {
+          date: new Intl.DateTimeFormat('en', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+          }).format(new Date(2026, 1, 1)),
+        })}`,
+        `${label('rmAdvisor')}: Kowalska Anna`,
+      ]),
+    );
 
     act(() => chip('status').onChange([]));
     await waitFor(() => expect(currentSearch().has('status')).toBe(false));
-    expect(currentSearch().get('rmAdvisor')).toBe('rm-1');
+    expect(currentSearch().get('rmAdvisor')).toBe('101');
 
     await user.click(screen.getByText('Clear filters (2)'));
     await waitFor(() => expect(currentSearch().toString()).toBe('q=ozarow'));
@@ -227,7 +231,7 @@ describe('CustomersView filters', () => {
     );
     await screen.findByText('Clear filters (1)');
 
-    expectChips([`${label('type')}: Corporate`]);
+    await waitFor(() => expectChips([`${label('type')}: Corporate`]));
     expect(lastListRequest().has('status')).toBe(false);
     expect(lastListRequest().has('lendingReviewDate.from')).toBe(false);
     expect(lastListRequest().has('lendingRating')).toBe(false);
@@ -238,7 +242,7 @@ describe('CustomersView filters', () => {
     renderPage('/customers/all?status=ARCHIVAL&type=CORPORATE', ['fullName', 'type']);
     await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
 
-    expectChips([`${label('type')}: Corporate`]);
+    await waitFor(() => expectChips([`${label('type')}: Corporate`]));
     expect(lastListRequest().has('status')).toBe(false);
     expect(lastListRequest().getAll('type')).toEqual(['CORPORATE']);
 
@@ -250,36 +254,162 @@ describe('CustomersView filters', () => {
     expect(currentSearch().getAll('type')).toEqual(['CORPORATE']);
   });
 
-  it('offers dictionary entries by name, with a choice for customers without an own group', async () => {
+  it("offers the service's dictionary entries by label, each with a choice for no value", async () => {
     const user = userEvent.setup();
-    renderPage('/customers/all', ['fullName', 'internalGroupName', 'rmAdvisor']);
+    renderPage('/customers/all', ['fullName', 'rmAdvisor', 'tsPriceConditionStatus']);
     await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
 
     await user.click(filtersButton());
-    await waitFor(() => expect(multiSelect('internalGroupName').options).toHaveLength(4));
+    await waitFor(() => expect(multiSelect('rmAdvisor').options).toHaveLength(4));
 
-    expect(multiSelect('internalGroupName').options?.[0]).toEqual({
-      value: 'NONE',
-      label: 'No own group',
-    });
-    expect(multiSelect('rmAdvisor').options).toContainEqual({
-      value: 'rm-2',
-      label: 'Nowak Piotr',
-    });
+    expect(multiSelect('rmAdvisor').options).toEqual([
+      { value: 'null', label: 'No advisor' },
+      { value: '101', label: 'Kowalska Anna' },
+      { value: '102', label: 'Nowak Piotr' },
+      { value: '103', label: 'Wiśniewski Tomasz' },
+    ]);
+    await waitFor(() =>
+      expect(multiSelect('tsPriceConditionStatus').options).toEqual([
+        { value: 'null', label: 'No status' },
+        { value: 'STANDARD_CONTRACT_END_DATE', label: '1 - Contract end date, standard terms' },
+        { value: 'NO_CONTRACT_END_DATE', label: '3 - No contract end date, no terms' },
+      ]),
+    );
+    expect(requestsTo('/api/v1/users').map((url) => url.searchParams.get('advisorType'))).toEqual([
+      'RM',
+    ]);
 
     act(() => {
-      multiSelect('rmAdvisor').onChange?.({ value: ['rm-2'] } as MultiSelectChangeEvent);
-      multiSelect('internalGroupName').onChange?.({ value: ['NONE'] } as MultiSelectChangeEvent);
+      multiSelect('rmAdvisor').onChange?.({ value: ['102'] } as MultiSelectChangeEvent);
+      multiSelect('tsPriceConditionStatus').onChange?.({
+        value: ['null'],
+      } as MultiSelectChangeEvent);
     });
     await user.click(within(filterDialog()).getByRole('button', { name: 'Save' }));
 
-    await waitFor(() => expect(currentSearch().get('rmAdvisor')).toBe('rm-2'));
-    expect(currentSearch().getAll('internalGroupId')).toEqual(['NONE']);
+    await waitFor(() => expect(currentSearch().get('rmAdvisor')).toBe('102'));
+    expect(currentSearch().getAll('tsPriceConditionStatus')).toEqual(['null']);
     expectChips([
-      `${label('internalGroupName')}: No own group`,
       `${label('rmAdvisor')}: Nowak Piotr`,
+      `${label('tsPriceConditionStatus')}: No status`,
     ]);
-    await waitFor(() => expect(lastListRequest().getAll('rmAdvisor')).toEqual(['rm-2']));
-    expect(lastListRequest().getAll('internalGroupId')).toEqual(['NONE']);
+    await waitFor(() => expect(lastListRequest().getAll('rmAdvisor')).toEqual(['102']));
+    expect(lastListRequest().getAll('tsPriceConditionStatus')).toEqual(['null']);
+  });
+
+  it('searches a long list on the service and keeps the name of the picked entry', async () => {
+    const user = userEvent.setup();
+    renderPage('/customers/all', ['fullName', 'internalGroupName']);
+    await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
+
+    await user.click(filtersButton());
+    expect(multiSelect('internalGroupName').options).toEqual([
+      { value: 'null', label: 'No own group' },
+    ]);
+    expect(requestsTo('/api/v1/internalGroups')).toEqual([]);
+
+    act(() => {
+      multiSelect('internalGroupName').onFilter?.({ filter: 'połu' } as MultiSelectFilterEvent);
+    });
+    await waitFor(() =>
+      expect(multiSelect('internalGroupName').options).toEqual([
+        { value: 'null', label: 'No own group' },
+        { value: '12', label: 'Grupa Południe' },
+      ]),
+    );
+    expect(requestsTo('/api/v1/internalGroups').map((url) => url.searchParams.get('name'))).toEqual(
+      ['połu'],
+    );
+
+    act(() => {
+      multiSelect('internalGroupName').onChange?.({ value: ['12'] } as MultiSelectChangeEvent);
+    });
+    await user.click(within(filterDialog()).getByRole('button', { name: 'Save' }));
+
+    await waitFor(() => expect(currentSearch().getAll('internalGroupId')).toEqual(['12']));
+    expectChips([`${label('internalGroupName')}: Grupa Południe`]);
+    await waitFor(() => expect(lastListRequest().getAll('internalGroupId')).toEqual(['12']));
+  });
+
+  it('keeps a picked entry of a long list, by name, while the search moves on or is cleared', async () => {
+    const user = userEvent.setup();
+    renderPage('/customers/all', ['fullName', 'internalGroupName']);
+    await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
+    await user.click(filtersButton());
+    const search = (text: string) =>
+      act(() => {
+        multiSelect('internalGroupName').onFilter?.({ filter: text } as MultiSelectFilterEvent);
+      });
+
+    search('połu');
+    await waitFor(() =>
+      expect(multiSelect('internalGroupName').options).toContainEqual({
+        value: '12',
+        label: 'Grupa Południe',
+      }),
+    );
+    act(() => {
+      multiSelect('internalGroupName').onChange?.({ value: ['12'] } as MultiSelectChangeEvent);
+    });
+
+    search('półn');
+    await waitFor(() =>
+      expect(multiSelect('internalGroupName').options).toEqual([
+        { value: 'null', label: 'No own group' },
+        { value: '12', label: 'Grupa Południe' },
+        { value: '11', label: 'Grupa Północ' },
+      ]),
+    );
+    expect(multiSelect('internalGroupName').value).toEqual(['12']);
+
+    search('');
+    await waitFor(() =>
+      expect(multiSelect('internalGroupName').options).toEqual([
+        { value: 'null', label: 'No own group' },
+        { value: '12', label: 'Grupa Południe' },
+      ]),
+    );
+  });
+
+  it('says so in the open list when the search fails', async () => {
+    const user = userEvent.setup();
+    const answer = fetchMock.getMockImplementation();
+    fetchMock.mockImplementation(async (input, init) =>
+      input instanceof Request && new URL(input.url).pathname === '/api/v1/corporateGroups'
+        ? new Response(JSON.stringify({ message: 'Unavailable' }), { status: 503 })
+        : (answer?.(input, init) ?? new Response(null, { status: 404 })),
+    );
+    renderPage('/customers/all', ['fullName', 'corporateGroupName']);
+    await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
+    await user.click(filtersButton());
+
+    act(() => {
+      multiSelect('corporateGroupName').onFilter?.({ filter: 'com' } as MultiSelectFilterEvent);
+    });
+
+    await waitFor(() =>
+      expect(multiSelect('corporateGroupName')).toMatchObject({
+        loading: false,
+        emptyFilterMessage: 'Could not load the list',
+      }),
+    );
+  });
+
+  it('names a picked entry of a long list by its id until a search finds it', async () => {
+    const user = userEvent.setup();
+    renderPage('/customers/all?corporateGroupId=22&corporateGroupId=null');
+    await screen.findByText('Clear filters (1)');
+
+    expectChips([`${label('corporateGroupName')}: 22, No corporate group`]);
+    expect(requestsTo('/api/v1/corporateGroups')).toEqual([]);
+
+    await user.click(filtersButton());
+    act(() => {
+      multiSelect('corporateGroupName').onFilter?.({ filter: 'comar' } as MultiSelectFilterEvent);
+    });
+
+    await waitFor(() =>
+      expectChips([`${label('corporateGroupName')}: Comarch, No corporate group`]),
+    );
   });
 });
