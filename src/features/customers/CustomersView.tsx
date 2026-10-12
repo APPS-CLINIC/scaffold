@@ -22,7 +22,7 @@ import {
   type GenericDataTableSortChange,
   type TableFilterValues,
 } from '@/ui';
-import { CustomerExportDialog } from './CustomerExportDialog';
+import { CustomerExportDialog, type CustomerExportScope } from './CustomerExportDialog';
 import { customerTableConfig } from './customerTable';
 import { useGetCustomersQuery, useExportCustomersMutation } from './customers.api';
 import { selectCustomerQuery } from './customers.filters';
@@ -104,17 +104,16 @@ export function CustomersView() {
     if (exportOpenerRef.current instanceof HTMLElement) exportOpenerRef.current.focus();
   };
 
-  // The file holds what the table shows: its columns in their order, the search and the
-  // filters in effect, but not the sorting.
-  const handleExportDownload = async () => {
+  // The file holds the table's columns in their order and, unless the user asks for all
+  // customers, only those the search and the filters leave. It is never sorted.
+  const handleExportDownload = async (scope: CustomerExportScope) => {
     closeExport();
     setExportNotice('started');
     try {
       await exportCustomers({
         locale: i18n.resolvedLanguage ?? i18n.language,
         columnSelection: tableSettings.config.fields.map(({ field }) => field),
-        q: customerQuery.q,
-        filters: customerQuery.filters,
+        ...(scope === 'filtered' ? { q: customerQuery.q, filters: customerQuery.filters } : {}),
       }).unwrap();
     } catch {
       setExportNotice('failed');

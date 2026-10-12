@@ -47,6 +47,7 @@ export const pl = {
   'customers.export.title': 'Pobierasz listę klientów',
   'customers.export.choice': 'Chcę pobrać',
   'customers.export.fullList': 'Pełną listę klientów według filtrów',
+  'customers.export.fullListUnfiltered': 'Pełną listę klientów bez filtrów',
   'customers.export.withLimits': 'Listę klientów z limitami',
   'customers.export.download': 'Pobierz',
   'customers.export.cancel': 'Anuluj',

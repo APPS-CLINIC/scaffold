@@ -1,4 +1,4 @@
-import { useRef, type SetStateAction } from 'react';
+import { useRef, useState, type SetStateAction } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Button,
@@ -14,19 +14,24 @@ import {
 const EXPORT_DIALOG_CLASS_NAME = '!w-[420px] !max-w-[calc(100vw-2rem)]';
 const EXPORT_DIALOG_CONTENT_CLASS_NAME = `${DIALOG_CONTENT_CLASS_NAME} !min-h-[296px]`;
 
+/** Which customers the file holds: those the search and filters leave, or all of them. */
+export type CustomerExportScope = 'filtered' | 'all';
+
 interface CustomerExportDialogProps {
-  /** Downloads the full customer list, with the filters and columns the table uses. */
-  onDownload: () => void;
+  /** Downloads the full customer list in the table's columns, for the picked scope. */
+  onDownload: (scope: CustomerExportScope) => void;
   onCancel: () => void;
 }
 
 /**
- * Asks which customer list to download. Only the full list is available yet, so it stays
- * picked and the list with limits is offered disabled. Mount it only while it is open.
+ * Asks which customer list to download: the full list by the filters (picked first) or
+ * without them. The list with limits is offered disabled, as the service does not serve it
+ * yet. Mount it only while it is open.
  */
 export function CustomerExportDialog({ onDownload, onCancel }: CustomerExportDialogProps) {
   const { t } = useTranslation();
   const actionsRef = useRef<HTMLDivElement>(null);
+  const [scope, setScope] = useState<CustomerExportScope>('filtered');
 
   const handleSetVisibility = (next: SetStateAction<boolean>) => {
     if (!resolveVisibility(next, true)) onCancel();
@@ -45,10 +50,14 @@ export function CustomerExportDialog({ onDownload, onCancel }: CustomerExportDia
         <RadioGroup
           label={t('customers.export.choice')}
           options={[
-            { label: t('customers.export.fullList'), value: 'fullList' },
+            { label: t('customers.export.fullList'), value: 'filtered' },
+            { label: t('customers.export.fullListUnfiltered'), value: 'all' },
             { label: t('customers.export.withLimits'), value: 'withLimits', disabled: true },
           ]}
-          selectedOption="fullList"
+          selectedOption={scope}
+          onChange={(value) => {
+            if (value === 'filtered' || value === 'all') setScope(value);
+          }}
         />
       </div>
       <div ref={actionsRef} className={`${DIALOG_FOOTER_CLASS_NAME} flex-col`}>
@@ -57,7 +66,7 @@ export function CustomerExportDialog({ onDownload, onCancel }: CustomerExportDia
           style="filled"
           size="medium"
           className="w-full justify-center"
-          onClick={onDownload}
+          onClick={() => onDownload(scope)}
         />
         <Button
           label={t('customers.export.cancel')}

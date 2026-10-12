@@ -61,6 +61,11 @@ const exportButton = () => screen.getByRole('button', { name: 'Download to Excel
 const exportDialog = () =>
   screen.getByRole('dialog', { name: 'You are downloading the customer list' });
 
+function radioGroup(): RadioGroupProps {
+  if (captured.radioGroup === null) throw new Error('RadioGroup was not rendered');
+  return captured.radioGroup;
+}
+
 function snackbar(): SnackbarProps {
   if (captured.snackbar === null) throw new Error('Snackbar was not rendered');
   return captured.snackbar;
@@ -91,7 +96,7 @@ afterEach(() => {
 });
 
 describe('CustomersView export', () => {
-  it('asks which list to download, with the full list picked and the list with limits disabled', async () => {
+  it('asks which list to download, with the filtered list picked and the list with limits disabled', async () => {
     const user = userEvent.setup();
     renderPage();
     await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
@@ -101,9 +106,10 @@ describe('CustomersView export', () => {
     expect(exportDialog()).toBeInTheDocument();
     expect(captured.radioGroup).toMatchObject({
       label: 'I want to download',
-      selectedOption: 'fullList',
+      selectedOption: 'filtered',
       options: [
-        { label: 'The full customer list by the filters', value: 'fullList' },
+        { label: 'The full customer list by the filters', value: 'filtered' },
+        { label: 'The full customer list without filters', value: 'all' },
         { label: 'The customer list with limits', value: 'withLimits', disabled: true },
       ],
     });
@@ -143,6 +149,29 @@ describe('CustomersView export', () => {
       type: 'info',
       message: 'Download started. To see the details, open the downloads in your web browser',
     });
+  });
+
+  it("downloads all customers in the table's columns when the user asks for no filters", async () => {
+    const user = userEvent.setup();
+    const download = vi
+      .spyOn(baseApiModule, 'downloadFileFromResponse')
+      .mockResolvedValue(undefined);
+    renderPage('/customers/all?q=carrefour&status=ACTIVE', ['fullName', 'status']);
+    await screen.findByText('CARREFOUR POLAND SP. Z O.O.');
+
+    await user.click(exportButton());
+    act(() => radioGroup().onChange?.('all'));
+    expect(radioGroup().selectedOption).toBe('all');
+    fetchMock.mockResolvedValueOnce(new Response(new Blob(['xlsx'])));
+    await user.click(within(exportDialog()).getByRole('button', { name: 'Download' }));
+
+    await waitFor(() => expect(download).toHaveBeenCalledTimes(1));
+    const [request] = exportRequests();
+    if (request === undefined) throw new Error('No export request was sent');
+    const params = new URL(request.url).searchParams;
+    expect(params.get('columnSelection')).toBe('fullName,status');
+    expect(params.has('query')).toBe(false);
+    expect(params.has('status')).toBe(false);
   });
 
   it('says so under the table when the download fails', async () => {
