@@ -117,6 +117,16 @@ export function mapCustomerPageResponse(
 }
 
 /**
+ * Saves the file the export answers with. A failed export answers with an error message
+ * instead, which becomes the error's data rather than a file.
+ */
+async function handleExportResponse(response: Response): Promise<unknown> {
+  if (!response.ok) return response.text();
+  await downloadFileFromResponse(response, 'customers.xlsx');
+  return undefined;
+}
+
+/**
  * Export customers request: the known columns, the search and the filters, with the column
  * headers in `locale`. The service does not sort the file. It returns a binary file, so the
  * `responseHandler` is provided to handle the download.
@@ -125,7 +135,7 @@ export function exportCustomersRequest(params: CustomerExportRequest): {
   url: string;
   method: string;
   headers: Record<string, string>;
-  responseHandler: (response: Response) => Promise<void>;
+  responseHandler: (response: Response) => Promise<unknown>;
 } {
   const columnSelection = (params.columnSelection ?? []).filter(isCustomerField).join(',');
 
@@ -149,7 +159,7 @@ export function exportCustomersRequest(params: CustomerExportRequest): {
     headers: {
       'Accept-Language': params.locale,
     },
-    responseHandler: (response) => downloadFileFromResponse(response, 'customers.xlsx'),
+    responseHandler: handleExportResponse,
   };
 }
 

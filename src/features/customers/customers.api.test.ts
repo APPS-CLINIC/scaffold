@@ -203,6 +203,27 @@ describe('customer export contract', () => {
     expect(download).toHaveBeenCalledWith(response, 'customers.xlsx');
   });
 
+  it('saves no file when the service answers with an error', async () => {
+    const fetchMock = installCustomerApiTestTransport();
+    const message = JSON.stringify({ message: 'Invalid request: column selection is not valid' });
+    fetchMock.mockResolvedValueOnce(
+      new Response(message, { status: 400, headers: { 'Content-Type': 'application/json' } }),
+    );
+    const download = vi
+      .spyOn(baseApiModule, 'downloadFileFromResponse')
+      .mockResolvedValue(undefined);
+    const store = makeStore();
+
+    const result = await store.dispatch(
+      customersApi.endpoints.exportCustomers.initiate({ locale: 'pl' }),
+    );
+
+    expect(download).not.toHaveBeenCalled();
+    expect('error' in result && result.error).toMatchObject({ status: 400, data: message });
+
+    store.dispatch(customersApi.util.resetApiState());
+  });
+
   it('requests the export through the RTK Query mutation and downloads the file', async () => {
     const fetchMock = installCustomerApiTestTransport();
     fetchMock.mockResolvedValueOnce(
