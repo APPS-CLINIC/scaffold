@@ -8,6 +8,7 @@ import {
   readStoredLanguage,
   storeLanguage,
   type Language,
+  type LanguageOption,
 } from './languages';
 
 /**
@@ -33,7 +34,7 @@ void i18n.use(initReactI18next).init({
   },
   lng: readStoredLanguage() ?? DEFAULT_LANGUAGE,
   fallbackLng: DEFAULT_LANGUAGE,
-  supportedLngs: LANGUAGES.map(({ code }) => code),
+  supportedLngs: LANGUAGES.map(({ code }: LanguageOption) => code),
   keySeparator: false,
   nsSeparator: false,
   interpolation: { escapeValue: false },
@@ -46,5 +47,5 @@ export function chooseLanguage(language: Language) {
   return i18n.changeLanguage(language);
 }
 
-export { LANGUAGES, type Language } from './languages';
+export { LANGUAGES, type Language, type LanguageOption } from './languages';
 export default i18n;

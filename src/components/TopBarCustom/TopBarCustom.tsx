@@ -1,10 +1,11 @@
 import type { SetStateAction } from 'react';
-import { TabMenu, TopBar } from '@/ui';
+import { PrimeIcon, TabMenu, TopBar } from '@/ui';
 import { Hide, Logout, Settings } from 'ing-react-icons';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/app/hooks';
-import { chooseLanguage, LANGUAGES } from '@/i18n';
+import { chooseLanguage } from '@/i18n';
+import { LANGUAGES, type LanguageOption } from '@/i18n/languages';
 import { selectPathname } from '@/features/urlState/urlState.selectors';
 import { resolveNavigation } from '@/routes/navigation';
 import { Logo } from '@/components/Logo';
@@ -23,7 +24,8 @@ export const TopBarCustom = () => {
   const navigate = useNavigate();
   const pathname = useAppSelector(selectPathname);
   const topNavigation = resolveNavigation(pathname).topBar;
-  const language = LANGUAGES.find(({ code }) => code === i18n.resolvedLanguage) ?? LANGUAGES[0];
+  const language: LanguageOption =
+    LANGUAGES.find(({ code }: LanguageOption) => code === i18n.resolvedLanguage) ?? LANGUAGES[0];
 
   return (
     <TopBar
@@ -54,8 +56,13 @@ export const TopBarCustom = () => {
           menuProps={{
             icon: null,
             label: language.name,
-            items: LANGUAGES.map(({ code, name }) => ({
+            items: LANGUAGES.map(({ code, name }: LanguageOption) => ({
               label: name,
+              // The library draws every item's icon, so each language has one; only the
+              // current language's tick shows.
+              icon: (
+                <PrimeIcon name="check" className={code === language.code ? '' : 'invisible'} />
+              ),
               command: () => {
                 void chooseLanguage(code);
               },

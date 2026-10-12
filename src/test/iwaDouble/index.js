@@ -93,7 +93,8 @@ TopBarBase.Item = function TopBarItem({ label, icon, onClick, menu, menuProps })
                   item.command?.({ originalEvent: event, item });
                 },
               },
-              item.icon,
+              // The library reads each item's icon element, so an item without one fails here too.
+              cloneElement(item.icon, { 'aria-hidden': true }),
               item.label,
             ),
           ),

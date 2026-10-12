@@ -1,10 +1,16 @@
-/** The languages the app ships, each named in itself, as a language menu lists them. */
+export type Language = 'pl' | 'en';
+
+export interface LanguageOption {
+  code: Language;
+  /** The language's name in itself, as a language menu lists it. */
+  name: string;
+}
+
+/** The languages the app ships. */
 export const LANGUAGES = [
   { code: 'pl', name: 'Polski' },
   { code: 'en', name: 'English' },
-] as const;
-
-export type Language = (typeof LANGUAGES)[number]['code'];
+] as const satisfies readonly LanguageOption[];
 
 export const DEFAULT_LANGUAGE: Language = 'pl';
 

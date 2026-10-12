@@ -83,6 +83,7 @@ export const en: Record<MessageKey, string> = {
   'table.filters.clear': 'Clear filters ({{count}})',
   'table.filters.applied': 'Applied filters',
   'table.filters.placeholder': 'Choose',
+  'table.filters.selectAll': 'All',
   'table.filters.search': 'Search',
   'table.filters.searchMinLength': 'Type at least {{count}} characters',
   'table.filters.noResults': 'No results',

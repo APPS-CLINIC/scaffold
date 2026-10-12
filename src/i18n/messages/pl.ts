@@ -85,6 +85,7 @@ export const pl = {
   'table.filters.clear': 'Wyczyść filtry ({{count}})',
   'table.filters.applied': 'Zastosowane filtry',
   'table.filters.placeholder': 'Wybierz',
+  'table.filters.selectAll': 'Wszystko',
   'table.filters.search': 'Szukaj',
   'table.filters.searchMinLength': 'Wpisz co najmniej {{count}} znaki',
   'table.filters.noResults': 'Brak wyników',

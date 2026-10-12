@@ -7,6 +7,7 @@ export type PrimeIconName =
   | 'building'
   | 'calendar'
   | 'chart-line'
+  | 'check'
   | 'chevron-down'
   | 'chevron-right'
   | 'credit-card'
