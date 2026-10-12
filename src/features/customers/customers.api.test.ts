@@ -194,7 +194,7 @@ describe('customer export contract', () => {
     const url = new URL(request.url);
 
     expect(request.method).toBe('GET');
-    expect(url.pathname).toBe('/api/customers/export');
+    expect(url.pathname).toBe('/api/v1/customers/export');
     expect(url.searchParams.get('columnSelection')).toBe('fullName');
     expect(request.headers.get('Accept-Language')).toBe('en');
     expect(download).toHaveBeenCalledTimes(1);

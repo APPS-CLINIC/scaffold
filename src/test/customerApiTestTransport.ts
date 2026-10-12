@@ -12,7 +12,7 @@ import {
 } from './customerFilterDictionaries.fixture';
 
 const NativeRequest = globalThis.Request;
-const CUSTOMER_API_PATH = '/api/customers';
+const CUSTOMER_API_PATH = '/api/v1/customers';
 const TEST_ORIGIN = 'https://app.test';
 
 class AbsoluteTestRequest extends NativeRequest {

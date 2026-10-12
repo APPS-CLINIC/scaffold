@@ -1,5 +1,5 @@
 import type { FetchArgs } from '@reduxjs/toolkit/query/react';
-import { baseApi } from '@/api/baseApi';
+import { apiRootBaseQuery, baseApi } from '@/api/baseApi';
 import type { RootState } from '@/app/store';
 import type { TableFilterOption } from '@/ui';
 
@@ -18,7 +18,7 @@ export const STATIC_DICTIONARIES = [
 export type StaticDictionary = (typeof STATIC_DICTIONARIES)[number];
 
 const advisors = (advisorType: string): FetchArgs => ({
-  url: 'v1/users',
+  url: 'users',
   params: { advisorType },
 });
 
@@ -33,14 +33,14 @@ const LIST_REQUESTS = {
   implementationAdvisors: advisors('IMPLEMENTATION'),
   customerServiceAdvisors: advisors('CUSTOMER_SERVICE'),
   ebdAdvisors: advisors('EBD'),
-  lendingTeams: { url: 'v1/teams', params: { productGroup: 'LENDING' } },
+  lendingTeams: { url: 'teams', params: { productGroup: 'LENDING' } },
 } satisfies Record<string, FetchArgs>;
 export type FilterList = keyof typeof LIST_REQUESTS;
 
 /** Lists too long to load whole; the service searches them by a part of the name. */
 const SEARCH_URLS = {
-  internalGroups: 'v1/internalGroups',
-  corporateGroups: 'v1/corporateGroups',
+  internalGroups: 'internalGroups',
+  corporateGroups: 'corporateGroups',
 };
 export type SearchableFilterList = keyof typeof SEARCH_URLS;
 
@@ -81,9 +81,13 @@ export const customerFilterDictionariesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     /** Every static dictionary, labelled in `language`, or in Polish when the service has none in it. */
     getStaticDictionaries: builder.query<StaticDictionaryOptions, string>({
-      async queryFn(language, _api, _extraOptions, baseQuery) {
+      async queryFn(language, api, extraOptions) {
         const fetchIn = (acceptLanguage: string) =>
-          baseQuery({ url: 'dictionaries', headers: { 'Accept-Language': acceptLanguage } });
+          apiRootBaseQuery(
+            { url: 'dictionaries', headers: { 'Accept-Language': acceptLanguage } },
+            api,
+            extraOptions,
+          );
         let result = await fetchIn(language);
         if (result.error?.status === 400 && language !== DEFAULT_LANGUAGE) {
           result = await fetchIn(DEFAULT_LANGUAGE);

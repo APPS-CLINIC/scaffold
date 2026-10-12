@@ -182,7 +182,7 @@ converts them to the backend's 0-based Spring convention and creates requests
 such as:
 
 ```http
-GET /api/customers?page=0&size=10&sort=id%2CASC
+GET /api/v1/customers?page=0&size=10&sort=id%2CASC
 ```
 
 The response contract is represented explicitly:

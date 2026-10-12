@@ -3,7 +3,7 @@ import { mapCustomerSummaryResponse } from './customerSummary.adapter';
 import type { CustomerSummary, CustomerSummaryResponse } from './customerSummary.types';
 
 export function getCustomerSummaryRequest(customerId: string): { url: string } {
-  return { url: `v1/customers/${encodeURIComponent(customerId)}/summary` };
+  return { url: `customers/${encodeURIComponent(customerId)}/summary` };
 }
 
 export const customerSummaryApi = baseApi.injectEndpoints({

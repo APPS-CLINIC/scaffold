@@ -93,7 +93,7 @@ const requestsTo = (pathname: string) =>
 
 /** The search params of the last customer list request. */
 const lastListRequest = () => {
-  const last = requestsTo('/api/customers').at(-1);
+  const last = requestsTo('/api/v1/customers').at(-1);
   if (last === undefined) throw new Error('No customer list request was sent');
   return last.searchParams;
 };

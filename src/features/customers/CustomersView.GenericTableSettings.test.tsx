@@ -55,7 +55,8 @@ describe('CustomersView table settings', () => {
       .map(([request]) => request)
       .find(
         (request): request is Request =>
-          request instanceof Request && new URL(request.url).pathname === '/api/customers/export',
+          request instanceof Request &&
+          new URL(request.url).pathname === '/api/v1/customers/export',
       );
     expect(exportRequest).toBeDefined();
     expect(exportRequest!.headers.get('Accept-Language')).toBe('en');
