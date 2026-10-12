@@ -52,20 +52,33 @@ export function CustomerExportDialog({
     >
       <FocusOnOpen target={() => actionsRef.current?.querySelector('button')} />
       <DialogHeading text={t('customers.export.title')} centered />
-      <div className="flex-1 px-6 pb-6 pt-2">
+      {/* The library draws no group label, so the fieldset names the choice. */}
+      <fieldset className="m-0 min-w-0 flex-1 border-0 px-6 pb-6 pt-2">
+        <legend className="mb-2 p-0 text-sm text-[var(--muted)]">
+          {t('customers.export.choice')}
+        </legend>
         <RadioGroup
-          label={t('customers.export.choice')}
           options={[
-            { label: t('customers.export.fullList'), value: 'filtered', disabled: !narrowed },
-            { label: t('customers.export.fullListUnfiltered'), value: 'all' },
-            { label: t('customers.export.withLimits'), value: 'withLimits', disabled: true },
+            {
+              key: 'filtered',
+              text: t('customers.export.fullList'),
+              value: 'filtered',
+              disabled: !narrowed,
+            },
+            { key: 'all', text: t('customers.export.fullListUnfiltered'), value: 'all' },
+            {
+              key: 'withLimits',
+              text: t('customers.export.withLimits'),
+              value: 'withLimits',
+              disabled: true,
+            },
           ]}
           selectedOption={scope}
           onChange={(value) => {
             if (value === 'filtered' || value === 'all') setScope(value);
           }}
         />
-      </div>
+      </fieldset>
       <div ref={actionsRef} className={`${DIALOG_FOOTER_CLASS_NAME} flex-col`}>
         <Button
           label={t('customers.export.download')}

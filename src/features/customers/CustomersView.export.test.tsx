@@ -104,13 +104,23 @@ describe('CustomersView export', () => {
     await user.click(exportButton());
 
     expect(exportDialog()).toBeInTheDocument();
+    expect(within(exportDialog()).getByRole('group', { name: 'I want to download' })).toBeVisible();
     expect(radioGroup()).toMatchObject({
-      label: 'I want to download',
       selectedOption: 'filtered',
       options: [
-        { label: 'The full customer list by the filters', value: 'filtered', disabled: false },
-        { label: 'The full customer list without filters', value: 'all' },
-        { label: 'The customer list with limits', value: 'withLimits', disabled: true },
+        {
+          key: 'filtered',
+          text: 'The full customer list by the filters',
+          value: 'filtered',
+          disabled: false,
+        },
+        { key: 'all', text: 'The full customer list without filters', value: 'all' },
+        {
+          key: 'withLimits',
+          text: 'The customer list with limits',
+          value: 'withLimits',
+          disabled: true,
+        },
       ],
     });
     expect(exportRequests()).toEqual([]);

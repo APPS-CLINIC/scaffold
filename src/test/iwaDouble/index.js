@@ -1336,7 +1336,7 @@ export function RadioGroup({
         return createElement(
           'label',
           {
-            key: option.value,
+            key: option.key,
             className: twMerge(
               'inline-flex cursor-pointer items-center gap-2 text-base text-[#333333]',
               bold && 'font-bold',
@@ -1357,7 +1357,7 @@ export function RadioGroup({
             className: 'h-5 w-5 accent-[#FF6200]',
           }),
           option.icon ?? null,
-          createElement('span', null, option.label),
+          createElement('span', null, option.text),
         );
       }),
     ),
