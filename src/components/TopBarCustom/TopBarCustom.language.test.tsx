@@ -41,6 +41,13 @@ function languageMenu(): ItemMenu {
   return menu;
 }
 
+/** The icon name of each language in the menu; only a tick has one. */
+function languageIconNames(): (string | undefined)[] {
+  return languageMenu().items.map(
+    (entry: MenuItem) => (entry.icon as ReactElement<{ name?: string }>).props.name,
+  );
+}
+
 beforeEach(async () => {
   items.length = 0;
   await i18n.changeLanguage('pl');
@@ -61,14 +68,12 @@ describe('TopBarCustom language menu', () => {
     ]);
   });
 
-  it('gives every language an icon element, ticking only the current language', () => {
+  it('gives every language an icon element, with a tick only on the current language', () => {
     renderWithProviders(<TopBarCustom />);
 
     const icons: unknown[] = languageMenu().items.map((entry: MenuItem) => entry.icon as unknown);
     expect(icons.every((icon: unknown) => isValidElement(icon))).toBe(true);
-    expect(
-      icons.map((icon: unknown) => (icon as ReactElement<{ className?: string }>).props.className),
-    ).toEqual(['', 'invisible']);
+    expect(languageIconNames()).toEqual(['check', undefined]);
   });
 
   it('switches the app to the picked language and remembers it', async () => {
@@ -81,5 +86,6 @@ describe('TopBarCustom language menu', () => {
     expect(i18n.resolvedLanguage).toBe('en');
     expect(window.localStorage.getItem('scaffold.language')).toBe('en');
     expect(languageMenu().label).toBe('English');
+    expect(languageIconNames()).toEqual([undefined, 'check']);
   });
 });
