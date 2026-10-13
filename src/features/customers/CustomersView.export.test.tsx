@@ -110,14 +110,14 @@ describe('CustomersView export', () => {
       options: [
         {
           key: 'filtered',
-          text: 'The full customer list by the filters',
+          text: 'Full customer list matching the current filters',
           value: 'filtered',
           disabled: false,
         },
-        { key: 'all', text: 'The full customer list without filters', value: 'all' },
+        { key: 'all', text: 'Full customer list without any filters', value: 'all' },
         {
           key: 'withLimits',
-          text: 'The customer list with limits',
+          text: 'Customer list with limits',
           value: 'withLimits',
           disabled: true,
         },

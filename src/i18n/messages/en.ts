@@ -44,9 +44,9 @@ export const en: Record<MessageKey, string> = {
   'customers.actions.export': 'Download to Excel',
   'customers.export.title': 'You are downloading the customer list',
   'customers.export.choice': 'I want to download',
-  'customers.export.fullList': 'The full customer list by the filters',
-  'customers.export.fullListUnfiltered': 'The full customer list without filters',
-  'customers.export.withLimits': 'The customer list with limits',
+  'customers.export.fullList': 'Full customer list matching the current filters',
+  'customers.export.fullListUnfiltered': 'Full customer list without any filters',
+  'customers.export.withLimits': 'Customer list with limits',
   'customers.export.download': 'Download',
   'customers.export.cancel': 'Cancel',
   'customers.export.started':
