@@ -128,7 +128,8 @@ async function handleExportResponse(response: Response): Promise<unknown> {
 
 /**
  * Export customers request: the known columns, the search and the filters, with the column
- * headers in `locale`. The service does not sort the file. It returns a binary file, so the
+ * headers in `locale`. Each column repeats `columnSelection`, as the filters repeat their
+ * params. The service does not sort the file. It returns a binary file, so the
  * `responseHandler` is provided to handle the download.
  */
 export function exportCustomersRequest(params: CustomerExportRequest): {
@@ -137,14 +138,14 @@ export function exportCustomersRequest(params: CustomerExportRequest): {
   headers: Record<string, string>;
   responseHandler: (response: Response) => Promise<unknown>;
 } {
-  const columnSelection = (params.columnSelection ?? []).filter(isCustomerField).join(',');
+  const exportParams = new URLSearchParams();
+  for (const column of (params.columnSelection ?? []).filter(isCustomerField)) {
+    exportParams.append('columnSelection', column);
+  }
 
   const q = params.q?.trim() ?? '';
+  if (q) exportParams.set('query', q);
 
-  const exportParams = new URLSearchParams({
-    ...(columnSelection ? { columnSelection } : {}),
-    ...(q ? { query: q } : {}),
-  });
   if (params.filters) {
     for (const [name, value] of toCustomerFilterParams(params.filters)) {
       exportParams.append(name, value);

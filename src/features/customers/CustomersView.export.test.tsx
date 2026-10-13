@@ -169,7 +169,7 @@ describe('CustomersView export', () => {
     if (request === undefined) throw new Error('No export request was sent');
     const params = new URL(request.url).searchParams;
     expect(request.headers.get('Accept-Language')).toBe('en');
-    expect(params.get('columnSelection')).toBe('fullName,status,kkf');
+    expect(params.getAll('columnSelection')).toEqual(['fullName', 'status', 'kkf']);
     expect(params.get('query')).toBe('carrefour');
     expect(params.getAll('status')).toEqual(['ACTIVE']);
     expect(params.has('type')).toBe(false);
@@ -201,7 +201,7 @@ describe('CustomersView export', () => {
     const [request] = exportRequests();
     if (request === undefined) throw new Error('No export request was sent');
     const params = new URL(request.url).searchParams;
-    expect(params.get('columnSelection')).toBe('fullName,status');
+    expect(params.getAll('columnSelection')).toEqual(['fullName', 'status']);
     expect(params.has('query')).toBe(false);
     expect(params.has('status')).toBe(false);
   });

@@ -152,7 +152,7 @@ describe('customer export contract', () => {
     });
 
     expect(request.method).toBe('GET');
-    expect(request.url).toBe('customers/export?columnSelection=fullName%2Cgrid');
+    expect(request.url).toBe('customers/export?columnSelection=fullName&columnSelection=grid');
     expect(request.headers).toEqual({ 'Accept-Language': 'pl' });
   });
 
