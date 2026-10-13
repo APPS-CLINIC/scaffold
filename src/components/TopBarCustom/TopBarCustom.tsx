@@ -58,11 +58,14 @@ export const TopBarCustom = () => {
             label: language.name,
             items: LANGUAGES.map(({ code, name }: LanguageOption) => ({
               label: name,
-              // The library draws every item's icon, so each language has one; only the
-              // current language's tick shows.
-              icon: (
-                <PrimeIcon name="check" className={code === language.code ? '' : 'invisible'} />
-              ),
+              // The library needs an icon on every item and replaces its class, so a hidden
+              // tick would still show: the other languages get an empty box of the tick's width.
+              icon:
+                code === language.code ? (
+                  <PrimeIcon name="check" />
+                ) : (
+                  <span aria-hidden="true" className="inline-block w-5" />
+                ),
               command: () => {
                 void chooseLanguage(code);
               },
