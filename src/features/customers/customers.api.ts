@@ -4,9 +4,9 @@ import type { CustomerFilters } from './customers.filters';
 import type {
   Customer,
   CustomerQuery,
+  CustomerExportRequest,
   CustomerResponse,
   PageResponse,
-  ExportRequest,
 } from './customers.types';
 
 const DEFAULT_PAGE_SIZE = 10;
@@ -117,22 +117,40 @@ export function mapCustomerPageResponse(
 }
 
 /**
- * Export customers request. The backend returns a binary file, so the
- * `responseHandler` is provided to handle the download.
- * @param params The export request parameters.
- * @returns An object containing the URL, HTTP method, and response handler.
+ * Saves the file the export answers with. A failed export answers with an error message
+ * instead, which becomes the error's data rather than a file.
  */
-export function exportCustomersRequest(params: ExportRequest): {
+async function handleExportResponse(response: Response): Promise<unknown> {
+  if (!response.ok) return response.text();
+  await downloadFileFromResponse(response, 'customers.xlsx');
+  return undefined;
+}
+
+/**
+ * Export customers request: the known columns, the search and the filters, with the column
+ * headers in `locale`. Each column repeats `columnSelection`, as the filters repeat their
+ * params. The service does not sort the file. It returns a binary file, so the
+ * `responseHandler` is provided to handle the download.
+ */
+export function exportCustomersRequest(params: CustomerExportRequest): {
   url: string;
   method: string;
   headers: Record<string, string>;
-  responseHandler: (response: Response) => Promise<void>;
+  responseHandler: (response: Response) => Promise<unknown>;
 } {
-  const columnSelection = (params.columnSelection ?? []).filter(isCustomerField).join(',');
+  const exportParams = new URLSearchParams();
+  for (const column of (params.columnSelection ?? []).filter(isCustomerField)) {
+    exportParams.append('columnSelection', column);
+  }
 
-  const exportParams = new URLSearchParams({
-    ...(columnSelection ? { columnSelection } : {}),
-  });
+  const q = params.q?.trim() ?? '';
+  if (q) exportParams.set('query', q);
+
+  if (params.filters) {
+    for (const [name, value] of toCustomerFilterParams(params.filters)) {
+      exportParams.append(name, value);
+    }
+  }
 
   const query = exportParams.toString();
 
@@ -142,7 +160,7 @@ export function exportCustomersRequest(params: ExportRequest): {
     headers: {
       'Accept-Language': params.locale,
     },
-    responseHandler: (response) => downloadFileFromResponse(response, 'customers.xlsx'),
+    responseHandler: handleExportResponse,
   };
 }
 
@@ -152,7 +170,7 @@ export const customersApi = baseApi.injectEndpoints({
       query: getCustomersRequest,
       transformResponse: mapCustomerPageResponse,
     }),
-    exportCustomers: builder.mutation<void, ExportRequest>({
+    exportCustomers: builder.mutation<void, CustomerExportRequest>({
       query: exportCustomersRequest,
     }),
   }),

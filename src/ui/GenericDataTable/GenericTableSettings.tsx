@@ -35,13 +35,14 @@ export function GenericTableSettings<T extends { id: number }>({
           <span className={TOOLBAR_LABEL_CLASS_NAME}>{t('table.settings.open')}</span>
         </button>
       ) : null}
-      <span
-        className={`${TOOLBAR_ACTION_CLASS_NAME} !outline-none focus:!outline-none focus-visible:!outline-none`}
+      <button
+        type="button"
+        className={`${TOOLBAR_ACTION_CLASS_NAME} rounded-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]`}
         onClick={handleExport}
       >
         <DownloadIcon />
         <span className={TOOLBAR_LABEL_CLASS_NAME}>{t('customers.actions.export')}</span>
-      </span>
+      </button>
       <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap text-sm text-[var(--muted)]">
         <span>{t('customers.actions.expandAll')}</span>
         <Switch

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/app/hooks';
 import { DATE_DMY_FORMAT_OPTIONS } from '@/i18n/dateFormats';
@@ -20,7 +20,9 @@ import {
   type GenericDataTablePageChange,
   type GenericDataTableSortChange,
   type TableFilterValues,
+  useToast,
 } from '@/ui';
+import { CustomerExportDialog, type CustomerExportScope } from './CustomerExportDialog';
 import { customerTableConfig } from './customerTable';
 import { useGetCustomersQuery, useExportCustomersMutation } from './customers.api';
 import { selectCustomerQuery } from './customers.filters';
@@ -88,10 +90,34 @@ export function CustomersView() {
   );
 
   const [exportCustomers] = useExportCustomersMutation();
-  const handleExport = async () => {
-    await exportCustomers({
-      locale: i18n.resolvedLanguage ?? i18n.language,
-    });
+  const toast = useToast();
+  const [exportOpen, setExportOpen] = useState(false);
+  const exportOpenerRef = useRef<Element | null>(null);
+
+  const openExport = () => {
+    exportOpenerRef.current = document.activeElement;
+    setExportOpen(true);
+  };
+  // The dialog unmounts instead of hiding, so focus goes back to the control that opened it.
+  const closeExport = () => {
+    setExportOpen(false);
+    if (exportOpenerRef.current instanceof HTMLElement) exportOpenerRef.current.focus();
+  };
+
+  // The file holds the table's columns in their order and, unless the user asks for all
+  // customers, only those the search and the filters leave. It is never sorted.
+  const handleExportDownload = async (scope: CustomerExportScope) => {
+    closeExport();
+    toast.show({ type: 'info', message: t('customers.export.started') });
+    try {
+      await exportCustomers({
+        locale: i18n.resolvedLanguage ?? i18n.language,
+        columnSelection: tableSettings.config.fields.map(({ field }) => field),
+        ...(scope === 'filtered' ? { q: customerQuery.q, filters: customerQuery.filters } : {}),
+      }).unwrap();
+    } catch {
+      toast.show({ type: 'error', message: t('customers.export.failed') });
+    }
   };
 
   // Every filterable field is rewritten, so a filter of a field the table no longer uses goes too.
@@ -162,7 +188,7 @@ export function CustomersView() {
               dataContent={data?.content}
               onExpandedRowKeysChange={setExpandedRowKeys}
               expandedRowKeys={expandedRowKeys}
-              handleExport={handleExport}
+              handleExport={openExport}
               onOpenSettings={() => setSettingsOpen(true)}
             />
           </div>
@@ -201,6 +227,17 @@ export function CustomersView() {
         onCancel={() => setSettingsOpen(false)}
         onRestoreDefaults={handleSettingsRestore}
       />
+
+      {exportOpen ? (
+        <CustomerExportDialog
+          narrowed={
+            customerQuery.q.trim() !== '' ||
+            Object.values(customerQuery.filters).some((values) => values.length > 0)
+          }
+          onDownload={handleExportDownload}
+          onCancel={closeExport}
+        />
+      ) : null}
     </section>
   );
 }

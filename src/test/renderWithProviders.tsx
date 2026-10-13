@@ -6,6 +6,8 @@ import { MemoryRouter } from 'react-router-dom';
 import { makeStore, type AppStore, type RootState } from '@/app/store';
 import { createUrlState } from '@/features/urlState/urlState.slice';
 import '@/i18n';
+// Straight from its module: some tests mock the `@/ui` barrel.
+import { ToastProvider } from '@/ui/toast/ToastProvider';
 
 interface ExtendedRenderOptions extends Omit<RenderOptions, 'wrapper'> {
   preloadedState?: Partial<RootState>;
@@ -17,8 +19,9 @@ interface ExtendedRenderOptions extends Omit<RenderOptions, 'wrapper'> {
 }
 
 /**
- * Renders a component with the full app context (Redux store + router) so
- * feature components and URL-driven hooks can be tested in isolation.
+ * Renders a component with the full app context (Redux store + router + the
+ * toast host every routed view sits in) so feature components and URL-driven
+ * hooks can be tested in isolation.
  */
 export function renderWithProviders(
   ui: ReactElement,
@@ -47,7 +50,7 @@ export function renderWithProviders(
       <PrimeReactProvider>
         <Provider store={store}>
           <MemoryRouter initialEntries={routerEntries} initialIndex={routerInitialIndex}>
-            {children}
+            <ToastProvider>{children}</ToastProvider>
           </MemoryRouter>
         </Provider>
       </PrimeReactProvider>

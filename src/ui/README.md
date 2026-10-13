@@ -409,9 +409,20 @@ neutral | accent | brand` (default `outline` — light surface with a subtle
 
 Components the app consumes from IWA without an adapter are re-exported
 verbatim from `index.ts` (`ActionLink`, `Button`, `Card`, `ChipInput`,
-`CustomizableDialog`, `DatePicker`, `MultiSelect`, `Select`, `Switch`,
-`TabMenu`, `TextInput`, `TopBar`, …); `index.ts` is the complete list. Feature code imports them from
+`CustomizableDialog`, `DatePicker`, `MultiSelect`, `RadioGroup`, `Select`,
+`Snackbar`, `Switch`, `TabMenu`, `TextInput`, `TopBar`, …); `index.ts` is the complete list. Feature code imports them from
 `@/ui` like every local primitive.
+
+### Toasts (`useToast`)
+
+Features show a toast with `useToast().show({ type, message })` (`type` is
+`info`, `success` or `error`) and close it with `hide()`; they never render a
+`Snackbar` themselves. `ToastProvider` wraps the routed content in
+`RootLayout` and shows one toast at a time as the IWA `Snackbar`, pinned to the
+bottom of the screen across the content it wraps, not the whole window
+([ADR 0041](../../docs/adr/0041-toasts-span-the-page-content.md)).
+`renderWithProviders` includes the host, so tests need nothing extra; a test
+that mocks the `@/ui` barrel adds `Snackbar` to the mock.
 
 ### `Select`
 
