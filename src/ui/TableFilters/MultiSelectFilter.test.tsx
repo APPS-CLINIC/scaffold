@@ -24,8 +24,9 @@ vi.mock('iwa-react-components', async (importOriginal) => {
   };
 });
 
-beforeEach(() => {
+beforeEach(async () => {
   captured.multiSelect = null;
+  await i18n.changeLanguage('pl');
 });
 
 function multiSelectProps(): MultiSelectProps {
@@ -77,6 +78,13 @@ describe('MultiSelectFilter', () => {
       selectionLimit: 100,
       placeholder: i18n.t('table.filters.placeholder'),
     });
+  });
+
+  it('labels the header in the app language', async () => {
+    await i18n.changeLanguage('en');
+    renderMultiSelect({});
+
+    expect(multiSelectProps().selectAllLabel).toBe('All');
   });
 
   it.each([

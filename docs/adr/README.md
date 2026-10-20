@@ -57,6 +57,7 @@ keep ADRs at all; use it as the template for new records.
 | [0039](0039-table-filters-declared-in-the-field-config.md)        | Table filters declared in the field config          | Accepted               |
 | [0040](0040-filter-options-from-the-service.md)                   | Filter options from the service                     | Accepted               |
 | [0041](0041-toasts-span-the-page-content.md)                      | Toasts span the page content                        | Accepted               |
+| [0042](0042-language-picked-in-the-top-bar.md)                    | Language picked in the top bar                      | Accepted               |
 
 ### Step 03 — Scope alignment (discovery)
 
