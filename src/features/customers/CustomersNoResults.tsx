@@ -8,6 +8,9 @@ export function CustomersNoResults() {
 
   return (
     <RichNotification
+      // The library spans the full width and starts its content at the left; the design
+      // centres the illustration and the text in the table.
+      className="!mx-auto !w-fit"
       // The library takes the illustration as an SVG element.
       illustration={
         <svg aria-hidden="true" width={290} height={203} viewBox="0 0 290 203">
