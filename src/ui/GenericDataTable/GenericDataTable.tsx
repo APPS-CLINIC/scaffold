@@ -47,6 +47,7 @@ function GenericDataTableInner<T extends object>(
     sortOrder,
     loading = false,
     error,
+    noResults,
     labels,
     expandedRowKeys,
     onExpandedRowKeysChange,
@@ -80,6 +81,7 @@ function GenericDataTableInner<T extends object>(
   // Refetch (sort/page with rows on screen): the previous rows stay visible,
   // slightly dimmed, until the response lands.
   const showSkeletonRows = loading && tableRows.length === 0;
+  const nothingToPage = !loading && totalRecords <= 0;
   const dimStaleRows = loading && !showSkeletonRows;
   const skeletonRows = showSkeletonRows
     ? Array.from(
@@ -145,7 +147,13 @@ function GenericDataTableInner<T extends object>(
   return (
     <div
       ref={setRootRef}
-      className={twMerge('w-full min-w-0 max-w-full overflow-hidden', className)}
+      className={twMerge(
+        'w-full min-w-0 max-w-full overflow-hidden',
+        // With nothing to page the paginator hides. A class does it: the
+        // library's PaginatorTable puts its own paginator over our props.
+        nothingToPage && '[&_.p-paginator]:hidden',
+        className,
+      )}
       {...rest}
     >
       {loading ? (
@@ -183,13 +191,7 @@ function GenericDataTableInner<T extends object>(
           loading || hasError ? (
             <span aria-hidden="true" className="hidden" />
           ) : (
-            <div className="flex flex-col items-center gap-2 py-12 text-center" role="status">
-              <span aria-hidden="true" className="pi pi-inbox text-3xl text-[var(--muted)]" />
-              <span className="text-sm font-bold text-[var(--text)]">{labels.empty}</span>
-              {labels.emptyHint ? (
-                <span className="text-sm text-[var(--muted)]">{labels.emptyHint}</span>
-              ) : null}
-            </div>
+            <div role="status">{noResults}</div>
           )
         }
         expandedRows={hasDetails && !showSkeletonRows ? expandedRows : undefined}

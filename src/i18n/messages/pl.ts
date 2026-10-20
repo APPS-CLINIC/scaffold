@@ -56,8 +56,9 @@ export const pl = {
   'customers.export.failed': 'Nie udało się pobrać pliku. Spróbuj ponownie.',
   'customers.table.ariaLabel': 'Klienci oraz ich doradcy',
   'customers.table.loading': 'Ładowanie klientów…',
-  'customers.table.empty': 'Brak klientów spełniających wybrane kryteria.',
-  'customers.table.emptyHint': 'Zmień kryteria wyszukiwania lub filtry i spróbuj ponownie.',
+  'customers.table.noResults.title': 'Nie znaleźliśmy klienta',
+  'customers.table.noResults.text':
+    'Żaden z klientów na liście nie zawiera informacji, którą próbujesz znaleźć.\nSpróbuj wpisać inny tekst lub jego fragment',
   'customers.table.error': 'Nie udało się załadować klientów.',
   'customers.table.expandRow': 'Rozwiń szczegóły klienta {{name}}',
   'customers.table.collapseRow': 'Zwiń szczegóły klienta {{name}}',

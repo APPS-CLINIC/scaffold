@@ -41,7 +41,15 @@ const archivalPage: PageResponse<CustomerResponse> = {
   page: { size: 10, number: 0, totalElements: 4, totalPages: 1 },
 };
 
+/** What a search for `nobody` or the `TECHNICAL_RECORD` type returns. */
+const noCustomersPage: PageResponse<CustomerResponse> = {
+  content: [],
+  page: { size: 10, number: 0, totalElements: 0, totalPages: 0 },
+};
+
 function getTestResponse(searchParams: URLSearchParams): PageResponse<CustomerResponse> {
+  if (searchParams.get('query') === 'nobody') return noCustomersPage;
+  if (searchParams.getAll('type').join() === 'TECHNICAL_RECORD') return noCustomersPage;
   if (searchParams.get('query') === 'carrefour') return carrefourPage;
   if (searchParams.getAll('status').join() === 'ARCHIVAL') return archivalPage;
   return customerFirstPageResponse;

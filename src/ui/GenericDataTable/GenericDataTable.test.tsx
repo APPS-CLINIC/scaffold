@@ -101,7 +101,6 @@ const config = {
 const labels = {
   table: 'Test customers',
   loading: 'Loading test customers',
-  empty: 'No test customers',
   pagination: 'Test customer pagination',
   notAvailable: 'Not available',
   detailsColumn: 'Row details',
@@ -129,6 +128,7 @@ function renderTable(overrides: Partial<GenericDataTableProps<TestRow>> = {}) {
     page: 1,
     pageSize: 10,
     pageSizeOptions: [10, 25],
+    noResults: 'No test customers',
     labels,
     onPageChange: vi.fn(),
     onSortChange: vi.fn(),
@@ -392,6 +392,7 @@ describe('GenericDataTable', () => {
           totalRecords={22}
           page={1}
           pageSize={10}
+          noResults="No test customers"
           labels={labels}
           onExpandedRowKeysChange={onExpandedRowKeysChange}
           onPageChange={vi.fn()}
@@ -437,14 +438,11 @@ describe('GenericDataTable', () => {
     expect(onPageChange).toHaveBeenCalledWith({ page: 3, pageSize: 10 });
   });
 
-  it('exposes accessible empty and error states', () => {
+  it('shows the no-results content under the headers and keeps the error apart', () => {
     mockTableContainerWidth(WIDE_CONTAINER);
     const { rerender, props } = renderTable({ rows: [], totalRecords: 0 });
 
     expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
-    expect(
-      screen.getByRole('navigation', { name: 'Test customer pagination' }),
-    ).toBeInTheDocument();
     expect(screen.getByRole('status')).toHaveTextContent('No test customers');
 
     rerender(
@@ -452,6 +450,29 @@ describe('GenericDataTable', () => {
     );
     expect(screen.getByRole('alert')).toHaveTextContent('Request failed');
     expect(screen.queryByText('No test customers')).not.toBeInTheDocument();
+  });
+
+  it('hides the paginator only when there is nothing to page', () => {
+    mockTableContainerWidth(WIDE_CONTAINER);
+    const { container, rerender, props } = renderTable();
+    const root = container.firstElementChild;
+    const hidesPaginator = '[&_.p-paginator]:hidden';
+
+    expect(
+      screen.getByRole('navigation', { name: 'Test customer pagination' }),
+    ).toBeInTheDocument();
+    expect(root).not.toHaveClass(hidesPaginator);
+
+    rerender(<GenericDataTable<TestRow> {...props} rows={[]} totalRecords={0} loading />);
+    expect(root).not.toHaveClass(hidesPaginator);
+
+    rerender(<GenericDataTable<TestRow> {...props} rows={[]} totalRecords={0} />);
+    expect(root).toHaveClass(hidesPaginator);
+
+    rerender(
+      <GenericDataTable<TestRow> {...props} rows={[]} totalRecords={0} error="Request failed" />,
+    );
+    expect(root).toHaveClass(hidesPaginator);
   });
 
   it('announces loading and marks the table busy', () => {

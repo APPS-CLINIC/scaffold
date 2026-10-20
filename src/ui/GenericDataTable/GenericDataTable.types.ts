@@ -103,9 +103,6 @@ export interface GenericDataTablePaginatorActionLabels {
 export interface GenericDataTableLabels<T extends object> {
   table: string;
   loading: string;
-  empty: string;
-  /** Secondary line under the empty-state heading. */
-  emptyHint?: string;
   pagination: string;
   notAvailable: ReactNode;
   /** Screen-reader name for the expansion-toggle column. */
@@ -129,6 +126,8 @@ export interface GenericDataTableProps<T extends object> extends Omit<
   sortOrder?: GenericDataTableSortOrder;
   loading?: boolean;
   error?: ReactNode;
+  /** Shown inside the table when nothing matches; not while loading or on an error. */
+  noResults: ReactNode;
   labels: GenericDataTableLabels<T>;
   expandedRowKeys?: readonly string[];
   onExpandedRowKeysChange?: (keys: readonly string[]) => void;

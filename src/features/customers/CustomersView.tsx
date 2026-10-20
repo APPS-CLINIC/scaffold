@@ -23,6 +23,7 @@ import {
   useToast,
 } from '@/ui';
 import { CustomerExportDialog, type CustomerExportScope } from './CustomerExportDialog';
+import { CustomersNoResults } from './CustomersNoResults';
 import { customerTableConfig } from './customerTable';
 import { useGetCustomersQuery, useExportCustomersMutation } from './customers.api';
 import { selectCustomerQuery } from './customers.filters';
@@ -45,8 +46,6 @@ export function CustomersView() {
     () => ({
       table: t('customers.table.ariaLabel'),
       loading: t('customers.table.loading'),
-      empty: t('customers.table.empty'),
-      emptyHint: t('customers.table.emptyHint'),
       pagination: t('customers.table.pagination'),
       notAvailable: t('customers.value.notAvailable'),
       detailsColumn: t('customers.table.detailsColumn'),
@@ -209,6 +208,7 @@ export function CustomersView() {
           sortOrder={listQuery.sort ? listQuery.dir : undefined}
           loading={isLoading || isFetching}
           error={isError ? t('customers.table.error') : undefined}
+          noResults={<CustomersNoResults />}
           labels={labels}
           expandedRowKeys={expandedRowKeys}
           onExpandedRowKeysChange={setExpandedRowKeys}

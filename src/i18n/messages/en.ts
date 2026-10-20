@@ -54,8 +54,9 @@ export const en: Record<MessageKey, string> = {
   'customers.export.failed': 'Could not download the file. Please try again.',
   'customers.table.ariaLabel': 'Customers and their advisors',
   'customers.table.loading': 'Loading customers…',
-  'customers.table.empty': 'No customers match the selected criteria.',
-  'customers.table.emptyHint': 'Adjust your search or filters and try again.',
+  'customers.table.noResults.title': "We couldn't find a customer",
+  'customers.table.noResults.text':
+    "None of the customers on the list contains the information you're looking for.\nTry typing a different text or a part of it",
   'customers.table.error': 'Customers could not be loaded.',
   'customers.table.expandRow': 'Expand details for {{name}}',
   'customers.table.collapseRow': 'Collapse details for {{name}}',

@@ -1471,3 +1471,36 @@ export function Snackbar({
       : null,
   );
 }
+
+export function RichNotification({
+  illustration,
+  title,
+  paragraph,
+  buttonProps,
+  additionalParagraph,
+  actionLinksProps,
+  className,
+}) {
+  return createElement(
+    'div',
+    { className: twMerge('flex items-center justify-center gap-8', className) },
+    illustration,
+    createElement(
+      'div',
+      { className: 'flex min-w-0 max-w-[766px] flex-1 flex-col gap-4 text-[#333333]' },
+      createElement('h2', { className: 'm-0 text-2xl font-normal' }, title),
+      paragraph ?? null,
+      buttonProps ? createElement(Button, buttonProps) : null,
+      additionalParagraph ?? null,
+      actionLinksProps?.length
+        ? createElement(
+            'div',
+            { className: 'flex flex-wrap gap-4' },
+            actionLinksProps.map((link, index) =>
+              createElement(ActionLink, { key: link.label ?? index, ...link }),
+            ),
+          )
+        : null,
+    ),
+  );
+}
