@@ -425,16 +425,16 @@ describe('GenericDataTable', () => {
     expect(onPageChange).toHaveBeenCalledWith({ page: 2, pageSize: 10 });
   });
 
-  it('maps the first and last page controls onto the controlled page', async () => {
+  it('maps the previous and next page controls onto the controlled page', async () => {
     mockTableContainerWidth(WIDE_CONTAINER);
     const user = userEvent.setup();
     const onPageChange = vi.fn();
     renderTable({ page: 2, onPageChange });
 
-    await user.click(paginatorControl('first'));
+    await user.click(paginatorControl('prev'));
     expect(onPageChange).toHaveBeenCalledWith({ page: 1, pageSize: 10 });
 
-    await user.click(paginatorControl('last'));
+    await user.click(paginatorControl('next'));
     expect(onPageChange).toHaveBeenCalledWith({ page: 3, pageSize: 10 });
   });
 
