@@ -46,6 +46,17 @@ describe('GenericTableSettings', () => {
     expect(handleExport).toHaveBeenCalledTimes(1);
   });
 
+  it('offers the download action as a button the keyboard reaches', async () => {
+    const user = userEvent.setup();
+    const { handleExport } = renderSettings();
+
+    const exportAction = screen.getByRole('button', { name: 'Download to Excel' });
+    exportAction.focus();
+    await user.keyboard('{Enter}');
+
+    expect(handleExport).toHaveBeenCalledTimes(1);
+  });
+
   it('expands every visible row while some rows are still collapsed', async () => {
     const user = userEvent.setup();
     const { onExpandedRowKeysChange } = renderSettings({ expandedRowKeys: ['1'] });
@@ -94,7 +105,7 @@ describe('GenericTableSettings', () => {
     renderSettings({ onOpenSettings: vi.fn() });
 
     const settings = screen.getByRole('button', { name: 'List settings' });
-    const exportAction = screen.getByText('Download to Excel').parentElement;
+    const exportAction = screen.getByRole('button', { name: 'Download to Excel' });
     const actionClasses = ['group', 'text-sm', '!text-[#506579]'];
     expect(settings).toHaveClass(...actionClasses);
     expect(exportAction).toHaveClass(...actionClasses);

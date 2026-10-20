@@ -14,7 +14,15 @@
  * PrimeReact components that take PrimeReact props.
  */
 
-import { cloneElement, createContext, createElement, useContext, useState } from 'react';
+import {
+  cloneElement,
+  createContext,
+  createElement,
+  useContext,
+  useEffect,
+  useId,
+  useState,
+} from 'react';
 import { DataTable } from 'primereact/datatable';
 import { MultiSelect as PrimeMultiSelect } from 'primereact/multiselect';
 
@@ -1286,3 +1294,141 @@ function ChipsChip({ label, value, disabled }) {
 }
 
 Chips.Chip = ChipsChip;
+
+export function RadioGroup({
+  options,
+  selectedOption,
+  onChange,
+  onBlur,
+  name,
+  label,
+  hint,
+  horizontal = false,
+  disabled = false,
+  readOnly = false,
+  fullWidth = false,
+  bold = false,
+  errorMessage,
+  className,
+  dataTestId = 'radio-group',
+}) {
+  const generatedName = useId();
+  const labelId = useId();
+  const groupName = name ?? generatedName;
+
+  return createElement(
+    'div',
+    {
+      role: 'radiogroup',
+      'aria-labelledby': label ? labelId : undefined,
+      'aria-disabled': disabled || undefined,
+      'data-testid': dataTestId,
+      className: twMerge('flex flex-col gap-2', fullWidth && 'w-full', className),
+    },
+    label
+      ? createElement('span', { id: labelId, className: 'text-sm text-[#696969]' }, label)
+      : null,
+    createElement(
+      'div',
+      { className: twMerge('flex gap-3', horizontal ? 'flex-row flex-wrap' : 'flex-col') },
+      options.map((option) => {
+        const optionDisabled = disabled || Boolean(option.disabled);
+        return createElement(
+          'label',
+          {
+            key: option.key,
+            className: twMerge(
+              'inline-flex cursor-pointer items-center gap-2 text-base text-[#333333]',
+              bold && 'font-bold',
+              optionDisabled && 'cursor-default text-[#b0b0b0]',
+            ),
+          },
+          createElement('input', {
+            type: 'radio',
+            name: groupName,
+            value: option.value,
+            checked: selectedOption === option.value,
+            disabled: optionDisabled,
+            readOnly,
+            onChange: () => {
+              if (!readOnly) onChange?.(option.value);
+            },
+            onBlur,
+            className: 'h-5 w-5 accent-[#FF6200]',
+          }),
+          option.icon ?? null,
+          createElement('span', null, option.text),
+        );
+      }),
+    ),
+    hint ? createElement('span', { className: 'text-xs text-[#696969]' }, hint) : null,
+    errorMessage
+      ? createElement('p', { className: 'm-0 text-xs text-[#d70000]' }, errorMessage)
+      : null,
+  );
+}
+
+const SNACKBAR_TONES = {
+  default: 'bg-[#333333] text-white',
+  info: 'bg-[#333333] text-white',
+  success: 'bg-[#3d9a68] text-white',
+  warning: 'bg-[#ffb000] text-[#333333]',
+  error: 'bg-[#d70000] text-white',
+};
+
+export function Snackbar({
+  message,
+  type = 'default',
+  closable = true,
+  hideTimeoutMs = 5000,
+  link,
+  visibility,
+  onHide,
+  className,
+}) {
+  useEffect(() => {
+    if (!visibility || closable || hideTimeoutMs === undefined) return undefined;
+    const timer = setTimeout(() => onHide(false), hideTimeoutMs);
+    return () => clearTimeout(timer);
+  }, [visibility, closable, hideTimeoutMs, onHide]);
+
+  if (!visibility) return null;
+
+  return createElement(
+    'div',
+    {
+      role: type === 'error' ? 'alert' : 'status',
+      className: twMerge(
+        'flex items-center gap-3 rounded px-4 py-3 text-sm',
+        SNACKBAR_TONES[type] ?? SNACKBAR_TONES.default,
+        className,
+      ),
+    },
+    createElement('span', { 'aria-hidden': true, className: 'pi pi-info-circle' }),
+    createElement('span', { className: 'flex-1' }, message),
+    link
+      ? createElement(
+          'a',
+          {
+            href: link.url,
+            target: link.external ? '_blank' : undefined,
+            rel: link.external ? 'noreferrer' : undefined,
+            className: 'underline',
+          },
+          link.label,
+        )
+      : null,
+    closable
+      ? createElement(
+          'button',
+          {
+            type: 'button',
+            'aria-label': 'Close',
+            onClick: () => onHide(false),
+            className: 'border-0 bg-transparent text-inherit',
+          },
+          createElement('span', { 'aria-hidden': true, className: 'pi pi-times' }),
+        )
+      : null,
+  );
+}

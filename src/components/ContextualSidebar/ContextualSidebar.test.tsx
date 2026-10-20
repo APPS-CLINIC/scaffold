@@ -36,6 +36,7 @@ vi.mock('@/ui', () => ({
   twMerge: (...values: Array<string | false | undefined>) => values.filter(Boolean).join(' '),
   createPrimeIcon: () => () => null,
   PrimeIcon: () => <span aria-hidden="true" />,
+  Snackbar: () => null,
   NavigationMenuItem: ({ mainNode }: { mainNode: ReactNode }) => <div>{mainNode}</div>,
   NavigationIcon: ({ role, 'aria-label': ariaLabel }: MockNavigationIconProps) => (
     <span role={role} aria-label={ariaLabel} aria-hidden={ariaLabel ? undefined : 'true'} />

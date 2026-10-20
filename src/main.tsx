@@ -11,7 +11,6 @@ import {
 } from '@/features/tableSettings';
 import { createUrlState } from '@/features/urlState/urlState.slice';
 import '@/i18n';
-import { ToastProvider } from '@/ui';
 import { router } from '@/routes/router';
 // PrimeReact styles (theme + core + icons) must load before global.css so
 // Tailwind utilities can override them. Swap the theme for the IWA/brand one.
@@ -43,9 +42,7 @@ async function renderApplication() {
     <StrictMode>
       <PrimeReactProvider>
         <Provider store={store}>
-          <ToastProvider>
-            <RouterProvider router={router} />
-          </ToastProvider>
+          <RouterProvider router={router} />
         </Provider>
       </PrimeReactProvider>
     </StrictMode>,

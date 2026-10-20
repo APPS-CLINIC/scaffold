@@ -10,7 +10,7 @@ import {
   toCustomerBackendParams,
 } from './customers.api';
 import { parseCustomerFilters, type CustomerFilters } from './customers.filters';
-import type { CustomerQuery, ExportRequest } from './customers.types';
+import type { CustomerExportRequest, CustomerQuery } from './customers.types';
 
 const noFilters = parseCustomerFilters({});
 
@@ -152,8 +152,37 @@ describe('customer export contract', () => {
     });
 
     expect(request.method).toBe('GET');
-    expect(request.url).toBe('customers/export?columnSelection=fullName%2Cgrid');
+    expect(request.url).toBe('customers/export?columnSelection=fullName&columnSelection=grid');
     expect(request.headers).toEqual({ 'Accept-Language': 'pl' });
+  });
+
+  it('sends the list search and every filter, but no sorting or paging', () => {
+    const request = exportCustomersRequest({
+      locale: 'pl',
+      columnSelection: ['fullName'],
+      q: '  bank  ',
+      filters: {
+        ...noFilters,
+        status: ['ACTIVE', 'ARCHIVAL'],
+        corporateGroupId: ['null'],
+        'lendingReviewDate.from': ['2026-02-01'],
+      },
+    });
+
+    const [path, search = ''] = request.url.split('?');
+    const params = new URLSearchParams(search);
+    expect(path).toBe('customers/export');
+    expect(params.get('query')).toBe('bank');
+    expect(params.getAll('status')).toEqual(['ACTIVE', 'ARCHIVAL']);
+    expect(params.getAll('corporateGroupId')).toEqual(['null']);
+    expect(params.get('lendingReviewDate.from')).toBe('2026-02-01');
+    expect([...params.keys()].filter((key) => ['sort', 'page', 'size'].includes(key))).toEqual([]);
+  });
+
+  it('leaves out a blank search', () => {
+    expect(exportCustomersRequest({ locale: 'pl', q: '   ', filters: noFilters }).url).toBe(
+      'customers/export',
+    );
   });
 
   it('omits the column selection when no known column is requested', () => {
@@ -174,6 +203,27 @@ describe('customer export contract', () => {
     expect(download).toHaveBeenCalledWith(response, 'customers.xlsx');
   });
 
+  it('saves no file when the service answers with an error', async () => {
+    const fetchMock = installCustomerApiTestTransport();
+    const message = JSON.stringify({ message: 'Invalid request: column selection is not valid' });
+    fetchMock.mockResolvedValueOnce(
+      new Response(message, { status: 400, headers: { 'Content-Type': 'application/json' } }),
+    );
+    const download = vi
+      .spyOn(baseApiModule, 'downloadFileFromResponse')
+      .mockResolvedValue(undefined);
+    const store = makeStore();
+
+    const result = await store.dispatch(
+      customersApi.endpoints.exportCustomers.initiate({ locale: 'pl' }),
+    );
+
+    expect(download).not.toHaveBeenCalled();
+    expect('error' in result && result.error).toMatchObject({ status: 400, data: message });
+
+    store.dispatch(customersApi.util.resetApiState());
+  });
+
   it('requests the export through the RTK Query mutation and downloads the file', async () => {
     const fetchMock = installCustomerApiTestTransport();
     fetchMock.mockResolvedValueOnce(
@@ -185,7 +235,7 @@ describe('customer export contract', () => {
       .spyOn(baseApiModule, 'downloadFileFromResponse')
       .mockResolvedValue(undefined);
     const store = makeStore();
-    const params: ExportRequest = { locale: 'en', columnSelection: ['fullName'] };
+    const params: CustomerExportRequest = { locale: 'en', columnSelection: ['fullName'] };
 
     await store.dispatch(customersApi.endpoints.exportCustomers.initiate(params)).unwrap();
 

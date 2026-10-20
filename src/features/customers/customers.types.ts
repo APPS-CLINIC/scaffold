@@ -1,3 +1,4 @@
+import type { ExportRequest } from '@/api/baseApi.types.ts';
 import type { CustomerFilters } from './customers.filters';
 
 /** Backend customer status contract — the only two values the service emits. */
@@ -90,6 +91,13 @@ export interface CustomerQuery {
   sort: string;
   dir: SortDirection;
   filters: CustomerFilters;
+}
+
+/** The customer export: the list as it is filtered and searched, in the table's columns. */
+export interface CustomerExportRequest extends ExportRequest {
+  /** The list search, sent as the service's `query`. */
+  q?: string;
+  filters?: CustomerFilters;
 }
 
 export type { PageResponse, ExportRequest } from '@/api/baseApi.types.ts';

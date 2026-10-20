@@ -1,16 +1,16 @@
 import { createContext } from 'react';
 
-export type ToastTone = 'info' | 'success' | 'error';
+export type ToastType = 'info' | 'success' | 'error';
 
 export interface Toast {
-  id: string;
-  tone: ToastTone;
+  type: ToastType;
   message: string;
 }
 
 export interface ToastApi {
-  show: (toast: Omit<Toast, 'id'>) => void;
-  dismiss: (id: string) => void;
+  /** Shows the toast in place of the one on screen, if any. */
+  show: (toast: Toast) => void;
+  hide: () => void;
 }
 
 /**
