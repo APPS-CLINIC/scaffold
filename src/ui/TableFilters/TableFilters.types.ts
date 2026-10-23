@@ -81,4 +81,12 @@ export interface TableFiltersProps {
   values: TableFilterValues;
   /** The next values of the filters shown; a filter left out has no value. */
   onChange: (values: TableFilterValues) => void;
+  /**
+   * The values the dialog starts from while it is open, or `null` while it is closed. With it
+   * the caller opens and closes the dialog, e.g. to open it again with filters the user chose;
+   * without it "Customize filters" opens the dialog with the applied values.
+   */
+  dialogValues?: TableFilterValues | null;
+  /** Asks to open the dialog with these values, or to close it with `null`. */
+  onDialogValuesChange?: (values: TableFilterValues | null) => void;
 }

@@ -13,6 +13,11 @@ import { ToastContext, type Toast, type ToastApi } from './Toast.context';
 const LEFT_VARIABLE = '--toast-area-left';
 const WIDTH_VARIABLE = '--toast-area-width';
 
+// The library hides a snackbar without a close button after `hideTimeoutMs`. The longest
+// timeout a browser keeps (2^31 - 1 ms, about 24 days) holds a persistent toast until its
+// handle hides it.
+const PERSISTENT_TIMEOUT_MS = 2_147_483_647;
+
 // The snackbar is drawn over the page, not where it sits in the markup, so it is pinned to the
 // bottom of the screen across the span `useAreaSpan` publishes.
 const TOAST_CLASS_NAME =
@@ -55,11 +60,20 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const spanRef = useRef<HTMLDivElement>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   const [visible, setVisible] = useState(false);
+  const shownRef = useRef<Toast | null>(null);
   useAreaSpan(spanRef, visible);
 
   const show = useCallback<ToastApi['show']>((next) => {
-    setToast(next);
+    // A copy, so showing the same toast object twice still gives each handle its own toast.
+    const shown = { ...next };
+    shownRef.current = shown;
+    setToast(shown);
     setVisible(true);
+    return {
+      hide: () => {
+        if (shownRef.current === shown) setVisible(false);
+      },
+    };
   }, []);
   const hide = useCallback<ToastApi['hide']>(() => setVisible(false), []);
   const api = useMemo<ToastApi>(() => ({ show, hide }), [show, hide]);
@@ -73,6 +87,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         onHide={hide}
         type={toast?.type ?? 'info'}
         message={toast?.message ?? ''}
+        {...(toast?.persistent ? { closable: false, hideTimeoutMs: PERSISTENT_TIMEOUT_MS } : {})}
         className={TOAST_CLASS_NAME}
       />
     </ToastContext>

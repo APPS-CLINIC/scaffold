@@ -93,6 +93,12 @@ export interface CustomerQuery {
   filters: CustomerFilters;
 }
 
+/** A list request: the query, and which time it is sent. */
+export interface CustomerListRequest extends CustomerQuery {
+  /** Sends the same query again: only the cache key holds it, the service never sees it. */
+  attempt?: number;
+}
+
 /** The customer export: the list as it is filtered and searched, in the table's columns. */
 export interface CustomerExportRequest extends ExportRequest {
   /** The list search, sent as the service's `query`. */

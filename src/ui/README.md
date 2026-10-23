@@ -36,6 +36,12 @@ column headers and hides the paginator; while loading or on an `error` it
 shows neither. The customer table passes an IWA `RichNotification`
 (`CustomersNoResults`).
 
+While `loading`, the table keeps its headers and shows placeholder rows in
+place of any rows on screen, and hides the paginator. The owner decides when a
+load shows: the customer view waits 300 ms, so a quick answer swaps the rows
+without a flash, and adds a notice with a way back
+([ADR 0043](../../docs/adr/0043-list-loading-with-a-way-back.md)).
+
 The config is **one flat `fields` list** — every field can render as a column.
 At runtime the table measures its container and shows, in display order, as
 many columns as fit **without horizontal scrolling**; the remaining fields
@@ -213,6 +219,11 @@ e.g. on Back. The owner decides where the search lives: a server-paged list
 keeps it in the URL's `q` (ADR 0006), and `replace` keeps typing out of the
 browser history.
 
+`initialText` mounts the field with another text than `value`, e.g. a search
+the user called off: the field keeps it, also when `value` changes, and does
+not search for it until the user edits it. `autoFocus` puts the cursor in the
+field when it mounts. Remount the field with a `key` to use them again.
+
 ```tsx
 import { GenericSearch } from '@/ui';
 
@@ -282,6 +293,13 @@ what happens to the value of a removed field, and uses
 `replaceTableFilters(current, fields, next)` to write the params of its fields
 while keeping others. See
 [ADR 0039](../../docs/adr/0039-table-filters-declared-in-the-field-config.md).
+
+The dialog can also be opened by the owner: `dialogValues` holds the values the
+dialog starts from while it is open, or `null` while it is closed, and
+`onDialogValuesChange` asks to open it (with the applied values) or close it.
+The customer view uses it to open the filters again with the user's choice when
+a slow filter change is called off; on close, focus goes to "Customize filters"
+when the control that opened the dialog is gone.
 
 ```tsx
 import {
@@ -414,15 +432,18 @@ neutral | accent | brand` (default `outline` — light surface with a subtle
 
 Components the app consumes from IWA without an adapter are re-exported
 verbatim from `index.ts` (`ActionLink`, `Button`, `Card`, `ChipInput`,
-`CustomizableDialog`, `DatePicker`, `MultiSelect`, `RadioGroup`, `RichNotification`, `Select`,
+`CustomizableDialog`, `DatePicker`, `LoadingSpinner`, `MultiSelect`, `RadioGroup`, `RichNotification`, `Select`,
 `Snackbar`, `Switch`, `TabMenu`, `TextInput`, `TopBar`, …); `index.ts` is the complete list. Feature code imports them from
 `@/ui` like every local primitive.
 
 ### Toasts (`useToast`)
 
 Features show a toast with `useToast().show({ type, message })` (`type` is
-`info`, `success` or `error`) and close it with `hide()`; they never render a
-`Snackbar` themselves. `ToastProvider` wraps the routed content in
+`default`, `info`, `success` or `error`; `message` is any node) and close it
+with `hide()`; they never render a `Snackbar` themselves. `persistent: true`
+keeps a toast on screen, without a close button, until the handle `show()`
+returns hides it; a handle hides only its own toast, never one shown after it
+([ADR 0043](../../docs/adr/0043-list-loading-with-a-way-back.md)). `ToastProvider` wraps the routed content in
 `RootLayout` and shows one toast at a time as the IWA `Snackbar`, pinned to the
 bottom of the screen across the content it wraps, not the whole window
 ([ADR 0041](../../docs/adr/0041-toasts-span-the-page-content.md)).

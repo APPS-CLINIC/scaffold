@@ -58,6 +58,7 @@ keep ADRs at all; use it as the template for new records.
 | [0040](0040-filter-options-from-the-service.md)                   | Filter options from the service                     | Accepted               |
 | [0041](0041-toasts-span-the-page-content.md)                      | Toasts span the page content                        | Accepted               |
 | [0042](0042-language-picked-in-the-top-bar.md)                    | Language picked in the top bar                      | Accepted               |
+| [0043](0043-list-loading-with-a-way-back.md)                      | List loading with a way back                        | Accepted               |
 
 ### Step 03 — Scope alignment (discovery)
 

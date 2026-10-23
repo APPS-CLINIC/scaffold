@@ -1173,6 +1173,19 @@ export function Skeleton({ width, height, borderRadius = 24, className, dataTest
   });
 }
 
+const LOADING_SPINNER_SIZES = { 16: 'h-4 w-4', 24: 'h-6 w-6', 32: 'h-8 w-8' };
+
+export function LoadingSpinner({ size, className }) {
+  return createElement('span', {
+    'aria-hidden': 'true',
+    className: twMerge(
+      'inline-block shrink-0 animate-spin rounded-full border-2 border-[#ff6200] border-r-transparent',
+      LOADING_SPINNER_SIZES[size],
+      className,
+    ),
+  });
+}
+
 const LABEL_VARIANT_COLORS = {
   Leaf: { background: '#eef5e8', dot: '#4a7f38', text: '#4a7f38' },
   Minus: { background: '#fbe9e7', dot: '#c0392b', text: '#c0392b' },

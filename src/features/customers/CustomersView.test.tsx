@@ -59,7 +59,10 @@ describe('CustomersView', () => {
 
     expect(screen.getByRole('heading', { name: 'Klienci oraz ich doradcy' })).toBeInTheDocument();
     expect(await screen.findByRole('columnheader', { name: 'Nazwa klienta' })).toBeInTheDocument();
-    expect(screen.getByLabelText('Dostosuj filtry', { selector: 'button' })).toBeInTheDocument();
+    // The filters and the search wait for the first list.
+    expect(
+      await screen.findByLabelText('Dostosuj filtry', { selector: 'button' }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Ustawienia listy' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Szukaj na liście')).toBeInTheDocument();
     expect(await screen.findAllByText('Przekroczona')).toHaveLength(2);
@@ -80,8 +83,8 @@ describe('CustomersView', () => {
   it('uses the deep-link query for the first and only initial customer list request', async () => {
     const { store } = renderPage('/customers/all?q=carrefour&status=ACTIVE&pageSize=10');
 
-    expect(screen.getByPlaceholderText('Search the list')).toHaveValue('carrefour');
     expect(await screen.findByText('CARREFOUR POLAND SP. Z O.O.')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Search the list')).toHaveValue('carrefour');
     expect(screen.getByText('1 results')).toBeInTheDocument();
 
     await waitFor(() => {

@@ -54,6 +54,13 @@ export const pl = {
   'customers.export.started':
     'Pobieranie rozpoczęte. Aby zobaczyć szczegóły, wyświetl pobierane pliki w swojej przeglądarce internetowej',
   'customers.export.failed': 'Nie udało się pobrać pliku. Spróbuj ponownie.',
+  'customers.loading.fetching': 'Pobieramy listę klientów',
+  'customers.loading.slow':
+    'Wygląda na to, że pobieranie listy klientów trwa dłużej, niż zwykle. Zaczekaj jeszcze chwilę',
+  'customers.loading.retry': 'Anuluj i spróbuj ponownie',
+  'customers.loading.cancelSearch': 'Anuluj i wróć do wyszukiwania',
+  'customers.loading.cancelFilters': 'Anuluj i wróć do filtrowania',
+  'customers.loading.cancel': 'Anuluj',
   'customers.table.ariaLabel': 'Klienci oraz ich doradcy',
   'customers.table.loading': 'Ładowanie klientów…',
   'customers.table.noResults.title': 'Nie znaleźliśmy klienta',
