@@ -54,6 +54,12 @@ The full, indexed list lives in [`adr/README.md`](adr/README.md).
   (the "List settings" dialog, persisted per browser), and development preview
   data.
 
+## Screen analyses
+
+- [Limits view — component inventory](limits-view-component-inventory.md) —
+  which components of the limits table the scaffold already has, which are new,
+  and which come from IWA.
+
 ## Pull request delivery notes
 
 - [PR #4 — Configurable contextual sidebar navigation](pull-requests/0004-contextual-sidebar-navigation.md)

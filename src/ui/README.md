@@ -31,6 +31,11 @@ fetching and URL state; the table receives rows plus controlled pagination and
 sort values, then reports user intent through `onPageChange` and
 `onSortChange`. Its public `page` value is always **1-based**.
 
+When nothing matches, the table shows the caller's `noResults` node under the
+column headers and hides the paginator; while loading or on an `error` it
+shows neither. The customer table passes an IWA `RichNotification`
+(`CustomersNoResults`).
+
 The config is **one flat `fields` list** — every field can render as a column.
 At runtime the table measures its container and shows, in display order, as
 many columns as fit **without horizontal scrolling**; the remaining fields
@@ -409,7 +414,7 @@ neutral | accent | brand` (default `outline` — light surface with a subtle
 
 Components the app consumes from IWA without an adapter are re-exported
 verbatim from `index.ts` (`ActionLink`, `Button`, `Card`, `ChipInput`,
-`CustomizableDialog`, `DatePicker`, `MultiSelect`, `RadioGroup`, `Select`,
+`CustomizableDialog`, `DatePicker`, `MultiSelect`, `RadioGroup`, `RichNotification`, `Select`,
 `Snackbar`, `Switch`, `TabMenu`, `TextInput`, `TopBar`, …); `index.ts` is the complete list. Feature code imports them from
 `@/ui` like every local primitive.
 
