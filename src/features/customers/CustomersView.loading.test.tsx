@@ -226,7 +226,8 @@ describe('CustomersView while the list loads', () => {
     holdCustomerListResponses();
     const requestsBefore = listRequestCount();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
+    // The library's action link is not a button in every build; its label is.
+    fireEvent.click(screen.getByText('Refresh'));
     await advance(300);
     expect(listRequestCount()).toBe(requestsBefore + 1);
     fireEvent.click(notice('Cancel') as HTMLElement);
