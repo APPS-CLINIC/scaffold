@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import type { MessageKey } from '@/i18n/messages/pl';
 import { LoadingSpinner } from '@/ui';
-import type { CustomerListLoadCause } from './customerListLoad';
+import type { ListLoadCause } from '@/features/urlState/listLoadCause';
 
-const CANCEL_LABELS: Record<CustomerListLoadCause, MessageKey> = {
+const CANCEL_LABELS: Record<ListLoadCause, MessageKey> = {
   first: 'customers.loading.retry',
   search: 'customers.loading.cancelSearch',
   filters: 'customers.loading.cancelFilters',
@@ -11,7 +11,7 @@ const CANCEL_LABELS: Record<CustomerListLoadCause, MessageKey> = {
 };
 
 interface CustomersLoadingNoticeProps {
-  cause: CustomerListLoadCause;
+  cause: ListLoadCause;
   /** The load has taken long enough to say so. */
   slow: boolean;
   onCancel: () => void;

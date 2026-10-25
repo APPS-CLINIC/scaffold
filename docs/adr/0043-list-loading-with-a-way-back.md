@@ -43,6 +43,9 @@ placeholder rows only when it had no rows. Toasts took only text and closed them
   because RTK Query does not send a second request for arguments already on their way.
 - **Toasts** take any node as a message. They can stay on screen without a close button
   until the handle `show()` returns hides them; a handle hides only its own toast.
+- **Shared pieces.** The timing is `useLoadingPhase` in `@/ui` and the cause is
+  `listLoadCause` in `urlState`, so the next list reuses both. The way back, the labels and
+  the kept list stay in the view, because each view goes back to its own controls.
 
 ## Consequences
 

@@ -4,6 +4,7 @@ import { skipToken } from '@reduxjs/toolkit/query/react';
 import { useAppSelector } from '@/app/hooks';
 import { DATE_DMY_FORMAT_OPTIONS } from '@/i18n/dateFormats';
 import { useTableColumnSettings } from '@/features/tableSettings';
+import { listLoadCause } from '@/features/urlState/listLoadCause';
 import type { ListQuery } from '@/features/urlState/urlState.schema';
 import { selectListQuery } from '@/features/urlState/urlState.selectors';
 import { useListQueryState } from '@/features/urlState/useListQueryState';
@@ -22,10 +23,10 @@ import {
   type GenericDataTablePageChange,
   type GenericDataTableSortChange,
   type TableFilterValues,
+  useLoadingPhase,
   useToast,
 } from '@/ui';
 import { CustomerExportDialog, type CustomerExportScope } from './CustomerExportDialog';
-import { customerListLoadCause } from './customerListLoad';
 import { CustomersLoadingNotice } from './CustomersLoadingNotice';
 import { CustomersNoResults } from './CustomersNoResults';
 import { CustomersToolbarSkeleton } from './CustomersToolbarSkeleton';
@@ -33,7 +34,6 @@ import { customerTableConfig } from './customerTable';
 import { useGetCustomersQuery, useExportCustomersMutation } from './customers.api';
 import { selectCustomerQuery } from './customers.filters';
 import type { Customer, CustomerListRequest } from './customers.types';
-import { useLoadingPhase } from './useLoadingPhase';
 
 const filterableFields = customerTableConfig.fields.filter(isFilterableField);
 
@@ -73,7 +73,7 @@ export function CustomersView() {
   const loadingPhase = useLoadingPhase(isFetching, JSON.stringify(request));
   const tableLoading = isLoading || loadingPhase !== 'idle';
   // The cause of the load in progress; it stays while the notice outlasts the load.
-  const fetchCause = customerListLoadCause(shown?.listQuery ?? null, listQuery);
+  const fetchCause = listLoadCause(shown?.listQuery ?? null, listQuery);
   const [loadCause, setLoadCause] = useState(fetchCause);
   if (isFetching && fetchCause !== loadCause) setLoadCause(fetchCause);
 

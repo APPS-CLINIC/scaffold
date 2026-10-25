@@ -380,6 +380,16 @@ import {
 </CustomizableDialog>;
 ```
 
+## `useLoadingPhase`
+
+`useLoadingPhase(loading, request)` says what a load shows, so every load in the
+app keeps the same timing: `idle` for the first 300 ms, then `loading` for at
+least 500 ms, and `slow` once the same `request` has taken 10 s. `request` is
+any string that names the request; a new one while loading starts the 10 s
+again. `listLoadCause` (`@/features/urlState/listLoadCause`) tells what a list
+load changes, so its notice can offer the matching way back
+([ADR 0043](../../docs/adr/0043-list-loading-with-a-way-back.md)).
+
 ## `ScreenHeading`
 
 `ScreenHeading` is the app-facing adapter over IWA's page heading. Items use a
