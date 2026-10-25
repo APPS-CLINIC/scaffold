@@ -27,7 +27,7 @@ import {
   useToast,
 } from '@/ui';
 import { CustomerExportDialog, type CustomerExportScope } from './CustomerExportDialog';
-import { CustomersLoadingNotice } from './CustomersLoadingNotice';
+import { CustomersLoadingNotice, type CustomersLoadState } from './CustomersLoadingNotice';
 import { CustomersNoResults } from './CustomersNoResults';
 import { CustomersToolbarSkeleton } from './CustomersToolbarSkeleton';
 import { customerTableConfig } from './customerTable';
@@ -98,21 +98,26 @@ export function CustomersView() {
     cancelLoadRef.current = cancelLoad;
   });
 
+  // A failed load keeps the rows hidden, and the notice offers to send it again.
+  const tableHidden = tableLoading || isError;
+  const loadState: CustomersLoadState | null =
+    loadingPhase !== 'idle' ? loadingPhase : isError ? 'failed' : null;
+
   useEffect(() => {
-    if (loadingPhase === 'idle') return undefined;
+    if (loadState === null) return undefined;
     const notice = toast.show({
-      type: 'default',
       persistent: true,
       message: (
         <CustomersLoadingNotice
+          state={loadState}
           cause={loadCause}
-          slow={loadingPhase === 'slow'}
           onCancel={() => cancelLoadRef.current()}
+          onRetry={() => setAttempt((current) => current + 1)}
         />
       ),
     });
     return () => notice.hide();
-  }, [loadCause, loadingPhase, toast]);
+  }, [loadCause, loadState, toast]);
 
   const [expandedRowKeys, setExpandedRowKeys] = useState<readonly string[]>([]);
   const tableSettings = useTableColumnSettings(customerTableConfig);
@@ -182,7 +187,7 @@ export function CustomersView() {
   // customers, only those the search and the filters leave. It is never sorted.
   const handleExportDownload = async (scope: CustomerExportScope) => {
     closeExport();
-    toast.show({ type: 'info', message: t('customers.export.started') });
+    toast.show({ message: t('customers.export.started') });
     try {
       await exportCustomers({
         locale: i18n.resolvedLanguage ?? i18n.language,
@@ -190,7 +195,7 @@ export function CustomersView() {
         ...(scope === 'filtered' ? { q: customerQuery.q, filters: customerQuery.filters } : {}),
       }).unwrap();
     } catch {
-      toast.show({ type: 'error', message: t('customers.export.failed') });
+      toast.show({ message: t('customers.export.failed') });
     }
   };
 
@@ -264,7 +269,7 @@ export function CustomersView() {
                   onSearch={(q) => setQuery({ q }, { replace: true })}
                 />
                 <GenericTableSettings
-                  dataContent={tableLoading ? undefined : data?.content}
+                  dataContent={tableHidden ? undefined : data?.content}
                   onExpandedRowKeysChange={setExpandedRowKeys}
                   expandedRowKeys={expandedRowKeys}
                   handleExport={openExport}
@@ -290,8 +295,7 @@ export function CustomersView() {
           pageSizeOptions={[10, 25, 50]}
           sortField={listQuery.sort || undefined}
           sortOrder={listQuery.sort ? listQuery.dir : undefined}
-          loading={tableLoading}
-          error={isError ? t('customers.table.error') : undefined}
+          loading={tableHidden}
           noResults={<CustomersNoResults />}
           labels={labels}
           expandedRowKeys={expandedRowKeys}

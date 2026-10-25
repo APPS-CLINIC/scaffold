@@ -18,6 +18,9 @@ const WIDTH_VARIABLE = '--toast-area-width';
 // handle hides it.
 const PERSISTENT_TIMEOUT_MS = 2_147_483_647;
 
+// Loading, a download and a failure all show the same dark bar of the mock-ups.
+const TOAST_TYPE = 'default';
+
 // The snackbar is drawn over the page, not where it sits in the markup, so it is pinned to the
 // bottom of the screen across the span `useAreaSpan` publishes.
 const TOAST_CLASS_NAME =
@@ -85,7 +88,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       <Snackbar
         visibility={visible}
         onHide={hide}
-        type={toast?.type ?? 'info'}
+        type={TOAST_TYPE}
         message={toast?.message ?? ''}
         {...(toast?.persistent ? { closable: false, hideTimeoutMs: PERSISTENT_TIMEOUT_MS } : {})}
         className={TOAST_CLASS_NAME}

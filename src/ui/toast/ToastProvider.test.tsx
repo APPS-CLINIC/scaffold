@@ -33,10 +33,10 @@ function Page() {
   const toast = useToast();
   return (
     <>
-      <button type="button" onClick={() => toast.show({ type: 'info', message: 'Saving' })}>
+      <button type="button" onClick={() => toast.show({ message: 'Saving' })}>
         Save
       </button>
-      <button type="button" onClick={() => toast.show({ type: 'error', message: 'Not saved' })}>
+      <button type="button" onClick={() => toast.show({ message: 'Not saved' })}>
         Fail
       </button>
     </>
@@ -70,10 +70,10 @@ describe('ToastProvider', () => {
     expect(snackbar().visibility).toBe(false);
 
     await user.click(screen.getByRole('button', { name: 'Save' }));
-    expect(snackbar()).toMatchObject({ visibility: true, type: 'info', message: 'Saving' });
+    expect(snackbar()).toMatchObject({ visibility: true, type: 'default', message: 'Saving' });
 
     await user.click(screen.getByRole('button', { name: 'Fail' }));
-    expect(snackbar()).toMatchObject({ visibility: true, type: 'error', message: 'Not saved' });
+    expect(snackbar()).toMatchObject({ visibility: true, type: 'default', message: 'Not saved' });
 
     act(() => snackbar().onHide(false));
     expect(snackbar().visibility).toBe(false);
@@ -90,7 +90,6 @@ describe('ToastProvider', () => {
             type="button"
             onClick={() => {
               handle.current = toast.show({
-                type: 'default',
                 message: <strong>Loading</strong>,
                 persistent: true,
               });
@@ -132,7 +131,6 @@ describe('ToastProvider', () => {
             type="button"
             onClick={() => {
               loading.current = toast.show({
-                type: 'default',
                 message: 'Loading',
                 persistent: true,
               });
@@ -140,7 +138,7 @@ describe('ToastProvider', () => {
           >
             Load
           </button>
-          <button type="button" onClick={() => toast.show({ type: 'info', message: 'Exporting' })}>
+          <button type="button" onClick={() => toast.show({ message: 'Exporting' })}>
             Export
           </button>
           <button type="button" onClick={() => loading.current?.hide()}>
@@ -159,7 +157,7 @@ describe('ToastProvider', () => {
     await user.click(screen.getByRole('button', { name: 'Export' }));
     await user.click(screen.getByRole('button', { name: 'Loaded' }));
 
-    expect(snackbar()).toMatchObject({ visibility: true, type: 'info', message: 'Exporting' });
+    expect(snackbar()).toMatchObject({ visibility: true, type: 'default', message: 'Exporting' });
     expect(snackbar().closable).toBeUndefined();
   });
 

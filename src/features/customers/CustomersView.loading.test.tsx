@@ -254,6 +254,32 @@ describe('CustomersView while the list loads', () => {
     expect(captured.snackbar?.visibility).toBe(false);
   });
 
+  it('says in the notice that the list failed, keeps the rows hidden and sends it again on request', async () => {
+    renderPage();
+    expect(await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.')).toBeInTheDocument();
+    const answer = fetchMock.getMockImplementation();
+    if (answer === undefined) throw new Error('No customer API test transport');
+    fetchMock.mockImplementation(async (input, init) => {
+      const url = input instanceof Request ? input.url : String(input);
+      if (new URL(url).pathname === '/api/v1/customers') return new Response(null, { status: 500 });
+      return answer(input, init);
+    });
+
+    await search('carrefour');
+
+    expect(await screen.findByText('Customers could not be loaded.')).toBeInTheDocument();
+    expect(captured.snackbar).toMatchObject({ visibility: true, type: 'default', closable: false });
+    expect(screen.queryByText('ARCELORMITTAL WARSAW SP. Z O.O.')).not.toBeInTheDocument();
+    expect(searchField()).toHaveValue('carrefour');
+
+    fetchMock.mockImplementation(answer);
+    fireEvent.click(notice('Try again') as HTMLElement);
+
+    expect(await screen.findByText('CARREFOUR POLAND SP. Z O.O.')).toBeInTheDocument();
+    await advance(500);
+    expect(captured.snackbar?.visibility).toBe(false);
+  });
+
   it('shows the whole view as a skeleton on the first load and sends it again on request', async () => {
     const { release } = holdCustomerListResponses();
     renderPage();

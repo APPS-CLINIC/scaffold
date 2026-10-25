@@ -41,8 +41,14 @@ placeholder rows only when it had no rows. Toasts took only text and closed them
 - **A request number.** The list request carries an `attempt` number that is only in the
   cache key. "Refresh" and "Cancel and try again" raise it to send the same query again,
   because RTK Query does not send a second request for arguments already on their way.
+- **A failed load stays in the same notice.** The rows stay hidden, as while loading, and
+  the same notice says "Customers could not be loaded." with "Try again", which raises the
+  request number. The table no longer shows an error box over the last list.
 - **Toasts** take any node as a message. They can stay on screen without a close button
   until the handle `show()` returns hides them; a handle hides only its own toast.
+- **One look for every toast.** Loading, a started download and a failure all show the dark
+  bar of the mock-ups, so a toast has no type: the provider draws every one alike. This
+  refines ADR 0041, where a feature picked the type.
 - **Shared pieces.** The timing is `useLoadingPhase` in `@/ui` and the cause is
   `listLoadCause` in `urlState`, so the next list reuses both. The way back, the labels and
   the kept list stay in the view, because each view goes back to its own controls.

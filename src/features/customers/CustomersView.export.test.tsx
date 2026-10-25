@@ -178,7 +178,7 @@ describe('CustomersView export', () => {
     expect(exportButton()).toHaveFocus();
     expect(snackbar()).toMatchObject({
       visibility: true,
-      type: 'info',
+      type: 'default',
       message: 'Download started. To see the details, open the downloads in your web browser',
     });
   });
@@ -218,7 +218,7 @@ describe('CustomersView export', () => {
     await waitFor(() =>
       expect(snackbar()).toMatchObject({
         visibility: true,
-        type: 'error',
+        type: 'default',
         message: 'Could not download the file. Please try again.',
       }),
     );

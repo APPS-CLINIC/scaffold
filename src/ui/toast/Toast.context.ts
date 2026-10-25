@@ -1,9 +1,7 @@
 import { createContext, type ReactNode } from 'react';
 
-export type ToastType = 'default' | 'info' | 'success' | 'error';
-
+/** Every toast looks the same; only its message and how long it stays differ. */
 export interface Toast {
-  type: ToastType;
   message: ReactNode;
   /** Stays on screen, without a close button, until its handle hides it. */
   persistent?: boolean;

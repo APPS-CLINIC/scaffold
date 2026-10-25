@@ -448,9 +448,11 @@ verbatim from `index.ts` (`ActionLink`, `Button`, `Card`, `ChipInput`,
 
 ### Toasts (`useToast`)
 
-Features show a toast with `useToast().show({ type, message })` (`type` is
-`default`, `info`, `success` or `error`; `message` is any node) and close it
-with `hide()`; they never render a `Snackbar` themselves. `persistent: true`
+Features show a toast with `useToast().show({ message })` (`message` is any
+node) and close it with `hide()`; they never render a `Snackbar` themselves.
+Every toast looks the same, the dark bar of the mock-ups, whether it says that
+a list loads, that a download started or that something failed, so a toast
+has no type. `persistent: true`
 keeps a toast on screen, without a close button, until the handle `show()`
 returns hides it; a handle hides only its own toast, never one shown after it
 ([ADR 0043](../../docs/adr/0043-list-loading-with-a-way-back.md)). `ToastProvider` wraps the routed content in
