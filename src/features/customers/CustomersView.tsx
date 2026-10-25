@@ -18,6 +18,7 @@ import {
   replaceTableFilters,
   TableColumnSettingsDialog,
   TableFilters,
+  Refresh,
   type GenericDataTableField,
   type GenericDataTableLabels,
   type GenericDataTablePageChange,
@@ -245,7 +246,7 @@ export function CustomersView() {
               <span>{t('customers.dataAsOf')}</span>
               <strong className="font-bold text-[var(--text)]">{dataAsOf}</strong>
               <ActionLink
-                icon={<span aria-hidden="true" className="pi pi-refresh text-sm" />}
+                icon={<Refresh />}
                 label={t('customers.actions.refresh')}
                 onClick={() => setAttempt((current) => current + 1)}
               />

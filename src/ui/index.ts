@@ -57,6 +57,7 @@ export type {
   TextInputProps,
 } from 'iwa-react-components';
 export { BreadCrumb, type BreadCrumbItem, type BreadCrumbProps } from 'iwa-react-components';
+export { Refresh } from 'ing-react-icons';
 export { ScreenHeading, type ScreenHeadingItem, type ScreenHeadingProps } from './ScreenHeading';
 export { PrimeIcon, type PrimeIconName, type PrimeIconProps } from './PrimeIcon';
 export { createPrimeIcon } from './createPrimeIcon';
