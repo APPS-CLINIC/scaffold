@@ -51,6 +51,7 @@ export const en: Record<MessageKey, string> = {
   'customers.export.cancel': 'Cancel',
   'customers.export.started':
     'Download started. To see the details, open the downloads in your web browser',
+  'customers.export.done': 'The customer list has been downloaded',
   'customers.export.failed': 'Could not download the file. Please try again.',
   'customers.loading.fetching': 'Loading the customer list',
   'customers.loading.slow':

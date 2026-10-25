@@ -152,4 +152,5 @@ export { useLoadingPhase, type LoadingPhase } from './useLoadingPhase';
 export { cx } from './cx';
 export { ToastProvider } from './toast/ToastProvider';
 export { useToast } from './toast/useToast';
-export type { Toast, ToastApi, ToastHandle } from './toast/Toast.context';
+export { ToastErrorIcon } from './toast/ToastErrorIcon';
+export type { Toast, ToastAction, ToastApi, ToastHandle } from './toast/Toast.context';

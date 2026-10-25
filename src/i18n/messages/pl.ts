@@ -53,6 +53,7 @@ export const pl = {
   'customers.export.cancel': 'Anuluj',
   'customers.export.started':
     'Pobieranie rozpoczęte. Aby zobaczyć szczegóły, wyświetl pobierane pliki w swojej przeglądarce internetowej',
+  'customers.export.done': 'Pobrano listę klientów',
   'customers.export.failed': 'Nie udało się pobrać pliku. Spróbuj ponownie.',
   'customers.loading.fetching': 'Pobieramy listę klientów',
   'customers.loading.slow':

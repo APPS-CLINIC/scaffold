@@ -59,6 +59,7 @@ keep ADRs at all; use it as the template for new records.
 | [0041](0041-toasts-span-the-page-content.md)                      | Toasts span the page content                        | Accepted               |
 | [0042](0042-language-picked-in-the-top-bar.md)                    | Language picked in the top bar                      | Accepted               |
 | [0043](0043-list-loading-with-a-way-back.md)                      | List loading with a way back                        | Accepted               |
+| [0044](0044-generic-toasts.md)                                    | Generic toasts                                      | Accepted               |
 
 ### Step 03 — Scope alignment (discovery)
 
