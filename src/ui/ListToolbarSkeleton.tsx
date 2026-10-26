@@ -1,7 +1,10 @@
 import { Skeleton } from '@/ui';
 
-/** Stands in for the data date, the filters and the search until the first list arrives. */
-export function CustomersToolbarSkeleton() {
+/**
+ * Stands in for the toolbar above a list (the data date, the filters and the search) until the
+ * first list arrives.
+ */
+export function ListToolbarSkeleton() {
   return (
     <div
       aria-hidden="true"

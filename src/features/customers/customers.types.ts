@@ -93,9 +93,12 @@ export interface CustomerQuery {
   filters: CustomerFilters;
 }
 
-/** A list request: the query, and which time it is sent. */
-export interface CustomerListRequest extends CustomerQuery {
-  /** Sends the same query again: only the cache key holds it, the service never sees it. */
+/** A customer query that can be sent again unchanged. */
+export interface RepeatableCustomerQuery extends CustomerQuery {
+  /**
+   * RTK Query sends no new request for a query already loading or cached, so a new number
+   * sends the same query again. Only the cache key holds it; the service never sees it.
+   */
   attempt?: number;
 }
 

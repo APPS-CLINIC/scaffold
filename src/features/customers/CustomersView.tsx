@@ -16,6 +16,7 @@ import {
   GenericSearch,
   GenericTableSettings,
   isFilterableField,
+  ListToolbarSkeleton,
   replaceTableFilters,
   TableColumnSettingsDialog,
   TableFilters,
@@ -35,11 +36,10 @@ import {
 } from '@/ui';
 import { CustomerExportDialog, type CustomerExportScope } from './CustomerExportDialog';
 import { CustomersNoResults } from './CustomersNoResults';
-import { CustomersToolbarSkeleton } from './CustomersToolbarSkeleton';
 import { customerTableConfig } from './customerTable';
 import { useGetCustomersQuery, useExportCustomersMutation } from './customers.api';
 import { selectCustomerQuery } from './customers.filters';
-import type { Customer, CustomerListRequest } from './customers.types';
+import type { Customer, RepeatableCustomerQuery } from './customers.types';
 
 const filterableFields = customerTableConfig.fields.filter(isFilterableField);
 
@@ -62,7 +62,7 @@ const CANCEL_LABELS: Record<ListLoadCause, MessageKey> = {
 /** The list on screen: the query in the URL and the request that loaded it. */
 interface ShownList {
   listQuery: ListQuery;
-  request: CustomerListRequest;
+  request: RepeatableCustomerQuery;
 }
 
 export function CustomersView() {
@@ -71,9 +71,10 @@ export function CustomersView() {
   const customerQuery = useAppSelector(selectCustomerQuery);
   const { setQuery } = useListQueryState();
   const toast = useToast();
-  // A new attempt sends the same query again, for "Refresh" and "Cancel and try again".
+  // A new number sends the same query again, for "Refresh" and "Try again". It counts nothing
+  // that needs a limit: each one is a request the user asked for.
   const [attempt, setAttempt] = useState(0);
-  const request = useMemo<CustomerListRequest>(
+  const request = useMemo<RepeatableCustomerQuery>(
     () => (attempt === 0 ? customerQuery : { ...customerQuery, attempt }),
     [attempt, customerQuery],
   );
@@ -88,8 +89,8 @@ export function CustomersView() {
   // brings it back without a request, however long the load took.
   useGetCustomersQuery(shown?.request ?? skipToken);
 
-  // The data date, the filters and the search wait for the first answer; from then on only
-  // the table shows that a list loads.
+  // The date, filters, and search wait for the initial response.
+  // Subsequent loads only show a loading state in the table.
   const [toolbarReady, setToolbarReady] = useState(false);
   if (!toolbarReady && (data !== undefined || isError)) setToolbarReady(true);
   const loadingPhase = useLoadingPhase(isFetching, JSON.stringify(request));
@@ -326,7 +327,7 @@ export function CustomersView() {
             </div>
           </>
         ) : (
-          <CustomersToolbarSkeleton />
+          <ListToolbarSkeleton />
         )}
 
         <span className="sr-only" role="status" aria-live="polite">
