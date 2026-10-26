@@ -389,6 +389,8 @@ any string that names the request; a new one while loading starts the 10 s
 again. `listLoadCause` (`@/features/urlState/listLoadCause`) tells what a list
 load changes, so its notice can offer the matching way back
 ([ADR 0043](../../docs/adr/0043-list-loading-with-a-way-back.md)).
+`ListToolbarSkeleton` stands in for the toolbar above a list (the data date,
+the filters and the search) until the first list arrives.
 
 ## `ScreenHeading`
 

@@ -3,7 +3,7 @@ import { mapCustomerResponse } from './customers.adapter';
 import type { CustomerFilters } from './customers.filters';
 import type {
   Customer,
-  CustomerListRequest,
+  RepeatableCustomerQuery,
   CustomerQuery,
   CustomerExportRequest,
   CustomerResponse,
@@ -167,7 +167,7 @@ export function exportCustomersRequest(params: CustomerExportRequest): {
 
 export const customersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getCustomers: builder.query<PageResponse<Customer>, CustomerListRequest>({
+    getCustomers: builder.query<PageResponse<Customer>, RepeatableCustomerQuery>({
       query: getCustomersRequest,
       transformResponse: mapCustomerPageResponse,
     }),
