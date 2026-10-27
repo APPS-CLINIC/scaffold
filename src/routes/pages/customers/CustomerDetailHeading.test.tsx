@@ -26,9 +26,8 @@ describe('CustomerDetailHeading', () => {
     ).toBeInTheDocument();
 
     expect(screen.getAllByRole('link')).toHaveLength(1);
-    const backLink = screen.getByRole('link', {
-      name: i18n.t('customers.details.backToList'),
-    });
+    // The way back names the list by the list's own title.
+    const backLink = screen.getByRole('link', { name: i18n.t('customers.title') });
     expect(backLink).toHaveAttribute('href', '/customers/all');
     expect(screen.queryByText('42')).not.toBeInTheDocument();
     expect(screen.queryByText(i18n.t('nav.customerDetail.reviews'))).not.toBeInTheDocument();
