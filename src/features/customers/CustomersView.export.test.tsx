@@ -176,11 +176,12 @@ describe('CustomersView export', () => {
     expect(params.has('sort')).toBe(false);
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(exportButton()).toHaveFocus();
-    expect(snackbar()).toMatchObject({
-      visibility: true,
-      type: 'default',
-      message: 'Download started. To see the details, open the downloads in your web browser',
-    });
+    expect(
+      screen.getByText(
+        'Download started. To see the details, open the downloads in your web browser',
+      ),
+    ).toBeInTheDocument();
+    expect(snackbar()).toMatchObject({ visibility: true, type: 'default' });
   });
 
   it("downloads all customers in the table's columns when the user asks for no filters", async () => {
@@ -215,13 +216,10 @@ describe('CustomersView export', () => {
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 500 }));
     await user.click(within(exportDialog()).getByRole('button', { name: 'Download' }));
 
-    await waitFor(() =>
-      expect(snackbar()).toMatchObject({
-        visibility: true,
-        type: 'default',
-        message: 'Could not download the file. Please try again.',
-      }),
-    );
+    expect(
+      await screen.findByText('Could not download the file. Please try again.'),
+    ).toBeInTheDocument();
+    expect(snackbar()).toMatchObject({ visibility: true, type: 'default' });
   });
 
   it('hides the notice when it is closed', async () => {
