@@ -35,9 +35,12 @@ interface OpenToast {
   toast: Toast;
 }
 
-/** Puts `entry` on top; of the toasts it covers, only the persistent ones stay. */
+/**
+ * Puts `entry` on top; of the toasts it covers, only the persistent ones stay. Every covered
+ * toast is checked, not only the top one: `update` can make a toast under the top closable.
+ */
 function putOnTop(open: readonly OpenToast[], entry: OpenToast): OpenToast[] {
-  return [...open.filter((other) => other.id !== entry.id && other.toast.persistent), entry];
+  return [...open.filter((other) => other.toast.persistent), entry];
 }
 
 /**

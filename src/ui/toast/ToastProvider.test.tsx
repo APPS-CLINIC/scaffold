@@ -166,6 +166,21 @@ describe('ToastProvider', () => {
     expect(snackbar().visibility).toBe(false);
   });
 
+  it('drops a covered toast that stopped being persistent once another toast comes', () => {
+    renderToasts();
+    const download = show({ message: 'Download started', persistent: true });
+    show({ message: 'Loading', persistent: true });
+    act(() => download.update({ message: 'Downloaded' }));
+
+    show({ message: 'Saved' });
+    closeToast();
+    expect(onScreen('Loading')).toBe(true);
+
+    closeToast();
+    expect(snackbar().visibility).toBe(false);
+    expect(onScreen('Downloaded')).toBe(false);
+  });
+
   it('draws the icon before the text, and the red cross for an error in the same bar', () => {
     renderToasts();
 
