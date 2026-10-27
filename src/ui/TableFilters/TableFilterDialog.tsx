@@ -102,8 +102,8 @@ export function TableFilterDialog({ fields, values, onSave, onCancel }: TableFil
 }
 
 /**
- * Closes the option lists and calendars when the dialog rows scroll. They open on the
- * document body, so they would otherwise follow their field over the other rows. The
+ * Closes the option lists and calendars when the dialog rows scroll. The calendars open on
+ * the document body, so they would otherwise follow their field over the other rows. The
  * library's settings are passed on unchanged; only this one is switched on.
  */
 function HideOverlaysOnScroll({ children }: { children: ReactNode }) {
