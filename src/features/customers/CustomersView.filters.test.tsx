@@ -1,4 +1,4 @@
-import type { ComponentProps } from 'react';
+import type { ComponentProps, HTMLAttributes, UIEvent } from 'react';
 import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type * as IwaComponents from 'iwa-react-components';
@@ -132,6 +132,15 @@ function multiSelect(field: string): MultiSelectProps {
   const props = captured.multiSelects[labelId(field)];
   if (props === undefined) throw new Error(`No multiselect for ${field}`);
   return props;
+}
+
+/** Scrolls a multiselect's open list to its end, through the handler the field gives it. */
+function scrollListToEnd(props: MultiSelectProps) {
+  const onScroll = (props.pt?.wrapper as HTMLAttributes<HTMLDivElement> | undefined)?.onScroll;
+  if (onScroll === undefined) throw new Error('The list loads no more options.');
+  onScroll({
+    currentTarget: { scrollHeight: 800, scrollTop: 600, clientHeight: 200 },
+  } as UIEvent<HTMLDivElement>);
 }
 
 /** The calendar of a date range's start. */
@@ -297,16 +306,21 @@ describe('CustomersView filters', () => {
     expect(lastListRequest().getAll('tsPriceConditionStatus')).toEqual(['null']);
   });
 
-  it('searches a long list on the service and keeps the name of the picked entry', async () => {
+  it('shows the first page of a list, searches it on the service and keeps the name of the picked entry', async () => {
     const user = userEvent.setup();
     renderPage('/customers/all', ['fullName', 'internalGroupName']);
     await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
+    expect(requestsTo('/api/v1/internalGroups')).toEqual([]);
 
     await user.click(filtersButton());
-    expect(multiSelect('internalGroupName').options).toEqual([
-      { value: 'null', label: 'No own group' },
-    ]);
-    expect(requestsTo('/api/v1/internalGroups')).toEqual([]);
+    await waitFor(() =>
+      expect(multiSelect('internalGroupName').options).toEqual([
+        { value: 'null', label: 'No own group' },
+        { value: '11', label: 'Grupa Północ' },
+        { value: '12', label: 'Grupa Południe' },
+        { value: '13', label: 'Grupa Centrum' },
+      ]),
+    );
 
     act(() => {
       multiSelect('internalGroupName').onFilter?.({ filter: 'połu' } as MultiSelectFilterEvent);
@@ -317,9 +331,15 @@ describe('CustomersView filters', () => {
         { value: '12', label: 'Grupa Południe' },
       ]),
     );
-    expect(requestsTo('/api/v1/internalGroups').map((url) => url.searchParams.get('name'))).toEqual(
-      ['połu'],
-    );
+    expect(
+      requestsTo('/api/v1/internalGroups').map((url) => [
+        url.searchParams.get('name'),
+        url.searchParams.get('page'),
+      ]),
+    ).toEqual([
+      [null, '0'],
+      ['połu', '0'],
+    ]);
 
     act(() => {
       multiSelect('internalGroupName').onChange?.({ value: ['12'] } as MultiSelectChangeEvent);
@@ -331,7 +351,7 @@ describe('CustomersView filters', () => {
     await waitFor(() => expect(lastListRequest().getAll('internalGroupId')).toEqual(['12']));
   });
 
-  it('keeps a picked entry of a long list, by name, while the search moves on or is cleared', async () => {
+  it('puts the picked entries of a list first, by name, while the search moves on or is cleared', async () => {
     const user = userEvent.setup();
     renderPage('/customers/all', ['fullName', 'internalGroupName']);
     await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
@@ -367,8 +387,43 @@ describe('CustomersView filters', () => {
       expect(multiSelect('internalGroupName').options).toEqual([
         { value: 'null', label: 'No own group' },
         { value: '12', label: 'Grupa Południe' },
+        { value: '11', label: 'Grupa Północ' },
+        { value: '13', label: 'Grupa Centrum' },
       ]),
     );
+  });
+
+  it('loads the next page of a list once its open list is scrolled near the end', async () => {
+    const user = userEvent.setup();
+    const answer = fetchMock.getMockImplementation();
+    fetchMock.mockImplementation(async (input, init) => {
+      const url = input instanceof Request ? new URL(input.url) : null;
+      if (url?.pathname !== '/api/v1/teams') {
+        return answer?.(input, init) ?? new Response(null, { status: 404 });
+      }
+      const number = Number(url.searchParams.get('page'));
+      return new Response(
+        JSON.stringify({
+          content: [{ id: number + 1, name: `Team ${number + 1}` }],
+          page: { size: 20, number, totalElements: 21, totalPages: 2 },
+        }),
+        { headers: { 'Content-Type': 'application/json' } },
+      );
+    });
+    renderPage('/customers/all', ['fullName', 'lendingTeam']);
+    await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
+    await user.click(filtersButton());
+    await waitFor(() => expect(multiSelect('lendingTeam').options).toHaveLength(1));
+
+    act(() => scrollListToEnd(multiSelect('lendingTeam')));
+
+    await waitFor(() =>
+      expect(multiSelect('lendingTeam').options).toEqual([
+        { value: '1', label: 'Team 1' },
+        { value: '2', label: 'Team 2' },
+      ]),
+    );
+    expect(multiSelect('lendingTeam').pt).toBeUndefined();
   });
 
   it('says so in the open list when the search fails', async () => {
@@ -395,21 +450,15 @@ describe('CustomersView filters', () => {
     );
   });
 
-  it('names a picked entry of a long list by its id until a search finds it', async () => {
-    const user = userEvent.setup();
-    renderPage('/customers/all?corporateGroupId=22&corporateGroupId=null');
+  it('names the picked entries of a list in their chip by its first page, else by their ids', async () => {
+    renderPage('/customers/all?corporateGroupId=22&corporateGroupId=99&corporateGroupId=null');
     await screen.findByText('Clear filters (1)');
 
-    expectChips([`${label('corporateGroupName')}: 22, No corporate group`]);
-    expect(requestsTo('/api/v1/corporateGroups')).toEqual([]);
-
-    await user.click(filtersButton());
-    act(() => {
-      multiSelect('corporateGroupName').onFilter?.({ filter: 'comar' } as MultiSelectFilterEvent);
-    });
-
     await waitFor(() =>
-      expectChips([`${label('corporateGroupName')}: Comarch, No corporate group`]),
+      expectChips([`${label('corporateGroupName')}: Comarch, 99, No corporate group`]),
     );
+    expect(requestsTo('/api/v1/corporateGroups').map((url) => url.search)).toEqual([
+      '?page=0&size=20',
+    ]);
   });
 });

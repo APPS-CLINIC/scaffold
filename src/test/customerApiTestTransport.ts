@@ -61,6 +61,17 @@ const json = (body: unknown, status = 200) =>
 const nameContains = (search: string | null) => (entry: { name: string }) =>
   search === null || entry.name.toLowerCase().includes(search.toLowerCase());
 
+/** The page `page` of `size` entries whose names contain `name`, as the list endpoints serve it. */
+function listPage<T extends { name: string }>(entries: readonly T[], params: URLSearchParams) {
+  const found = entries.filter(nameContains(params.get('name')));
+  const number = Number(params.get('page') ?? 0);
+  const size = Number(params.get('size') ?? 10);
+  return {
+    content: found.slice(number * size, (number + 1) * size),
+    page: { size, number, totalElements: found.length, totalPages: Math.ceil(found.length / size) },
+  };
+}
+
 /** The dictionary endpoints the customer filters read, or `undefined` for another path. */
 function getDictionaryResponse(request: Request, url: URL): Response | undefined {
   if (url.pathname === '/api/dictionaries') {
@@ -71,13 +82,14 @@ function getDictionaryResponse(request: Request, url: URL): Response | undefined
   }
   const groupList = /^\/api\/v1\/(internalGroups|corporateGroups)$/.exec(url.pathname)?.[1];
   if (groupList !== undefined) {
-    return json((groupsByList[groupList] ?? []).filter(nameContains(url.searchParams.get('name'))));
+    return json(listPage(groupsByList[groupList] ?? [], url.searchParams));
   }
-  if (url.pathname === '/api/v1/teams') return json(lendingTeams);
+  if (url.pathname === '/api/v1/teams') return json(listPage(lendingTeams, url.searchParams));
   if (url.pathname === '/api/v1/users') {
-    return json(
-      url.searchParams.getAll('advisorType').flatMap((type) => advisorsByType[type] ?? []),
-    );
+    const advisors = url.searchParams
+      .getAll('advisorType')
+      .flatMap((type) => advisorsByType[type] ?? []);
+    return json(listPage(advisors, url.searchParams));
   }
   return undefined;
 }

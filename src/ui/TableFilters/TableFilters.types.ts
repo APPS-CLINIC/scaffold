@@ -64,6 +64,11 @@ export interface LoadedFilterOptions {
   loading: boolean;
   /** The options could not be loaded. */
   failed: boolean;
+  /**
+   * Loads the next options of a list served a page at a time; present while it has more and
+   * none are on their way.
+   */
+  loadMore?: () => void;
 }
 
 /** What a multiselect that searches elsewhere asks its options hook for. */
@@ -72,6 +77,11 @@ export interface FilterOptionSearch {
   text: string;
   /** The picked values; the hook names them too, so they stay picked whatever the search. */
   values: readonly string[];
+  /**
+   * Whether the options are wanted. The applied-filter chip runs the hook with `false`: it
+   * needs only the names of the picked values.
+   */
+  load: boolean;
 }
 
 export interface TableFiltersProps {

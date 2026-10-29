@@ -1,13 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeStore } from '@/app/store';
 import { installCustomerApiTestTransport } from '@/test/customerApiTestTransport';
-import {
-  customerFilterDictionariesApi,
-  selectSearchedLabel,
-} from './customerFilterDictionaries.api';
+import { customerFilterDictionariesApi, selectListedLabel } from './customerFilterDictionaries.api';
 
-const { getStaticDictionaries, getFilterList, searchFilterList } =
-  customerFilterDictionariesApi.endpoints;
+const { getStaticDictionaries, getFilterListPages } = customerFilterDictionariesApi.endpoints;
 
 let fetchMock: ReturnType<typeof installCustomerApiTestTransport>;
 
@@ -89,42 +85,76 @@ describe('customer filter dictionaries API', () => {
     expect(polish['customer-status']?.[0]).toEqual({ value: 'ACTIVE', label: 'Aktywny' });
   });
 
-  it('loads an advisor list by its advisor type, with the ids as text', async () => {
+  it('loads the first page of an advisor list by its advisor type, with the ids as text', async () => {
     const store = makeStore();
 
-    const advisors = await store.dispatch(getFilterList.initiate('rmAdvisors')).unwrap();
+    const advisors = await store
+      .dispatch(getFilterListPages.initiate({ list: 'rmAdvisors', name: '' }))
+      .unwrap();
 
-    expect(sentRequests()).toEqual([{ path: '/api/v1/users?advisorType=RM', language: null }]);
-    expect(advisors[0]).toEqual({ value: '101', label: 'Kowalska Anna' });
+    expect(sentRequests()).toEqual([
+      { path: '/api/v1/users?advisorType=RM&page=0&size=20', language: null },
+    ]);
+    expect(advisors.pages[0]?.options[0]).toEqual({ value: '101', label: 'Kowalska Anna' });
   });
 
   it('loads the teams of the lending product group', async () => {
     const store = makeStore();
 
-    await store.dispatch(getFilterList.initiate('lendingTeams')).unwrap();
+    await store.dispatch(getFilterListPages.initiate({ list: 'lendingTeams', name: '' })).unwrap();
 
-    expect(sentRequests()[0]?.path).toBe('/api/v1/teams?productGroup=LENDING');
+    expect(sentRequests()[0]?.path).toBe('/api/v1/teams?productGroup=LENDING&page=0&size=20');
   });
 
-  it('searches a long list by a part of the name', async () => {
+  it('searches a list by a part of the name', async () => {
     const store = makeStore();
 
     const found = await store
-      .dispatch(searchFilterList.initiate({ list: 'corporateGroups', name: 'com' }))
+      .dispatch(getFilterListPages.initiate({ list: 'corporateGroups', name: 'com' }))
       .unwrap();
 
-    expect(sentRequests()[0]?.path).toBe('/api/v1/corporateGroups?name=com');
-    expect(found).toEqual([{ value: '22', label: 'Comarch' }]);
+    expect(sentRequests()[0]?.path).toBe('/api/v1/corporateGroups?name=com&page=0&size=20');
+    expect(found.pages[0]?.options).toEqual([{ value: '22', label: 'Comarch' }]);
   });
 
-  it('names an entry by any cached search of its own list', async () => {
+  it('loads the next page while the list has more, and no further', async () => {
+    fetchMock.mockImplementation(async (input) => {
+      const number = Number(new URL((input as Request).url).searchParams.get('page'));
+      return new Response(
+        JSON.stringify({
+          content: [{ id: number + 1, name: `Group ${number + 1}` }],
+          page: { size: 20, number, totalElements: 21, totalPages: 2 },
+        }),
+        { headers: { 'Content-Type': 'application/json' } },
+      );
+    });
     const store = makeStore();
-    await store
-      .dispatch(searchFilterList.initiate({ list: 'corporateGroups', name: 'com' }))
+    const search = { list: 'internalGroups', name: '' } as const;
+    await store.dispatch(getFilterListPages.initiate(search)).unwrap();
+
+    const loaded = await store
+      .dispatch(getFilterListPages.initiate(search, { direction: 'forward' }))
       .unwrap();
 
-    expect(selectSearchedLabel(store.getState(), 'corporateGroups', '22')).toBe('Comarch');
-    expect(selectSearchedLabel(store.getState(), 'corporateGroups', '21')).toBeUndefined();
-    expect(selectSearchedLabel(store.getState(), 'internalGroups', '22')).toBeUndefined();
+    expect(sentRequests().map(({ path }) => path)).toEqual([
+      '/api/v1/internalGroups?page=0&size=20',
+      '/api/v1/internalGroups?page=1&size=20',
+    ]);
+    expect(loaded.pages.flatMap((page) => page.options)).toEqual([
+      { value: '1', label: 'Group 1' },
+      { value: '2', label: 'Group 2' },
+    ]);
+    expect(getFilterListPages.select(search)(store.getState()).hasNextPage).toBe(false);
+  });
+
+  it('names an entry by any cached page of its own list', async () => {
+    const store = makeStore();
+    await store
+      .dispatch(getFilterListPages.initiate({ list: 'corporateGroups', name: 'com' }))
+      .unwrap();
+
+    expect(selectListedLabel(store.getState(), 'corporateGroups', '22')).toBe('Comarch');
+    expect(selectListedLabel(store.getState(), 'corporateGroups', '21')).toBeUndefined();
+    expect(selectListedLabel(store.getState(), 'internalGroups', '22')).toBeUndefined();
   });
 });

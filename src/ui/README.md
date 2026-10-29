@@ -247,12 +247,13 @@ calls it differently. The built-in controls:
 
 - `MultiSelectFilter` (`options`: `{ value, labelKey }` or `{ value, label }`,
   optional `selectionLimit`, `loading`, `failed`, `onSearch`,
-  `searchPlaceholder`): IWA `MultiSelect`, one repeated param. From six
-  options on, the open list has a search that keeps the options whose label
+  `searchPlaceholder`, `loadMore`): IWA `MultiSelect`, one repeated param. From
+  six options on, the open list has a search that keeps the options whose label
   contains the text. `loading` shows a spinner and makes the chip say
   "Loading…"; `failed` makes the open list say the options could not be
   loaded. With `onSearch` the list always has its search and reports the typed
-  text, for options searched elsewhere.
+  text, for options searched elsewhere. With `loadMore` the open list calls it
+  once scrolled to within 80 px of its end, for a list loaded a page at a time.
 - `DateRangeFilter`: two IWA `DatePicker`s writing `<param>.from` and
   `<param>.to` as `yyyy-MM-dd`; either end may stay empty. The calendars open
   on `document.body`, so the scrolling dialog rows do not clip them.
@@ -264,11 +265,14 @@ calls it differently. The built-in controls:
   it the request, in its feature.
 - `createSearchMultiSelectFilter(useSearchOptions, { selectionLimit })`: the
   same for a list too long to load whole. The hook also gets
-  `{ text, values }`: the text typed into the open list, trimmed, from three
-  characters on and 300 ms after typing pauses (`''` before that), and the
-  picked values, which it must return options for too. The chip runs the hook
-  with `text: ''`. See
-  [ADR 0040](../../docs/adr/0040-filter-options-from-the-service.md).
+  `{ text, values, load }`: the text typed into the open list, trimmed, from
+  three characters on and 300 ms after typing pauses (`''` before that), the
+  picked values, which it must return options for too, and whether the options
+  are wanted. The chip runs the hook with `text: ''` and `load: false`: it needs
+  only the names of the picked values. The hook may also return `loadMore` for
+  a list loaded a page at a time. See
+  [ADR 0040](../../docs/adr/0040-filter-options-from-the-service.md) and
+  [ADR 0045](../../docs/adr/0045-filter-lists-loaded-a-page-at-a-time.md).
 
 Every control receives `TableFilterProps` — `inputId` for the row label,
 `labelId` for controls with several inputs, `param`, the `values` of the params

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type UIEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MessageKey } from '@/i18n/messages/pl';
 import { MultiSelect } from '@/ui';
@@ -17,6 +17,9 @@ const MULTI_SELECT_CLASS_NAME = [
 
 /** Up to five options fit at a glance, so the panel offers a search from the sixth on. */
 const MIN_OPTIONS_FOR_SEARCH = 6;
+
+/** How close to the end of the open list, in pixels, scrolling asks for more options. */
+const LOAD_MORE_DISTANCE_PX = 80;
 
 // The search field in the option list.
 const MULTI_SELECT_PANEL_CLASS_NAME =
@@ -39,6 +42,8 @@ export interface MultiSelectFilterProps {
   searchPlaceholder?: string;
   /** What the open list says when no option matches the search, such as how much to type. */
   searchMessage?: string;
+  /** Loads more options once the open list is scrolled near its end. */
+  loadMore?: () => void;
 }
 
 /** The options with their labels in the active language. */
@@ -60,6 +65,10 @@ function toStringValues(value: unknown): string[] {
     : [];
 }
 
+function nearEnd({ scrollHeight, scrollTop, clientHeight }: HTMLElement): boolean {
+  return scrollHeight - scrollTop - clientHeight <= LOAD_MORE_DISTANCE_PX;
+}
+
 /** Why an open list has no matching option, while loading or after a failure. */
 function emptyListReason({
   loading,
@@ -72,8 +81,8 @@ function emptyListReason({
 
 /**
  * Picks any number of options. A longer list has a search that narrows it to labels
- * containing the text. A value without an option is not shown, and leaves the filter once
- * the user picks again.
+ * containing the text. A list served a page at a time loads more as it scrolls. A value
+ * without an option is not shown, and leaves the filter once the user picks again.
  */
 export function MultiSelectFilter({
   inputId,
@@ -88,6 +97,7 @@ export function MultiSelectFilter({
   onSearch,
   searchPlaceholder,
   searchMessage,
+  loadMore,
 }: TableFilterProps & MultiSelectFilterProps) {
   const { t } = useTranslation();
   const items = useOptionItems(options);
@@ -120,6 +130,16 @@ export function MultiSelectFilter({
       emptyMessage={t(reason ?? 'table.filters.noOptions')}
       className={MULTI_SELECT_CLASS_NAME}
       panelClassName={MULTI_SELECT_PANEL_CLASS_NAME}
+      // The wrapper is the part of the open list that scrolls.
+      pt={
+        loadMore && {
+          wrapper: {
+            onScroll: (event: UIEvent<HTMLDivElement>) => {
+              if (nearEnd(event.currentTarget)) loadMore();
+            },
+          },
+        }
+      }
     />
   );
 }
