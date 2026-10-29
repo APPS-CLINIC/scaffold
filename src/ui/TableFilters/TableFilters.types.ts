@@ -69,6 +69,8 @@ export interface LoadedFilterOptions {
    * none are on their way.
    */
   loadMore?: () => void;
+  /** The next options are on their way; the options so far stay in the list. */
+  loadingMore?: boolean;
 }
 
 /** What a multiselect that searches elsewhere asks its options hook for. */

@@ -45,6 +45,7 @@ function useGroupOptions(props: GroupProps, search: FilterOptionSearch): LoadedF
     loading: search.text === 'slow',
     failed: false,
     loadMore: search.text === 'more' ? loadMore : undefined,
+    loadingMore: search.text === 'more',
   };
 }
 
@@ -145,14 +146,16 @@ describe('createSearchMultiSelectFilter', () => {
     expect(multiSelectProps().loading).toBe(false);
   });
 
-  it('hands the list the way to load more options the hook gives', () => {
+  it('hands the list the way to load more options the hook gives, and that more are coming', () => {
     renderGroupFilter();
     expect(multiSelectProps().pt).toBeUndefined();
+    expect(multiSelectProps().panelFooterTemplate).toBeUndefined();
 
     type('more');
     act(() => vi.advanceTimersByTime(300));
 
     expect(multiSelectProps().pt).toEqual({ wrapper: { onScroll: expect.any(Function) } });
+    expect(multiSelectProps().panelFooterTemplate).toEqual(expect.any(Function));
   });
 
   it('summarises the values with the hook, without a search', () => {

@@ -42,7 +42,7 @@ export function createSearchMultiSelectFilter<P extends object>(
       return () => clearTimeout(timer);
     }, [search]);
 
-    const { options, loading, failed, loadMore } = useSearchOptions(props, {
+    const { options, loading, failed, loadMore, loadingMore } = useSearchOptions(props, {
       text,
       values: values[param] ?? NO_VALUES,
       load: true,
@@ -60,6 +60,7 @@ export function createSearchMultiSelectFilter<P extends object>(
         loading={loading || search !== text}
         failed={failed}
         loadMore={loadMore}
+        loadingMore={loadingMore}
         selectionLimit={selectionLimit}
         onSearch={setTyped}
         searchPlaceholder={minLengthHint}

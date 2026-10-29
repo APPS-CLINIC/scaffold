@@ -1,7 +1,7 @@
 import { useMemo, type UIEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MessageKey } from '@/i18n/messages/pl';
-import { MultiSelect } from '@/ui';
+import { LoadingSpinner, MultiSelect } from '@/ui';
 import type { TableFilterOption, TableFilterProps, TableFilterValues } from './TableFilters.types';
 
 // The library draws the multiselect taller than its other fields; the filter rows give every
@@ -44,6 +44,8 @@ export interface MultiSelectFilterProps {
   searchMessage?: string;
   /** Loads more options once the open list is scrolled near its end. */
   loadMore?: () => void;
+  /** More options are on their way: the open list says so under the options it has. */
+  loadingMore?: boolean;
 }
 
 /** The options with their labels in the active language. */
@@ -81,7 +83,8 @@ function emptyListReason({
 
 /**
  * Picks any number of options. A longer list has a search that narrows it to labels
- * containing the text. A list served a page at a time loads more as it scrolls. A value
+ * containing the text. A list served a page at a time loads more as it scrolls, and says so
+ * under its options while they come. A value
  * without an option is not shown, and leaves the filter once the user picks again.
  */
 export function MultiSelectFilter({
@@ -98,6 +101,7 @@ export function MultiSelectFilter({
   searchPlaceholder,
   searchMessage,
   loadMore,
+  loadingMore = false,
 }: TableFilterProps & MultiSelectFilterProps) {
   const { t } = useTranslation();
   const items = useOptionItems(options);
@@ -130,6 +134,16 @@ export function MultiSelectFilter({
       emptyMessage={t(reason ?? 'table.filters.noOptions')}
       className={MULTI_SELECT_CLASS_NAME}
       panelClassName={MULTI_SELECT_PANEL_CLASS_NAME}
+      panelFooterTemplate={
+        loadingMore
+          ? () => (
+              <div role="status" className="flex items-center gap-2 px-3 py-2">
+                <LoadingSpinner size="16" />
+                {t('table.filters.loading')}
+              </div>
+            )
+          : undefined
+      }
       // The wrapper is the part of the open list that scrolls.
       pt={
         loadMore && {

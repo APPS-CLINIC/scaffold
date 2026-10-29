@@ -31,7 +31,10 @@ loaded as the open list scrolls down, and the picked entries at the top.
   while the list has more and nothing is on its way. `MultiSelectFilter` calls
   it when the open list is scrolled to within 80 px of its end, through the
   PrimeReact pass-through `pt.wrapper.onScroll` on the part of the list that
-  scrolls. The list draws every loaded row; it is not virtualised.
+  scrolls. The list draws every loaded row; it is not virtualised. While the
+  next page comes, the hook returns `loadingMore` and the open list shows the
+  IWA `LoadingSpinner` with "Loading…" under its options (PrimeReact
+  `panelFooterTemplate`) instead of the field's spinner.
 - **Picked entries first.** The options are the "no value" choice, then the
   picked entries, then the loaded pages without them. A picked entry takes its
   name from any cached page of its list, searched or not, else its id shows.

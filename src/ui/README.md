@@ -247,13 +247,14 @@ calls it differently. The built-in controls:
 
 - `MultiSelectFilter` (`options`: `{ value, labelKey }` or `{ value, label }`,
   optional `selectionLimit`, `loading`, `failed`, `onSearch`,
-  `searchPlaceholder`, `loadMore`): IWA `MultiSelect`, one repeated param. From
-  six options on, the open list has a search that keeps the options whose label
-  contains the text. `loading` shows a spinner and makes the chip say
+  `searchPlaceholder`, `loadMore`, `loadingMore`): IWA `MultiSelect`, one
+  repeated param. From six options on, the open list has a search that keeps
+  the options whose label contains the text. `loading` shows a spinner and makes the chip say
   "Loading…"; `failed` makes the open list say the options could not be
   loaded. With `onSearch` the list always has its search and reports the typed
   text, for options searched elsewhere. With `loadMore` the open list calls it
-  once scrolled to within 80 px of its end, for a list loaded a page at a time.
+  once scrolled to within 80 px of its end, for a list loaded a page at a time;
+  `loadingMore` shows a spinner and "Loading…" under the options meanwhile.
 - `DateRangeFilter`: two IWA `DatePicker`s writing `<param>.from` and
   `<param>.to` as `yyyy-MM-dd`; either end may stay empty. The calendars open
   on `document.body`, so the scrolling dialog rows do not clip them.
@@ -269,8 +270,8 @@ calls it differently. The built-in controls:
   three characters on and 300 ms after typing pauses (`''` before that), the
   picked values, which it must return options for too, and whether the options
   are wanted. The chip runs the hook with `text: ''` and `load: false`: it needs
-  only the names of the picked values. The hook may also return `loadMore` for
-  a list loaded a page at a time. See
+  only the names of the picked values. The hook may also return `loadMore` and
+  `loadingMore` for a list loaded a page at a time. See
   [ADR 0040](../../docs/adr/0040-filter-options-from-the-service.md) and
   [ADR 0045](../../docs/adr/0045-filter-lists-loaded-a-page-at-a-time.md).
 

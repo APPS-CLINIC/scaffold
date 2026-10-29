@@ -393,15 +393,20 @@ describe('CustomersView filters', () => {
     );
   });
 
-  it('loads the next page of a list once its open list is scrolled near the end', async () => {
+  it('loads the next page of a list, with a loader under it, once its open list is scrolled near the end', async () => {
     const user = userEvent.setup();
     const answer = fetchMock.getMockImplementation();
+    let releaseSecondPage = () => {};
+    const secondPage = new Promise<void>((resolve) => {
+      releaseSecondPage = resolve;
+    });
     fetchMock.mockImplementation(async (input, init) => {
       const url = input instanceof Request ? new URL(input.url) : null;
       if (url?.pathname !== '/api/v1/teams') {
         return answer?.(input, init) ?? new Response(null, { status: 404 });
       }
       const number = Number(url.searchParams.get('page'));
+      if (number > 0) await secondPage;
       return new Response(
         JSON.stringify({
           content: [{ id: number + 1, name: `Team ${number + 1}` }],
@@ -418,12 +423,20 @@ describe('CustomersView filters', () => {
     act(() => scrollListToEnd(multiSelect('lendingTeam')));
 
     await waitFor(() =>
+      expect(multiSelect('lendingTeam').panelFooterTemplate).toEqual(expect.any(Function)),
+    );
+    expect(multiSelect('lendingTeam')).toMatchObject({ loading: false, pt: undefined });
+    releaseSecondPage();
+    await waitFor(() =>
       expect(multiSelect('lendingTeam').options).toEqual([
         { value: '1', label: 'Team 1' },
         { value: '2', label: 'Team 2' },
       ]),
     );
-    expect(multiSelect('lendingTeam').pt).toBeUndefined();
+    expect(multiSelect('lendingTeam')).toMatchObject({
+      pt: undefined,
+      panelFooterTemplate: undefined,
+    });
   });
 
   it('says so in the open list when the search fails', async () => {

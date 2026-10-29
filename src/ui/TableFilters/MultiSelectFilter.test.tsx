@@ -142,6 +142,24 @@ describe('MultiSelectFilter', () => {
     expect(loadMore).toHaveBeenCalledOnce();
   });
 
+  it('says under the options of the open list that more are on their way', async () => {
+    renderMultiSelect({}, { loadingMore: true });
+    const field = screen.getByRole('combobox').closest('[data-pc-name="multiselect"]');
+    if (field === null) throw new Error('The multiselect did not render.');
+    fireEvent.click(field);
+    const list = await screen.findByRole('listbox', { hidden: true });
+
+    const loader = screen.getByRole('status', { hidden: true });
+    expect(loader).toHaveTextContent(i18n.t('table.filters.loading'));
+    expect(list.compareDocumentPosition(loader) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('draws no loader under the options while none are on their way', () => {
+    renderMultiSelect({});
+
+    expect(multiSelectProps().panelFooterTemplate).toBeUndefined();
+  });
+
   it('takes its accessible name from the row label', () => {
     render(
       <>

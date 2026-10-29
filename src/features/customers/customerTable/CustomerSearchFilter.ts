@@ -35,7 +35,7 @@ function useCustomerSearchOptions(
   );
   // The chip loads only the first page, and only to name a picked entry no loaded page names.
   const loads = load || listedLabels.some((label) => label === undefined);
-  const { data, isFetching, isError, hasNextPage, fetchNextPage } =
+  const { data, isFetching, isFetchingNextPage, isError, hasNextPage, fetchNextPage } =
     useGetFilterListPagesInfiniteQuery(loads ? { list, name: load ? text : '' } : skipToken);
 
   return useMemo(() => {
@@ -53,9 +53,11 @@ function useCustomerSearchOptions(
         ...pickedOptions,
         ...listed.filter((option) => !picked.includes(option.value)),
       ],
-      loading: isFetching,
+      // The next page has its own loader under the list, not the field's spinner.
+      loading: isFetching && !isFetchingNextPage,
       failed: isError,
       loadMore: load && hasNextPage && !isFetching ? () => void fetchNextPage() : undefined,
+      loadingMore: isFetchingNextPage,
     };
   }, [
     data,
@@ -63,6 +65,7 @@ function useCustomerSearchOptions(
     hasNextPage,
     isError,
     isFetching,
+    isFetchingNextPage,
     listedLabels,
     load,
     loads,
