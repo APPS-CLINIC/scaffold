@@ -450,16 +450,32 @@ verbatim from `index.ts` (`ActionLink`, `Button`, `Card`, `ChipInput`,
 
 ### Toasts (`useToast`)
 
-Features show a toast with `useToast().show({ message })` (`message` is any
-node) and close it with `hide()`; they never render a `Snackbar` themselves.
-Every toast looks the same, the dark bar of the mock-ups, whether it says that
-a list loads, that a download started or that something failed, so a toast
-has no type. `persistent: true`
-keeps a toast on screen, without a close button, until the handle `show()`
-returns hides it; a handle hides only its own toast, never one shown after it
-([ADR 0043](../../docs/adr/0043-list-loading-with-a-way-back.md)). `ToastProvider` wraps the routed content in
-`RootLayout` and shows one toast at a time as the IWA `Snackbar`, pinned to the
-bottom of the screen across the content it wraps, not the whole window
+Features show a toast with `useToast().show(toast)` and never render a
+`Snackbar` themselves. Every toast looks the same, the dark bar of the
+mock-ups, whether it says that a list loads, that a download started or that
+something failed, so a toast has no type. A toast is:
+
+- `message`: any node;
+- `icon`: shown before the message, e.g. `<LoadingSpinner size="16" />`, or
+  `<ToastErrorIcon />`, the red cross, for an error;
+- `action`: the underlined link at the end, `{ label, onClick }` for an action
+  in the app, `{ label, to }` for a route, or `{ label, href }` for a page in a
+  new tab;
+- `area`: a ref to the element the toast spans instead of the page content;
+- `persistent: true`: no close button, on screen until its handle hides it.
+
+```tsx
+const notice = toast.show({ persistent: true, icon: <LoadingSpinner size="16" />, message });
+notice.update({ message: t('customers.export.done') });
+notice.update({ icon: <ToastErrorIcon />, message: t('customers.export.failed') });
+```
+
+The newest toast is on screen; it drops the toasts it covers unless they are
+persistent, and a persistent toast comes back once the toasts over it go.
+`update()` replaces a toast where it is, and `hide()` hides only its own toast
+([ADR 0044](../../docs/adr/0044-generic-toasts.md)). `ToastProvider` wraps the
+routed content in `RootLayout`, inside the router, and pins the IWA `Snackbar`
+to the bottom of the screen across the content it wraps, not the whole window
 ([ADR 0041](../../docs/adr/0041-toasts-span-the-page-content.md)).
 `renderWithProviders` includes the host, so tests need nothing extra; a test
 that mocks the `@/ui` barrel adds `Snackbar` to the mock.

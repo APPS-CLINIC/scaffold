@@ -16,6 +16,7 @@ export type PrimeIconName =
   | 'home'
   | 'id-card'
   | 'shield'
+  | 'times-circle'
   | 'user'
   | 'users';
 

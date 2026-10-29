@@ -1,16 +1,18 @@
-import { useRef, type ComponentProps } from 'react';
-import { act, render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { useRef, type ComponentProps, type ReactNode } from 'react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import type * as IwaComponents from 'iwa-react-components';
+import { MemoryRouter, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ToastErrorIcon } from './ToastErrorIcon';
 import { ToastProvider } from './ToastProvider';
-import type { ToastHandle } from './Toast.context';
+import type { Toast, ToastApi, ToastHandle } from './Toast.context';
 import { useToast } from './useToast';
 
 type SnackbarProps = ComponentProps<typeof IwaComponents.Snackbar>;
 
 // The snackbar is checked through the props handed to the library: its markup is vendor
-// markup that differs between the test double and the real library.
+// markup that differs between the test double and the real library. What it shows inside is
+// ours.
 let captured: SnackbarProps | null = null;
 
 vi.mock('iwa-react-components', async (importOriginal) => {
@@ -29,19 +31,46 @@ function snackbar(): SnackbarProps {
   return captured;
 }
 
-function Page() {
-  const toast = useToast();
-  return (
-    <>
-      <button type="button" onClick={() => toast.show({ message: 'Saving' })}>
-        Save
-      </button>
-      <button type="button" onClick={() => toast.show({ message: 'Not saved' })}>
-        Fail
-      </button>
-    </>
+let toastApi: ToastApi | null = null;
+
+function ToastApiProbe() {
+  toastApi = useToast();
+  return null;
+}
+
+function LocationProbe() {
+  return <output aria-label="Current path">{useLocation().pathname}</output>;
+}
+
+function renderToasts(content: ReactNode = null) {
+  return render(
+    <MemoryRouter initialEntries={['/customers']}>
+      <ToastProvider>
+        <ToastApiProbe />
+        {content}
+      </ToastProvider>
+      <LocationProbe />
+    </MemoryRouter>,
   );
 }
+
+function show(toast: Toast): ToastHandle {
+  if (toastApi === null) throw new Error('ToastProvider was not rendered');
+  const api = toastApi;
+  let handle: ToastHandle | null = null;
+  act(() => {
+    handle = api.show(toast);
+  });
+  if (handle === null) throw new Error('show() returned no handle');
+  return handle;
+}
+
+/** The close button of the toast on screen. */
+function closeToast() {
+  act(() => snackbar().onHide(false));
+}
+
+const onScreen = (text: string) => screen.queryByText(text) !== null;
 
 class InertResizeObserver implements ResizeObserver {
   observe(): void {}
@@ -51,6 +80,7 @@ class InertResizeObserver implements ResizeObserver {
 
 beforeEach(() => {
   captured = null;
+  toastApi = null;
   vi.stubGlobal('ResizeObserver', InertResizeObserver);
 });
 
@@ -60,121 +90,144 @@ afterEach(() => {
 });
 
 describe('ToastProvider', () => {
-  it('shows one toast at a time, the latest in place of the one on screen', async () => {
-    const user = userEvent.setup();
-    render(
-      <ToastProvider>
-        <Page />
-      </ToastProvider>,
-    );
+  it('shows the newest toast, in the same dark bar, and drops a closable toast it covers', () => {
+    renderToasts();
     expect(snackbar().visibility).toBe(false);
 
-    await user.click(screen.getByRole('button', { name: 'Save' }));
-    expect(snackbar()).toMatchObject({ visibility: true, type: 'default', message: 'Saving' });
+    show({ message: 'Saving' });
+    expect(snackbar()).toMatchObject({ visibility: true, type: 'default' });
+    expect(onScreen('Saving')).toBe(true);
 
-    await user.click(screen.getByRole('button', { name: 'Fail' }));
-    expect(snackbar()).toMatchObject({ visibility: true, type: 'default', message: 'Not saved' });
+    show({ message: 'Not saved' });
+    expect(onScreen('Not saved')).toBe(true);
+    expect(onScreen('Saving')).toBe(false);
 
-    act(() => snackbar().onHide(false));
+    closeToast();
     expect(snackbar().visibility).toBe(false);
   });
 
-  it('keeps a persistent toast on screen, without a close button, until its handle hides it', async () => {
-    const user = userEvent.setup();
-    function LoadingPage() {
-      const toast = useToast();
-      const handle = useRef<ToastHandle | null>(null);
-      return (
-        <>
-          <button
-            type="button"
-            onClick={() => {
-              handle.current = toast.show({
-                message: <strong>Loading</strong>,
-                persistent: true,
-              });
-            }}
-          >
-            Load
-          </button>
-          <button type="button" onClick={() => handle.current?.hide()}>
-            Loaded
-          </button>
-        </>
-      );
-    }
-    render(
-      <ToastProvider>
-        <LoadingPage />
-      </ToastProvider>,
-    );
+  it('keeps a persistent toast on screen, without a close button, until its handle hides it', () => {
+    renderToasts();
 
-    await user.click(screen.getByRole('button', { name: 'Load' }));
+    const loading = show({ message: <strong>Loading</strong>, persistent: true });
 
-    expect(snackbar()).toMatchObject({ visibility: true, type: 'default', closable: false });
+    expect(snackbar()).toMatchObject({ visibility: true, closable: false });
     expect(snackbar().hideTimeoutMs).toBe(2 ** 31 - 1);
     expect(screen.getByText('Loading').tagName).toBe('STRONG');
 
-    await user.click(screen.getByRole('button', { name: 'Loaded' }));
+    act(() => loading.hide());
 
     expect(snackbar().visibility).toBe(false);
   });
 
-  it('leaves a later toast on screen when the handle of an earlier one hides it', async () => {
-    const user = userEvent.setup();
-    function ExportWhileLoading() {
-      const toast = useToast();
-      const loading = useRef<ToastHandle | null>(null);
-      return (
-        <>
-          <button
-            type="button"
-            onClick={() => {
-              loading.current = toast.show({
-                message: 'Loading',
-                persistent: true,
-              });
-            }}
-          >
-            Load
-          </button>
-          <button type="button" onClick={() => toast.show({ message: 'Exporting' })}>
-            Export
-          </button>
-          <button type="button" onClick={() => loading.current?.hide()}>
-            Loaded
-          </button>
-        </>
-      );
-    }
-    render(
-      <ToastProvider>
-        <ExportWhileLoading />
-      </ToastProvider>,
-    );
+  it('brings back a persistent toast once the toast over it goes', () => {
+    renderToasts();
+    show({ message: 'Loading', persistent: true });
 
-    await user.click(screen.getByRole('button', { name: 'Load' }));
-    await user.click(screen.getByRole('button', { name: 'Export' }));
-    await user.click(screen.getByRole('button', { name: 'Loaded' }));
-
-    expect(snackbar()).toMatchObject({ visibility: true, type: 'default', message: 'Exporting' });
+    show({ message: 'Exporting' });
+    expect(onScreen('Loading')).toBe(false);
     expect(snackbar().closable).toBeUndefined();
+
+    closeToast();
+
+    expect(onScreen('Loading')).toBe(true);
+    expect(snackbar()).toMatchObject({ visibility: true, closable: false });
   });
 
-  it('spans the toast across the content it wraps, at the bottom of the screen', async () => {
-    const user = userEvent.setup();
+  it('leaves a later toast on screen when the handle of an earlier one hides it', () => {
+    renderToasts();
+    const loading = show({ message: 'Loading', persistent: true });
+    show({ message: 'Exporting' });
+
+    act(() => loading.hide());
+
+    expect(onScreen('Exporting')).toBe(true);
+    closeToast();
+    expect(snackbar().visibility).toBe(false);
+  });
+
+  it('replaces a toast in place: at once on top, and once uncovered below', () => {
+    renderToasts();
+    const download = show({ message: 'Download started', persistent: true });
+    const loading = show({ message: 'Loading', persistent: true });
+
+    act(() => download.update({ message: 'Downloaded' }));
+    expect(onScreen('Loading')).toBe(true);
+
+    act(() => loading.update({ message: 'Loading takes long', persistent: true }));
+    expect(onScreen('Loading takes long')).toBe(true);
+
+    act(() => loading.hide());
+    expect(onScreen('Downloaded')).toBe(true);
+    expect(snackbar().closable).toBeUndefined();
+
+    closeToast();
+    act(() => download.update({ message: 'Too late' }));
+    expect(snackbar().visibility).toBe(false);
+  });
+
+  it('drops a covered toast that stopped being persistent once another toast comes', () => {
+    renderToasts();
+    const download = show({ message: 'Download started', persistent: true });
+    show({ message: 'Loading', persistent: true });
+    act(() => download.update({ message: 'Downloaded' }));
+
+    show({ message: 'Saved' });
+    closeToast();
+    expect(onScreen('Loading')).toBe(true);
+
+    closeToast();
+    expect(snackbar().visibility).toBe(false);
+    expect(onScreen('Downloaded')).toBe(false);
+  });
+
+  it('draws the icon before the text, and the red cross for an error in the same bar', () => {
+    renderToasts();
+
+    show({ message: 'Exporting', icon: <span data-testid="spinner" /> });
+    const spinner = screen.getByTestId('spinner');
+    expect(spinner.compareDocumentPosition(screen.getByText('Exporting'))).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+
+    show({ message: 'Not downloaded', icon: <ToastErrorIcon /> });
+    const cross = screen
+      .getByText('Not downloaded')
+      .parentElement?.querySelector('.pi-times-circle');
+    expect(cross).not.toBeNull();
+    expect(cross).toHaveAttribute('aria-hidden', 'true');
+    expect(snackbar().type).toBe('default');
+  });
+
+  it('ends the toast with an action in the app, a route, or a page in a new tab', () => {
+    const onRetry = vi.fn();
+    renderToasts();
+
+    show({ message: 'Not loaded', action: { label: 'Try again', onClick: onRetry } });
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    expect(onRetry).toHaveBeenCalledTimes(1);
+
+    show({ message: 'Downloaded', action: { label: 'Open reports', to: '/reports' } });
+    fireEvent.click(screen.getByRole('link', { name: 'Open reports' }));
+    expect(screen.getByRole('status', { name: 'Current path' })).toHaveTextContent('/reports');
+
+    show({ message: 'Read more', action: { label: 'Help', href: 'https://example.com/help' } });
+    expect(screen.getByRole('link', { name: 'Help' })).toMatchObject({
+      href: 'https://example.com/help',
+      target: '_blank',
+      rel: 'noopener noreferrer',
+    });
+  });
+
+  it('spans the toast across the content it wraps, at the bottom of the screen', () => {
     vi.spyOn(HTMLDivElement.prototype, 'getBoundingClientRect').mockReturnValue({
       left: 240,
       width: 1380,
     } as DOMRect);
-    render(
-      <ToastProvider>
-        <Page />
-      </ToastProvider>,
-    );
+    renderToasts();
     const rootStyle = document.documentElement.style;
 
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+    show({ message: 'Saving' });
 
     expect(snackbar().className).toContain('!fixed');
     expect(snackbar().className).toContain('!left-[var(--toast-area-left)]');
@@ -182,9 +235,36 @@ describe('ToastProvider', () => {
     expect(rootStyle.getPropertyValue('--toast-area-left')).toBe('240px');
     expect(rootStyle.getPropertyValue('--toast-area-width')).toBe('1380px');
 
-    act(() => snackbar().onHide(false));
+    closeToast();
 
     expect(rootStyle.getPropertyValue('--toast-area-left')).toBe('');
     expect(rootStyle.getPropertyValue('--toast-area-width')).toBe('');
+  });
+
+  it('spans the area a toast names instead of the content', () => {
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return (
+        this.tagName === 'SECTION' ? { left: 600, width: 400 } : { left: 240, width: 1380 }
+      ) as DOMRect;
+    });
+    function Panel() {
+      const area = useRef<HTMLElement>(null);
+      return (
+        <section ref={area}>
+          <button type="button" onClick={() => toastApi?.show({ message: 'Saved here', area })}>
+            Save the panel
+          </button>
+        </section>
+      );
+    }
+    renderToasts(<Panel />);
+    const rootStyle = document.documentElement.style;
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save the panel' }));
+
+    expect(rootStyle.getPropertyValue('--toast-area-left')).toBe('600px');
+    expect(rootStyle.getPropertyValue('--toast-area-width')).toBe('400px');
   });
 });

@@ -7,7 +7,10 @@ import * as baseApiModule from '@/api/baseApi';
 import { createTableSettingsState } from '@/features/tableSettings';
 import { UrlStateSync } from '@/features/urlState/UrlStateSync';
 import i18n from '@/i18n';
-import { installCustomerApiTestTransport } from '@/test/customerApiTestTransport';
+import {
+  holdCustomerListResponses,
+  installCustomerApiTestTransport,
+} from '@/test/customerApiTestTransport';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import { mockTableContainerWidth } from '@/test/tableLayout';
 import { CustomersView } from './CustomersView';
@@ -176,12 +179,41 @@ describe('CustomersView export', () => {
     expect(params.has('sort')).toBe(false);
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(exportButton()).toHaveFocus();
+    expect(screen.getByText('The customer list has been downloaded')).toBeInTheDocument();
+    expect(snackbar()).toMatchObject({ visibility: true, type: 'default' });
+    expect(snackbar().closable).toBeUndefined();
+  });
+
+  it('says that the download started until the file is saved, in the same notice', async () => {
+    const user = userEvent.setup();
+    const download = vi
+      .spyOn(baseApiModule, 'downloadFileFromResponse')
+      .mockResolvedValue(undefined);
+    renderPage();
+    await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
+
+    await user.click(exportButton());
+    let answer: (response: Response) => void = () => {};
+    fetchMock.mockImplementationOnce(
+      () =>
+        new Promise<Response>((resolve) => {
+          answer = resolve;
+        }),
+    );
+    await user.click(within(exportDialog()).getByRole('button', { name: 'Download' }));
+
     expect(
-      screen.getByText(
+      await screen.findByText(
         'Download started. To see the details, open the downloads in your web browser',
       ),
     ).toBeInTheDocument();
-    expect(snackbar()).toMatchObject({ visibility: true, type: 'default' });
+    expect(snackbar()).toMatchObject({ visibility: true, closable: false });
+
+    answer(new Response(new Blob(['xlsx'])));
+
+    expect(await screen.findByText('The customer list has been downloaded')).toBeInTheDocument();
+    expect(download).toHaveBeenCalledTimes(1);
+    expect(snackbar().closable).toBeUndefined();
   });
 
   it("downloads all customers in the table's columns when the user asks for no filters", async () => {
@@ -207,6 +239,39 @@ describe('CustomersView export', () => {
     expect(params.has('status')).toBe(false);
   });
 
+  it('shows a download that ends while the list loads once the load is over', async () => {
+    const user = userEvent.setup();
+    const download = vi
+      .spyOn(baseApiModule, 'downloadFileFromResponse')
+      .mockResolvedValue(undefined);
+    renderPage();
+    await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
+    await user.click(exportButton());
+    let answer: (response: Response) => void = () => {};
+    fetchMock.mockImplementationOnce(
+      () =>
+        new Promise<Response>((resolve) => {
+          answer = resolve;
+        }),
+    );
+    await user.click(within(exportDialog()).getByRole('button', { name: 'Download' }));
+    await screen.findByText(
+      'Download started. To see the details, open the downloads in your web browser',
+    );
+
+    const { release } = holdCustomerListResponses();
+    await user.click(screen.getByText('Refresh'));
+    expect(await screen.findByText('Loading the customer list')).toBeInTheDocument();
+
+    answer(new Response(new Blob(['xlsx'])));
+    await waitFor(() => expect(download).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('Loading the customer list')).toBeInTheDocument();
+
+    release();
+
+    expect(await screen.findByText('The customer list has been downloaded')).toBeInTheDocument();
+  });
+
   it('says so under the table when the download fails', async () => {
     const user = userEvent.setup();
     renderPage();
@@ -216,10 +281,10 @@ describe('CustomersView export', () => {
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 500 }));
     await user.click(within(exportDialog()).getByRole('button', { name: 'Download' }));
 
-    expect(
-      await screen.findByText('Could not download the file. Please try again.'),
-    ).toBeInTheDocument();
+    const failure = await screen.findByText('Could not download the file. Please try again.');
+    expect(failure.parentElement?.querySelector('.pi-times-circle')).not.toBeNull();
     expect(snackbar()).toMatchObject({ visibility: true, type: 'default' });
+    expect(snackbar().closable).toBeUndefined();
   });
 
   it('hides the notice when it is closed', async () => {

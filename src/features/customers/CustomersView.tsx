@@ -3,8 +3,9 @@ import { useTranslation } from 'react-i18next';
 import { skipToken } from '@reduxjs/toolkit/query/react';
 import { useAppSelector } from '@/app/hooks';
 import { DATE_DMY_FORMAT_OPTIONS } from '@/i18n/dateFormats';
+import type { MessageKey } from '@/i18n/messages/pl';
 import { useTableColumnSettings } from '@/features/tableSettings';
-import { listLoadCause } from '@/features/urlState/listLoadCause';
+import { listLoadCause, type ListLoadCause } from '@/features/urlState/listLoadCause';
 import type { ListQuery } from '@/features/urlState/urlState.schema';
 import { selectListQuery } from '@/features/urlState/urlState.selectors';
 import { useListQueryState } from '@/features/urlState/useListQueryState';
@@ -24,12 +25,16 @@ import {
   type GenericDataTableLabels,
   type GenericDataTablePageChange,
   type GenericDataTableSortChange,
+  LoadingSpinner,
+  type LoadingPhase,
   type TableFilterValues,
+  type Toast,
+  ToastErrorIcon,
+  type ToastHandle,
   useLoadingPhase,
   useToast,
 } from '@/ui';
 import { CustomerExportDialog, type CustomerExportScope } from './CustomerExportDialog';
-import { CustomersLoadingNotice, type CustomersLoadState } from './CustomersLoadingNotice';
 import { CustomersNoResults } from './CustomersNoResults';
 import { customerTableConfig } from './customerTable';
 import { useGetCustomersQuery, useExportCustomersMutation } from './customers.api';
@@ -37,6 +42,22 @@ import { selectCustomerQuery } from './customers.filters';
 import type { Customer, RepeatableCustomerQuery } from './customers.types';
 
 const filterableFields = customerTableConfig.fields.filter(isFilterableField);
+
+/** Where a list load stands: on its way, taking long, or failed. */
+type CustomersLoadState = Exclude<LoadingPhase, 'idle'> | 'failed';
+
+const LOAD_MESSAGES: Record<CustomersLoadState, MessageKey> = {
+  loading: 'customers.loading.fetching',
+  slow: 'customers.loading.slow',
+  failed: 'customers.loading.failed',
+};
+
+const CANCEL_LABELS: Record<ListLoadCause, MessageKey> = {
+  first: 'customers.loading.retry',
+  search: 'customers.loading.cancelSearch',
+  filters: 'customers.loading.cancelFilters',
+  other: 'customers.loading.cancel',
+};
 
 /** The list on screen: the query in the URL and the request that loaded it. */
 interface ShownList {
@@ -105,21 +126,41 @@ export function CustomersView() {
   const loadState: CustomersLoadState | null =
     loadingPhase !== 'idle' ? loadingPhase : isError ? 'failed' : null;
 
-  useEffect(() => {
-    if (loadState === null) return undefined;
-    const notice = toast.show({
+  // One toast for the whole load: it changes its text in place, so a toast shown meanwhile,
+  // such as a finished download, keeps its place.
+  const loadToast = useMemo<Toast | null>(() => {
+    if (loadState === null) return null;
+    const failed = loadState === 'failed';
+    return {
       persistent: true,
-      message: (
-        <CustomersLoadingNotice
-          state={loadState}
-          cause={loadCause}
-          onCancel={() => cancelLoadRef.current()}
-          onRetry={() => setAttempt((current) => current + 1)}
-        />
-      ),
-    });
-    return () => notice.hide();
-  }, [loadCause, loadState, toast]);
+      icon: failed ? <ToastErrorIcon /> : <LoadingSpinner size="16" />,
+      message: t(LOAD_MESSAGES[loadState]),
+      action: failed
+        ? {
+            label: t('customers.loading.tryAgain'),
+            onClick: () => setAttempt((current) => current + 1),
+          }
+        : { label: t(CANCEL_LABELS[loadCause]), onClick: () => cancelLoadRef.current() },
+    };
+  }, [loadCause, loadState, t]);
+  const loadNoticeRef = useRef<ToastHandle | null>(null);
+  useEffect(() => {
+    if (loadToast === null) {
+      loadNoticeRef.current?.hide();
+      loadNoticeRef.current = null;
+    } else if (loadNoticeRef.current === null) {
+      loadNoticeRef.current = toast.show(loadToast);
+    } else {
+      loadNoticeRef.current.update(loadToast);
+    }
+  }, [loadToast, toast]);
+  useEffect(
+    () => () => {
+      loadNoticeRef.current?.hide();
+      loadNoticeRef.current = null;
+    },
+    [],
+  );
 
   const [expandedRowKeys, setExpandedRowKeys] = useState<readonly string[]>([]);
   const tableSettings = useTableColumnSettings(customerTableConfig);
@@ -189,15 +230,20 @@ export function CustomersView() {
   // customers, only those the search and the filters leave. It is never sorted.
   const handleExportDownload = async (scope: CustomerExportScope) => {
     closeExport();
-    toast.show({ message: t('customers.export.started') });
+    const notice = toast.show({
+      persistent: true,
+      icon: <LoadingSpinner size="16" />,
+      message: t('customers.export.started'),
+    });
     try {
       await exportCustomers({
         locale: i18n.resolvedLanguage ?? i18n.language,
         columnSelection: tableSettings.config.fields.map(({ field }) => field),
         ...(scope === 'filtered' ? { q: customerQuery.q, filters: customerQuery.filters } : {}),
       }).unwrap();
+      notice.update({ message: t('customers.export.done') });
     } catch {
-      toast.show({ message: t('customers.export.failed') });
+      notice.update({ icon: <ToastErrorIcon />, message: t('customers.export.failed') });
     }
   };
 
