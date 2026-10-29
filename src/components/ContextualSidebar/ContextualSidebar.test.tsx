@@ -122,7 +122,8 @@ describe('ContextualSidebar', () => {
     expect(
       screen.queryByRole('button', { name: i18n.t('nav.portfolio.dashboard') }),
     ).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: i18n.t('nav.customers.all') })).toHaveAttribute(
+    // The tab names the list by the list's own title.
+    expect(screen.getByRole('button', { name: i18n.t('customers.title') })).toHaveAttribute(
       'aria-current',
       'page',
     );
