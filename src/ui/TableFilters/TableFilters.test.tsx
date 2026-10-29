@@ -209,6 +209,41 @@ describe('TableFilters', () => {
     },
   );
 
+  it('lets the caller open the dialog with the filters it starts from', async () => {
+    const onDialogValuesChange = vi.fn();
+    const props = {
+      fields,
+      values: { status: ['ACTIVE'] },
+      onChange: vi.fn(),
+      onDialogValuesChange,
+    };
+    const view = render(<TableFilters {...props} dialogValues={null} />);
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    await userEvent.click(filtersButton());
+    expect(onDialogValuesChange).toHaveBeenLastCalledWith({ status: ['ACTIVE'] });
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    view.rerender(<TableFilters {...props} dialogValues={{ status: ['ARCHIVAL'] }} />);
+    const dialog = screen.getByRole('dialog', { name: i18n.t('table.filters.title') });
+    expect(within(dialog).getByLabelText(statusLabel)).toHaveValue('ARCHIVAL');
+
+    await userEvent.click(
+      within(dialog).getByRole('button', { name: i18n.t('table.filters.cancel') }),
+    );
+    expect(onDialogValuesChange).toHaveBeenLastCalledWith(null);
+  });
+
+  it('puts focus on "Customize filters" when a dialog the caller opened closes', async () => {
+    const props = { fields, values: {}, onChange: vi.fn() };
+    const view = render(<TableFilters {...props} dialogValues={{}} />);
+
+    await userEvent.click(screen.getByRole('button', { name: i18n.t('table.filters.cancel') }));
+    view.rerender(<TableFilters {...props} dialogValues={null} />);
+
+    expect(filtersButton()).toHaveFocus();
+  });
+
   it('opens nothing when the row label is clicked', async () => {
     renderFilters({});
     const dialog = await openDialog();

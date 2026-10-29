@@ -452,7 +452,7 @@ describe('GenericDataTable', () => {
     expect(screen.queryByText('No test customers')).not.toBeInTheDocument();
   });
 
-  it('hides the paginator only when there is nothing to page', () => {
+  it('hides the paginator while a page loads and when there is nothing to page', () => {
     mockTableContainerWidth(WIDE_CONTAINER);
     const { container, rerender, props } = renderTable();
     const root = container.firstElementChild;
@@ -463,8 +463,8 @@ describe('GenericDataTable', () => {
     ).toBeInTheDocument();
     expect(root).not.toHaveClass(hidesPaginator);
 
-    rerender(<GenericDataTable<TestRow> {...props} rows={[]} totalRecords={0} loading />);
-    expect(root).not.toHaveClass(hidesPaginator);
+    rerender(<GenericDataTable<TestRow> {...props} loading />);
+    expect(root).toHaveClass(hidesPaginator);
 
     rerender(<GenericDataTable<TestRow> {...props} rows={[]} totalRecords={0} />);
     expect(root).toHaveClass(hidesPaginator);
@@ -515,7 +515,7 @@ describe('GenericDataTable', () => {
     expect(screen.getByText('Alice:name:0')).toBeInTheDocument();
   });
 
-  it('keeps the previous rows visible and dimmed during a refetch', () => {
+  it('replaces the rows on screen with skeleton rows while the next page loads', () => {
     mockTableContainerWidth(WIDE_CONTAINER);
     const { rerender, props } = renderTable({ loading: false });
 
@@ -523,12 +523,17 @@ describe('GenericDataTable', () => {
 
     rerender(<GenericDataTable<TestRow> {...props} loading={true} />);
 
-    // Same table element, no vendor loading mask; the stale rows stay on
-    // screen (dimmed) until the response lands.
+    // Same table element and headers, no vendor loading mask; the previous
+    // rows give way to placeholders until the response lands.
     expect(screen.getByRole('table', { name: 'Test customers' })).toBeInTheDocument();
-    expect(screen.getByText('Alice:name:0')).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: /customer name/i })).toBeInTheDocument();
+    expect(screen.queryByText('Alice:name:0')).not.toBeInTheDocument();
     expect(document.querySelector('.p-datatable-loading-overlay')).toBeNull();
-    expect(document.querySelector('tbody tr')?.className).toContain('opacity-60');
+    expect(screen.queryByRole('button', { name: 'Expand Alice details' })).not.toBeInTheDocument();
+
+    rerender(<GenericDataTable<TestRow> {...props} loading={false} />);
+
+    expect(screen.getByText('Alice:name:0')).toBeInTheDocument();
   });
 
   it('keeps the table mounted when loading resumes after an errored first load', () => {

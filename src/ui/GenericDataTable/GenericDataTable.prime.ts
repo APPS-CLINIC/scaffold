@@ -93,7 +93,6 @@ export function createDataTablePassThrough(
   paginationLabel: string,
   rowsPerPageLabel: string | undefined,
   loading: boolean,
-  dimRows = false,
 ): DataTablePassThroughOptions {
   return {
     wrapper: {
@@ -108,12 +107,7 @@ export function createDataTablePassThrough(
       'aria-busy': loading,
     },
     bodyRow: {
-      className: twMerge(
-        'transition-colors hover:bg-[var(--surface-muted)] motion-reduce:transition-none',
-        // Refetch with rows on screen: the previous results stay visible,
-        // dimmed, until the response lands.
-        dimRows && 'opacity-60',
-      ),
+      className: 'transition-colors hover:bg-[var(--surface-muted)] motion-reduce:transition-none',
     },
     paginator: {
       root: {

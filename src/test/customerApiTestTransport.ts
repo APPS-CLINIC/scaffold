@@ -82,9 +82,24 @@ function getDictionaryResponse(request: Request, url: URL): Response | undefined
   return undefined;
 }
 
+let heldCustomerLists: Promise<void> | null = null;
+
+/** Holds every customer list answer from now on until `release`, to show a slow service. */
+export function holdCustomerListResponses(): { release: () => void } {
+  let release = () => {};
+  heldCustomerLists = new Promise((resolve) => {
+    release = () => {
+      heldCustomerLists = null;
+      resolve();
+    };
+  });
+  return { release };
+}
+
 /** Install a static HTTP test double; production code always calls the real backend. */
 export function installCustomerApiTestTransport() {
   vi.stubGlobal('Request', AbsoluteTestRequest);
+  heldCustomerLists = null;
 
   const fetchMock = vi.fn(
     async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
@@ -102,6 +117,7 @@ export function installCustomerApiTestTransport() {
         });
       }
 
+      if (heldCustomerLists !== null) await heldCustomerLists;
       return new Response(JSON.stringify(getTestResponse(requestUrl.searchParams)), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },

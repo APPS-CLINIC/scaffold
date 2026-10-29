@@ -8,36 +8,51 @@ import {
   replaceTableFilters,
   tableFilterParam,
 } from './tableFilterValues';
-import type { TableFiltersProps } from './TableFilters.types';
+import type { TableFiltersProps, TableFilterValues } from './TableFilters.types';
 
 /**
  * The filter controls of a table: "Customize filters" with its dialog, a link clearing
  * every applied filter, and one removable chip per applied filter. Only fields that
  * declare a `filter` take part, in the order of `fields`.
  */
-export function TableFilters({ fields, values, onChange }: TableFiltersProps) {
+export function TableFilters({
+  fields,
+  values,
+  onChange,
+  dialogValues,
+  onDialogValuesChange,
+}: TableFiltersProps) {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
+  const [ownDialogValues, setOwnDialogValues] = useState<TableFilterValues | null>(null);
+  const shownDialogValues = dialogValues === undefined ? ownDialogValues : dialogValues;
   const openerRef = useRef<Element | null>(null);
+  const controlsRef = useRef<HTMLDivElement>(null);
   const filterableFields = fields.filter(isFilterableField);
   const applied = pickTableFilters(values, filterableFields);
   const appliedFilters = filterableFields
     .map((field) => ({ field, fieldValues: pickTableFilters(applied, [field]) }))
     .filter(({ fieldValues }) => Object.keys(fieldValues).length > 0);
 
+  const setDialogValues = (next: TableFilterValues | null) => {
+    if (dialogValues === undefined) setOwnDialogValues(next);
+    onDialogValuesChange?.(next);
+  };
   const openDialog = () => {
     openerRef.current = document.activeElement;
-    setOpen(true);
+    setDialogValues(applied);
   };
-  // The dialog unmounts instead of hiding, so focus goes back to the control that opened it.
+  // The dialog unmounts instead of hiding, so focus goes back to the control that opened it,
+  // or to "Customize filters" when that control is gone.
   const closeDialog = () => {
-    setOpen(false);
-    if (openerRef.current instanceof HTMLElement) openerRef.current.focus();
+    setDialogValues(null);
+    const opener = openerRef.current;
+    if (opener instanceof HTMLElement && opener.isConnected) opener.focus();
+    else controlsRef.current?.querySelector('button')?.focus();
   };
 
   return (
     <div className="flex flex-col items-start gap-4">
-      <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+      <div ref={controlsRef} className="flex flex-wrap items-center gap-x-6 gap-y-2">
         <IconTextButton
           secondary
           icon={<span aria-hidden="true" className="pi pi-sliders-h text-sm" />}
@@ -69,10 +84,10 @@ export function TableFilters({ fields, values, onChange }: TableFiltersProps) {
           ))}
         </ul>
       ) : null}
-      {open ? (
+      {shownDialogValues !== null ? (
         <TableFilterDialog
           fields={filterableFields}
-          values={applied}
+          values={shownDialogValues}
           onSave={(next) => {
             closeDialog();
             onChange(next);

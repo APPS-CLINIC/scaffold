@@ -1,8 +1,11 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { skipToken } from '@reduxjs/toolkit/query/react';
 import { useAppSelector } from '@/app/hooks';
 import { DATE_DMY_FORMAT_OPTIONS } from '@/i18n/dateFormats';
 import { useTableColumnSettings } from '@/features/tableSettings';
+import { listLoadCause } from '@/features/urlState/listLoadCause';
+import type { ListQuery } from '@/features/urlState/urlState.schema';
 import { selectListQuery } from '@/features/urlState/urlState.selectors';
 import { useListQueryState } from '@/features/urlState/useListQueryState';
 import {
@@ -12,32 +15,112 @@ import {
   GenericSearch,
   GenericTableSettings,
   isFilterableField,
+  ListToolbarSkeleton,
   replaceTableFilters,
   TableColumnSettingsDialog,
   TableFilters,
+  Refresh,
   type GenericDataTableField,
   type GenericDataTableLabels,
   type GenericDataTablePageChange,
   type GenericDataTableSortChange,
   type TableFilterValues,
+  useLoadingPhase,
   useToast,
 } from '@/ui';
 import { CustomerExportDialog, type CustomerExportScope } from './CustomerExportDialog';
+import { CustomersLoadingNotice, type CustomersLoadState } from './CustomersLoadingNotice';
 import { CustomersNoResults } from './CustomersNoResults';
 import { customerTableConfig } from './customerTable';
 import { useGetCustomersQuery, useExportCustomersMutation } from './customers.api';
 import { selectCustomerQuery } from './customers.filters';
-import type { Customer } from './customers.types';
+import type { Customer, RepeatableCustomerQuery } from './customers.types';
 
 const filterableFields = customerTableConfig.fields.filter(isFilterableField);
+
+/** The list on screen: the query in the URL and the request that loaded it. */
+interface ShownList {
+  listQuery: ListQuery;
+  request: RepeatableCustomerQuery;
+}
 
 export function CustomersView() {
   const { t, i18n } = useTranslation();
   const listQuery = useAppSelector(selectListQuery);
   const customerQuery = useAppSelector(selectCustomerQuery);
   const { setQuery } = useListQueryState();
-  const { data, isLoading, isFetching, isError, fulfilledTimeStamp, refetch } =
-    useGetCustomersQuery(customerQuery);
+  const toast = useToast();
+  // A new number sends the same query again, for "Refresh" and "Try again". It counts nothing
+  // that needs a limit: each one is a request the user asked for.
+  const [attempt, setAttempt] = useState(0);
+  const request = useMemo<RepeatableCustomerQuery>(
+    () => (attempt === 0 ? customerQuery : { ...customerQuery, attempt }),
+    [attempt, customerQuery],
+  );
+  const { data, currentData, isLoading, isFetching, isError, fulfilledTimeStamp } =
+    useGetCustomersQuery(request);
+
+  const [shown, setShown] = useState<ShownList | null>(null);
+  if (currentData !== undefined && !isFetching && shown?.request !== request) {
+    setShown({ listQuery, request });
+  }
+  // Keeps the list on screen in the cache while another one loads, so calling the load off
+  // brings it back without a request, however long the load took.
+  useGetCustomersQuery(shown?.request ?? skipToken);
+
+  // The date, filters, and search wait for the initial response.
+  // Subsequent loads only show a loading state in the table.
+  const [toolbarReady, setToolbarReady] = useState(false);
+  if (!toolbarReady && (data !== undefined || isError)) setToolbarReady(true);
+  const loadingPhase = useLoadingPhase(isFetching, JSON.stringify(request));
+  const tableLoading = isLoading || loadingPhase !== 'idle';
+  // The cause of the load in progress; it stays while the notice outlasts the load.
+  const fetchCause = listLoadCause(shown?.listQuery ?? null, listQuery);
+  const [loadCause, setLoadCause] = useState(fetchCause);
+  if (isFetching && fetchCause !== loadCause) setLoadCause(fetchCause);
+
+  // A search called off stays in the field: the field mounts again with it, cursor inside.
+  const [searchField, setSearchField] = useState<{ key: number; text?: string }>({ key: 0 });
+  const [filterDialog, setFilterDialog] = useState<TableFilterValues | null>(null);
+
+  // Calling a load off brings back the list on screen. Before any list, it sends the query
+  // again; after a search or a filter change, it also takes the user back to that control.
+  const cancelLoad = () => {
+    if (shown === null) {
+      setAttempt((current) => current + 1);
+      return;
+    }
+    if (loadCause === 'search') setSearchField(({ key }) => ({ key: key + 1, text: listQuery.q }));
+    if (loadCause === 'filters') setFilterDialog(customerQuery.filters);
+    setAttempt(shown.request.attempt ?? 0);
+    setQuery(shown.listQuery, { replace: true });
+  };
+  const cancelLoadRef = useRef(cancelLoad);
+  useEffect(() => {
+    cancelLoadRef.current = cancelLoad;
+  });
+
+  // A failed load keeps the rows hidden, and the notice offers to send it again.
+  const tableHidden = tableLoading || isError;
+  const loadState: CustomersLoadState | null =
+    loadingPhase !== 'idle' ? loadingPhase : isError ? 'failed' : null;
+
+  useEffect(() => {
+    if (loadState === null) return undefined;
+    const notice = toast.show({
+      persistent: true,
+      message: (
+        <CustomersLoadingNotice
+          state={loadState}
+          cause={loadCause}
+          onCancel={() => cancelLoadRef.current()}
+          onRetry={() => setAttempt((current) => current + 1)}
+        />
+      ),
+    });
+    return () => notice.hide();
+  }, [loadCause, loadState, toast]);
+
   const [expandedRowKeys, setExpandedRowKeys] = useState<readonly string[]>([]);
   const tableSettings = useTableColumnSettings(customerTableConfig);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -89,7 +172,6 @@ export function CustomersView() {
   );
 
   const [exportCustomers] = useExportCustomersMutation();
-  const toast = useToast();
   const [exportOpen, setExportOpen] = useState(false);
   const exportOpenerRef = useRef<Element | null>(null);
 
@@ -107,7 +189,7 @@ export function CustomersView() {
   // customers, only those the search and the filters leave. It is never sorted.
   const handleExportDownload = async (scope: CustomerExportScope) => {
     closeExport();
-    toast.show({ type: 'info', message: t('customers.export.started') });
+    toast.show({ message: t('customers.export.started') });
     try {
       await exportCustomers({
         locale: i18n.resolvedLanguage ?? i18n.language,
@@ -115,7 +197,7 @@ export function CustomersView() {
         ...(scope === 'filtered' ? { q: customerQuery.q, filters: customerQuery.filters } : {}),
       }).unwrap();
     } catch {
-      toast.show({ type: 'error', message: t('customers.export.failed') });
+      toast.show({ message: t('customers.export.failed') });
     }
   };
 
@@ -159,39 +241,48 @@ export function CustomersView() {
           the design wants exactly 16px per side, so zero the root and give
           the body the full 16px. */}
       <Card className="!p-0 [&_.p-card-body]:!p-4">
-        <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[var(--muted)]">
-          <span>{t('customers.dataAsOf')}</span>
-          <strong className="font-bold text-[var(--text)]">{dataAsOf}</strong>
-          <ActionLink
-            icon={<span aria-hidden="true" className="pi pi-refresh text-sm" />}
-            label={t('customers.actions.refresh')}
-            onClick={async () => {
-              await refetch();
-            }}
-          />
-        </div>
+        {toolbarReady ? (
+          <>
+            <div className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-[var(--muted)]">
+              <span>{t('customers.dataAsOf')}</span>
+              <strong className="font-bold text-[var(--text)]">{dataAsOf}</strong>
+              <ActionLink
+                icon={<Refresh />}
+                label={t('customers.actions.refresh')}
+                onClick={() => setAttempt((current) => current + 1)}
+              />
+            </div>
 
-        <div className="mb-4 flex flex-col items-start gap-8 rounded bg-[var(--surface-muted)] p-3">
-          <TableFilters
-            fields={tableSettings.config.fields}
-            values={customerQuery.filters}
-            onChange={handleFiltersChange}
-          />
-          <div className="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2">
-            <GenericSearch
-              value={listQuery.q}
-              placeholder={t('customers.search.placeholder')}
-              onSearch={(q) => setQuery({ q }, { replace: true })}
-            />
-            <GenericTableSettings
-              dataContent={data?.content}
-              onExpandedRowKeysChange={setExpandedRowKeys}
-              expandedRowKeys={expandedRowKeys}
-              handleExport={openExport}
-              onOpenSettings={() => setSettingsOpen(true)}
-            />
-          </div>
-        </div>
+            <div className="mb-4 flex flex-col items-start gap-8 rounded bg-[var(--surface-muted)] p-3">
+              <TableFilters
+                fields={tableSettings.config.fields}
+                values={customerQuery.filters}
+                onChange={handleFiltersChange}
+                dialogValues={filterDialog}
+                onDialogValuesChange={setFilterDialog}
+              />
+              <div className="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                <GenericSearch
+                  key={searchField.key}
+                  value={listQuery.q}
+                  initialText={searchField.text}
+                  autoFocus={searchField.key > 0}
+                  placeholder={t('customers.search.placeholder')}
+                  onSearch={(q) => setQuery({ q }, { replace: true })}
+                />
+                <GenericTableSettings
+                  dataContent={tableHidden ? undefined : data?.content}
+                  onExpandedRowKeysChange={setExpandedRowKeys}
+                  expandedRowKeys={expandedRowKeys}
+                  handleExport={openExport}
+                  onOpenSettings={() => setSettingsOpen(true)}
+                />
+              </div>
+            </div>
+          </>
+        ) : (
+          <ListToolbarSkeleton />
+        )}
 
         <span className="sr-only" role="status" aria-live="polite">
           {t('common.results', { count: data?.page.totalElements ?? 0 })}
@@ -206,8 +297,7 @@ export function CustomersView() {
           pageSizeOptions={[10, 25, 50]}
           sortField={listQuery.sort || undefined}
           sortOrder={listQuery.sort ? listQuery.dir : undefined}
-          loading={isLoading || isFetching}
-          error={isError ? t('customers.table.error') : undefined}
+          loading={tableHidden}
           noResults={<CustomersNoResults />}
           labels={labels}
           expandedRowKeys={expandedRowKeys}
@@ -215,7 +305,7 @@ export function CustomersView() {
           onPageChange={handlePageChange}
           onSortChange={handleSortChange}
           onSortClear={handleSortClear}
-          aria-busy={isLoading || isFetching}
+          aria-busy={tableLoading}
         />
       </Card>
 

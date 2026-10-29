@@ -52,12 +52,20 @@ export const en: Record<MessageKey, string> = {
   'customers.export.started':
     'Download started. To see the details, open the downloads in your web browser',
   'customers.export.failed': 'Could not download the file. Please try again.',
+  'customers.loading.fetching': 'Loading the customer list',
+  'customers.loading.slow':
+    'Loading the customer list seems to be taking longer than usual. Please wait a moment',
+  'customers.loading.failed': 'Customers could not be loaded.',
+  'customers.loading.tryAgain': 'Try again',
+  'customers.loading.retry': 'Cancel and try again',
+  'customers.loading.cancelSearch': 'Cancel and go back to the search',
+  'customers.loading.cancelFilters': 'Cancel and go back to the filters',
+  'customers.loading.cancel': 'Cancel',
   'customers.table.ariaLabel': 'Customers and their advisors',
   'customers.table.loading': 'Loading customers…',
   'customers.table.noResults.title': "We couldn't find a customer",
   'customers.table.noResults.text':
     "None of the customers on the list contains the information you're looking for.\nTry typing a different text or a part of it",
-  'customers.table.error': 'Customers could not be loaded.',
   'customers.table.expandRow': 'Expand details for {{name}}',
   'customers.table.collapseRow': 'Collapse details for {{name}}',
   'customers.table.pagination': 'Customer pagination',

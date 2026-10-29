@@ -120,6 +120,33 @@ describe('GenericSearch', () => {
     expect(onSearch).toHaveBeenCalledWith('');
   });
 
+  it('keeps a text it mounts with, without searching for it, until the user edits it', () => {
+    const onSearch = vi.fn();
+    const props = { onSearch, placeholder: 'Search', initialText: 'orlen sa' };
+    const view = render(<GenericSearch {...props} value="orlen sa" />);
+    const field = screen.getByPlaceholderText('Search');
+
+    // The search the text stood for is called off: the applied search goes back.
+    view.rerender(<GenericSearch {...props} value="orlen" />);
+    wait(300);
+
+    expect(field).toHaveValue('orlen sa');
+    expect(onSearch).not.toHaveBeenCalled();
+
+    type(field, 'orlen s');
+    wait(300);
+    type(field, 'orlen sa');
+    wait(300);
+
+    expect(onSearch).toHaveBeenLastCalledWith('orlen sa');
+  });
+
+  it('puts the cursor in the field when asked to', () => {
+    render(<GenericSearch value="" onSearch={vi.fn()} placeholder="Search" autoFocus />);
+
+    expect(screen.getByPlaceholderText('Search')).toHaveFocus();
+  });
+
   it('calls the latest onSearch when a parent re-renders with a new callback', () => {
     const first = vi.fn();
     const second = vi.fn();

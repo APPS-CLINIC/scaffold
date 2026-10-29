@@ -76,13 +76,11 @@ function GenericDataTableInner<T extends object>(
     [labels.paginatorActions],
   );
   // The real table keeps rendering through every loading state (config-driven
-  // headers, sorting, paginator; no unmount, no vendor loading overlay).
-  // First load (no retained rows): placeholder rows with shimmer bars.
-  // Refetch (sort/page with rows on screen): the previous rows stay visible,
-  // slightly dimmed, until the response lands.
-  const showSkeletonRows = loading && tableRows.length === 0;
-  const nothingToPage = !loading && totalRecords <= 0;
-  const dimStaleRows = loading && !showSkeletonRows;
+  // headers, sorting; no unmount, no vendor loading overlay). While a page
+  // loads, placeholder rows with shimmer bars stand in for the rows, also for
+  // rows already on screen, and there is nothing to page.
+  const showSkeletonRows = loading;
+  const hidePaginator = loading || totalRecords <= 0;
   const skeletonRows = showSkeletonRows
     ? Array.from(
         { length: Math.min(safePageSize, 10) },
@@ -96,9 +94,8 @@ function GenericDataTableInner<T extends object>(
         labels.pagination,
         labels.paginatorActions?.rowsPerPage,
         loading,
-        dimStaleRows,
       ),
-    [dimStaleRows, labels.pagination, labels.paginatorActions?.rowsPerPage, labels.table, loading],
+    [labels.pagination, labels.paginatorActions?.rowsPerPage, labels.table, loading],
   );
   const { expandedRows, getRowKey, isExpanded, toggleRow } = useExpandedRows({
     dataKey: config.dataKey,
@@ -149,9 +146,9 @@ function GenericDataTableInner<T extends object>(
       ref={setRootRef}
       className={twMerge(
         'w-full min-w-0 max-w-full overflow-hidden',
-        // With nothing to page the paginator hides. A class does it: the
-        // library's PaginatorTable puts its own paginator over our props.
-        nothingToPage && '[&_.p-paginator]:hidden',
+        // While a page loads, or with nothing to page, the paginator hides. A class
+        // does it: the library's PaginatorTable puts its own paginator over our props.
+        hidePaginator && '[&_.p-paginator]:hidden',
         className,
       )}
       {...rest}
