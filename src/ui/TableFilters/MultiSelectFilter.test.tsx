@@ -80,6 +80,13 @@ describe('MultiSelectFilter', () => {
     });
   });
 
+  it('opens its option list inside the field, lined up with it', () => {
+    renderMultiSelect({});
+
+    expect(multiSelectProps().appendTo).toBe('self');
+    expect(multiSelectProps().className?.split(' ')).toContain('relative');
+  });
+
   it('labels the header in the app language', async () => {
     await i18n.changeLanguage('en');
     renderMultiSelect({});
