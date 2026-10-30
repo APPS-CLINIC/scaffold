@@ -415,17 +415,29 @@ describe('CustomersView filters', () => {
         { headers: { 'Content-Type': 'application/json' } },
       );
     });
+    const teamPagesAsked = (number: number) =>
+      fetchMock.mock.calls.filter(([input]) => {
+        const url = input instanceof Request ? new URL(input.url) : null;
+        return url?.pathname === '/api/v1/teams' && url.searchParams.get('page') === String(number);
+      }).length;
     renderPage('/customers/all', ['fullName', 'lendingTeam']);
     await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
     await user.click(filtersButton());
     await waitFor(() => expect(multiSelect('lendingTeam').options).toHaveLength(1));
 
-    act(() => scrollListToEnd(multiSelect('lendingTeam')));
+    // Scroll events keep coming while the list rests near its end, before the field re-renders.
+    const atFirstPage = multiSelect('lendingTeam');
+    act(() => {
+      scrollListToEnd(atFirstPage);
+      scrollListToEnd(atFirstPage);
+      scrollListToEnd(atFirstPage);
+    });
 
     await waitFor(() =>
       expect(multiSelect('lendingTeam').panelFooterTemplate).toEqual(expect.any(Function)),
     );
     expect(multiSelect('lendingTeam')).toMatchObject({ loading: false, pt: undefined });
+    expect(teamPagesAsked(1)).toBe(1);
     releaseSecondPage();
     await waitFor(() =>
       expect(multiSelect('lendingTeam').options).toEqual([
@@ -433,6 +445,7 @@ describe('CustomersView filters', () => {
         { value: '2', label: 'Team 2' },
       ]),
     );
+    expect(teamPagesAsked(1)).toBe(1);
     expect(multiSelect('lendingTeam')).toMatchObject({
       pt: undefined,
       panelFooterTemplate: undefined,
