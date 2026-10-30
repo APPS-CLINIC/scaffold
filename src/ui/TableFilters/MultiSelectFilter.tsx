@@ -21,9 +21,10 @@ const MIN_OPTIONS_FOR_SEARCH = 6;
 /** How close to the end of the open list, in pixels, scrolling asks for more options. */
 const LOAD_MORE_DISTANCE_PX = 80;
 
-// The search field in the option list.
+// The option list keeps the field's width: the library pins only its left edge, so long
+// labels would stretch it past the field. Then the search field in it.
 const MULTI_SELECT_PANEL_CLASS_NAME =
-  '[&_input:focus]:!border-[var(--navigation-accent)] [&_input:focus]:![box-shadow:none] [&_input:focus]:!outline-none';
+  'right-0 [&_input:focus]:!border-[var(--navigation-accent)] [&_input:focus]:![box-shadow:none] [&_input:focus]:!outline-none';
 
 export interface MultiSelectFilterProps {
   options: readonly TableFilterOption[];
