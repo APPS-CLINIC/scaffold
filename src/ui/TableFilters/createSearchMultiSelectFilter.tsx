@@ -20,9 +20,10 @@ function normalizeSearch(input: string): string {
 
 /**
  * A multiselect for a list too long to load whole: it searches its options elsewhere, such as
- * on the service. The hook gets the props the field declares and the search — the text typed
- * into the open list once typing pauses, and the picked values, which the hook names too. The
- * chip runs the same hook without a text. Create it once, where the hook is defined.
+ * on the service, and may load them a page at a time as the open list scrolls. The hook gets
+ * the props the field declares and the search — the text typed into the open list once typing
+ * pauses, and the picked values, which the hook names too. The chip runs the same hook without
+ * a text, wanting only those names. Create it once, where the hook is defined.
  */
 export function createSearchMultiSelectFilter<P extends object>(
   useSearchOptions: (props: P, search: FilterOptionSearch) => LoadedFilterOptions,
@@ -41,9 +42,10 @@ export function createSearchMultiSelectFilter<P extends object>(
       return () => clearTimeout(timer);
     }, [search]);
 
-    const { options, loading, failed } = useSearchOptions(props, {
+    const { options, loading, failed, loadMore, loadingMore } = useSearchOptions(props, {
       text,
       values: values[param] ?? NO_VALUES,
+      load: true,
     });
 
     return (
@@ -57,6 +59,8 @@ export function createSearchMultiSelectFilter<P extends object>(
         // The search counts as on its way while typing pauses, too.
         loading={loading || search !== text}
         failed={failed}
+        loadMore={loadMore}
+        loadingMore={loadingMore}
         selectionLimit={selectionLimit}
         onSearch={setTyped}
         searchPlaceholder={minLengthHint}
@@ -71,7 +75,11 @@ export function createSearchMultiSelectFilter<P extends object>(
   ): string {
     return MultiSelectFilter.useSummary(values, {
       param: props.param,
-      ...useSearchOptions(props, { text: '', values: values[props.param] ?? NO_VALUES }),
+      ...useSearchOptions(props, {
+        text: '',
+        values: values[props.param] ?? NO_VALUES,
+        load: false,
+      }),
     });
   };
 

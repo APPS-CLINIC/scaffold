@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
+import { useMemo, type UIEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MessageKey } from '@/i18n/messages/pl';
-import { MultiSelect } from '@/ui';
+import { LoadingSpinner, MultiSelect } from '@/ui';
 import type { TableFilterOption, TableFilterProps, TableFilterValues } from './TableFilters.types';
 
 // The library draws the multiselect taller than its other fields; the filter rows give every
@@ -18,9 +18,13 @@ const MULTI_SELECT_CLASS_NAME = [
 /** Up to five options fit at a glance, so the panel offers a search from the sixth on. */
 const MIN_OPTIONS_FOR_SEARCH = 6;
 
-// The search field in the option list.
+/** How close to the end of the open list, in pixels, scrolling asks for more options. */
+const LOAD_MORE_DISTANCE_PX = 80;
+
+// The option list keeps the field's width: the library pins only its left edge, so long
+// labels would stretch it past the field. Then the search field in it.
 const MULTI_SELECT_PANEL_CLASS_NAME =
-  '[&_input:focus]:!border-[var(--navigation-accent)] [&_input:focus]:![box-shadow:none] [&_input:focus]:!outline-none';
+  'right-0 [&_input:focus]:!border-[var(--navigation-accent)] [&_input:focus]:![box-shadow:none] [&_input:focus]:!outline-none';
 
 export interface MultiSelectFilterProps {
   options: readonly TableFilterOption[];
@@ -39,6 +43,10 @@ export interface MultiSelectFilterProps {
   searchPlaceholder?: string;
   /** What the open list says when no option matches the search, such as how much to type. */
   searchMessage?: string;
+  /** Loads more options once the open list is scrolled near its end. */
+  loadMore?: () => void;
+  /** More options are on their way: the open list says so under the options it has. */
+  loadingMore?: boolean;
 }
 
 /** The options with their labels in the active language. */
@@ -60,6 +68,10 @@ function toStringValues(value: unknown): string[] {
     : [];
 }
 
+function nearEnd({ scrollHeight, scrollTop, clientHeight }: HTMLElement): boolean {
+  return scrollHeight - scrollTop - clientHeight <= LOAD_MORE_DISTANCE_PX;
+}
+
 /** Why an open list has no matching option, while loading or after a failure. */
 function emptyListReason({
   loading,
@@ -72,8 +84,9 @@ function emptyListReason({
 
 /**
  * Picks any number of options. A longer list has a search that narrows it to labels
- * containing the text. A value without an option is not shown, and leaves the filter once
- * the user picks again.
+ * containing the text. A list served a page at a time loads more as it scrolls, and says so
+ * under its options while they come. A value
+ * without an option is not shown, and leaves the filter once the user picks again.
  */
 export function MultiSelectFilter({
   inputId,
@@ -88,6 +101,8 @@ export function MultiSelectFilter({
   onSearch,
   searchPlaceholder,
   searchMessage,
+  loadMore,
+  loadingMore = false,
 }: TableFilterProps & MultiSelectFilterProps) {
   const { t } = useTranslation();
   const items = useOptionItems(options);
@@ -120,6 +135,26 @@ export function MultiSelectFilter({
       emptyMessage={t(reason ?? 'table.filters.noOptions')}
       className={MULTI_SELECT_CLASS_NAME}
       panelClassName={MULTI_SELECT_PANEL_CLASS_NAME}
+      panelFooterTemplate={
+        loadingMore
+          ? () => (
+              <div role="status" className="flex items-center gap-2 px-3 py-2">
+                <LoadingSpinner size="16" />
+                {t('table.filters.loading')}
+              </div>
+            )
+          : undefined
+      }
+      // The wrapper is the part of the open list that scrolls.
+      pt={
+        loadMore && {
+          wrapper: {
+            onScroll: (event: UIEvent<HTMLDivElement>) => {
+              if (nearEnd(event.currentTarget)) loadMore();
+            },
+          },
+        }
+      }
     />
   );
 }

@@ -2,6 +2,7 @@ import type { FetchArgs } from '@reduxjs/toolkit/query/react';
 import { apiRootBaseQuery, baseApi } from '@/api/baseApi';
 import type { RootState } from '@/app/store';
 import type { TableFilterOption } from '@/ui';
+import type { PageResponse } from './customers.types';
 
 /** The language every dictionary has labels in. */
 const DEFAULT_LANGUAGE = 'pl';
@@ -17,13 +18,15 @@ export const STATIC_DICTIONARIES = [
 ] as const;
 export type StaticDictionary = (typeof STATIC_DICTIONARIES)[number];
 
-const advisors = (advisorType: string): FetchArgs => ({
-  url: 'users',
-  params: { advisorType },
-});
+/** How many entries of a list one request asks for; the open list loads more as it scrolls. */
+const FILTER_LIST_PAGE_SIZE = 20;
 
-/** Lists short enough to load whole, and where they come from. */
+const advisors = (advisorType: string) => ({ url: 'users', params: { advisorType } });
+
+/** The lists the service serves a page at a time, and where they come from. */
 const LIST_REQUESTS = {
+  internalGroups: { url: 'internalGroups', params: {} },
+  corporateGroups: { url: 'corporateGroups', params: {} },
   rmAdvisors: advisors('RM'),
   lendingAdvisors: advisors('LENDING'),
   sfAdvisors: advisors('SF'),
@@ -37,16 +40,16 @@ const LIST_REQUESTS = {
 } satisfies Record<string, FetchArgs>;
 export type FilterList = keyof typeof LIST_REQUESTS;
 
-/** Lists too long to load whole; the service searches them by a part of the name. */
-const SEARCH_URLS = {
-  internalGroups: 'internalGroups',
-  corporateGroups: 'corporateGroups',
-};
-export type SearchableFilterList = keyof typeof SEARCH_URLS;
-
 export interface FilterListSearch {
-  list: SearchableFilterList;
+  list: FilterList;
+  /** A part of the entry names to look for, or `''` for the whole list. */
   name: string;
+}
+
+/** One page of a list, as options, and how many pages the list has. */
+export interface FilterListPage {
+  options: readonly TableFilterOption[];
+  totalPages: number;
 }
 
 interface StaticDictionaryEntry {
@@ -73,8 +76,11 @@ function toStaticDictionaryOptions(
 }
 
 /** The filters send the id as text, like every value they keep in the URL. */
-function toFilterListOptions(entries: readonly FilterListEntry[]): readonly TableFilterOption[] {
-  return entries.map(({ id, name }) => ({ value: String(id), label: name }));
+function toFilterListPage({ content, page }: PageResponse<FilterListEntry>): FilterListPage {
+  return {
+    options: content.map(({ id, name }) => ({ value: String(id), label: name })),
+    totalPages: page.totalPages,
+  };
 }
 
 export const customerFilterDictionariesApi = baseApi.injectEndpoints({
@@ -101,39 +107,54 @@ export const customerFilterDictionariesApi = baseApi.injectEndpoints({
       },
       keepUnusedDataFor: DICTIONARY_CACHE_SECONDS,
     }),
-    getFilterList: builder.query<readonly TableFilterOption[], FilterList>({
-      query: (list) => LIST_REQUESTS[list],
-      transformResponse: toFilterListOptions,
-      keepUnusedDataFor: DICTIONARY_CACHE_SECONDS,
-    }),
-    searchFilterList: builder.query<readonly TableFilterOption[], FilterListSearch>({
-      query: ({ list, name }) => ({ url: SEARCH_URLS[list], params: { name } }),
-      transformResponse: toFilterListOptions,
+    /** A list, or the entries whose names contain `name`, a page at a time from the first. */
+    getFilterListPages: builder.infiniteQuery<FilterListPage, FilterListSearch, number>({
+      infiniteQueryOptions: {
+        initialPageParam: 0,
+        getNextPageParam: (lastPage, _allPages, lastPageParam) =>
+          lastPageParam + 1 < lastPage.totalPages ? lastPageParam + 1 : undefined,
+      },
+      query: ({ queryArg: { list, name }, pageParam }) => {
+        const { url, params } = LIST_REQUESTS[list];
+        return {
+          url,
+          params: {
+            ...params,
+            ...(name ? { name } : {}),
+            page: pageParam,
+            size: FILTER_LIST_PAGE_SIZE,
+          },
+        };
+      },
+      transformResponse: toFilterListPage,
       keepUnusedDataFor: DICTIONARY_CACHE_SECONDS,
     }),
   }),
 });
 
-export const { useGetStaticDictionariesQuery, useGetFilterListQuery, useSearchFilterListQuery } =
+export const { useGetStaticDictionariesQuery, useGetFilterListPagesInfiniteQuery } =
   customerFilterDictionariesApi;
 
 /**
- * The label the service gave `value` in any search of `list` still cached, so a picked entry
- * keeps its name after the search that found it is over.
+ * The label the service gave `value` in any page of `list` still cached, searched or not, so a
+ * picked entry keeps its name after the list that showed it has moved on.
  */
-export function selectSearchedLabel(
+export function selectListedLabel(
   state: RootState,
-  list: SearchableFilterList,
+  list: FilterList,
   value: string,
 ): string | undefined {
   for (const search of customerFilterDictionariesApi.util.selectCachedArgsForQuery(
     state,
-    'searchFilterList',
+    'getFilterListPages',
   )) {
     if (search.list !== list) continue;
-    const { data } = customerFilterDictionariesApi.endpoints.searchFilterList.select(search)(state);
-    const option = data?.find((entry) => entry.value === value);
-    if (option !== undefined && 'label' in option) return option.label;
+    const { data } =
+      customerFilterDictionariesApi.endpoints.getFilterListPages.select(search)(state);
+    for (const page of data?.pages ?? []) {
+      const option = page.options.find((entry) => entry.value === value);
+      if (option !== undefined && 'label' in option) return option.label;
+    }
   }
   return undefined;
 }

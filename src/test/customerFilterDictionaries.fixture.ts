@@ -46,16 +46,16 @@ export const staticDictionariesByLanguage: Record<
   },
 };
 
-/** `GET /api/v1/internalGroups` and `/corporateGroups`, before the `name` search. */
+/** `GET /api/v1/internalGroups` and `/corporateGroups`, before the `name` search and paging. */
 export const groupsByList: Record<string, Entry[]> = {
   internalGroups: entries(11, ['Grupa Północ', 'Grupa Południe', 'Grupa Centrum']),
   corporateGroups: entries(21, ['ArcelorMittal', 'Comarch', 'ABB']),
 };
 
-/** `GET /api/v1/teams`. */
+/** `GET /api/v1/teams`, before paging. */
 export const lendingTeams: Entry[] = entries(1, ['Zespół Warszawa', 'Zespół Kraków']);
 
-/** `GET /api/v1/users` by `advisorType`. */
+/** `GET /api/v1/users` by `advisorType`, before paging. */
 export const advisorsByType: Record<string, Entry[]> = {
   RM: entries(101, ['Kowalska Anna', 'Nowak Piotr', 'Wiśniewski Tomasz']),
   LENDING: entries(201, ['Drewniak Dariusz', 'Zając Monika']),

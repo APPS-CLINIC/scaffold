@@ -44,8 +44,12 @@ function useGroupOptions(props: GroupProps, search: FilterOptionSearch): LoadedF
     ],
     loading: search.text === 'slow',
     failed: false,
+    loadMore: search.text === 'more' ? loadMore : undefined,
+    loadingMore: search.text === 'more',
   };
 }
+
+const loadMore = vi.fn();
 
 const GroupFilter = createSearchMultiSelectFilter(useGroupOptions, { selectionLimit: 100 });
 
@@ -86,7 +90,7 @@ describe('createSearchMultiSelectFilter', () => {
 
     expect(searches[0]).toEqual({
       props: expect.objectContaining({ list: 'corporate' }),
-      search: { text: '', values: ['3'] },
+      search: { text: '', values: ['3'], load: true },
     });
     expect(multiSelectProps()).toMatchObject({
       value: ['3'],
@@ -142,12 +146,24 @@ describe('createSearchMultiSelectFilter', () => {
     expect(multiSelectProps().loading).toBe(false);
   });
 
+  it('hands the list the way to load more options the hook gives, and that more are coming', () => {
+    renderGroupFilter();
+    expect(multiSelectProps().pt).toBeUndefined();
+    expect(multiSelectProps().panelFooterTemplate).toBeUndefined();
+
+    type('more');
+    act(() => vi.advanceTimersByTime(300));
+
+    expect(multiSelectProps().pt).toEqual({ wrapper: { onScroll: expect.any(Function) } });
+    expect(multiSelectProps().panelFooterTemplate).toEqual(expect.any(Function));
+  });
+
   it('summarises the values with the hook, without a search', () => {
     const { result } = renderHook(() =>
       GroupFilter.useSummary({ groupId: ['3', '4'] }, { param: 'groupId', list: 'corporate' }),
     );
 
-    expect(lastSearch()).toEqual({ text: '', values: ['3', '4'] });
+    expect(lastSearch()).toEqual({ text: '', values: ['3', '4'], load: false });
     expect(result.current).toBe('Picked 3, Picked 4');
   });
 });

@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react';
-import { act, render, renderHook, screen } from '@testing-library/react';
+import { act, fireEvent, render, renderHook, screen } from '@testing-library/react';
 import type * as IwaComponents from 'iwa-react-components';
 import type { MultiSelectChangeEvent, MultiSelectFilterEvent } from 'primereact/multiselect';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -116,6 +116,48 @@ describe('MultiSelectFilter', () => {
       multiSelectProps().onFilter?.({ filter: 'grup' } as MultiSelectFilterEvent);
     });
     expect(onSearch).toHaveBeenCalledWith('grup');
+  });
+
+  it('loads more options once the open list is scrolled near its end', async () => {
+    const loadMore = vi.fn();
+    renderMultiSelect({}, { loadMore });
+    const field = screen.getByRole('combobox').closest('[data-pc-name="multiselect"]');
+    if (field === null) throw new Error('The multiselect did not render.');
+    fireEvent.click(field);
+    const list = (await screen.findByRole('listbox', { hidden: true })).parentElement;
+    if (list === null) throw new Error('The option list did not render.');
+    const scrollTo = (scrollTop: number) => {
+      Object.defineProperties(list, {
+        scrollHeight: { value: 800, configurable: true },
+        clientHeight: { value: 200, configurable: true },
+        scrollTop: { value: scrollTop, configurable: true },
+      });
+      fireEvent.scroll(list);
+    };
+
+    scrollTo(500);
+    expect(loadMore).not.toHaveBeenCalled();
+
+    scrollTo(520);
+    expect(loadMore).toHaveBeenCalledOnce();
+  });
+
+  it('says under the options of the open list that more are on their way', async () => {
+    renderMultiSelect({}, { loadingMore: true });
+    const field = screen.getByRole('combobox').closest('[data-pc-name="multiselect"]');
+    if (field === null) throw new Error('The multiselect did not render.');
+    fireEvent.click(field);
+    const list = await screen.findByRole('listbox', { hidden: true });
+
+    const loader = screen.getByRole('status', { hidden: true });
+    expect(loader).toHaveTextContent(i18n.t('table.filters.loading'));
+    expect(list.compareDocumentPosition(loader) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
+  it('draws no loader under the options while none are on their way', () => {
+    renderMultiSelect({});
+
+    expect(multiSelectProps().panelFooterTemplate).toBeUndefined();
   });
 
   it('takes its accessible name from the row label', () => {
