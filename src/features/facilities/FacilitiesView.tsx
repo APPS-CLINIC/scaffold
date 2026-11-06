@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/app/hooks';
 import { selectListQuery } from '@/features/urlState/urlState.selectors';
@@ -7,20 +6,24 @@ import { useListQueryState } from '@/features/urlState/useListQueryState';
 import { formatIsoDmyDate } from '@/i18n/dateFormats';
 import type { MessageKey } from '@/i18n/messages/pl';
 import {
-  DateRangeFilter,
   GenericSearch,
   getExpandableTreeKeys,
   pickTableFilters,
   replaceTableFilters,
-  Switch,
-  tableFilter,
   TableFilters,
+  TableActions,
+  TableToolbar,
   TreeDataTable,
   twMerge,
 } from '@/ui';
-import type { TableFilterField, TableFilterValues, TreeDataTableColumn } from '@/ui';
-import { FacilityIndicators } from './FacilityIndicators';
-import { FacilitySelectFilter } from './FacilitySelectFilter';
+import type { TableFilterValues } from '@/ui';
+import { createFacilityTableConfig } from './facilityTable.config';
+import { FACILITY_GROUP_LABELS } from './facilityGroupLabels';
+import {
+  facilityTableRowChildren,
+  facilityTableRowKey,
+  toFacilityTableRows,
+} from './facilityTable.types';
 import { filterFacilities, includesFacilityGroup } from './facilities.filters';
 import { formatFacilityAmount, sumFacilitySummaries } from './facilities.formatters';
 import { FACILITY_GROUPS, facilityNodeChildren, facilityNodeKey } from './facilities.types';
@@ -32,15 +35,6 @@ import type {
   FacilitySnapshot,
 } from './facilities.types';
 
-const FACILITY_GROUP_LABELS: Record<FacilityGroup, MessageKey> = {
-  LENDING: 'facilities.group.lending',
-  TFS: 'facilities.group.tfs',
-  INTRADAY: 'facilities.group.intraday',
-  INVESTMENT: 'facilities.group.investment',
-  CARD: 'facilities.group.card',
-  OTHER: 'facilities.group.other',
-};
-
 const AMOUNT_LABELS = {
   grantedMinor: 'facilities.amount.grantedMinor',
   utilizedMinor: 'facilities.amount.utilizedMinor',
@@ -49,68 +43,6 @@ const AMOUNT_LABELS = {
 
 function allNodes(nodes: readonly FacilityNode[]): FacilityNode[] {
   return nodes.flatMap((node) => [node, ...allNodes(node.children)]);
-}
-
-function makeFilterFields(nodes: readonly FacilityNode[]): TableFilterField[] {
-  return [
-    {
-      field: 'contractCurrency',
-      labelKey: 'facilities.filter.contractCurrency',
-      filter: tableFilter(FacilitySelectFilter, {
-        options: ['PLN', 'EUR'].map((value) => ({ value, label: value })),
-      }),
-    },
-    {
-      field: 'facilityType',
-      labelKey: 'facilities.filter.type',
-      filter: tableFilter(FacilitySelectFilter, {
-        options: [...new Set(allNodes(nodes).map((node) => node.data.type))]
-          .sort()
-          .map((value) => ({ value, label: value })),
-      }),
-    },
-    {
-      field: 'displayCurrency',
-      labelKey: 'facilities.filter.displayCurrency',
-      filter: tableFilter(FacilitySelectFilter, {
-        options: [
-          { value: 'original', labelKey: 'facilities.currency.original' },
-          { value: 'EUR', label: 'EUR' },
-          { value: 'PLN', label: 'PLN' },
-        ],
-      }),
-    },
-    {
-      field: 'maxLevel',
-      labelKey: 'facilities.filter.level',
-      filter: tableFilter(FacilitySelectFilter, {
-        options: [1, 2, 3, 4, 5, 6].map((level) => ({
-          value: String(level),
-          label: Array.from({ length: level }, (_, index) => index + 1).join(', '),
-        })),
-      }),
-    },
-    {
-      field: 'commitment',
-      labelKey: 'facilities.filter.commitment',
-      filter: tableFilter(FacilitySelectFilter, {
-        options: [
-          { value: 'C', labelKey: 'facilities.commitment.committed' },
-          { value: 'U', labelKey: 'facilities.commitment.uncommitted' },
-        ],
-      }),
-    },
-    {
-      field: 'expiryDate',
-      labelKey: 'facilities.table.expiryDate',
-      filter: tableFilter(DateRangeFilter, {}),
-    },
-    {
-      field: 'looDate',
-      labelKey: 'facilities.table.looDate',
-      filter: tableFilter(DateRangeFilter, {}),
-    },
-  ];
 }
 
 export interface FacilitiesViewProps {
@@ -126,7 +58,14 @@ export function FacilitiesView({ snapshot, getFacilityHref, onOpenRelated }: Fac
   const query = useAppSelector(selectListQuery);
   const { setQuery } = useListQueryState();
   const result = useMemo(() => filterFacilities(snapshot.nodes, query), [snapshot.nodes, query]);
-  const fields = useMemo(() => makeFilterFields(snapshot.nodes), [snapshot.nodes]);
+  const facilityTypes = useMemo(
+    () => [...new Set(allNodes(snapshot.nodes).map((node) => node.data.type))].sort(),
+    [snapshot.nodes],
+  );
+  const { config, filterFields: fields } = useMemo(
+    () => createFacilityTableConfig({ getFacilityHref, onOpenRelated, facilityTypes }),
+    [getFacilityHref, onOpenRelated, facilityTypes],
+  );
   const queryKey = JSON.stringify({
     q: query.q,
     filters: { ...result.filters, displayCurrency: undefined },
@@ -137,10 +76,11 @@ export function FacilitiesView({ snapshot, getFacilityHref, onOpenRelated }: Fac
   const expandedKeys = expansion?.queryKey === queryKey ? expansion.keys : result.autoExpandedKeys;
   const setExpandedKeys = (keys: readonly string[]) => setExpansion({ queryKey, keys });
   const branchKeys = getExpandableTreeKeys(result.nodes, facilityNodeKey, facilityNodeChildren);
-  const allExpanded =
-    branchKeys.length > 0 && branchKeys.every((key) => expandedKeys.includes(key));
-  const contextKeys = new Set(result.contextKeys);
   const shownCurrency = result.filters.displayCurrency;
+  const tableRows = useMemo(
+    () => toFacilityTableRows(result.nodes, shownCurrency, new Set(result.contextKeys)),
+    [result.nodes, shownCurrency, result.contextKeys],
+  );
   const summaryCurrency = shownCurrency === 'original' ? 'EUR' : shownCurrency;
   const selectedSummaries = snapshot.summaries.filter((summary) =>
     includesFacilityGroup(summary.group, result.filters.group),
@@ -164,104 +104,6 @@ export function FacilitiesView({ snapshot, getFacilityHref, onOpenRelated }: Fac
     'looDate.from': result.filters['looDate.from'],
     'looDate.to': result.filters['looDate.to'],
   };
-  const columns: TreeDataTableColumn<FacilityNode>[] = [
-    {
-      id: 'basic',
-      header: t('facilities.table.basic'),
-      width: 520,
-      renderCell: (node) => (
-        <div
-          className={twMerge(
-            'inline-flex max-w-full items-start gap-3 align-top',
-            contextKeys.has(node.key) && 'text-[var(--muted)]',
-          )}
-        >
-          <span
-            className="pt-1 text-xs"
-            aria-label={t('facilities.level', { level: node.businessLevel })}
-          >
-            {node.businessLevel}
-          </span>
-          <FacilityIndicators facility={node.data} onOpenRelated={onOpenRelated} />
-          <div className="min-w-0 text-sm leading-5">
-            <Link
-              to={getFacilityHref(node.data)}
-              className="font-bold underline"
-              onKeyDown={(event) => event.stopPropagation()}
-            >
-              {node.data.number}
-            </Link>
-            <div>
-              {t(node.data.status === 'ACTIVE' ? 'common.status.active' : 'common.status.archival')}
-            </div>
-            <div className="font-bold">{t(FACILITY_GROUP_LABELS[node.data.group])}</div>
-            <div>{node.data.type}</div>
-            <div>{node.data.commitment}</div>
-            <div>{t('facilities.contractCurrency', { currency: node.data.contractCurrency })}</div>
-            {contextKeys.has(node.key) ? (
-              <div className="text-xs">{t('facilities.context')}</div>
-            ) : null}
-          </div>
-        </div>
-      ),
-    },
-    {
-      id: 'description',
-      header: t('facilities.table.description'),
-      width: 180,
-      renderCell: (node) => node.data.description,
-    },
-    {
-      id: 'expiryDate',
-      header: t('facilities.table.expiryDate'),
-      width: 115,
-      renderCell: (node) =>
-        node.data.expiryDate ? (
-          <time dateTime={node.data.expiryDate}>
-            {formatIsoDmyDate(node.data.expiryDate, locale)}
-          </time>
-        ) : (
-          '–'
-        ),
-    },
-    {
-      id: 'looDate',
-      header: t('facilities.table.looDate'),
-      width: 115,
-      renderCell: (node) =>
-        node.data.looDate ? (
-          <time dateTime={node.data.looDate}>{formatIsoDmyDate(node.data.looDate, locale)}</time>
-        ) : (
-          '–'
-        ),
-    },
-    ...(['grantedMinor', 'utilizedMinor', 'availableMinor'] as const).map((field) => ({
-      id: field,
-      header: t(AMOUNT_LABELS[field]),
-      width: 160,
-      headerClassName: 'text-right',
-      cellClassName: 'text-right tabular-nums',
-      renderCell: (node: FacilityNode) => {
-        const amounts = node.data.amounts[shownCurrency];
-        return formatFacilityAmount(amounts[field], amounts.currency, locale);
-      },
-    })),
-    {
-      id: 'utilization',
-      header: t('facilities.table.utilization'),
-      width: 100,
-      cellClassName: 'text-right tabular-nums',
-      renderCell: (node) => {
-        const value = node.data.amounts[shownCurrency].utilization;
-        return value === null
-          ? '–'
-          : new Intl.NumberFormat(locale, { style: 'percent', maximumFractionDigits: 1 }).format(
-              value,
-            );
-      },
-    },
-  ];
-
   function changeGroups(group: FacilityGroup | null) {
     const current = result.filters.group;
     const next =
@@ -329,46 +171,49 @@ export function FacilitiesView({ snapshot, getFacilityHref, onOpenRelated }: Fac
           ))}
         </dl>
       </section>
-      <TableFilters
-        fields={fields}
-        values={pickTableFilters(ownedValues, fields)}
-        onChange={(next) =>
-          setQuery(
-            { filters: replaceTableFilters(query.filters, fields, next) },
-            { resetPage: false },
-          )
+      <TableToolbar
+        filters={
+          <TableFilters
+            fields={fields}
+            values={pickTableFilters(ownedValues, fields)}
+            onChange={(next) =>
+              setQuery(
+                { filters: replaceTableFilters(query.filters, fields, next) },
+                { resetPage: false },
+              )
+            }
+          />
+        }
+        search={
+          <GenericSearch
+            value={query.q}
+            onSearch={(q) => setQuery({ q }, { replace: true, resetPage: false })}
+            placeholder={t('customers.search.placeholder')}
+          />
+        }
+        actions={
+          <TableActions
+            expandableKeys={branchKeys}
+            expandedKeys={expandedKeys}
+            onExpandedKeysChange={setExpandedKeys}
+          />
         }
       />
-      <div className="my-4 flex flex-wrap items-center justify-between gap-4">
-        <GenericSearch
-          value={query.q}
-          onSearch={(q) => setQuery({ q }, { replace: true, resetPage: false })}
-          placeholder={t('customers.search.placeholder')}
-        />
-        <label className="inline-flex items-center gap-2 text-sm">
-          {t('customers.actions.expandAll')}
-          <Switch
-            aria-label={t('customers.actions.expandAll')}
-            checked={allExpanded}
-            disabled={branchKeys.length === 0}
-            onChange={() => setExpandedKeys(allExpanded ? [] : branchKeys)}
-          />
-        </label>
-      </div>
       <p role="status" className="sr-only">
         {t('facilities.results', { count: result.matchingCount })}
       </p>
       <TreeDataTable
-        nodes={result.nodes}
-        getKey={facilityNodeKey}
-        getChildren={facilityNodeChildren}
-        columns={columns}
+        nodes={tableRows}
+        getKey={facilityTableRowKey}
+        getChildren={facilityTableRowChildren}
+        config={config}
         expandedKeys={expandedKeys}
         onExpandedKeysChange={setExpandedKeys}
         labels={{
           table: t('facilities.title'),
-          expand: (node) => t('facilities.expand', { number: node.data.number }),
-          collapse: (node) => t('facilities.collapse', { number: node.data.number }),
+          notAvailable: '–',
+          expand: (node) => t('facilities.expand', { number: node.number }),
+          collapse: (node) => t('facilities.collapse', { number: node.number }),
         }}
         noResults={t('facilities.noResults')}
       />

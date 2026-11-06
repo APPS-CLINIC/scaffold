@@ -68,6 +68,13 @@ cell per file. Features compose `TextCell`, `UnderlinedTextCell`, `DateCell`,
 `OverdueDateCell`, or `ActiveArchivalStatusCell`; a feature-specific renderer is
 only needed when those building blocks cannot express the domain value.
 
+`TableCell` dispatches a configured field to its cell component, or uses the safe
+primitive fallback. Flat columns, responsive details and tree columns all use
+this renderer and the same `GenericDataTableCellProps` contract. It takes
+`column`, `row`, `rowIndex`, `locale` and `notAvailable`.
+`UnderlinedTextCell` supports `to` for an internal React Router destination;
+`href` keeps the existing IWA link behavior. Either can be derived from the row.
+
 ```tsx
 import { ActiveArchivalStatusCell, UnderlinedTextCell } from '@/ui';
 import type { GenericDataTableConfig } from '@/ui';
@@ -210,13 +217,16 @@ const shown = filterByDueDate(rows, (row) => row.dueDate, windows);
 ## `TreeDataTable` and `InfoPopover`
 
 `TreeDataTable<T>` is the presentational hierarchy adapter. Give it `nodes`,
-`getKey`, `getChildren`, typed `columns` (`id`, `header`, `renderCell`,
-optional `width` and cell/header classes), `expandedKeys`,
+`getKey`, `getChildren`, `config.fields` using `GenericDataTableFieldConfig<T>`,
+`expandedKeys`,
 `onExpandedKeysChange`, `labels` and `noResults`. The first column indents;
 descendants share one column grid. There is no pagination, fetching, URL state
 or responsive field accordion. Narrow screens scroll within its wrapper.
 `getExpandableTreeKeys` collects every branch recursively, excluding leaves.
 The caller controls expansion and supplies translated expand/collapse names.
+`labels.notAvailable` is the shared cell fallback. Headings resolve `labelKey`
+through i18n, and cells receive the active locale. Flat-table sorting and
+responsive detail options do not apply to the tree.
 
 `InfoPopover` wraps a button and a portalled PrimeReact OverlayPanel for
 information that may contain links/actions. Pass `label`, `trigger` and
@@ -226,6 +236,22 @@ Escape dismisses and restores focus. It has dialog semantics, not tooltip
 semantics. Caller button classes and refs are supported.
 
 See [Facilities PoC](../../docs/facilities-poc.md) for the first consumer.
+
+## `TableToolbar` and `TableActions`
+
+`TableToolbar` gives filters, search and actions a shared wrapping layout. Pass
+the controls as `filters`, `search` and optional `actions` slots. State, search
+remount keys and callbacks remain with the owner; both Customers and Facilities
+use this composition with the existing `TableFilters` and `GenericSearch`.
+
+`TableActions` receives `expandableKeys`, `expandedKeys` and
+`onExpandedKeysChange`. It offers optional `onExport` (with `exportLabel`) and
+`onOpenSettings` actions. An empty expandable set disables the switch. It never
+infers keys from records: a tree owner passes every branch, including hidden
+descendants. `GenericTableSettings` adapts its existing row-based API to this
+component. Both primitives forward refs/HTML attributes and merge caller classes.
+
+See [ADR 0047](../../docs/adr/0047-shared-table-fields-cells-and-toolbar.md).
 
 ## `GenericSearch`
 
@@ -258,6 +284,11 @@ const { setQuery } = useListQueryState();
 ```
 
 ## `TableFilters`
+
+`SelectFilter` provides a single-choice control with translated or literal
+`options` and the standard `useSummary` contract. Clearing it emits an empty
+value list; selecting an option emits exactly one value. It is shared through
+`@/ui`, like `MultiSelectFilter`, `DateRangeFilter` and `TextFilter`.
 
 A table field declares the control that filters it, next to its cell
 component: `filter: tableFilter(Component, props)`. `tableFilter` checks the

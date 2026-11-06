@@ -38,6 +38,10 @@ export function twMerge(...classLists) {
   const tokens = classLists.filter(Boolean).flatMap((classList) => classList.trim().split(/\s+/));
   const groupFor = (token) => {
     if (/^min-w-/.test(token)) return 'min-width';
+    if (/^gap-(?!x-|y-)/.test(token)) return 'gap';
+    // PrimeReact's p-card/p-card-body are component classes, not padding utilities.
+    if (/^p-(?:\d+(?:\.\d+)?|px|\[.*\])$/.test(token)) return 'padding';
+    if (/^justify-/.test(token)) return 'justify-content';
     if (/^overflow-x-/.test(token)) return 'overflow-x';
     if (/^overflow-y-/.test(token)) return 'overflow-y';
     if (/^overflow-/.test(token)) return 'overflow';

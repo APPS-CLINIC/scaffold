@@ -2,19 +2,19 @@ import { useTranslation } from 'react-i18next';
 import { Select } from '@/ui';
 import type { TableFilterOption, TableFilterProps, TableFilterValues } from '@/ui';
 
-interface FacilitySelectFilterOptions {
+export interface SelectFilterProps {
   options: readonly TableFilterOption[];
 }
 
-/** The single-choice controls shown in the Facilities filter mock-up. */
-export function FacilitySelectFilter({
+/** A single-choice filter with the same control/chip contract as MultiSelectFilter. */
+export function SelectFilter({
   inputId,
   labelId,
   param,
   values,
   onChange,
   options,
-}: TableFilterProps & FacilitySelectFilterOptions) {
+}: TableFilterProps & SelectFilterProps) {
   const { t } = useTranslation();
   return (
     <Select
@@ -36,9 +36,9 @@ export function FacilitySelectFilter({
   );
 }
 
-FacilitySelectFilter.useSummary = function useFacilitySelectSummary(
+SelectFilter.useSummary = function useSelectSummary(
   values: TableFilterValues,
-  { param, options }: FacilitySelectFilterOptions & { param: string },
+  { param, options }: SelectFilterProps & { param: string },
 ): string {
   const { t } = useTranslation();
   const value = values[param]?.[0];

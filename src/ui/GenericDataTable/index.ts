@@ -1,6 +1,7 @@
 export { GenericDataTable } from './GenericDataTable';
 export { GenericTableSettings } from './GenericTableSettings';
 export { resolveColumnFields } from './resolveColumnFields';
+export { TableCell, type TableCellProps } from './cells/TableCell';
 export { TableColumnSettingsDialog } from './settings';
 export {
   ActiveArchivalStatusCell,

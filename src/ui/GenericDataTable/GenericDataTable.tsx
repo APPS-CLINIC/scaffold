@@ -12,7 +12,8 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Column } from 'primereact/column';
 import { PaginatorTable, twMerge } from '@/ui';
-import { ExpandedRowContent, PrimaryCell, RowExpansionButton } from './components';
+import { ExpandedRowContent, RowExpansionButton } from './components';
+import { TableCell } from './cells/TableCell';
 import {
   createDataTablePassThrough,
   createPaginatorTemplate,
@@ -244,7 +245,7 @@ function GenericDataTableInner<T extends object>(
                 // scrolls (design note) — never an ellipsis, never bleeding
                 // into the neighbouring cell.
                 <div className="max-h-[168px] overflow-x-hidden overflow-y-auto break-words">
-                  <PrimaryCell
+                  <TableCell
                     column={field}
                     locale={locale}
                     notAvailable={labels.notAvailable}

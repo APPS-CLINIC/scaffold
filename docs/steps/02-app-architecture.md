@@ -150,6 +150,12 @@ ones are searched on the service as the user types.
 
 ### 6. UI seam — `src/ui`
 
+Flat and hierarchical tables now share typed field configuration and TableCell
+dispatch. TableToolbar and TableActions share list controls while owners choose
+their expansion keys and keep URL/data policies. Facilities reuses the existing
+date, text, status and link cells; only domain composition stays in the feature.
+→ [ADR 0047](../adr/0047-shared-table-fields-cells-and-toolbar.md).
+
 The Facilities pre-contract PoC adds a separate TreeDataTable for hierarchical
 rows. It has one shared column grid and no pagination; GenericDataTable keeps
 its responsive detail accordion. The full-forest data proposal and interactive

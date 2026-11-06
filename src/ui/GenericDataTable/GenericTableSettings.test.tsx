@@ -106,7 +106,7 @@ describe('GenericTableSettings', () => {
 
     const settings = screen.getByRole('button', { name: 'List settings' });
     const exportAction = screen.getByRole('button', { name: 'Download to Excel' });
-    const actionClasses = ['group', 'text-sm', '!text-[#506579]'];
+    const actionClasses = ['group', 'text-sm', '!text-[var(--muted)]'];
     expect(settings).toHaveClass(...actionClasses);
     expect(exportAction).toHaveClass(...actionClasses);
     expect(settings.querySelector('[aria-hidden="true"]')).toBeInTheDocument();

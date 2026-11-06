@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { TreeDataTable } from './TreeDataTable';
 import { getExpandableTreeKeys } from './treeKeys';
+import i18n from '@/i18n';
+import type { GenericDataTableConfig, GenericDataTableCellProps } from '@/ui';
 
 interface Node {
   key: string;
@@ -21,18 +23,26 @@ const tree: Node[] = [
 ];
 const getKey = (node: Node) => node.key;
 const getChildren = (node: Node) => node.children;
-const columns = [
-  { id: 'name', header: 'Name', renderCell: (node: Node) => node.label },
-  { id: 'details', header: 'Details', renderCell: (node: Node) => 'Details of ' + node.label },
-];
+function DetailsCell({ row }: GenericDataTableCellProps<Node, 'key'>) {
+  return 'Details of ' + row.label;
+}
+const config = {
+  dataKey: 'key',
+  fields: [
+    { field: 'label', labelKey: 'facilities.table.basic', width: 180 },
+    { field: 'key', labelKey: 'facilities.table.description', width: 180, component: DetailsCell },
+  ],
+} satisfies GenericDataTableConfig<Node>;
 const labels = {
   table: 'Example hierarchy',
   expand: (node: Node) => 'Expand ' + node.label,
   collapse: (node: Node) => 'Collapse ' + node.label,
+  notAvailable: '–',
 };
 const appendToHead = document.head.appendChild.bind(document.head);
 
-beforeEach(() => {
+beforeEach(async () => {
+  await i18n.changeLanguage('en');
   vi.spyOn(document.head, 'appendChild').mockImplementation(
     <T extends globalThis.Node>(node: T): T => {
       if (node instanceof HTMLStyleElement) return node;
@@ -48,7 +58,7 @@ function ControlledTable() {
       nodes={tree}
       getKey={getKey}
       getChildren={getChildren}
-      columns={columns}
+      config={config}
       expandedKeys={keys}
       onExpandedKeysChange={setKeys}
       labels={labels}
@@ -96,7 +106,7 @@ describe('TreeDataTable', () => {
     const ref = createRef<HTMLDivElement>();
     const props = {
       nodes: [] as Node[],
-      columns,
+      config,
       getKey,
       getChildren,
       expandedKeys: [],

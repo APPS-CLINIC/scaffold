@@ -4,6 +4,8 @@ import { Column } from 'primereact/column';
 import { TreeTable } from 'primereact/treetable';
 import type { TreeNode } from 'primereact/treenode';
 import { twMerge } from 'iwa-react-components';
+import { useTranslation } from 'react-i18next';
+import { TableCell } from '../GenericDataTable/cells/TableCell';
 import type { TreeDataTableProps } from './TreeDataTable.types';
 
 function toPrimeNodes<T>(
@@ -17,12 +19,12 @@ function toPrimeNodes<T>(
   });
 }
 
-function TreeDataTableInner<T>(
+function TreeDataTableInner<T extends object>(
   {
     nodes,
     getKey,
     getChildren,
-    columns,
+    config,
     expandedKeys,
     onExpandedKeysChange,
     labels,
@@ -34,6 +36,8 @@ function TreeDataTableInner<T>(
   }: TreeDataTableProps<T>,
   ref: Ref<HTMLDivElement>,
 ) {
+  const { t, i18n } = useTranslation();
+  const locale = i18n.resolvedLanguage ?? i18n.language;
   const value = useMemo(
     () => toPrimeNodes(nodes, getKey, getChildren),
     [nodes, getKey, getChildren],
@@ -55,7 +59,7 @@ function TreeDataTableInner<T>(
         paginator={false}
         emptyMessage={loading ? <span aria-hidden="true" /> : <div role="status">{noResults}</div>}
         tableStyle={{
-          minWidth: columns.reduce((width, column) => width + (column.width ?? 120), 0),
+          minWidth: config.fields.reduce((width, column) => width + column.width, 0),
         }}
         tableClassName="w-full text-sm"
         className="text-[var(--text)] [&_.p-treetable-thead>tr>th]:!bg-[var(--surface)] [&_.p-treetable-thead>tr>th]:!border-b-[var(--navigation-accent)] [&_.p-treetable-tbody>tr>td]:!align-top [&_.p-treetable-tbody>tr>td]:!border-[var(--border-subtle)] [&_.p-treetable-tbody>tr:nth-child(even)]:!bg-[var(--row-striped)]"
@@ -101,11 +105,11 @@ function TreeDataTableInner<T>(
           );
         }}
       >
-        {columns.map((column, index) => (
+        {config.fields.map((column, index) => (
           <Column
-            key={column.id}
-            columnKey={column.id}
-            header={column.header}
+            key={column.field}
+            columnKey={column.field}
+            header={t(column.labelKey)}
             expander={index === 0}
             style={{ width: column.width }}
             headerClassName={column.headerClassName}
@@ -114,7 +118,20 @@ function TreeDataTableInner<T>(
               headerCell: { className: 'px-3 py-3 font-bold' },
               bodyCell: { role: 'gridcell', className: 'px-3 py-3' },
             }}
-            body={(node: TreeNode) => column.renderCell(node.data as T)}
+            body={(node: TreeNode, options) => (
+              <div
+                onKeyDown={(event) => event.stopPropagation()}
+                className="inline-block max-w-full align-top"
+              >
+                <TableCell
+                  column={column}
+                  row={node.data as T}
+                  rowIndex={options.rowIndex}
+                  locale={locale}
+                  notAvailable={labels.notAvailable}
+                />
+              </div>
+            )}
           />
         ))}
       </TreeTable>
@@ -127,6 +144,6 @@ function TreeDataTableInner<T>(
  * Only the first column indents. Data shape, expansion and queries belong to the owner;
  * PrimeReact nodes and events never cross this boundary.
  */
-export const TreeDataTable = forwardRef(TreeDataTableInner) as <T>(
+export const TreeDataTable = forwardRef(TreeDataTableInner) as <T extends object>(
   props: TreeDataTableProps<T> & RefAttributes<HTMLDivElement>,
 ) => ReactElement;

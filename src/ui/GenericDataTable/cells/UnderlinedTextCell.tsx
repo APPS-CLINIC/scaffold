@@ -1,4 +1,5 @@
 import { InlineLink } from '@/ui';
+import { Link } from 'react-router-dom';
 import type { GenericDataTableCellProps, GenericDataTableField } from '../GenericDataTable.types';
 import { renderCellValue } from './cellValue';
 
@@ -8,13 +9,15 @@ export interface UnderlinedTextCellProps<
 > extends GenericDataTableCellProps<T, K> {
   /** Renders the value as a real link; derive the URL from the row. */
   href?: string | ((row: T) => string);
+  /** Internal route destination; preserves SPA navigation and the caller's query. */
+  to?: string | ((row: T) => string);
   openInNewTab?: boolean;
 }
 
 export function UnderlinedTextCell<
   T extends object,
   K extends GenericDataTableField<T> = GenericDataTableField<T>,
->({ value, row, notAvailable, href, openInNewTab }: UnderlinedTextCellProps<T, K>) {
+>({ value, row, notAvailable, href, to, openInNewTab }: UnderlinedTextCellProps<T, K>) {
   if (
     value === null ||
     value === undefined ||
@@ -25,6 +28,19 @@ export function UnderlinedTextCell<
       typeof value !== 'bigint')
   ) {
     return notAvailable;
+  }
+
+  if (to !== undefined) {
+    return (
+      <Link
+        to={typeof to === 'function' ? to(row) : to}
+        target={openInNewTab ? '_blank' : undefined}
+        rel={openInNewTab ? 'noopener noreferrer' : undefined}
+        className="break-words font-medium text-[var(--accent)] underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]"
+      >
+        {renderCellValue(value, notAvailable)}
+      </Link>
+    );
   }
 
   return (

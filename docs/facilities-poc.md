@@ -13,10 +13,20 @@ not available yet. The PoC is the frontend proposal for review.
 - **src/ui/TreeDataTable:** thin, presentational PrimeReact TreeTable adapter.
   Only the first column indents. All descendants remain rows in one grid.
   Accessors adapt the caller's shape without exposing vendor nodes or events.
+  It consumes the same config.fields and TableCell renderer as GenericDataTable.
 - **src/features/facilities:** proposed FE model, full-tree filtering,
   Facilities cells, summaries, filter definitions and icon information.
 - **src/dev/facilities:** the complete example forest and its page, including
   route-based example facility details, related-data dialogs and JSON download.
+
+facilityTable.config.tsx declares columns and their filters once, with shared
+DateCell/TextCell and the composite basic cell built from shared link/status/text
+cells. Column filters derive from those fields. Supplementary controls cover
+the composite basic cell and view options such as currency and level cap.
+The presentation projection keeps the source rows and chosen currency amounts;
+it never changes the downloaded model. Both tables compose TableToolbar,
+TableFilters, GenericSearch and TableActions. The single-choice SelectFilter
+also lives in the shared UI seam.
 
 The model is FacilityNode { key, businessLevel, data, children }. FacilityRow
 contains an id, number, status, group, type, description, commitment, contract
@@ -108,3 +118,5 @@ summary double-count prevention, precomputed currency variants, inactive icon
 information, and interactive panel keyboard/focus behavior.
 
 See [ADR 0046](adr/0046-facilities-hierarchy-as-a-development-poc.md).
+The shared UI contract is refined by
+[ADR 0047](adr/0047-shared-table-fields-cells-and-toolbar.md).
