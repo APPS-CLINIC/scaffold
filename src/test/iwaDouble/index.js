@@ -757,6 +757,8 @@ export function Select({
   className,
   dataTestId,
   'aria-label': ariaLabel,
+  'aria-labelledby': ariaLabelledBy,
+  inputId,
 }) {
   const toValue = (option) =>
     typeof option === 'object' && option !== null ? option.value : option;
@@ -772,9 +774,11 @@ export function Select({
       'select',
       {
         value: value ?? '',
+        id: inputId,
         disabled: disabled || readOnly,
         'data-testid': dataTestId,
         'aria-label': ariaLabel,
+        'aria-labelledby': ariaLabelledBy,
         // IWA's Select takes PrimeReact Dropdown props: onChange receives a change event
         // whose `value` is the picked option's value, never the bare value.
         onChange: (event) => {

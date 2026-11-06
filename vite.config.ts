@@ -42,6 +42,7 @@ export default defineConfig(({ mode }) => {
         'iwa-react-components': fileURLToPath(
           new URL('./src/test/iwaDouble/index.js', import.meta.url),
         ),
+        'ing-react-icons': fileURLToPath(new URL('./src/test/ingIconsDouble.tsx', import.meta.url)),
       },
       globals: true,
       environment: 'jsdom',

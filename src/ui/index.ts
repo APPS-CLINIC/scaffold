@@ -151,6 +151,14 @@ export {
 export { useLoadingPhase, type LoadingPhase } from './useLoadingPhase';
 export { ListToolbarSkeleton } from './ListToolbarSkeleton';
 export { cx } from './cx';
+export {
+  TreeDataTable,
+  getExpandableTreeKeys,
+  type TreeDataTableColumn,
+  type TreeDataTableLabels,
+  type TreeDataTableProps,
+} from './TreeDataTable';
+export { InfoPopover, type InfoPopoverProps } from './InfoPopover';
 export { ToastProvider } from './toast/ToastProvider';
 export { useToast } from './toast/useToast';
 export { ToastErrorIcon } from './toast/ToastErrorIcon';

@@ -103,6 +103,14 @@ npm run build      # type-check + production build
 > Uses **npm** with a committed `package-lock.json`. The Node version is pinned
 > via `.nvmrc` and `engines.node`.
 
+The IWA components, corporate icons, and IWA error-handling packages are private.
+This workspace has no access to their registry, so a complete install, typecheck,
+and production build must be verified in the corporate environment. Tests use
+repository-owned IWA and icon doubles with the real public PrimeReact components.
+These doubles are test-only and never replace the production dependencies.
+See [the agent guide](AGENTS.md#private-design-system-dependencies-in-this-workspace)
+for the validation boundary.
+
 During `npm run dev`, requests under `/api` are proxied to `API_PROXY_TARGET`
 (`http://localhost:8765` by default). The customer endpoint always uses the real
 HTTP backend; search, filtering, sorting, pagination, and page metadata are not
@@ -120,6 +128,14 @@ React mounts and retains that default entry for the development session. It
 does not replace or intercept the endpoint: changing search, filters, sorting,
 pagination, or manually refreshing still calls the real backend. The preview
 module and fixture are removed from production builds.
+
+The Facilities hierarchy PoC has a separate development-only page at
+`/dev/facilities`. It demonstrates all six levels, a tree starting at business
+level three, URL-driven filtering, icon information, and example detail links.
+It needs no backend. Its example data can be downloaded as JSON from the page;
+the route and fixtures are excluded from production. See
+[Facilities PoC](docs/facilities-poc.md) for the proposed FE model and the
+decisions still awaiting the backend contract.
 
 ## Adding a feature
 

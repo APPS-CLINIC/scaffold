@@ -61,6 +61,7 @@ keep ADRs at all; use it as the template for new records.
 | [0043](0043-list-loading-with-a-way-back.md)                      | List loading with a way back                        | Accepted               |
 | [0044](0044-generic-toasts.md)                                    | Generic toasts                                      | Accepted               |
 | [0045](0045-filter-lists-loaded-a-page-at-a-time.md)              | Filter lists loaded a page at a time                | Accepted               |
+| [0046](0046-facilities-hierarchy-as-a-development-poc.md)         | Facilities hierarchy as a development PoC           | Accepted               |
 
 ### Step 03 — Scope alignment (discovery)
 

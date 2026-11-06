@@ -45,6 +45,21 @@ All four gates — **lint, typecheck, tests, build** — must pass before a PR i
 mergeable. Husky + lint-staged run eslint/prettier on staged files at commit
 time.
 
+### Private design-system dependencies in this workspace
+
+This workspace intentionally has no access to the private registry for
+`iwa-react-components`, `ing-react-icons`, and `iwa-react-error-handling`.
+Do not ask the user for registry access or credentials. Keep the real runtime
+imports; do not add fake package declarations or production replacements to
+make a build appear green.
+
+Vitest aliases IWA and the corporate icons to repository-owned test doubles,
+while exercising the real public PrimeReact components beneath the adapters.
+Lint and tests can run with the public dependencies represented in the lockfile.
+Full typecheck, production build, and visual verification against IWA require
+the corporate environment. State this limitation in the PR; a passing test
+double is not evidence that those remaining gates passed.
+
 ## Stack
 
 Choices only — the rationale for each lives in its ADR:

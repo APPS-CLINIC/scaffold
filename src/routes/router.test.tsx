@@ -1,5 +1,5 @@
 import { matchRoutes } from 'react-router-dom';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { getNavigationContextDefaultItemPath, navigationManifest } from '@/routes/navigation';
 import { router } from './router';
 
@@ -10,10 +10,29 @@ describe('application router manifest integration', () => {
       .filter((section) => section.path !== '/')
       .map((section) => section.path);
     const routedSectionPaths = applicationRoute?.children
+      ?.filter((route) => route.path !== 'dev/facilities/:facilityId?')
       ?.map((route) => route.path)
       .filter((path): path is string => typeof path === 'string');
 
     expect(routedSectionPaths).toEqual(configuredSectionPaths);
+  });
+
+  it('registers the standalone Facilities preview only in development', async () => {
+    expect(matchRoutes(router.routes, '/dev/facilities/1006')?.at(-1)?.route.lazy).toBeDefined();
+    expect(navigationManifest.sections.map((section) => section.path)).not.toContain('/dev');
+
+    vi.stubEnv('DEV', false);
+    vi.resetModules();
+    try {
+      const { router: productionRouter } = await import('./router');
+      expect(matchRoutes(productionRouter.routes, '/dev/facilities/1006')?.at(-1)?.route.path).toBe(
+        '*',
+      );
+      productionRouter.dispose();
+    } finally {
+      vi.unstubAllEnvs();
+      vi.resetModules();
+    }
   });
 
   it('places configured static customer destinations before the dynamic detail route', () => {

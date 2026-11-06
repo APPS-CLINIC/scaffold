@@ -207,6 +207,26 @@ const shown = filterByDueDate(rows, (row) => row.dueDate, windows);
 <DueDateFilter value={windows} onChange={setWindows} />;
 ```
 
+## `TreeDataTable` and `InfoPopover`
+
+`TreeDataTable<T>` is the presentational hierarchy adapter. Give it `nodes`,
+`getKey`, `getChildren`, typed `columns` (`id`, `header`, `renderCell`,
+optional `width` and cell/header classes), `expandedKeys`,
+`onExpandedKeysChange`, `labels` and `noResults`. The first column indents;
+descendants share one column grid. There is no pagination, fetching, URL state
+or responsive field accordion. Narrow screens scroll within its wrapper.
+`getExpandableTreeKeys` collects every branch recursively, excluding leaves.
+The caller controls expansion and supplies translated expand/collapse names.
+
+`InfoPopover` wraps a button and a portalled PrimeReact OverlayPanel for
+information that may contain links/actions. Pass `label`, `trigger` and
+`children`; `muted` greys the trigger without making its information
+unreachable. Hover/focus opens, click pins, ArrowDown enters an action and
+Escape dismisses and restores focus. It has dialog semantics, not tooltip
+semantics. Caller button classes and refs are supported.
+
+See [Facilities PoC](../../docs/facilities-poc.md) for the first consumer.
+
 ## `GenericSearch`
 
 `GenericSearch` is a search field built on IWA `SearchWithAutocomplete`, for

@@ -56,6 +56,9 @@ The full, indexed list lives in [`adr/README.md`](adr/README.md).
 
 ## Screen analyses
 
+- [Facilities hierarchy PoC](facilities-poc.md) — development-only six-level
+  tree, proposed frontend model, URL filters and backend handover questions.
+
 - [Limits view — component inventory](limits-view-component-inventory.md) —
   which components of the limits table the scaffold already has, which are new,
   and which come from IWA.

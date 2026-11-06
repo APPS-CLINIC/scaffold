@@ -150,6 +150,14 @@ ones are searched on the service as the user types.
 
 ### 6. UI seam — `src/ui`
 
+The Facilities pre-contract PoC adds a separate TreeDataTable for hierarchical
+rows. It has one shared column grid and no pagination; GenericDataTable keeps
+its responsive detail accordion. The full-forest data proposal and interactive
+page are development-only until a real endpoint is agreed. This deliberately
+does not invent an RTK Query endpoint or a production fallback.
+→ [ADR 0046](../adr/0046-facilities-hierarchy-as-a-development-poc.md),
+[Facilities PoC](../facilities-poc.md).
+
 Everything imports UI primitives from `@/ui`, a thin stub layer, so the
 organization's internal UI library can be plugged in within a single folder
 without touching feature code.

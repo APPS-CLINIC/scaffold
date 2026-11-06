@@ -14,6 +14,20 @@ export const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       { index: true, element: <HomePage /> },
+      // The PoC has no backend contract. Keep its route and fixture out of production.
+      ...(import.meta.env.DEV
+        ? [
+            {
+              path: 'dev/facilities/:facilityId?',
+              caseSensitive: true,
+              lazy: async () => {
+                const { FacilitiesPreviewPage } =
+                  await import('@/dev/facilities/FacilitiesPreviewPage');
+                return { Component: FacilitiesPreviewPage };
+              },
+            },
+          ]
+        : []),
       // Navigation metadata is configured once. Each section is one nested
       // route tree: the bare section path is its index route (redirecting to
       // the default destination when the section has items), navigation items
