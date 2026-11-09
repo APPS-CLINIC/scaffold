@@ -62,7 +62,7 @@ function TreeDataTableInner<T extends object>(
           minWidth: config.fields.reduce((width, column) => width + column.width, 0),
         }}
         tableClassName="w-full text-sm"
-        className="text-[var(--text)] [&_.p-treetable-thead>tr>th]:!bg-[var(--surface)] [&_.p-treetable-thead>tr>th]:!border-b-[var(--navigation-accent)] [&_.p-treetable-tbody>tr>td]:!align-top [&_.p-treetable-tbody>tr>td]:!border-[var(--border-subtle)] [&_.p-treetable-tbody>tr:nth-child(even)]:!bg-[var(--row-striped)]"
+        className="text-[var(--text)] [&_.p-treetable-thead>tr>th]:!bg-[var(--surface)] [&_.p-treetable-thead>tr>th]:!border-b-[var(--navigation-accent)] [&_.p-treetable-tbody>tr>td]:!align-top [&_.p-treetable-tbody>tr>td]:!border-[var(--border-subtle)] [&_.p-treetable-tbody>tr:nth-child(even)]:!bg-[var(--row-striped)] [&_.p-treetable-tbody>tr:hover>td]:!bg-[var(--surface-muted)]"
         pt={{
           root: { role: 'presentation' },
           table: {
