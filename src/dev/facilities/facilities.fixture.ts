@@ -1,4 +1,10 @@
-import type { FacilityAmounts, FacilityRow, FacilitySnapshot } from '@/features/facilities';
+import type {
+  FacilityAmounts,
+  FacilityRow,
+  FacilitySnapshot,
+  FacilityNodeDto,
+  FacilityNode,
+} from '@/features/facilities';
 
 // Synthetic values supplied in both currencies. The view never invents an FX rate.
 const pln: FacilityAmounts = {
@@ -42,137 +48,130 @@ function row(id: string, overrides: Partial<FacilityRow> = {}): FacilityRow {
   };
 }
 
-/** Complete forest: levels 1–6, siblings, a root at business level 3, and inactive slots. */
+/** Flat service-side catalogue. No nested transport fixture is kept alongside it. */
+const records: Omit<FacilityNodeDto, 'hasChildren' | 'childrenCount'>[] = [
+  { key: 'lending-1', parentKey: null, businessLevel: 1, data: row('1001') },
+  {
+    key: 'lending-2',
+    parentKey: 'lending-1',
+    businessLevel: 2,
+    data: row('1002', { description: 'Example second-level facility' }),
+  },
+  { key: 'lending-3', parentKey: 'lending-2', businessLevel: 3, data: row('1003') },
+  { key: 'lending-4', parentKey: 'lending-3', businessLevel: 4, data: row('1004') },
+  { key: 'lending-5', parentKey: 'lending-4', businessLevel: 5, data: row('1005') },
+  {
+    key: 'lending-6',
+    parentKey: 'lending-5',
+    businessLevel: 6,
+    data: row('1006', { description: 'Target facility at level six', type: 'TERM LOAN' }),
+  },
+  {
+    key: 'lending-sibling',
+    parentKey: 'lending-3',
+    businessLevel: 4,
+    data: row('1007', { type: 'OVERDRAFT' }),
+  },
+  {
+    key: 'intraday-3',
+    parentKey: null,
+    businessLevel: 3,
+    data: row('2001', {
+      group: 'INTRADAY',
+      type: 'INTRADAY LIMIT',
+      description: 'Independent tree starting at business level three',
+      contractCurrency: 'EUR',
+      amounts: { original: eur, PLN: pln, EUR: eur },
+    }),
+  },
+  {
+    key: 'intraday-4',
+    parentKey: 'intraday-3',
+    businessLevel: 4,
+    data: row('2002', { group: 'INTRADAY', type: 'INTRADAY LIMIT' }),
+  },
+  {
+    key: 'tfs-1',
+    parentKey: null,
+    businessLevel: 1,
+    data: row('3001', {
+      group: 'TFS',
+      type: 'TFS',
+      indicators: {
+        creditAccounts: [],
+        currencies: [
+          'PLN',
+          'EUR',
+          'USD',
+          'GBP',
+          'CHF',
+          'CZK',
+          'SEK',
+          'NOK',
+          'DKK',
+          'JPY',
+          'CAD',
+          'AUD',
+        ],
+        borrowers: [],
+        collaterals: [],
+        structure: [],
+        ownership: [],
+        ratings: [],
+      },
+    }),
+  },
+  {
+    key: 'investment-1',
+    parentKey: null,
+    businessLevel: 1,
+    data: row('4001', { group: 'INVESTMENT', type: 'INVESTMENT' }),
+  },
+  {
+    key: 'card-1',
+    parentKey: null,
+    businessLevel: 1,
+    data: row('5001', { group: 'CARD', type: 'CARD LIMIT', commitment: 'U' }),
+  },
+  {
+    key: 'other-1',
+    parentKey: null,
+    businessLevel: 1,
+    data: row('6001', {
+      group: 'OTHER',
+      type: 'MULTIPURPOSE',
+      status: 'ARCHIVAL',
+      expiryDate: null,
+      looDate: null,
+      description: 'Archived example without dates',
+    }),
+  },
+];
+const childCounts = new Map<string | null, number>();
+for (const node of records)
+  childCounts.set(node.parentKey, (childCounts.get(node.parentKey) ?? 0) + 1);
+
+/** Only this flat node format crosses the simulated service boundary. */
+export const facilityPreviewCatalogue: readonly FacilityNodeDto[] = records.map((node) => {
+  const childrenCount = childCounts.get(node.key) ?? 0;
+  return { ...node, hasChildren: childrenCount > 0, childrenCount };
+});
+function completeNodes(parentKey: string | null): FacilityNode[] {
+  return facilityPreviewCatalogue
+    .filter((node) => node.parentKey === parentKey)
+    .map((node) => ({
+      ...node,
+      childrenState: 'loaded',
+      nextCursor: null,
+      children: completeNodes(node.key),
+    }));
+}
+
+/** Service-side model for evaluating queries. The root response never sends this forest. */
 export const facilityPreviewSnapshot: FacilitySnapshot = {
-  asOf: '2026-11-06',
-  nodes: [
-    {
-      key: 'lending-1',
-      businessLevel: 1,
-      data: row('1001'),
-      children: [
-        {
-          key: 'lending-2',
-          businessLevel: 2,
-          data: row('1002', { description: 'Example second-level facility' }),
-          children: [
-            {
-              key: 'lending-3',
-              businessLevel: 3,
-              data: row('1003'),
-              children: [
-                {
-                  key: 'lending-4',
-                  businessLevel: 4,
-                  data: row('1004'),
-                  children: [
-                    {
-                      key: 'lending-5',
-                      businessLevel: 5,
-                      data: row('1005'),
-                      children: [
-                        {
-                          key: 'lending-6',
-                          businessLevel: 6,
-                          data: row('1006', {
-                            description: 'Target facility at level six',
-                            type: 'TERM LOAN',
-                          }),
-                          children: [],
-                        },
-                      ],
-                    },
-                  ],
-                },
-                {
-                  key: 'lending-sibling',
-                  businessLevel: 4,
-                  data: row('1007', { type: 'OVERDRAFT' }),
-                  children: [],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      key: 'intraday-3',
-      businessLevel: 3,
-      data: row('2001', {
-        group: 'INTRADAY',
-        type: 'INTRADAY LIMIT',
-        description: 'Independent tree starting at business level three',
-        contractCurrency: 'EUR',
-        amounts: { original: eur, PLN: pln, EUR: eur },
-      }),
-      children: [
-        {
-          key: 'intraday-4',
-          businessLevel: 4,
-          data: row('2002', { group: 'INTRADAY', type: 'INTRADAY LIMIT' }),
-          children: [],
-        },
-      ],
-    },
-    {
-      key: 'tfs-1',
-      businessLevel: 1,
-      data: row('3001', {
-        group: 'TFS',
-        type: 'TFS',
-        indicators: {
-          creditAccounts: [],
-          currencies: [
-            'PLN',
-            'EUR',
-            'USD',
-            'GBP',
-            'CHF',
-            'CZK',
-            'SEK',
-            'NOK',
-            'DKK',
-            'JPY',
-            'CAD',
-            'AUD',
-          ],
-          borrowers: [],
-          collaterals: [],
-          structure: [],
-          ownership: [],
-          ratings: [],
-        },
-      }),
-      children: [],
-    },
-    {
-      key: 'investment-1',
-      businessLevel: 1,
-      data: row('4001', { group: 'INVESTMENT', type: 'INVESTMENT' }),
-      children: [],
-    },
-    {
-      key: 'card-1',
-      businessLevel: 1,
-      data: row('5001', { group: 'CARD', type: 'CARD LIMIT', commitment: 'U' }),
-      children: [],
-    },
-    {
-      key: 'other-1',
-      businessLevel: 1,
-      data: row('6001', {
-        group: 'OTHER',
-        type: 'MULTIPURPOSE',
-        status: 'ARCHIVAL',
-        expiryDate: null,
-        looDate: null,
-        description: 'Archived example without dates',
-      }),
-      children: [],
-    },
-  ],
-  // Precomputed independent-group totals; the seven lending rows share one group limit.
+  asOf: '2026-11-09',
+  nodes: completeNodes(null),
+  // Independent totals, never a sum of parents and descendants.
   summaries: [
     { group: 'LENDING', amounts: { PLN: pln, EUR: eur } },
     { group: 'TFS', amounts: { PLN: pln, EUR: eur } },

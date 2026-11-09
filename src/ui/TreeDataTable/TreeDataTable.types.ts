@@ -15,6 +15,9 @@ export interface TreeDataTableProps<T extends object> extends Omit<
   nodes: readonly T[];
   getKey: (row: T) => string;
   getChildren: (row: T) => readonly T[];
+  /** Independent of loaded children: an unloaded branch must still be expandable. */
+  getHasChildren?: (row: T) => boolean;
+  onExpand?: (row: T) => void;
   /** Shared field/cell/filter contract; pagination and row-detail settings do not apply. */
   config: Pick<GenericDataTableConfig<T>, 'fields'>;
   expandedKeys: readonly string[];

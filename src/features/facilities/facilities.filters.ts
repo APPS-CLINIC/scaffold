@@ -98,7 +98,9 @@ export function filterFacilities(
       if (matched) matchingCount++;
       else contextKeys.push(node.key);
       if (children.length) ancestorKeys.push(node.key);
-      return [{ ...node, children }];
+      return [
+        { ...node, children, hasChildren: children.length > 0, childrenCount: children.length },
+      ];
     });
   }
 

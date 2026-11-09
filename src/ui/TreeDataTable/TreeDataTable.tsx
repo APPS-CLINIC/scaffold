@@ -12,10 +12,16 @@ function toPrimeNodes<T>(
   nodes: readonly T[],
   getKey: (row: T) => string,
   getChildren: (row: T) => readonly T[],
+  getHasChildren?: (row: T) => boolean,
 ): TreeNode[] {
   return nodes.map((node) => {
-    const children = toPrimeNodes(getChildren(node), getKey, getChildren);
-    return { key: getKey(node), data: node, children, leaf: children.length === 0 };
+    const children = toPrimeNodes(getChildren(node), getKey, getChildren, getHasChildren);
+    return {
+      key: getKey(node),
+      data: node,
+      children,
+      leaf: !(getHasChildren?.(node) ?? children.length > 0),
+    };
   });
 }
 
@@ -24,6 +30,8 @@ function TreeDataTableInner<T extends object>(
     nodes,
     getKey,
     getChildren,
+    getHasChildren,
+    onExpand,
     config,
     expandedKeys,
     onExpandedKeysChange,
@@ -39,8 +47,8 @@ function TreeDataTableInner<T extends object>(
   const { t, i18n } = useTranslation();
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const value = useMemo(
-    () => toPrimeNodes(nodes, getKey, getChildren),
-    [nodes, getKey, getChildren],
+    () => toPrimeNodes(nodes, getKey, getChildren, getHasChildren),
+    [nodes, getKey, getChildren, getHasChildren],
   );
   const expanded = useMemo(
     () => Object.fromEntries(expandedKeys.map((key) => [key, true])),
@@ -57,6 +65,7 @@ function TreeDataTableInner<T extends object>(
           onExpandedKeysChange(Object.keys(event.value).filter((key) => event.value[key]))
         }
         paginator={false}
+        onExpand={(event) => onExpand?.(event.node.data as T)}
         emptyMessage={loading ? <span aria-hidden="true" /> : <div role="status">{noResults}</div>}
         tableStyle={{
           minWidth: config.fields.reduce((width, column) => width + column.width, 0),

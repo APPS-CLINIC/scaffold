@@ -10,10 +10,16 @@ import { FACILITY_GROUP_LABELS } from './facilityGroupLabels';
 
 type BasicCellProps = GenericDataTableCellProps<FacilityTableRow, 'number'> &
   Pick<FacilitiesViewProps, 'getFacilityHref'> &
+  Pick<FacilitiesViewProps, 'onLoadChildren'> &
   Pick<FacilityIndicatorsProps, 'onOpenRelated'>;
 
 /** Feature-specific composition of shared link, status and text cells. */
-export function FacilityBasicCell({ getFacilityHref, onOpenRelated, ...props }: BasicCellProps) {
+export function FacilityBasicCell({
+  getFacilityHref,
+  onOpenRelated,
+  onLoadChildren,
+  ...props
+}: BasicCellProps) {
   const { t } = useTranslation();
   const { row } = props;
   const cellProps = <K extends keyof FacilityTableRow>(field: K) => ({
@@ -49,6 +55,27 @@ export function FacilityBasicCell({ getFacilityHref, onOpenRelated, ...props }: 
         </div>
         <div>{t('facilities.contractCurrency', { currency: row.contractCurrency })}</div>
         {row.isContext ? <div className="text-xs">{t('facilities.context')}</div> : null}
+        {row.childrenState === 'loading' ? (
+          <p className="my-1 text-xs" role="status">
+            {t('facilities.loadingChildren')}
+          </p>
+        ) : null}
+        {onLoadChildren && (row.childrenState === 'error' || row.nextCursor !== null) ? (
+          <button
+            type="button"
+            disabled={row.childrenState === 'loading'}
+            className="rounded text-xs text-[var(--accent)] underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--focus)]"
+            onClick={() => {
+              void onLoadChildren(row.key).catch(() => undefined);
+            }}
+          >
+            {t(
+              row.childrenState === 'error'
+                ? 'facilities.retryChildren'
+                : 'facilities.moreChildren',
+            )}
+          </button>
+        ) : null}
       </div>
     </div>
   );

@@ -15,12 +15,13 @@ import {
 } from './FacilityTableCells';
 import type { FacilityTableRow } from './facilityTable.types';
 
-type Actions = Pick<FacilitiesViewProps, 'getFacilityHref' | 'onOpenRelated'>;
+type Actions = Pick<FacilitiesViewProps, 'getFacilityHref' | 'onOpenRelated' | 'onLoadChildren'>;
 
 /** Column filters live with their fields. View-only controls have no artificial columns. */
 export function createFacilityTableConfig({
   getFacilityHref,
   onOpenRelated,
+  onLoadChildren,
   facilityTypes,
 }: Actions & { facilityTypes: readonly string[] }) {
   const config: GenericDataTableConfig<FacilityTableRow> = {
@@ -36,6 +37,7 @@ export function createFacilityTableConfig({
             {...props}
             getFacilityHref={getFacilityHref}
             onOpenRelated={onOpenRelated}
+            onLoadChildren={onLoadChildren}
           />
         ),
       },

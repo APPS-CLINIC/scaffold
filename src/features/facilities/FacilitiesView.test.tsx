@@ -8,6 +8,7 @@ import i18n from '@/i18n';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import { userWithFakeTimers } from '@/test/userWithFakeTimers';
 import { FacilitiesView } from './FacilitiesView';
+import type { FacilitiesViewProps } from './FacilitiesView';
 
 const appendToHead = document.head.appendChild.bind(document.head);
 beforeEach(async () => {
@@ -33,7 +34,7 @@ function NavigationProbe() {
   );
 }
 
-function renderView(path = '/dev/facilities') {
+function renderView(path = '/dev/facilities', extra: Partial<FacilitiesViewProps> = {}) {
   const onOpenRelated = vi.fn();
   const rendered = renderWithProviders(
     <>
@@ -42,6 +43,7 @@ function renderView(path = '/dev/facilities') {
         snapshot={facilityPreviewSnapshot}
         getFacilityHref={(facility) => '/dev/facilities/' + facility.id}
         onOpenRelated={onOpenRelated}
+        {...extra}
       />
       <NavigationProbe />
     </>,
@@ -53,6 +55,24 @@ function renderView(path = '/dev/facilities') {
 const url = () => screen.getByRole('status', { name: 'Current URL' }).textContent ?? '';
 
 describe('FacilitiesView', () => {
+  it('cancels expand all and ignores its eventual result', async () => {
+    const user = userEvent.setup();
+    let finish: (keys: readonly string[]) => void = () => undefined;
+    const pending = new Promise<readonly string[]>((resolve) => {
+      finish = resolve;
+    });
+    const expandAll = vi.fn((_signal: AbortSignal) => pending);
+    renderView('/dev/facilities', { onExpandAll: expandAll });
+    await user.click(screen.getByRole('switch', { name: 'Expand all' }));
+    await user.click(screen.getByRole('button', { name: 'Cancel expanding' }));
+    expect(expandAll.mock.calls[0]?.[0].aborted).toBe(true);
+    await act(async () => {
+      finish(['lending-1', 'lending-2', 'lending-3', 'lending-4', 'lending-5']);
+      await pending;
+    });
+    expect(screen.queryByRole('link', { name: 'F-1006' })).not.toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Expand all' })).not.toBeChecked();
+  });
   it('expands every level, collapses everything and keeps a level-three root structurally at the top', async () => {
     const user = userEvent.setup();
     const fetchMock = vi.fn();

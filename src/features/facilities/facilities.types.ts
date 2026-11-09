@@ -45,11 +45,44 @@ export interface FacilityRow {
   indicators: Readonly<Record<FacilityIndicator, readonly string[]>>;
 }
 
-export interface FacilityNode {
+/** Proposed transport node: one occurrence, with no embedded descendants or UI state. */
+export interface FacilityNodeDto {
   key: string;
+  parentKey: string | null;
   businessLevel: FacilityLevel;
+  hasChildren: boolean;
+  /** Number of direct children in the current query, not all descendants. */
+  childrenCount: number;
   data: FacilityRow;
+}
+
+export interface FacilityNode extends FacilityNodeDto {
   children: readonly FacilityNode[];
+  childrenState: 'unloaded' | 'loading' | 'loaded' | 'error';
+  nextCursor: string | null;
+}
+
+/** A bounded page of siblings. Each parent has its own cursor. */
+export interface FacilityChildrenResponse {
+  parentKey: string | null;
+  nodes: readonly FacilityNodeDto[];
+  total: number;
+  nextCursor: string | null;
+}
+
+export interface FacilityQueryMetadata {
+  matchingCount: number;
+  contextKeys: readonly string[];
+  autoExpandedKeys: readonly string[];
+  groupCounts: Readonly<Record<FacilityGroup, number>>;
+  facilityTypes: readonly string[];
+}
+
+export interface FacilityRootsResponse extends FacilityChildrenResponse {
+  parentKey: null;
+  asOf: string;
+  summaries: readonly FacilityGroupSummary[];
+  view: FacilityQueryMetadata;
 }
 
 export interface FacilityGroupSummary {
@@ -62,7 +95,10 @@ export interface FacilitySnapshot {
   asOf: string;
   nodes: readonly FacilityNode[];
   summaries: readonly FacilityGroupSummary[];
+  /** Server-wide metadata prevents filtering/counting only the loaded portion. */
+  view?: FacilityQueryMetadata;
 }
 
 export const facilityNodeKey = (node: FacilityNode) => node.key;
 export const facilityNodeChildren = (node: FacilityNode) => node.children;
+export const facilityNodeHasChildren = (node: FacilityNode) => node.hasChildren;

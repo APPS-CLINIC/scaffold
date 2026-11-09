@@ -68,6 +68,28 @@ function ControlledTable() {
 }
 
 describe('TreeDataTable', () => {
+  it('keeps an unloaded branch expandable using metadata rather than its empty child array', async () => {
+    const user = userEvent.setup();
+    const onExpand = vi.fn();
+    const nodes: Node[] = [{ key: 'root', label: 'Root', children: [] }];
+    render(
+      <TreeDataTable
+        nodes={nodes}
+        getKey={getKey}
+        getChildren={getChildren}
+        getHasChildren={(node) => node.key === 'root'}
+        config={config}
+        expandedKeys={[]}
+        onExpandedKeysChange={vi.fn()}
+        onExpand={onExpand}
+        labels={labels}
+        noResults="No rows"
+      />,
+    );
+    await user.click(screen.getByRole('button', { name: 'Expand Root' }));
+    expect(onExpand).toHaveBeenCalledWith(nodes[0]);
+    expect(getExpandableTreeKeys(nodes, getKey, getChildren, () => true)).toEqual(['root']);
+  });
   it('shows descendants as rows of the same grid and preserves controlled expansion through collapse', async () => {
     const user = userEvent.setup();
     render(<ControlledTable />);

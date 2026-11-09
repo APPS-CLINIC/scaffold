@@ -24,6 +24,22 @@ function ControlledActions() {
 }
 
 describe('TableActions', () => {
+  it('allows a lazy owner to report that expanded known keys are not yet the complete hierarchy', async () => {
+    const user = userEvent.setup();
+    const onChange = vi.fn();
+    renderWithProviders(
+      <TableActions
+        expandableKeys={['root']}
+        expandedKeys={['root']}
+        allExpanded={false}
+        onExpandedKeysChange={onChange}
+      />,
+    );
+    const toggle = screen.getByRole('switch', { name: 'Expand all' });
+    expect(toggle).not.toBeChecked();
+    await user.click(toggle);
+    expect(onChange).toHaveBeenCalledWith(['root']);
+  });
   it('expands exactly the owner-supplied branches and then collapses all', async () => {
     const user = userEvent.setup();
     renderWithProviders(<ControlledActions />);

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/app/hooks';
 import { selectListQuery } from '@/features/urlState/urlState.selectors';
@@ -22,11 +22,21 @@ import { FACILITY_GROUP_LABELS } from './facilityGroupLabels';
 import {
   facilityTableRowChildren,
   facilityTableRowKey,
+  facilityTableRowHasChildren,
   toFacilityTableRows,
 } from './facilityTable.types';
-import { filterFacilities, includesFacilityGroup } from './facilities.filters';
+import {
+  facilityFiltersSchema,
+  filterFacilities,
+  includesFacilityGroup,
+} from './facilities.filters';
 import { formatFacilityAmount, sumFacilitySummaries } from './facilities.formatters';
-import { FACILITY_GROUPS, facilityNodeChildren, facilityNodeKey } from './facilities.types';
+import {
+  FACILITY_GROUPS,
+  facilityNodeChildren,
+  facilityNodeKey,
+  facilityNodeHasChildren,
+} from './facilities.types';
 import type {
   FacilityGroup,
   FacilityIndicator,
@@ -49,22 +59,43 @@ export interface FacilitiesViewProps {
   snapshot: FacilitySnapshot;
   getFacilityHref: (facility: FacilityRow) => string;
   onOpenRelated: (facility: FacilityRow, indicator: FacilityIndicator) => void;
+  onLoadChildren?: (key: string) => Promise<unknown>;
+  onExpandAll?: (signal: AbortSignal) => Promise<readonly string[]>;
 }
 
-/** Full-tree presentation; the caller supplies data and destinations, the URL owns queries. */
-export function FacilitiesView({ snapshot, getFacilityHref, onOpenRelated }: FacilitiesViewProps) {
+/** Loaded-hierarchy presentation; the owner supplies data/loading intents, the URL owns queries. */
+export function FacilitiesView({
+  snapshot,
+  getFacilityHref,
+  onOpenRelated,
+  onLoadChildren,
+  onExpandAll,
+}: FacilitiesViewProps) {
   const { t, i18n } = useTranslation();
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const query = useAppSelector(selectListQuery);
   const { setQuery } = useListQueryState();
-  const result = useMemo(() => filterFacilities(snapshot.nodes, query), [snapshot.nodes, query]);
+  const result = useMemo(
+    () =>
+      snapshot.view
+        ? {
+            nodes: snapshot.nodes,
+            filters: facilityFiltersSchema.parse(query.filters),
+            ...snapshot.view,
+          }
+        : filterFacilities(snapshot.nodes, query),
+    [snapshot, query],
+  );
   const facilityTypes = useMemo(
-    () => [...new Set(allNodes(snapshot.nodes).map((node) => node.data.type))].sort(),
-    [snapshot.nodes],
+    () =>
+      snapshot.view?.facilityTypes ??
+      [...new Set(allNodes(snapshot.nodes).map((node) => node.data.type))].sort(),
+    [snapshot],
   );
   const { config, filterFields: fields } = useMemo(
-    () => createFacilityTableConfig({ getFacilityHref, onOpenRelated, facilityTypes }),
-    [getFacilityHref, onOpenRelated, facilityTypes],
+    () =>
+      createFacilityTableConfig({ getFacilityHref, onOpenRelated, facilityTypes, onLoadChildren }),
+    [getFacilityHref, onOpenRelated, facilityTypes, onLoadChildren],
   );
   const queryKey = JSON.stringify({
     q: query.q,
@@ -75,7 +106,48 @@ export function FacilitiesView({ snapshot, getFacilityHref, onOpenRelated }: Fac
   );
   const expandedKeys = expansion?.queryKey === queryKey ? expansion.keys : result.autoExpandedKeys;
   const setExpandedKeys = (keys: readonly string[]) => setExpansion({ queryKey, keys });
-  const branchKeys = getExpandableTreeKeys(result.nodes, facilityNodeKey, facilityNodeChildren);
+  const branchKeys = getExpandableTreeKeys(
+    result.nodes,
+    facilityNodeKey,
+    facilityNodeChildren,
+    facilityNodeHasChildren,
+  );
+  const [expandingAll, setExpandingAll] = useState(false);
+  const expansionRequest = useRef(0);
+  const expansionController = useRef<AbortController | null>(null);
+  const latestQueryKey = useRef(queryKey);
+  latestQueryKey.current = queryKey;
+  useEffect(() => {
+    setExpandingAll(false);
+    return () => {
+      expansionController.current?.abort();
+    };
+  }, [queryKey]);
+  const changeAllExpansion = async (keys: readonly string[]) => {
+    if (!keys.length || !onExpandAll) {
+      setExpandedKeys(keys);
+      return;
+    }
+    const request = ++expansionRequest.current;
+    const controller = new AbortController();
+    expansionController.current = controller;
+    const forQuery = queryKey;
+    setExpandingAll(true);
+    try {
+      const next = await onExpandAll(controller.signal);
+      if (
+        !controller.signal.aborted &&
+        request === expansionRequest.current &&
+        forQuery === latestQueryKey.current
+      )
+        setExpansion({ queryKey: forQuery, keys: next });
+    } catch {
+      /* A failed branch exposes its retry control. */
+    } finally {
+      if (!controller.signal.aborted && request === expansionRequest.current)
+        setExpandingAll(false);
+    }
+  };
   const shownCurrency = result.filters.displayCurrency;
   const tableRows = useMemo(
     () => toFacilityTableRows(result.nodes, shownCurrency, new Set(result.contextKeys)),
@@ -86,13 +158,15 @@ export function FacilitiesView({ snapshot, getFacilityHref, onOpenRelated }: Fac
     includesFacilityGroup(summary.group, result.filters.group),
   );
   const summary = sumFacilitySummaries(selectedSummaries, summaryCurrency);
-  const groupCounts = Object.fromEntries(
-    FACILITY_GROUPS.map((group) => [
-      group,
-      allNodes(snapshot.nodes).filter((node) => includesFacilityGroup(node.data.group, [group]))
-        .length,
-    ]),
-  );
+  const groupCounts =
+    snapshot.view?.groupCounts ??
+    Object.fromEntries(
+      FACILITY_GROUPS.map((group) => [
+        group,
+        allNodes(snapshot.nodes).filter((node) => includesFacilityGroup(node.data.group, [group]))
+          .length,
+      ]),
+    );
   const ownedValues: TableFilterValues = {
     contractCurrency: result.filters.contractCurrency.slice(0, 1),
     facilityType: result.filters.facilityType.slice(0, 1),
@@ -195,10 +269,36 @@ export function FacilitiesView({ snapshot, getFacilityHref, onOpenRelated }: Fac
           <TableActions
             expandableKeys={branchKeys}
             expandedKeys={expandedKeys}
-            onExpandedKeysChange={setExpandedKeys}
+            allExpanded={
+              branchKeys.length > 0 &&
+              branchKeys.every((key) => expandedKeys.includes(key)) &&
+              !allNodes(result.nodes).some(
+                (node) =>
+                  node.hasChildren && (node.childrenState !== 'loaded' || node.nextCursor !== null),
+              )
+            }
+            onExpandedKeysChange={(keys) => {
+              if (!expandingAll) void changeAllExpansion(keys);
+            }}
           />
         }
       />
+      {expandingAll ? (
+        <p role="status">
+          {t('facilities.loadingAll')}{' '}
+          <button
+            type="button"
+            className="text-[var(--accent)] underline"
+            onClick={() => {
+              expansionController.current?.abort();
+              expansionRequest.current++;
+              setExpandingAll(false);
+            }}
+          >
+            {t('facilities.cancelLoadingAll')}
+          </button>
+        </p>
+      ) : null}
       <p role="status" className="sr-only">
         {t('facilities.results', { count: result.matchingCount })}
       </p>
@@ -206,6 +306,11 @@ export function FacilitiesView({ snapshot, getFacilityHref, onOpenRelated }: Fac
         nodes={tableRows}
         getKey={facilityTableRowKey}
         getChildren={facilityTableRowChildren}
+        getHasChildren={facilityTableRowHasChildren}
+        onExpand={(row) => {
+          if (row.childrenState === 'unloaded' || row.childrenState === 'error')
+            void onLoadChildren?.(row.key).catch(() => undefined);
+        }}
         config={config}
         expandedKeys={expandedKeys}
         onExpandedKeysChange={setExpandedKeys}

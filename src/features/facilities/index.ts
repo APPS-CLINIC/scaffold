@@ -8,6 +8,10 @@ export type {
   FacilityIndicator,
   FacilityLevel,
   FacilityNode,
+  FacilityNodeDto,
+  FacilityChildrenResponse,
+  FacilityRootsResponse,
+  FacilityQueryMetadata,
   FacilityRow,
   FacilitySnapshot,
 } from './facilities.types';

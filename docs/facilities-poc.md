@@ -1,101 +1,95 @@
-# Facilities hierarchy PoC — story 15006016
+# Facilities lazy preview — story 15006016
 
-Run the development app and open **/dev/facilities**. The page uses synthetic
-data and sends no customer or Facilities requests. The route, preview page and
-fixture are removed from production builds. The existing customer Limits
-placeholder is intentionally not presented as a working backend integration.
+Open **/dev/facilities** during development. This page simulates a service using
+one flat synthetic catalogue. It sends no real Facilities HTTP requests and is
+excluded from production. The customer Limits route is unchanged.
 
-The meeting established that the backend data model and endpoint contract are
-not available yet. The PoC is the frontend proposal for review.
+The DTOs below are the frontend proposal for backend discussion. They are not
+an agreed backend contract. The same DTO format is used by the simulation,
+the development table's data source and the downloadable JSON.
 
-## Component and data boundaries
+## Transport and loaded view model
 
-- **src/ui/TreeDataTable:** thin, presentational PrimeReact TreeTable adapter.
-  Only the first column indents. All descendants remain rows in one grid.
-  Accessors adapt the caller's shape without exposing vendor nodes or events.
-  It consumes the same config.fields and TableCell renderer as GenericDataTable.
-- **src/features/facilities:** proposed FE model, full-tree filtering,
-  Facilities cells, summaries, filter definitions and icon information.
-- **src/dev/facilities:** the complete example forest and its page, including
-  route-based example facility details, related-data dialogs and JSON download.
+FacilityNodeDto contains:
 
-facilityTable.config.tsx declares columns and their filters once, with shared
-DateCell/TextCell and the composite basic cell built from shared link/status/text
-cells. Column filters derive from those fields. Supplementary controls cover
-the composite basic cell and view options such as currency and level cap.
-The presentation projection keeps the source rows and chosen currency amounts;
-it never changes the downloaded model. Both tables compose TableToolbar,
-TableFilters, GenericSearch and TableActions. The single-choice SelectFilter
-also lives in the shared UI seam.
+- key: stable occurrence key, independently of the facility's id/number;
+- parentKey: null for a root, otherwise its parent occurrence key;
+- businessLevel: domain level 1–6; a root can start at level 3;
+- hasChildren: whether the current query has direct children;
+- childrenCount: the number of direct children, independent of fetched pages;
+- data: FacilityRow (identity, status, group/type, dates, supplied currency
+  variants and indicator information).
 
-The model is FacilityNode { key, businessLevel, data, children }. FacilityRow
-contains an id, number, status, group, type, description, commitment, contract
-currency, expiry/LOO dates, presentation amounts and indicator data. Neither
-the fixture nor the downloaded JSON contains React components or callbacks.
+A node DTO never embeds children or client loading state. A sibling response
+has parentKey, nodes, total and nextCursor. Cursors belong to one parent/query.
+The development provider uses small offset strings to simulate them; their
+production representation remains a backend decision.
 
-Use a stable occurrence key. Do not key rows by their index or assume that a
-facility number is unique across every position in a future response.
-businessLevel is a domain value from 1 to 6. The structural depth is derived
-from children; the second example root starts at business level 3 without
-placeholder parents.
+FacilityRootsResponse adds asOf, independent group summaries and query-wide
+view metadata: matchingCount, contextKeys, autoExpandedKeys, groupCounts and
+facilityTypes. This lets search inspect descendants which the client has not
+loaded and keeps counts/dictionaries independent of the loaded subset.
 
-Every row supplies original/PLN/EUR FacilityAmounts. Amounts use integer minor
-units; utilization is a supplied fractional value, where 0.2 means 20 percent.
-The example variants are precomputed inputs, not an agreed FX service.
-Missing dates and an unavailable utilization display a dash.
+The FE projection FacilityNode adds children, childrenState
+(unloaded/loading/loaded/error) and nextCursor. A loaded page can still have
+more children. An empty children array with hasChildren=true remains expandable.
+TreeDataTable accepts a separate getHasChildren accessor and onExpand intent.
 
-## Demonstrated behavior
+Amounts remain integer minor units with original/PLN/EUR variants supplied by
+the data source. The view does not calculate an exchange rate. Summaries are
+independent supplied group totals, never a sum of parents and descendants.
 
-- Expand or collapse individual branches; collapsing preserves the remembered
-  descendant state. Expand all visits every branch, not just the visible rows;
-  leaves do not count as expandable.
-- Search a hidden level-six descendant. Nonmatching ancestors remain only as
-  context, and the path opens automatically. Parent matches do not implicitly
-  include unrelated nonmatching descendants.
-- Choose any combination of quick groups. All clears the group restriction.
-  Lending includes TFS, as named in the mock-up; selecting both keeps a union
-  without duplicating nodes or group totals.
-  Counts describe the complete supplied forest and ignore the detailed filters.
-- Edit contract currency, type, display currency, maximum business level, C/U,
-  expiry range and LOO range in the shared TableFilters dialog. Cancel discards
-  the draft. Single-choice fields remain single even in a hand-edited URL.
-  Invalid values and reversed date ranges have total parsing defaults.
-- Use Back/Forward or a deep link to restore the query. Updating owned filters
-  preserves unrelated params. The presentation does not use page/pageSize.
-- Changing only display currency preserves expanded branches. The selected
-  group's summary stays independent of search and detailed row filters and is
-  labelled accordingly. It uses supplied totals once, regardless of the
-  number of descendants.
-- Read information for every icon on hover or keyboard focus, including grey
-  slots. Click pins an interactive panel; ArrowDown enters its action and
-  Escape closes it and returns focus. Currency lists wrap. The panel uses the
-  existing IWA Popover through a small interaction adapter, following ADR 0013;
-  its positioning and appearance remain owned by IWA. The related-data dialog
-  is an example action.
-- Follow a facility-number link to its example detail dialog. The route and
-  current query are preserved, so a real form destination can later replace
-  the injected getFacilityHref function.
-- Download the proposed full example model as JSON for backend discussion.
-  This is separate from the mock-up's future server-generated XLSX export.
+## What the development page demonstrates
 
-## Contract questions for backend and product
+- Initially fetch a bounded root page. Root DTOs report children without
+  preloading descendant rows.
+- Expand one node to fetch its immediate children. Deeper branches stay
+  unloaded. Leaf nodes have no expansion control.
+- Cache loaded pages in the existing baseApi RTK Query cache. Collapsing and
+  reopening reuses them. Query changes use separate cache entries; display
+  currency changes preserve the service request and expanded branches.
+- Continue a sibling page with Load more children, or continue a root page
+  with Load more facilities. Child pages deliberately contain one record in
+  this small example to exercise the multi-child parent. Root pages allow 50.
+- Display branch loading and retry controls without making loaded rows vanish.
+- Expand all fetches remaining root and child pages sequentially, then expands
+  the complete result. Cancel expanding stops subsequent loads. Query changes
+  or leaving the page invalidate a pending expansion result.
+- Evaluate search/filters on the complete simulated service-side catalogue,
+  preserve ancestor context and reveal paths for deep matches. A broad match
+  may still require sibling continuation. The group summary and counts are
+  explicitly independent of detailed filters/search, following the PoC choice.
+- Reuse GenericDataTable field configuration, TableCell, shared date/text/link/
+  status cells, TableToolbar, TableFilters, SelectFilter and TableActions.
+- Keep seven indicator slots; use the IWA Popover adapter for hover/focus and
+  keyboard information. The related-data dialog and facility form are examples.
 
-1. Can the service return a complete customer forest in one response, with
-   stable keys, explicit relations and deterministic sibling order? If it
-   returns parentId rows instead, map them in the feature adapter.
-2. Which nodes are roots when higher business levels are outside the
-   customer's scope? Is the same facility present in multiple positions?
-3. Does the Facility dropdown indeed mean business levels 1 through N?
-4. Should matched parents include all descendants, and should summaries and
-   group counts react to detailed filters/search? The PoC choices above
-   are provisional.
-5. Which fields and endpoints supply indicator availability, counters, labels,
-   action destinations, FX variants, rates and the data timestamp?
-6. Which independent limits may be combined? Do not derive group totals by
-   summing the displayed hierarchy.
-7. What is the largest complete/expanded forest? Measure it before selecting
-   an on-demand or virtualized strategy. Removing pagination does not by itself
-   establish a safe upper bound.
+## Downloaded JSON
+
+Download example data produces **facilities-roots-response.json**. It is the
+initial root response for the current query, with hasChildren and childrenCount
+on every node. It remains a root-only transport response after expanding rows;
+no loaded children, loading flags, callbacks or React components are exported.
+
+The original response is retained independently from the loaded cache
+projection. Tests capture the actual downloaded Blob and parse its JSON to
+verify this boundary, including after expanding the entire tree.
+
+The source catalogue is flat too. The complete forest used to evaluate the
+simulated service query is a derived service-side model, not another transport
+fixture or something sent to the table on entry.
+
+## Remaining backend/product decisions
+
+1. Agree actual endpoint methods, paths, DTO mapping and cursor semantics.
+2. Confirm query-wide ancestry, sibling order, stable occurrence keys and
+   behavior when a customer does not own higher business levels.
+3. Confirm root/child page sizes and maximum volume. The tiny development
+   catalogue is not a memory/throughput benchmark or a virtualization solution.
+4. Confirm whether the level filter means business levels 1 through N, and
+   whether group counts and summaries react to detailed filters.
+5. Supply indicator destinations/availability, dictionaries, FX values and
+   timestamps, real forms and XLSX export.
 
 ## Validation boundary
 
@@ -127,3 +121,6 @@ information, and interactive panel keyboard/focus behavior.
 See [ADR 0046](adr/0046-facilities-hierarchy-as-a-development-poc.md).
 The shared UI contract is refined by
 [ADR 0047](adr/0047-shared-table-fields-cells-and-toolbar.md).
+
+The lazy transport proposal is defined by
+[ADR 0048](adr/0048-lazy-facilities-preview-data-contract.md).

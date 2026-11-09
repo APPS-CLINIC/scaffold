@@ -228,6 +228,12 @@ The caller controls expansion and supplies translated expand/collapse names.
 through i18n, and cells receive the active locale. Flat-table sorting and
 responsive detail options do not apply to the tree.
 
+For lazy branches, supply `getHasChildren` independently of `getChildren` and
+handle `onExpand`. A branch may have no loaded children while still being
+expandable. The optional fourth argument of `getExpandableTreeKeys` is the
+same has-children accessor. Fetching, cached pages and loading/retry UI remain
+owned by the caller.
+
 `InfoPopover` adapts the controlled IWA `Popover` for
 information that may contain links/actions. Pass `label`, `trigger` and
 `children`; `muted` greys the trigger without making its information
@@ -259,6 +265,9 @@ use this composition with the existing `TableFilters` and `GenericSearch`.
 infers keys from records: a tree owner passes every branch, including hidden
 descendants. `GenericTableSettings` adapts its existing row-based API to this
 component. Both primitives forward refs/HTML attributes and merge caller classes.
+
+An optional `allExpanded` overrides the known-key calculation when unloaded
+branches or continuation pages mean expansion is not complete.
 
 See [ADR 0047](../../docs/adr/0047-shared-table-fields-cells-and-toolbar.md).
 

@@ -158,11 +158,16 @@ date, text, status and link cells; only domain composition stays in the feature.
 
 The Facilities pre-contract PoC adds a separate TreeDataTable for hierarchical
 rows. It has one shared column grid and no pagination; GenericDataTable keeps
-its responsive detail accordion. The full-forest data proposal and interactive
+its responsive detail accordion. The root/child-page data proposal and interactive
 page are development-only until a real endpoint is agreed. This deliberately
 does not invent an RTK Query endpoint or a production fallback.
 → [ADR 0046](../adr/0046-facilities-hierarchy-as-a-development-poc.md),
 [Facilities PoC](../facilities-poc.md).
+
+The development Facilities data source now exercises the proposed lazy DTO
+contract: explicit child metadata, bounded sibling responses, a separate
+loaded projection in RTK Query, and a root-only JSON export.
+→ [ADR 0048](../adr/0048-lazy-facilities-preview-data-contract.md).
 
 Everything imports UI primitives from `@/ui`, a thin stub layer, so the
 organization's internal UI library can be plugged in within a single folder

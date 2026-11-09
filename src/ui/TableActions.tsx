@@ -9,6 +9,8 @@ export interface TableActionsProps extends Omit<HTMLAttributes<HTMLDivElement>, 
   /** The owner supplies the expandable keys: visible records or every tree branch. */
   expandableKeys: readonly string[];
   expandedKeys: readonly string[];
+  /** The owner can account for branches not loaded yet. */
+  allExpanded?: boolean;
   onExpandedKeysChange: (keys: readonly string[]) => void;
   onExport?: () => void;
   exportLabel?: string;
@@ -23,6 +25,7 @@ export const TableActions = forwardRef<HTMLDivElement, TableActionsProps>(functi
   {
     expandableKeys,
     expandedKeys,
+    allExpanded,
     onExpandedKeysChange,
     onExport,
     exportLabel,
@@ -34,7 +37,8 @@ export const TableActions = forwardRef<HTMLDivElement, TableActionsProps>(functi
 ) {
   const { t } = useTranslation();
   const expanded =
-    expandableKeys.length > 0 && expandableKeys.every((key) => expandedKeys.includes(key));
+    allExpanded ??
+    (expandableKeys.length > 0 && expandableKeys.every((key) => expandedKeys.includes(key)));
   const DownloadIcon = useCustomIcon(<Download />, { size: 'md', tone: 'neutral' });
   const SettingsIcon = useCustomIcon(<Settings />, { size: 'md', tone: 'neutral' });
 

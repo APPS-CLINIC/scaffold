@@ -13,6 +13,9 @@ export interface FacilityTableRow extends Omit<FacilityRow, 'amounts'>, Facility
   businessLevel: FacilityLevel;
   isContext: boolean;
   children: readonly FacilityTableRow[];
+  hasChildren: boolean;
+  childrenState: FacilityNode['childrenState'];
+  nextCursor: string | null;
 }
 
 export function toFacilityTableRows(
@@ -28,6 +31,9 @@ export function toFacilityTableRows(
       source: node.data,
       key: node.key,
       businessLevel: node.businessLevel,
+      hasChildren: node.hasChildren,
+      childrenState: node.childrenState,
+      nextCursor: node.nextCursor,
       isContext: contextKeys.has(node.key),
       children: toFacilityTableRows(node.children, currency, contextKeys),
     };
@@ -36,3 +42,4 @@ export function toFacilityTableRows(
 
 export const facilityTableRowKey = (row: FacilityTableRow) => row.key;
 export const facilityTableRowChildren = (row: FacilityTableRow) => row.children;
+export const facilityTableRowHasChildren = (row: FacilityTableRow) => row.hasChildren;
