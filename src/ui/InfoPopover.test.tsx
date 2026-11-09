@@ -1,20 +1,10 @@
 import { createRef } from 'react';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { PrimeReactProvider } from 'primereact/api';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { InfoPopover } from './InfoPopover';
-import { mockOverlayLayout } from '@/test/overlayLayout';
 import { userWithFakeTimers } from '@/test/userWithFakeTimers';
 
-const appendToHead = document.head.appendChild.bind(document.head);
-beforeEach(() => {
-  mockOverlayLayout();
-  vi.spyOn(document.head, 'appendChild').mockImplementation(<T extends Node>(node: T): T => {
-    if (node instanceof HTMLStyleElement) return node;
-    return appendToHead(node) as T;
-  });
-});
 afterEach(() => {
   vi.useRealTimers();
   vi.unstubAllGlobals();
@@ -22,13 +12,13 @@ afterEach(() => {
 
 function Example({ muted = false }: { muted?: boolean }) {
   return (
-    <PrimeReactProvider value={{ cssTransition: false }}>
+    <>
       <InfoPopover label="Currencies" trigger={<span aria-hidden="true">€</span>} muted={muted}>
         <p>EUR, PLN</p>
         <a href="/example">Open details</a>
       </InfoPopover>
       <button type="button">Next control</button>
-    </PrimeReactProvider>
+    </>
   );
 }
 
@@ -41,7 +31,7 @@ describe('InfoPopover', () => {
     expect(trigger).toHaveFocus();
     expect(trigger).toHaveAttribute('aria-expanded', 'true');
     const panel = screen.getByRole('dialog', { name: 'Currencies' });
-    expect(panel.parentElement).toBe(document.body);
+    expect(panel).toHaveAttribute('aria-modal', 'false');
     expect(trigger).toHaveAttribute('aria-controls', panel.id);
     await user.keyboard('{ArrowDown}');
     expect(within(panel).getByRole('link', { name: 'Open details' })).toHaveFocus();
@@ -62,7 +52,7 @@ describe('InfoPopover', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
   });
 
-  it('waits briefly on hover and leaves enough time to enter its portalled content', async () => {
+  it('waits briefly on hover and leaves enough time to enter its content', async () => {
     const user = userWithFakeTimers();
     render(<Example />);
     const trigger = screen.getByRole('button', { name: 'Currencies' });
@@ -88,5 +78,23 @@ describe('InfoPopover', () => {
     );
     expect(ref.current).toBe(screen.getByRole('button', { name: 'Information' }));
     expect(ref.current).toHaveClass('h-12', 'custom-info');
+  });
+
+  it('focuses information with no actions when pinned and restores the muted trigger on Escape', async () => {
+    const user = userEvent.setup();
+    render(
+      <InfoPopover label="Ownership" trigger="i" muted>
+        <p>No information available</p>
+      </InfoPopover>,
+    );
+    const trigger = screen.getByRole('button', { name: 'Ownership' });
+    await user.click(trigger);
+    const panel = screen.getByRole('dialog', { name: 'Ownership' });
+    expect(panel).toHaveFocus();
+    expect(within(panel).queryByRole('button')).not.toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
   });
 });

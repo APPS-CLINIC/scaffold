@@ -68,8 +68,10 @@ Missing dates and an unavailable utilization display a dash.
   number of descendants.
 - Read information for every icon on hover or keyboard focus, including grey
   slots. Click pins an interactive panel; ArrowDown enters its action and
-  Escape closes it and returns focus. Currency lists wrap; panels portal
-  outside the scrolling grid. The related-data dialog is an example action.
+  Escape closes it and returns focus. Currency lists wrap. The panel uses the
+  existing IWA Popover through a small interaction adapter, following ADR 0013;
+  its positioning and appearance remain owned by IWA. The related-data dialog
+  is an example action.
 - Follow a facility-number link to its example detail dialog. The route and
   current query are preserved, so a real form destination can later replace
   the injected getFacilityHref function.
@@ -98,15 +100,20 @@ Missing dates and an unavailable utilization display a dash.
 ## Validation boundary
 
 This workspace has no access to the private IWA components, corporate icons
-or error-handling package. Runtime imports are unchanged. Vitest uses the
-existing IWA double plus a decorative icon double, while TreeDataTable and
-InfoPopover exercise the real public PrimeReact implementations.
+or error-handling package. Vitest uses the existing IWA double plus a decorative
+icon double, while TreeDataTable exercises the real public PrimeReact
+implementation. InfoPopover uses IWA Popover; its controlled props were checked
+against the supplied Storybook screenshots on 2026-11-09. Its test double only
+renders the supplied trigger and conditional content. It does not reproduce
+IWA positioning, portalling or outside-click dismissal.
 
 Run lint and tests with the public lockfile dependencies available. Full
 typecheck, production build, the production-artifact exclusion check, and
 visual verification against the actual IWA package remain corporate-environment
 checks. Do not interpret a passing double as passing those gates, and do not
 add fake runtime package types to hide missing dependencies.
+Verify IWA Popover's focus/ref behavior, dismissal, viewport-edge placement and
+clipping in the horizontally scrolling table with the actual package.
 
 Use the Node 22 version pinned in .nvmrc. When checking under Node 26, run
 NODE_OPTIONS=--no-experimental-webstorage npm test so Node's experimental

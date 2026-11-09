@@ -228,12 +228,21 @@ The caller controls expansion and supplies translated expand/collapse names.
 through i18n, and cells receive the active locale. Flat-table sorting and
 responsive detail options do not apply to the tree.
 
-`InfoPopover` wraps a button and a portalled PrimeReact OverlayPanel for
+`InfoPopover` adapts the controlled IWA `Popover` for
 information that may contain links/actions. Pass `label`, `trigger` and
 `children`; `muted` greys the trigger without making its information
 unreachable. Hover/focus opens, click pins, ArrowDown enters an action and
 Escape dismisses and restores focus. It has dialog semantics, not tooltip
 semantics. Caller button classes and refs are supported.
+The wrapper adds interaction and accessibility only; IWA owns panel rendering,
+positioning and appearance. It uses `isPopoverOpen`, `setIsPopoverOpen`,
+`popoverChildren`, `popoverContent`, `positions` (the current API, rather than
+deprecated `position`) and `closeOnClick={false}` for interactive content.
+The raw IWA `Popover` is also re-exported from `@/ui`.
+
+Local tests exercise the interaction wrapper with a minimal controlled IWA
+double. Actual positioning, clipping inside scrolling tables and vendor
+dismissal behavior require verification with the real private package.
 
 See [Facilities PoC](../../docs/facilities-poc.md) for the first consumer.
 
@@ -500,7 +509,7 @@ neutral | accent | brand` (default `outline` — light surface with a subtle
 
 Components the app consumes from IWA without an adapter are re-exported
 verbatim from `index.ts` (`ActionLink`, `Button`, `Card`, `ChipInput`,
-`CustomizableDialog`, `DatePicker`, `LoadingSpinner`, `MultiSelect`, `RadioGroup`, `RichNotification`, `Select`,
+`CustomizableDialog`, `DatePicker`, `LoadingSpinner`, `MultiSelect`, `Popover`, `RadioGroup`, `RichNotification`, `Select`,
 `Snackbar`, `Switch`, `TabMenu`, `TextInput`, `TopBar`, …); `index.ts` is the complete list. Feature code imports them from
 `@/ui` like every local primitive.
 

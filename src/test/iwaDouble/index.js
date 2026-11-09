@@ -15,6 +15,7 @@
  */
 
 import {
+  Fragment,
   cloneElement,
   createContext,
   createElement,
@@ -32,6 +33,15 @@ export function Table({ dataTableRef, separatedRows, ...props }) {
 
 export function PaginatorTable(props) {
   return createElement(Table, { paginator: true, ...props });
+}
+
+/**
+ * Controlled Popover contract shown in the IWA Storybook screenshots.
+ * This double only renders its supplied trigger/content; it does not emulate
+ * positioning, portalling or dismissal behavior of the private implementation.
+ */
+export function Popover({ isPopoverOpen, popoverChildren, popoverContent }) {
+  return createElement(Fragment, null, popoverChildren, isPopoverOpen ? popoverContent : null);
 }
 
 export function twMerge(...classLists) {

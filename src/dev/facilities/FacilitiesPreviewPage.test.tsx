@@ -4,14 +4,12 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UrlStateSync } from '@/features/urlState/UrlStateSync';
 import i18n from '@/i18n';
-import { mockOverlayLayout } from '@/test/overlayLayout';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import { FacilitiesPreviewPage } from './FacilitiesPreviewPage';
 
 const appendToHead = document.head.appendChild.bind(document.head);
 beforeEach(async () => {
   await i18n.changeLanguage('en');
-  mockOverlayLayout();
   vi.spyOn(document.head, 'appendChild').mockImplementation(<T extends Node>(node: T): T => {
     if (node instanceof HTMLStyleElement) return node;
     return appendToHead(node) as T;

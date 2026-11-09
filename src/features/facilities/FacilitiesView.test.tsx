@@ -6,13 +6,11 @@ import { facilityPreviewSnapshot } from '@/dev/facilities/facilities.fixture';
 import { UrlStateSync } from '@/features/urlState/UrlStateSync';
 import i18n from '@/i18n';
 import { renderWithProviders } from '@/test/renderWithProviders';
-import { mockOverlayLayout } from '@/test/overlayLayout';
 import { userWithFakeTimers } from '@/test/userWithFakeTimers';
 import { FacilitiesView } from './FacilitiesView';
 
 const appendToHead = document.head.appendChild.bind(document.head);
 beforeEach(async () => {
-  mockOverlayLayout();
   await i18n.changeLanguage('en');
   vi.spyOn(document.head, 'appendChild').mockImplementation(<T extends Node>(node: T): T => {
     if (node instanceof HTMLStyleElement) return node;

@@ -16,6 +16,7 @@ export {
   MultiSelect,
   NavigationMenuItem,
   PaginatorTable,
+  Popover,
   RadioGroup,
   RichNotification,
   SearchWithAutocomplete,
