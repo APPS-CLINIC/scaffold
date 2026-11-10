@@ -2,6 +2,8 @@ import { forwardRef, useMemo } from 'react';
 import type { ReactElement, Ref, RefAttributes } from 'react';
 import { Column } from 'primereact/column';
 import { TreeTable } from 'primereact/treetable';
+import { ChevronDownIcon } from 'primereact/icons/chevrondown';
+import { ChevronRightIcon } from 'primereact/icons/chevronright';
 import type { TreeNode } from 'primereact/treenode';
 import { twMerge } from 'iwa-react-components';
 import { useTranslation } from 'react-i18next';
@@ -106,10 +108,11 @@ function TreeDataTableInner<T extends object>(
               onClick={options.onClick}
               onKeyDown={(event) => event.stopPropagation()}
             >
-              <span
-                aria-hidden="true"
-                className={options.expanded ? 'pi pi-chevron-down' : 'pi pi-chevron-right'}
-              />
+              {options.expanded ? (
+                <ChevronDownIcon aria-hidden="true" className="h-3.5 w-3.5" />
+              ) : (
+                <ChevronRightIcon aria-hidden="true" className="h-3.5 w-3.5" />
+              )}
             </button>
           );
         }}

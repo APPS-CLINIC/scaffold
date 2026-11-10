@@ -55,6 +55,23 @@ function renderView(path = '/dev/facilities', extra: Partial<FacilitiesViewProps
 const url = () => screen.getByRole('status', { name: 'Current URL' }).textContent ?? '';
 
 describe('FacilitiesView', () => {
+  it('shows an expansion control for an unloaded branch even without query metadata', async () => {
+    const root = facilityPreviewSnapshot.nodes[0];
+    if (!root) throw new Error('Expected a root fixture');
+    const onLoadChildren = vi.fn(async () => undefined);
+    renderView('/dev/facilities', {
+      snapshot: {
+        ...facilityPreviewSnapshot,
+        nodes: [{ ...root, children: [], childrenState: 'unloaded' }],
+      },
+      onLoadChildren,
+    });
+    const toggle = screen.getByRole('button', { name: 'Expand facility F-1001' });
+    expect(toggle).toBeVisible();
+    await userEvent.setup().click(toggle);
+    expect(onLoadChildren).toHaveBeenCalledWith('lending-1');
+    expect(screen.queryByRole('link', { name: 'F-1002' })).not.toBeInTheDocument();
+  });
   it('cancels expand all and ignores its eventual result', async () => {
     const user = userEvent.setup();
     let finish: (keys: readonly string[]) => void = () => undefined;

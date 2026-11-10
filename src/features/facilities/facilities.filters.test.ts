@@ -10,6 +10,24 @@ function flatten(nodes: readonly FacilityNode[]): FacilityNode[] {
 const source = facilityPreviewSnapshot.nodes;
 
 describe('Facilities tree filtering', () => {
+  it('preserves child metadata when the next level has not been received', () => {
+    const root = source[0];
+    if (!root) throw new Error('Expected a root fixture');
+    const result = filterFacilities([{ ...root, children: [], childrenState: 'unloaded' }], {
+      q: '',
+      filters: {},
+    });
+    expect(result.nodes[0]).toMatchObject({ hasChildren: true, childrenCount: 1, children: [] });
+  });
+  it('does not turn a partial sibling page into a complete child count', () => {
+    const parent = flatten(source).find((node) => node.key === 'lending-3');
+    if (!parent) throw new Error('Expected the paginated fixture');
+    const result = filterFacilities(
+      [{ ...parent, children: parent.children.slice(0, 1), nextCursor: '1' }],
+      { q: '', filters: {} },
+    );
+    expect(result.nodes[0]).toMatchObject({ hasChildren: true, childrenCount: 2, nextCursor: '1' });
+  });
   it('keeps the same Lending hierarchy in All and Lending without automatic expansion', () => {
     const all = filterFacilities(source, { q: '', filters: {} });
     const lending = filterFacilities(source, { q: '', filters: { group: ['LENDING'] } });

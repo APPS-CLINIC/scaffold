@@ -86,7 +86,10 @@ describe('TreeDataTable', () => {
         noResults="No rows"
       />,
     );
-    await user.click(screen.getByRole('button', { name: 'Expand Root' }));
+    const toggle = screen.getByRole('button', { name: 'Expand Root' });
+    expect(toggle).toBeVisible();
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await user.click(toggle);
     expect(onExpand).toHaveBeenCalledWith(nodes[0]);
     expect(getExpandableTreeKeys(nodes, getKey, getChildren, () => true)).toEqual(['root']);
   });

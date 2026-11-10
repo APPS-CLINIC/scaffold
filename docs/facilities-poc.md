@@ -20,7 +20,9 @@ FacilityNodeDto contains:
 - data: FacilityRow (identity, status, group/type, dates, supplied currency
   variants and indicator information).
 
-A node DTO never embeds children or client loading state. A sibling response
+A node DTO never embeds children or client loading state. Unloaded or partially
+loaded branches retain the supplied hasChildren/childrenCount metadata; an
+empty loaded-children array is not evidence that a branch is a leaf. A sibling response
 has parentKey, nodes, total and nextCursor. Cursors belong to one parent/query.
 The development provider uses small offset strings to simulate them; their
 production representation remains a backend decision.
