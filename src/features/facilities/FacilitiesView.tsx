@@ -17,7 +17,7 @@ import {
   TreeDataTable,
   twMerge,
 } from '@/ui';
-import type { TableFilterValues } from '@/ui';
+import type { TableFilterValues, TreeDataTableProps } from '@/ui';
 import { createFacilityTableConfig } from './facilityTable.config';
 import { FACILITY_GROUP_LABELS } from './facilityGroupLabels';
 import {
@@ -27,6 +27,7 @@ import {
   facilityTableRowChildrenLoading,
   toFacilityTableRows,
 } from './facilityTable.types';
+import type { FacilityTableRow } from './facilityTable.types';
 import {
   facilityFiltersSchema,
   filterFacilities,
@@ -57,10 +58,11 @@ function allNodes(nodes: readonly FacilityNode[]): FacilityNode[] {
   return nodes.flatMap((node) => [node, ...allNodes(node.children)]);
 }
 
-export interface FacilitiesViewProps {
+export interface FacilitiesViewProps extends Pick<
+  TreeDataTableProps<FacilityTableRow>,
+  'loading' | 'loadingMore'
+> {
   snapshot: FacilitySnapshot;
-  loading?: boolean;
-  loadingMore?: boolean;
   toolbarReady?: boolean;
   getFacilityHref: (facility: FacilityRow) => string;
   onOpenRelated: (facility: FacilityRow, indicator: FacilityIndicator) => void;
@@ -324,7 +326,7 @@ export function FacilitiesView({
           {t('facilities.results', { count: result.matchingCount })}
         </p>
       ) : null}
-      <TreeDataTable
+      <TreeDataTable<FacilityTableRow>
         nodes={tableRows}
         getKey={facilityTableRowKey}
         getChildren={facilityTableRowChildren}
@@ -333,7 +335,7 @@ export function FacilitiesView({
         loading={loading}
         loadingMore={loadingMore}
         loadingLabel={t('common.loading')}
-        onExpand={(row) => {
+        onExpand={(row: FacilityTableRow) => {
           if (row.childrenState === 'unloaded' || row.childrenState === 'error')
             void onLoadChildren?.(row.key).catch(() => undefined);
         }}

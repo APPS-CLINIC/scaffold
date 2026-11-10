@@ -25,7 +25,8 @@ export const TableActions = forwardRef<HTMLDivElement, TableActionsProps>(functi
   {
     expandableKeys,
     expandedKeys,
-    allExpanded,
+    allExpanded = expandableKeys.length > 0 &&
+      expandableKeys.every((key) => expandedKeys.includes(key)),
     onExpandedKeysChange,
     onExport,
     exportLabel,
@@ -36,9 +37,6 @@ export const TableActions = forwardRef<HTMLDivElement, TableActionsProps>(functi
   ref,
 ) {
   const { t } = useTranslation();
-  const expanded =
-    allExpanded ??
-    (expandableKeys.length > 0 && expandableKeys.every((key) => expandedKeys.includes(key)));
   const DownloadIcon = useCustomIcon(<Download />, { size: 'md', tone: 'neutral' });
   const SettingsIcon = useCustomIcon(<Settings />, { size: 'md', tone: 'neutral' });
 
@@ -66,9 +64,9 @@ export const TableActions = forwardRef<HTMLDivElement, TableActionsProps>(functi
         <span>{t('customers.actions.expandAll')}</span>
         <Switch
           aria-label={t('customers.actions.expandAll')}
-          checked={expanded}
+          checked={allExpanded}
           disabled={expandableKeys.length === 0}
-          onChange={() => onExpandedKeysChange(expanded ? [] : expandableKeys)}
+          onChange={() => onExpandedKeysChange(allExpanded ? [] : expandableKeys)}
         />
       </label>
     </div>

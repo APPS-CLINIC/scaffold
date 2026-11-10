@@ -113,13 +113,19 @@ TypeScript errors for missing props identify mismatched component revisions:
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `loading` is missing from `FacilitiesViewProps`                     | `src/features/facilities/FacilitiesView.tsx`, including its props, defaults and render logic, alongside `src/dev/facilities/FacilitiesPreviewPage.tsx` |
 | `allExpanded` is missing from `TableActionsProps`                   | `src/ui/TableActions.tsx`, including the owner-supplied completeness check                                                                             |
-| `getHasChildren` or `onExpand` is missing from `TreeDataTableProps` | `src/ui/TreeDataTable/TreeDataTable.types.ts`, `TreeDataTable.tsx` and `treeKeys.ts`                                                                   |
+| `getHasChildren` or `onExpand` is missing from `TreeDataTableProps` | `src/ui/TreeDataTable/TreeDataTable.tsx`, its `index.ts` and `treeKeys.ts`; `TreeDataTable.types.ts` forwards the component's contract                 |
 
 Pending tree rendering also uses `getChildrenLoading`, `loadingMore` and the
 shared `TableCellSkeleton`. Transfer its feature row accessor and the UI exports
 with the implementation. Annotating callback parameters does not restore missing
 props or their runtime behavior; update the component contract and implementation
 together.
+
+The tree adapter declares its public props in its implementation file, and the
+legacy types module only re-exports them. Facilities derives `loading` and
+`loadingMore` from that contract and supplies an explicit `FacilityTableRow`
+generic/callback type. TableActions applies its optional `allExpanded` default
+directly to the switch's checked value and change handler.
 
 The real IWA `InlineLink.label` accepts a string. `UnderlinedTextCell` validates
 primitive values before converting its label with `String(value)`; its unavailable

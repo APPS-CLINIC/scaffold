@@ -1,3 +1,2 @@
-export { TreeDataTable } from './TreeDataTable';
+export { TreeDataTable, type TreeDataTableLabels, type TreeDataTableProps } from './TreeDataTable';
 export { getExpandableTreeKeys } from './treeKeys';
-export type { TreeDataTableLabels, TreeDataTableProps } from './TreeDataTable.types';
