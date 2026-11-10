@@ -1,0 +1,198 @@
+{
+  "parentKey": null,
+  "nodes": [
+    {
+      "key": "lending-1",
+      "parentKey": null,
+      "businessLevel": 1,
+      "data": {
+        "id": "1001",
+        "number": "F-1001",
+        "status": "ACTIVE",
+        "group": "LENDING",
+        "type": "AGGREGATED",
+        "description": "Example credit facility",
+        "commitment": "C",
+        "contractCurrency": "PLN",
+        "expiryDate": "2027-09-29",
+        "looDate": "2026-09-29",
+        "amounts": {
+          "original": {
+            "currency": "PLN",
+            "grantedMinor": 40000000,
+            "utilizedMinor": 8000000,
+            "availableMinor": 32000000,
+            "utilization": 0.2
+          },
+          "PLN": {
+            "currency": "PLN",
+            "grantedMinor": 40000000,
+            "utilizedMinor": 8000000,
+            "availableMinor": 32000000,
+            "utilization": 0.2
+          },
+          "EUR": {
+            "currency": "EUR",
+            "grantedMinor": 10000000,
+            "utilizedMinor": 2000000,
+            "availableMinor": 8000000,
+            "utilization": 0.2
+          }
+        },
+        "indicators": {
+          "creditAccounts": ["Example account 001", "Example account 002"],
+          "currencies": ["PLN", "EUR"],
+          "borrowers": ["Example company"],
+          "collaterals": ["Example collateral"],
+          "structure": ["Example facility structure"],
+          "ownership": [],
+          "ratings": ["Example rating"]
+        }
+      },
+      "hasChildren": true,
+      "childrenCount": 1
+    }
+  ],
+  "total": 1,
+  "nextCursor": null,
+  "asOf": "2026-11-09",
+  "summaries": [
+    {
+      "group": "LENDING",
+      "amounts": {
+        "PLN": {
+          "currency": "PLN",
+          "grantedMinor": 40000000,
+          "utilizedMinor": 8000000,
+          "availableMinor": 32000000,
+          "utilization": 0.2
+        },
+        "EUR": {
+          "currency": "EUR",
+          "grantedMinor": 10000000,
+          "utilizedMinor": 2000000,
+          "availableMinor": 8000000,
+          "utilization": 0.2
+        }
+      }
+    },
+    {
+      "group": "TFS",
+      "amounts": {
+        "PLN": {
+          "currency": "PLN",
+          "grantedMinor": 40000000,
+          "utilizedMinor": 8000000,
+          "availableMinor": 32000000,
+          "utilization": 0.2
+        },
+        "EUR": {
+          "currency": "EUR",
+          "grantedMinor": 10000000,
+          "utilizedMinor": 2000000,
+          "availableMinor": 8000000,
+          "utilization": 0.2
+        }
+      }
+    },
+    {
+      "group": "INTRADAY",
+      "amounts": {
+        "PLN": {
+          "currency": "PLN",
+          "grantedMinor": 40000000,
+          "utilizedMinor": 8000000,
+          "availableMinor": 32000000,
+          "utilization": 0.2
+        },
+        "EUR": {
+          "currency": "EUR",
+          "grantedMinor": 10000000,
+          "utilizedMinor": 2000000,
+          "availableMinor": 8000000,
+          "utilization": 0.2
+        }
+      }
+    },
+    {
+      "group": "INVESTMENT",
+      "amounts": {
+        "PLN": {
+          "currency": "PLN",
+          "grantedMinor": 40000000,
+          "utilizedMinor": 8000000,
+          "availableMinor": 32000000,
+          "utilization": 0.2
+        },
+        "EUR": {
+          "currency": "EUR",
+          "grantedMinor": 10000000,
+          "utilizedMinor": 2000000,
+          "availableMinor": 8000000,
+          "utilization": 0.2
+        }
+      }
+    },
+    {
+      "group": "CARD",
+      "amounts": {
+        "PLN": {
+          "currency": "PLN",
+          "grantedMinor": 40000000,
+          "utilizedMinor": 8000000,
+          "availableMinor": 32000000,
+          "utilization": 0.2
+        },
+        "EUR": {
+          "currency": "EUR",
+          "grantedMinor": 10000000,
+          "utilizedMinor": 2000000,
+          "availableMinor": 8000000,
+          "utilization": 0.2
+        }
+      }
+    },
+    {
+      "group": "OTHER",
+      "amounts": {
+        "PLN": {
+          "currency": "PLN",
+          "grantedMinor": 40000000,
+          "utilizedMinor": 8000000,
+          "availableMinor": 32000000,
+          "utilization": 0.2
+        },
+        "EUR": {
+          "currency": "EUR",
+          "grantedMinor": 10000000,
+          "utilizedMinor": 2000000,
+          "availableMinor": 8000000,
+          "utilization": 0.2
+        }
+      }
+    }
+  ],
+  "view": {
+    "matchingCount": 1,
+    "contextKeys": ["lending-5", "lending-4", "lending-3", "lending-2", "lending-1"],
+    "autoExpandedKeys": ["lending-5", "lending-4", "lending-3", "lending-2", "lending-1"],
+    "groupCounts": {
+      "LENDING": 8,
+      "TFS": 1,
+      "INTRADAY": 2,
+      "INVESTMENT": 1,
+      "CARD": 1,
+      "OTHER": 1
+    },
+    "facilityTypes": [
+      "AGGREGATED",
+      "CARD LIMIT",
+      "INTRADAY LIMIT",
+      "INVESTMENT",
+      "MULTIPURPOSE",
+      "OVERDRAFT",
+      "TERM LOAN",
+      "TFS"
+    ]
+  }
+}

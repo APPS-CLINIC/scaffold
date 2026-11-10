@@ -64,6 +64,10 @@ The full, indexed list lives in [`adr/README.md`](adr/README.md).
 - [Facilities hierarchy PoC](facilities-poc.md) — development-only six-level
   tree, proposed frontend model, URL filters and backend handover questions.
 
+- [Facilities backend contract — Polish](facilities-backend-contract.pl.md) —
+  backend handover: current DTOs, lazy loading, cursor paging, query semantics,
+  generated response examples and integration decisions to agree.
+
 - [Limits view — component inventory](limits-view-component-inventory.md) —
   which components of the limits table the scaffold already has, which are new,
   and which come from IWA.
