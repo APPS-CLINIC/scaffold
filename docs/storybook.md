@@ -106,3 +106,22 @@ Popover tests must retain the button ref when the positioning layer clones its
 anchor. The local test adapters exercise both boundaries; the real IWA run is
 still required. When transferring tests into another application, transfer their
 helpers and component dependencies together and verify the same source revision.
+
+TypeScript errors for missing props identify mismatched component revisions:
+
+| Error                                                               | Source to transfer together                                                                                                                            |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `loading` is missing from `FacilitiesViewProps`                     | `src/features/facilities/FacilitiesView.tsx`, including its props, defaults and render logic, alongside `src/dev/facilities/FacilitiesPreviewPage.tsx` |
+| `allExpanded` is missing from `TableActionsProps`                   | `src/ui/TableActions.tsx`, including the owner-supplied completeness check                                                                             |
+| `getHasChildren` or `onExpand` is missing from `TreeDataTableProps` | `src/ui/TreeDataTable/TreeDataTable.types.ts`, `TreeDataTable.tsx` and `treeKeys.ts`                                                                   |
+
+Pending tree rendering also uses `getChildrenLoading`, `loadingMore` and the
+shared `TableCellSkeleton`. Transfer its feature row accessor and the UI exports
+with the implementation. Annotating callback parameters does not restore missing
+props or their runtime behavior; update the component contract and implementation
+together.
+
+The real IWA `InlineLink.label` accepts a string. `UnderlinedTextCell` validates
+primitive values before converting its label with `String(value)`; its unavailable
+fallback may remain a React node. Passing the general `renderCellValue` return
+type as a label is too broad even when the current value renders as text.

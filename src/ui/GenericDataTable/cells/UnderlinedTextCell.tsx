@@ -56,7 +56,7 @@ export function UnderlinedTextCell<
       // still reach the anchor).
       className="!cursor-pointer !whitespace-normal !text-[#506579] !no-underline !outline-none break-words font-medium ![text-overflow:clip] hover:!text-[#506579] hover:!no-underline focus:!outline-none focus-visible:!outline-none [&_*]:pointer-events-none [&_*]:!cursor-pointer [&_*]:!whitespace-normal [&_*]:!break-words [&_*]:!no-underline [&_*]:!overflow-visible [&_*]:![text-overflow:clip]"
       innerWrapperClassName="whitespace-normal break-words"
-      label={renderCellValue(value, notAvailable)}
+      label={String(value)}
       url={typeof href === 'function' ? href(row) : href}
       openInNewTab={openInNewTab}
     />
