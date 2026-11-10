@@ -49,6 +49,37 @@ afterEach(() => {
 });
 
 describe('Facilities development preview', () => {
+  it('keeps All and Lending lazy and requests children only after an explicit expansion', async () => {
+    const user = userWithFakeTimers();
+    const { store } = renderPreview();
+    await advance();
+    await user.click(screen.getByRole('button', { name: 'Lending (inc. TFS) (8)' }));
+    await advance(8);
+    expect(screen.queryByRole('link', { name: 'F-1002' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Expand facility F-1001' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    expect(
+      Object.values(store.getState().api.queries).filter(
+        (request) => request?.endpointName === 'getFacilityPreviewChildren',
+      ),
+    ).toHaveLength(0);
+    await user.click(screen.getByRole('button', { name: 'Expand facility F-1001' }));
+    await advance();
+    expect(screen.getByRole('link', { name: 'F-1002' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'F-1003' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'All' }));
+    await advance();
+    expect(screen.getByRole('button', { name: 'Expand facility F-1001' })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    );
+    expect(screen.getByRole('link', { name: 'F-2001' })).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Expand facility F-1001' }));
+    await advance();
+    expect(screen.getByRole('link', { name: 'F-1002' })).toBeInTheDocument();
+  });
   it('loads only the requested branch, continues its sibling page and reuses it after collapse', async () => {
     const user = userWithFakeTimers();
     const { store } = renderPreview();

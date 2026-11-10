@@ -105,9 +105,9 @@ export function filterFacilities(
   }
 
   const result = visit(nodes);
-  const hasConditions = Boolean(
+  // Group selection scopes the forest. Only search/detail filters reveal descendant paths.
+  const revealMatches = Boolean(
     search ||
-    filters.group.length ||
     filters.contractCurrency.length ||
     filters.facilityType.length ||
     filters.commitment.length ||
@@ -122,6 +122,6 @@ export function filterFacilities(
     filters,
     matchingCount,
     contextKeys,
-    autoExpandedKeys: hasConditions ? ancestorKeys : [],
+    autoExpandedKeys: revealMatches ? ancestorKeys : [],
   };
 }

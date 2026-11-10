@@ -69,6 +69,11 @@ independent supplied group totals, never a sum of parents and descendants.
 - Keep seven indicator slots; use the IWA Popover adapter for hover/focus and
   keyboard information. The related-data dialog and facility form are examples.
 
+All and the group filters, including Lending, use the same collapsed-root
+default. Selecting a group never fetches descendants automatically. All selects
+all groups; the separate Expand all action loads and expands the hierarchy.
+See [ADR 0050](adr/0050-group-filters-keep-facilities-lazy.md).
+
 ## Downloaded JSON
 
 Download example data produces **facilities-roots-response.json**. It is the

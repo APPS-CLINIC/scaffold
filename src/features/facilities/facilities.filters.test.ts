@@ -10,6 +10,15 @@ function flatten(nodes: readonly FacilityNode[]): FacilityNode[] {
 const source = facilityPreviewSnapshot.nodes;
 
 describe('Facilities tree filtering', () => {
+  it('keeps the same Lending hierarchy in All and Lending without automatic expansion', () => {
+    const all = filterFacilities(source, { q: '', filters: {} });
+    const lending = filterFacilities(source, { q: '', filters: { group: ['LENDING'] } });
+    const allBranch = all.nodes.find((node) => node.key === 'lending-1');
+    expect(lending.nodes.find((node) => node.key === 'lending-1')).toEqual(allBranch);
+    expect(allBranch).toMatchObject({ hasChildren: true, childrenCount: 1 });
+    expect(all.autoExpandedKeys).toEqual([]);
+    expect(lending.autoExpandedKeys).toEqual([]);
+  });
   it('includes TFS in Lending and does not duplicate nodes when both groups are selected', () => {
     const lending = filterFacilities(source, { q: '', filters: { group: ['LENDING'] } });
     const both = filterFacilities(source, { q: '', filters: { group: ['LENDING', 'TFS'] } });

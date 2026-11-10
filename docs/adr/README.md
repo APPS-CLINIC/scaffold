@@ -65,6 +65,7 @@ keep ADRs at all; use it as the template for new records.
 | [0047](0047-shared-table-fields-cells-and-toolbar.md)             | Shared table fields, cells and toolbar              | Accepted               |
 | [0048](0048-lazy-facilities-preview-data-contract.md)             | Lazy Facilities preview data contract               | Accepted               |
 | [0049](0049-asynchronous-facilities-preview-transport.md)         | Asynchronous Facilities preview transport           | Accepted               |
+| [0050](0050-group-filters-keep-facilities-lazy.md)                | Group filters keep Facilities lazy                  | Accepted               |
 
 ### Step 03 — Scope alignment (discovery)
 
