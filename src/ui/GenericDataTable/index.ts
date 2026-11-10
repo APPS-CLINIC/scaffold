@@ -2,6 +2,7 @@ export { GenericDataTable } from './GenericDataTable';
 export { GenericTableSettings } from './GenericTableSettings';
 export { resolveColumnFields } from './resolveColumnFields';
 export { TableCell, type TableCellProps } from './cells/TableCell';
+export { TableCellSkeleton, type TableCellSkeletonProps } from './cells/TableCellSkeleton';
 export { TableColumnSettingsDialog } from './settings';
 export {
   ActiveArchivalStatusCell,

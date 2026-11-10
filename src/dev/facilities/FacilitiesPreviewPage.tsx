@@ -3,7 +3,12 @@ import type { SetStateAction } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { FacilitiesView } from '@/features/facilities';
-import type { FacilityIndicator, FacilityNode, FacilityRow } from '@/features/facilities';
+import type {
+  FacilityIndicator,
+  FacilityNode,
+  FacilityRow,
+  FacilitySnapshot,
+} from '@/features/facilities';
 import {
   Button,
   CustomizableDialog,
@@ -11,6 +16,7 @@ import {
   DIALOG_FOOTER_CLASS_NAME,
   DialogHeading,
   resolveVisibility,
+  useLoadingPhase,
 } from '@/ui';
 import { useAppDispatch, useAppSelector } from '@/app/hooks';
 import { selectListQuery } from '@/features/urlState/urlState.selectors';
@@ -21,6 +27,8 @@ import {
 } from './facilitiesPreview.api';
 import { getFacilityPreviewDetail } from './facilitiesPreview.service';
 import type { FacilityChildrenRequest, FacilityPreviewQuery } from './facilitiesPreview.service';
+
+const EMPTY_SNAPSHOT: FacilitySnapshot = { asOf: '', nodes: [], summaries: [] };
 
 function flatten(nodes: readonly FacilityNode[]): FacilityNode[] {
   return nodes.flatMap((node) => [node, ...flatten(node.children)]);
@@ -47,7 +55,18 @@ export function FacilitiesPreviewPage() {
   });
   // A currency-only URL change keeps the same service request and cached branches.
   const query = useMemo(() => JSON.parse(requestKey) as FacilityPreviewQuery, [requestKey]);
-  const { currentData: data, isError, refetch } = useGetFacilityPreviewRootsQuery(query);
+  const {
+    currentData: data,
+    data: previousData,
+    isError,
+    isLoading,
+    isFetching,
+    refetch,
+  } = useGetFacilityPreviewRootsQuery(query);
+  const loadingPhase = useLoadingPhase(isFetching, requestKey);
+  const tableLoading = isLoading || loadingPhase !== 'idle';
+  const [toolbarReady, setToolbarReady] = useState(false);
+  if (!toolbarReady && (data !== undefined || isError)) setToolbarReady(true);
   const [fetchChildren] = useLazyGetFacilityPreviewChildrenQuery();
   const loadPage = useCallback(
     async (request: FacilityChildrenRequest, signal?: AbortSignal) => {
@@ -63,7 +82,10 @@ export function FacilitiesPreviewPage() {
     },
     [fetchChildren],
   );
-  const selected = facilityId ? getFacilityPreviewDetail(facilityId) : undefined;
+  const selected = facilityId
+    ? (flatten(data?.snapshot.nodes ?? []).find((node) => node.data.id === facilityId) ??
+      getFacilityPreviewDetail(facilityId))
+    : undefined;
   const readData = useCallback(
     () =>
       dispatch(
@@ -166,17 +188,7 @@ export function FacilitiesPreviewPage() {
           disabled={!data}
         />
       </div>
-      {data ? (
-        <FacilitiesView
-          snapshot={data.snapshot}
-          onLoadChildren={loadChildren}
-          onExpandAll={expandAll}
-          getFacilityHref={(facility) =>
-            '/dev/facilities/' + encodeURIComponent(facility.id) + search
-          }
-          onOpenRelated={(facility, indicator) => setRelated({ facility, indicator })}
-        />
-      ) : isError ? (
+      {isError ? (
         <p role="alert">
           {t('facilities.loadFailed')}{' '}
           <button
@@ -188,9 +200,19 @@ export function FacilitiesPreviewPage() {
             {t('customers.loading.tryAgain')}
           </button>
         </p>
-      ) : (
-        <p role="status">{t('common.loading')}</p>
-      )}
+      ) : null}
+      <FacilitiesView
+        snapshot={data?.snapshot ?? previousData?.snapshot ?? EMPTY_SNAPSHOT}
+        loading={tableLoading || isError}
+        loadingMore={data?.rootPageState === 'loading'}
+        toolbarReady={toolbarReady}
+        onLoadChildren={loadChildren}
+        onExpandAll={expandAll}
+        getFacilityHref={(facility) =>
+          '/dev/facilities/' + encodeURIComponent(facility.id) + search
+        }
+        onOpenRelated={(facility, indicator) => setRelated({ facility, indicator })}
+      />
       {data?.nextRootCursor ? (
         <div>
           {data.rootPageState === 'error' ? <p role="alert">{t('facilities.loadFailed')}</p> : null}

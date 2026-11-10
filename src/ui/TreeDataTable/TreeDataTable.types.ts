@@ -17,6 +17,8 @@ export interface TreeDataTableProps<T extends object> extends Omit<
   getChildren: (row: T) => readonly T[];
   /** Independent of loaded children: an unloaded branch must still be expandable. */
   getHasChildren?: (row: T) => boolean;
+  /** Appends a decorative placeholder beneath a branch while its next page is pending. */
+  getChildrenLoading?: (row: T) => boolean;
   onExpand?: (row: T) => void;
   /** Shared field/cell/filter contract; pagination and row-detail settings do not apply. */
   config: Pick<GenericDataTableConfig<T>, 'fields'>;
@@ -25,5 +27,7 @@ export interface TreeDataTableProps<T extends object> extends Omit<
   labels: TreeDataTableLabels<T>;
   noResults: ReactNode;
   loading?: boolean;
+  /** Appends a placeholder for another root page without hiding loaded rows. */
+  loadingMore?: boolean;
   loadingLabel?: string;
 }

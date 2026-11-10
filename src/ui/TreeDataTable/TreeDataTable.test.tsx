@@ -68,6 +68,69 @@ function ControlledTable() {
 }
 
 describe('TreeDataTable', () => {
+  it('keeps its headers and grid mounted while shared skeleton rows replace real data', () => {
+    const props = {
+      nodes: tree,
+      getKey,
+      getChildren,
+      config,
+      expandedKeys: [],
+      onExpandedKeysChange: vi.fn(),
+      labels,
+      noResults: 'Nothing matches',
+    };
+    const view = render(<TreeDataTable {...props} />);
+    const grid = screen.getByRole('treegrid', { name: labels.table });
+    view.rerender(<TreeDataTable {...props} loading loadingLabel="Loading hierarchy" />);
+    expect(screen.getByRole('treegrid', { name: labels.table })).toBe(grid);
+    expect(screen.getAllByRole('columnheader')).toHaveLength(config.fields.length);
+    expect(screen.getAllByRole('row')).toHaveLength(11);
+    expect(screen.queryByText('Root', { exact: true })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Expand Root' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Nothing matches')).not.toBeInTheDocument();
+    view.rerender(<TreeDataTable {...props} />);
+    expect(screen.getByRole('treegrid', { name: labels.table })).toBe(grid);
+    expect(screen.getByText('Root', { exact: true })).toBeInTheDocument();
+  });
+  it('adds a pending child row while retaining already loaded siblings', () => {
+    const props = {
+      nodes: tree,
+      getKey,
+      getChildren,
+      config,
+      expandedKeys: ['root'],
+      onExpandedKeysChange: vi.fn(),
+      labels,
+      noResults: 'Nothing matches',
+    };
+    const view = render(<TreeDataTable {...props} />);
+    const child = screen.getByText('Child', { exact: true }).closest('tr');
+    const count = screen.getAllByRole('row').length;
+    view.rerender(<TreeDataTable {...props} getChildrenLoading={(node) => node.key === 'root'} />);
+    expect(screen.getByText('Child', { exact: true }).closest('tr')).toBe(child);
+    expect(screen.getAllByRole('row')).toHaveLength(count + 1);
+    view.rerender(<TreeDataTable {...props} />);
+    expect(screen.getAllByRole('row')).toHaveLength(count);
+  });
+  it('keeps received roots visible while another root page is pending', () => {
+    render(
+      <TreeDataTable
+        nodes={tree}
+        getKey={getKey}
+        getChildren={getChildren}
+        config={config}
+        expandedKeys={[]}
+        onExpandedKeysChange={vi.fn()}
+        labels={labels}
+        noResults="Nothing matches"
+        loadingMore
+        loadingLabel="Loading another root page"
+      />,
+    );
+    expect(screen.getByText('Root', { exact: true })).toBeInTheDocument();
+    expect(screen.getAllByRole('row')).toHaveLength(3);
+    expect(screen.getByRole('status')).toHaveTextContent('Loading another root page');
+  });
   it('keeps an unloaded branch expandable using metadata rather than its empty child array', async () => {
     const user = userEvent.setup();
     const onExpand = vi.fn();

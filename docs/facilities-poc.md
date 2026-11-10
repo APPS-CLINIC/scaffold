@@ -76,6 +76,17 @@ default. Selecting a group never fetches descendants automatically. All selects
 all groups; the separate Expand all action loads and expands the hierarchy.
 See [ADR 0050](adr/0050-group-filters-keep-facilities-lazy.md).
 
+## Pending presentation
+
+Facilities uses GenericDataTable's shared TableCellSkeleton renderer. Initial
+loading retains configured column headers, renders placeholder rows and uses
+ListToolbarSkeleton above the grid. Later queries keep the toolbar mounted and
+reuse useLoadingPhase (300 ms delay, 500 ms minimum visible interval).
+
+A pending child/root continuation adds placeholders at the requested location;
+already received siblings remain visible. Placeholder nodes never enter the
+transport DTO or downloaded JSON. See [ADR 0052](adr/0052-shared-pending-state-for-flat-and-tree-tables.md).
+
 ## Downloaded JSON
 
 Download example data produces **facilities-roots-response.json**. It is the

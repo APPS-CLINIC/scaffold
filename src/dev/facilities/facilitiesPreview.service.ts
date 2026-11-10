@@ -6,6 +6,7 @@ import type {
   FacilityNode,
   FacilityNodeDto,
   FacilityRootsResponse,
+  FacilitySnapshot,
 } from '@/features/facilities';
 import { facilityPreviewCatalogue, facilityPreviewSnapshot } from './facilities.fixture';
 
@@ -16,8 +17,16 @@ export interface FacilityChildrenRequest {
   cursor?: string;
 }
 
-const ROOT_PAGE_SIZE = 50;
-const CHILD_PAGE_SIZE = 1; // A small page deliberately demonstrates per-branch continuation.
+export interface FacilityPreviewSource {
+  catalogue: readonly FacilityNodeDto[];
+  snapshot: FacilitySnapshot;
+  rootPageSize?: number;
+  childPageSize?: number;
+}
+const defaultSource: FacilityPreviewSource = {
+  catalogue: facilityPreviewCatalogue,
+  snapshot: facilityPreviewSnapshot,
+};
 function flatten(nodes: readonly FacilityNode[]): FacilityNode[] {
   return nodes.flatMap((node) => [node, ...flatten(node.children)]);
 }
@@ -52,13 +61,14 @@ function page(
 export function getFacilityPreviewRoots(
   query: FacilityPreviewQuery,
   cursor?: string,
+  source: FacilityPreviewSource = defaultSource,
 ): FacilityRootsResponse {
-  const result = filterFacilities(facilityPreviewSnapshot.nodes, query);
+  const result = filterFacilities(source.snapshot.nodes, query);
   return {
-    ...page(result.nodes, null, ROOT_PAGE_SIZE, cursor),
+    ...page(result.nodes, null, source.rootPageSize ?? 50, cursor),
     parentKey: null,
-    asOf: facilityPreviewSnapshot.asOf,
-    summaries: facilityPreviewSnapshot.summaries,
+    asOf: source.snapshot.asOf,
+    summaries: source.snapshot.summaries,
     view: {
       matchingCount: result.matchingCount,
       contextKeys: result.contextKeys,
@@ -66,26 +76,24 @@ export function getFacilityPreviewRoots(
       groupCounts: Object.fromEntries(
         FACILITY_GROUPS.map((group) => [
           group,
-          facilityPreviewCatalogue.filter((node) => includesFacilityGroup(node.data.group, [group]))
-            .length,
+          source.catalogue.filter((node) => includesFacilityGroup(node.data.group, [group])).length,
         ]),
       ) as Record<(typeof FACILITY_GROUPS)[number], number>,
-      facilityTypes: [...new Set(facilityPreviewCatalogue.map((node) => node.data.type))].sort(),
+      facilityTypes: [...new Set(source.catalogue.map((node) => node.data.type))].sort(),
     },
   };
 }
 
 /** Simulated service operation: direct children only, using a cursor scoped to the parent/query. */
-export function getFacilityPreviewChildren({
-  query,
-  parentKey,
-  cursor,
-}: FacilityChildrenRequest): FacilityChildrenResponse {
-  const result = filterFacilities(facilityPreviewSnapshot.nodes, query);
-  if (parentKey === null) return page(result.nodes, null, ROOT_PAGE_SIZE, cursor);
+export function getFacilityPreviewChildren(
+  { query, parentKey, cursor }: FacilityChildrenRequest,
+  source: FacilityPreviewSource = defaultSource,
+): FacilityChildrenResponse {
+  const result = filterFacilities(source.snapshot.nodes, query);
+  if (parentKey === null) return page(result.nodes, null, source.rootPageSize ?? 50, cursor);
   const parent = flatten(result.nodes).find((node) => node.key === parentKey);
   if (!parent) throw new Error('Unknown example parent');
-  return page(parent.children, parentKey, CHILD_PAGE_SIZE, cursor);
+  return page(parent.children, parentKey, source.childPageSize ?? 1, cursor);
 }
 
 /** Detail data is looked up separately from the partially loaded table. */

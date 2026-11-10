@@ -66,6 +66,8 @@ keep ADRs at all; use it as the template for new records.
 | [0048](0048-lazy-facilities-preview-data-contract.md)             | Lazy Facilities preview data contract               | Accepted               |
 | [0049](0049-asynchronous-facilities-preview-transport.md)         | Asynchronous Facilities preview transport           | Accepted               |
 | [0050](0050-group-filters-keep-facilities-lazy.md)                | Group filters keep Facilities lazy                  | Accepted               |
+| [0051](0051-storybook-for-table-components.md)                    | Storybook for tables and shared list controls       | Accepted               |
+| [0052](0052-shared-pending-state-for-flat-and-tree-tables.md)     | Shared pending state for flat and tree tables       | Accepted               |
 
 ### Step 03 — Scope alignment (discovery)
 

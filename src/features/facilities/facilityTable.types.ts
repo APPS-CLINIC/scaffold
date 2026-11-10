@@ -43,3 +43,5 @@ export function toFacilityTableRows(
 export const facilityTableRowKey = (row: FacilityTableRow) => row.key;
 export const facilityTableRowChildren = (row: FacilityTableRow) => row.children;
 export const facilityTableRowHasChildren = (row: FacilityTableRow) => row.hasChildren;
+export const facilityTableRowChildrenLoading = (row: FacilityTableRow) =>
+  row.childrenState === 'loading';

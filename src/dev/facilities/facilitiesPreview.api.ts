@@ -5,7 +5,7 @@ import type {
   FacilitySnapshot,
   FacilityChildrenResponse,
 } from '@/features/facilities';
-import { facilitiesPreviewTransport } from './facilitiesPreview.transport';
+import { getFacilitiesPreviewTransport } from './facilitiesPreview.transport';
 import type { FacilityChildrenRequest, FacilityPreviewQuery } from './facilitiesPreview.service';
 
 interface PreviewData {
@@ -34,9 +34,9 @@ function find(nodes: readonly FacilityNode[], key: string): FacilityNode | undef
 const rootsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getFacilityPreviewRoots: builder.query<PreviewData, FacilityPreviewQuery>({
-      queryFn: async (query, { signal }) => {
+      queryFn: async (query, { signal, extra }) => {
         try {
-          const response = await facilitiesPreviewTransport.roots(query, signal);
+          const response = await getFacilitiesPreviewTransport(extra).roots(query, signal);
           return {
             data: {
               response,
@@ -61,9 +61,9 @@ const rootsApi = baseApi.injectEndpoints({
 export const facilitiesPreviewApi = rootsApi.injectEndpoints({
   endpoints: (builder) => ({
     getFacilityPreviewChildren: builder.query<FacilityChildrenResponse, FacilityChildrenRequest>({
-      queryFn: async (arg, { signal }) => {
+      queryFn: async (arg, { signal, extra }) => {
         try {
-          return { data: await facilitiesPreviewTransport.children(arg, signal) };
+          return { data: await getFacilitiesPreviewTransport(extra).children(arg, signal) };
         } catch {
           return { error: { status: 'CUSTOM_ERROR', error: 'Could not load the example branch' } };
         }

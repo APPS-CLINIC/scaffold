@@ -35,7 +35,7 @@ function renderPreview(path = '/dev/facilities') {
     { initialEntries: [path] },
   );
 }
-async function advance(pages = 1) {
+async function advance(pages = 2) {
   await act(async () => {
     await vi.advanceTimersByTimeAsync(pages * FACILITIES_PREVIEW_DELAY_MS);
   });
@@ -49,6 +49,38 @@ afterEach(() => {
 });
 
 describe('Facilities development preview', () => {
+  it('uses the generic table pending pattern and keeps the same grid after the response', async () => {
+    userWithFakeTimers();
+    renderPreview();
+    const grid = screen.getByRole('treegrid', { name: 'Facilities' });
+    expect(grid).toHaveAttribute('aria-busy', 'true');
+    expect(within(grid).getAllByRole('columnheader').length).toBeGreaterThan(0);
+    expect(within(grid).getAllByRole('row')).toHaveLength(11);
+    expect(screen.queryByRole('group', { name: 'Facility groups' })).not.toBeInTheDocument();
+    await advance(1);
+    expect(screen.getByRole('treegrid', { name: 'Facilities' })).toBe(grid);
+    expect(grid).toHaveAttribute('aria-busy', 'true');
+    await advance(1);
+    expect(screen.getByRole('treegrid', { name: 'Facilities' })).toBe(grid);
+    expect(grid).toHaveAttribute('aria-busy', 'false');
+    expect(screen.getByRole('button', { name: 'Expand facility F-1001' })).toBeVisible();
+  });
+  it('keeps the toolbar during subsequent requests and delays the loading indicator', async () => {
+    const user = userWithFakeTimers();
+    renderPreview();
+    await advance();
+    const grid = screen.getByRole('treegrid', { name: 'Facilities' });
+    await user.click(screen.getByRole('button', { name: 'Lending (inc. TFS) (8)' }));
+    expect(grid).toHaveAttribute('aria-busy', 'false');
+    await advance(0.6);
+    expect(grid).toHaveAttribute('aria-busy', 'true');
+    expect(screen.getByRole('button', { name: 'All' })).toBeVisible();
+    expect(screen.getByPlaceholderText('Search the list')).toBeVisible();
+    expect(screen.getByRole('treegrid', { name: 'Facilities' })).toBe(grid);
+    await advance();
+    expect(grid).toHaveAttribute('aria-busy', 'false');
+    expect(screen.getByRole('button', { name: 'Expand facility F-1001' })).toBeVisible();
+  });
   it('keeps All and Lending lazy and requests children only after an explicit expansion', async () => {
     const user = userWithFakeTimers();
     const { store } = renderPreview();

@@ -54,6 +54,11 @@ The full, indexed list lives in [`adr/README.md`](adr/README.md).
   (the "List settings" dialog, persisted per browser), and development preview
   data.
 
+## Component catalogue
+
+- [Table Storybook](storybook.md) — tables, filters, toolbar/actions, column
+  settings, feedback and cells, including asynchronous scenarios and validation.
+
 ## Screen analyses
 
 - [Facilities hierarchy PoC](facilities-poc.md) — development-only six-level

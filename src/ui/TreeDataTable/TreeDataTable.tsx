@@ -8,19 +8,34 @@ import type { TreeNode } from 'primereact/treenode';
 import { twMerge } from 'iwa-react-components';
 import { useTranslation } from 'react-i18next';
 import { TableCell } from '../GenericDataTable/cells/TableCell';
+import { TableCellSkeleton } from '../GenericDataTable/cells/TableCellSkeleton';
 import type { TreeDataTableProps } from './TreeDataTable.types';
+
+type TreeRenderData<T> = { row: T } | { skeletonIndex: number };
+
+function skeletonNode(key: string, index: number): TreeNode {
+  return { key, data: { skeletonIndex: index }, children: [], leaf: true };
+}
 
 function toPrimeNodes<T>(
   nodes: readonly T[],
   getKey: (row: T) => string,
   getChildren: (row: T) => readonly T[],
   getHasChildren?: (row: T) => boolean,
+  getChildrenLoading?: (row: T) => boolean,
 ): TreeNode[] {
   return nodes.map((node) => {
-    const children = toPrimeNodes(getChildren(node), getKey, getChildren, getHasChildren);
+    const children = toPrimeNodes(
+      getChildren(node),
+      getKey,
+      getChildren,
+      getHasChildren,
+      getChildrenLoading,
+    );
+    if (getChildrenLoading?.(node)) children.push(skeletonNode(`__loading-${getKey(node)}`, 0));
     return {
       key: getKey(node),
-      data: node,
+      data: { row: node } satisfies TreeRenderData<T>,
       children,
       leaf: !(getHasChildren?.(node) ?? children.length > 0),
     };
@@ -33,6 +48,7 @@ function TreeDataTableInner<T extends object>(
     getKey,
     getChildren,
     getHasChildren,
+    getChildrenLoading,
     onExpand,
     config,
     expandedKeys,
@@ -40,6 +56,7 @@ function TreeDataTableInner<T extends object>(
     labels,
     noResults,
     loading = false,
+    loadingMore = false,
     loadingLabel,
     className,
     ...rest
@@ -48,10 +65,13 @@ function TreeDataTableInner<T extends object>(
 ) {
   const { t, i18n } = useTranslation();
   const locale = i18n.resolvedLanguage ?? i18n.language;
-  const value = useMemo(
-    () => toPrimeNodes(nodes, getKey, getChildren, getHasChildren),
-    [nodes, getKey, getChildren, getHasChildren],
-  );
+  const value = useMemo(() => {
+    if (loading)
+      return Array.from({ length: 10 }, (_, index) => skeletonNode(`__loading-${index}`, index));
+    const result = toPrimeNodes(nodes, getKey, getChildren, getHasChildren, getChildrenLoading);
+    if (loadingMore) result.push(skeletonNode('__loading-root-page', 0));
+    return result;
+  }, [nodes, getKey, getChildren, getHasChildren, getChildrenLoading, loading, loadingMore]);
   const expanded = useMemo(
     () => Object.fromEntries(expandedKeys.map((key) => [key, true])),
     [expandedKeys],
@@ -59,15 +79,22 @@ function TreeDataTableInner<T extends object>(
 
   return (
     <div ref={ref} className={twMerge('min-w-0 max-w-full', className)} {...rest}>
-      {loading ? <p role="status">{loadingLabel}</p> : null}
+      {loading || loadingMore ? (
+        <span className="sr-only" role="status" aria-live="polite">
+          {loadingLabel ?? t('common.loading')}
+        </span>
+      ) : null}
       <TreeTable
-        value={loading ? [] : value}
+        value={value}
         expandedKeys={expanded}
         onToggle={(event) =>
           onExpandedKeysChange(Object.keys(event.value).filter((key) => event.value[key]))
         }
         paginator={false}
-        onExpand={(event) => onExpand?.(event.node.data as T)}
+        onExpand={(event) => {
+          const data = event.node.data as TreeRenderData<T>;
+          if ('row' in data) onExpand?.(data.row);
+        }}
         emptyMessage={loading ? <span aria-hidden="true" /> : <div role="status">{noResults}</div>}
         tableStyle={{
           minWidth: config.fields.reduce((width, column) => width + column.width, 0),
@@ -85,6 +112,8 @@ function TreeDataTableInner<T extends object>(
           wrapper: { className: 'overflow-x-auto' },
         }}
         togglerTemplate={(node, options) => {
+          const data = node.data as TreeRenderData<T>;
+          if (!('row' in data)) return null;
           if (node.leaf) {
             return (
               <button
@@ -97,7 +126,7 @@ function TreeDataTableInner<T extends object>(
               />
             );
           }
-          const row = node.data as T;
+          const row = data.row;
           return (
             <button
               type="button"
@@ -130,20 +159,24 @@ function TreeDataTableInner<T extends object>(
               headerCell: { className: 'px-3 py-3 font-bold' },
               bodyCell: { role: 'gridcell', className: 'px-3 py-3' },
             }}
-            body={(node: TreeNode, options) => (
-              <div
-                onKeyDown={(event) => event.stopPropagation()}
-                className="inline-block max-w-full align-top"
-              >
-                <TableCell
-                  column={column}
-                  row={node.data as T}
-                  rowIndex={options.rowIndex}
-                  locale={locale}
-                  notAvailable={labels.notAvailable}
-                />
-              </div>
-            )}
+            body={(node: TreeNode, options) => {
+              const data = node.data as TreeRenderData<T>;
+              if (!('row' in data)) return <TableCellSkeleton rowIndex={data.skeletonIndex} />;
+              return (
+                <div
+                  onKeyDown={(event) => event.stopPropagation()}
+                  className="inline-block max-w-full align-top"
+                >
+                  <TableCell
+                    column={column}
+                    row={data.row}
+                    rowIndex={options.rowIndex}
+                    locale={locale}
+                    notAvailable={labels.notAvailable}
+                  />
+                </div>
+              );
+            }}
           />
         ))}
       </TreeTable>

@@ -56,7 +56,7 @@ export function FacilityBasicCell({
         <div>{t('facilities.contractCurrency', { currency: row.contractCurrency })}</div>
         {row.isContext ? <div className="text-xs">{t('facilities.context')}</div> : null}
         {row.childrenState === 'loading' ? (
-          <p className="my-1 text-xs" role="status">
+          <p className="sr-only" role="status">
             {t('facilities.loadingChildren')}
           </p>
         ) : null}

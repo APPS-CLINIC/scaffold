@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/app/hooks';
 import { selectListQuery } from '@/features/urlState/urlState.selectors';
@@ -7,6 +7,7 @@ import { formatIsoDmyDate } from '@/i18n/dateFormats';
 import type { MessageKey } from '@/i18n/messages/pl';
 import {
   GenericSearch,
+  ListToolbarSkeleton,
   getExpandableTreeKeys,
   pickTableFilters,
   replaceTableFilters,
@@ -23,6 +24,7 @@ import {
   facilityTableRowChildren,
   facilityTableRowKey,
   facilityTableRowHasChildren,
+  facilityTableRowChildrenLoading,
   toFacilityTableRows,
 } from './facilityTable.types';
 import {
@@ -57,6 +59,9 @@ function allNodes(nodes: readonly FacilityNode[]): FacilityNode[] {
 
 export interface FacilitiesViewProps {
   snapshot: FacilitySnapshot;
+  loading?: boolean;
+  loadingMore?: boolean;
+  toolbarReady?: boolean;
   getFacilityHref: (facility: FacilityRow) => string;
   onOpenRelated: (facility: FacilityRow, indicator: FacilityIndicator) => void;
   onLoadChildren?: (key: string) => Promise<unknown>;
@@ -66,12 +71,16 @@ export interface FacilitiesViewProps {
 /** Loaded-hierarchy presentation; the owner supplies data/loading intents, the URL owns queries. */
 export function FacilitiesView({
   snapshot,
+  loading = false,
+  loadingMore = false,
+  toolbarReady = true,
   getFacilityHref,
   onOpenRelated,
   onLoadChildren,
   onExpandAll,
 }: FacilitiesViewProps) {
   const { t, i18n } = useTranslation();
+  const headingId = useId();
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const query = useAppSelector(selectListQuery);
   const { setQuery } = useListQueryState();
@@ -190,99 +199,110 @@ export function FacilitiesView({
   }
 
   return (
-    <section aria-labelledby="facilities-title" className="min-w-0 rounded bg-[var(--surface)] p-5">
-      <h2 id="facilities-title" className="m-0 text-lg font-bold">
+    <section aria-labelledby={headingId} className="min-w-0 rounded bg-[var(--surface)] p-5">
+      <h2 id={headingId} className="m-0 text-lg font-bold">
         {t('facilities.title')}
       </h2>
-      <p className="mb-6 mt-2 text-sm">
-        {t('customers.dataAsOf')}{' '}
-        <time dateTime={snapshot.asOf}>{formatIsoDmyDate(snapshot.asOf, locale)}</time>
-      </p>
-      <div role="group" aria-label={t('facilities.groups')} className="mb-6 flex flex-wrap gap-2">
-        {[null, ...FACILITY_GROUPS].map((group) => {
-          const selected =
-            group === null
-              ? result.filters.group.length === 0
-              : result.filters.group.includes(group);
-          return (
-            <button
-              key={group ?? 'all'}
-              type="button"
-              aria-pressed={selected}
-              className={twMerge(
-                'rounded-full border border-[var(--accent)] px-3 py-1 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]',
-                selected
-                  ? 'bg-[var(--accent)] text-white'
-                  : 'bg-[var(--surface)] text-[var(--accent)]',
-              )}
-              onClick={() => changeGroups(group)}
-            >
-              {selected ? (
-                <span aria-hidden="true" className="mr-1">
-                  ✓
-                </span>
-              ) : null}
-              {group === null
-                ? t('facilities.group.all')
-                : t(FACILITY_GROUP_LABELS[group]) + ' (' + groupCounts[group] + ')'}
-            </button>
-          );
-        })}
-      </div>
-      <section
-        aria-label={t('facilities.summary.title')}
-        className="mb-6 rounded bg-[var(--surface-muted)] p-4"
-      >
-        <h3 className="mb-3 mt-0 text-base font-bold">{t('facilities.summary.title')}</h3>
-        <dl className="m-0 grid gap-4 sm:grid-cols-3">
-          {(['grantedMinor', 'utilizedMinor', 'availableMinor'] as const).map((field) => (
-            <div key={field}>
-              <dt className="text-sm text-[var(--muted)]">{t(AMOUNT_LABELS[field])}</dt>
-              <dd className="m-0 mt-1 font-bold tabular-nums">
-                {formatFacilityAmount(summary[field], summary.currency, locale)}
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </section>
-      <TableToolbar
-        filters={
-          <TableFilters
-            fields={fields}
-            values={pickTableFilters(ownedValues, fields)}
-            onChange={(next) =>
-              setQuery(
-                { filters: replaceTableFilters(query.filters, fields, next) },
-                { resetPage: false },
-              )
+      {toolbarReady ? (
+        <>
+          <p className="mb-6 mt-2 text-sm">
+            {t('customers.dataAsOf')}{' '}
+            <time dateTime={snapshot.asOf}>{formatIsoDmyDate(snapshot.asOf, locale)}</time>
+          </p>
+          <div
+            role="group"
+            aria-label={t('facilities.groups')}
+            className="mb-6 flex flex-wrap gap-2"
+          >
+            {[null, ...FACILITY_GROUPS].map((group) => {
+              const selected =
+                group === null
+                  ? result.filters.group.length === 0
+                  : result.filters.group.includes(group);
+              return (
+                <button
+                  key={group ?? 'all'}
+                  type="button"
+                  aria-pressed={selected}
+                  className={twMerge(
+                    'rounded-full border border-[var(--accent)] px-3 py-1 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]',
+                    selected
+                      ? 'bg-[var(--accent)] text-white'
+                      : 'bg-[var(--surface)] text-[var(--accent)]',
+                  )}
+                  onClick={() => changeGroups(group)}
+                >
+                  {selected ? (
+                    <span aria-hidden="true" className="mr-1">
+                      ✓
+                    </span>
+                  ) : null}
+                  {group === null
+                    ? t('facilities.group.all')
+                    : t(FACILITY_GROUP_LABELS[group]) + ' (' + groupCounts[group] + ')'}
+                </button>
+              );
+            })}
+          </div>
+          <section
+            aria-label={t('facilities.summary.title')}
+            className="mb-6 rounded bg-[var(--surface-muted)] p-4"
+          >
+            <h3 className="mb-3 mt-0 text-base font-bold">{t('facilities.summary.title')}</h3>
+            <dl className="m-0 grid gap-4 sm:grid-cols-3">
+              {(['grantedMinor', 'utilizedMinor', 'availableMinor'] as const).map((field) => (
+                <div key={field}>
+                  <dt className="text-sm text-[var(--muted)]">{t(AMOUNT_LABELS[field])}</dt>
+                  <dd className="m-0 mt-1 font-bold tabular-nums">
+                    {formatFacilityAmount(summary[field], summary.currency, locale)}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+          <TableToolbar
+            filters={
+              <TableFilters
+                fields={fields}
+                values={pickTableFilters(ownedValues, fields)}
+                onChange={(next) =>
+                  setQuery(
+                    { filters: replaceTableFilters(query.filters, fields, next) },
+                    { resetPage: false },
+                  )
+                }
+              />
+            }
+            search={
+              <GenericSearch
+                value={query.q}
+                onSearch={(q) => setQuery({ q }, { replace: true, resetPage: false })}
+                placeholder={t('customers.search.placeholder')}
+              />
+            }
+            actions={
+              <TableActions
+                expandableKeys={loading ? [] : branchKeys}
+                expandedKeys={loading ? [] : expandedKeys}
+                allExpanded={
+                  branchKeys.length > 0 &&
+                  branchKeys.every((key) => expandedKeys.includes(key)) &&
+                  !allNodes(result.nodes).some(
+                    (node) =>
+                      node.hasChildren &&
+                      (node.childrenState !== 'loaded' || node.nextCursor !== null),
+                  )
+                }
+                onExpandedKeysChange={(keys) => {
+                  if (!expandingAll) void changeAllExpansion(keys);
+                }}
+              />
             }
           />
-        }
-        search={
-          <GenericSearch
-            value={query.q}
-            onSearch={(q) => setQuery({ q }, { replace: true, resetPage: false })}
-            placeholder={t('customers.search.placeholder')}
-          />
-        }
-        actions={
-          <TableActions
-            expandableKeys={branchKeys}
-            expandedKeys={expandedKeys}
-            allExpanded={
-              branchKeys.length > 0 &&
-              branchKeys.every((key) => expandedKeys.includes(key)) &&
-              !allNodes(result.nodes).some(
-                (node) =>
-                  node.hasChildren && (node.childrenState !== 'loaded' || node.nextCursor !== null),
-              )
-            }
-            onExpandedKeysChange={(keys) => {
-              if (!expandingAll) void changeAllExpansion(keys);
-            }}
-          />
-        }
-      />
+        </>
+      ) : (
+        <ListToolbarSkeleton />
+      )}
       {expandingAll ? (
         <p role="status">
           {t('facilities.loadingAll')}{' '}
@@ -299,20 +319,26 @@ export function FacilitiesView({
           </button>
         </p>
       ) : null}
-      <p role="status" className="sr-only">
-        {t('facilities.results', { count: result.matchingCount })}
-      </p>
+      {!loading ? (
+        <p role="status" className="sr-only">
+          {t('facilities.results', { count: result.matchingCount })}
+        </p>
+      ) : null}
       <TreeDataTable
         nodes={tableRows}
         getKey={facilityTableRowKey}
         getChildren={facilityTableRowChildren}
         getHasChildren={facilityTableRowHasChildren}
+        getChildrenLoading={facilityTableRowChildrenLoading}
+        loading={loading}
+        loadingMore={loadingMore}
+        loadingLabel={t('common.loading')}
         onExpand={(row) => {
           if (row.childrenState === 'unloaded' || row.childrenState === 'error')
             void onLoadChildren?.(row.key).catch(() => undefined);
         }}
         config={config}
-        expandedKeys={expandedKeys}
+        expandedKeys={loading ? [] : expandedKeys}
         onExpandedKeysChange={setExpandedKeys}
         labels={{
           table: t('facilities.title'),

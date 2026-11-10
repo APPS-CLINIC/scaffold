@@ -155,6 +155,18 @@ Read the URL-driven query state via `selectListQuery` (selector) or
 `useListQueryState` (write hook), and set `VITE_API_BASE_URL` (see
 `.env.example`) to point at your backend.
 
+## Component catalogue
+
+Run `npm run storybook` and open **http://localhost:6006** for the table/component
+catalogue. It covers GenericDataTable, TreeDataTable, Facilities and shared list
+controls, with isolated state and asynchronous data scenarios. Build the static
+catalogue with `npm run build-storybook`; run browser interactions in headless
+Chromium with `npm run test-storybook`.
+
+Storybook imports the real private UI packages. Test doubles remain exclusive to
+Vitest; this workspace's missing-package validation limitation still applies.
+See [the catalogue guide](docs/storybook.md) for scenarios, commands and checks.
+
 ## UI layer
 
 The scaffold includes the IWA Components / PrimeReact dependency stack while

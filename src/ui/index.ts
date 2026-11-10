@@ -72,6 +72,7 @@ export {
   GenericDataTable,
   GenericTableSettings,
   TableCell,
+  TableCellSkeleton,
   TableColumnSettingsDialog,
   ActiveArchivalStatusCell,
   DateCell,
@@ -96,6 +97,7 @@ export {
   type GenericDataTableSortOrder,
   type GenericTableSettingsProps,
   type TableCellProps,
+  type TableCellSkeletonProps,
   type TableColumnOption,
   type TableColumnSettingsDialogProps,
 } from './GenericDataTable';

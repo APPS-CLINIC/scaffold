@@ -628,3 +628,17 @@ branches recurse through the application adapter while continuing to use IWA
 for each rendered item. Keep route matching, active-ancestor calculation, and
 branch expansion in the resolver; compose a separate semantic expand/collapse
 button only because the installed IWA item does not provide one.
+
+## Component catalogue
+
+Run `npm run storybook` for the shared tables, controls, cells and feedback
+examples. The catalogue renders the existing exports and isolates state per
+story. See [the catalogue guide](../../docs/storybook.md).
+
+### Shared pending rows
+
+`TableCellSkeleton` is the decorative cell placeholder shared by GenericDataTable
+and TreeDataTable. Both keep their configured headers while loading. TreeDataTable
+can append a pending root row with `loadingMore`, or a pending child row through
+`getChildrenLoading`; existing rows stay visible during continuation. These
+placeholder nodes remain internal to the adapter and never reach row callbacks.
