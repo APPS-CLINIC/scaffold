@@ -1,9 +1,11 @@
 import { useId } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, userEvent, within } from 'storybook/test';
 import { DateRangeFilter, MultiSelectFilter, SelectFilter, TextFilter } from '@/ui';
 import { useListQueryState } from '@/features/urlState/useListQueryState';
 import { statusOptions } from '../tables/tableFixtures';
 import { AsyncAdvisorFilter } from './asyncOptions.fixture';
+import { storyText } from '../storyText';
 
 function FilterExample({
   kind = 'multiple',
@@ -72,7 +74,25 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const MultipleSelection: Story = {};
-export const SingleSelection: Story = { args: { kind: 'single' } };
+export const SingleSelection: Story = {
+  args: { kind: 'single' },
+  parameters: { docs: { story: { inline: false } } },
+  play: async ({ canvasElement, globals }) => {
+    const canvas = within(canvasElement);
+    const body = within(canvasElement.ownerDocument.body);
+    const t = storyText(globals);
+    const input = canvas.getByLabelText('Example filter', { selector: 'input' });
+    input.focus();
+    await expect(input).toHaveFocus();
+    await userEvent.keyboard('{ArrowDown}');
+    const list = await body.findByRole('listbox');
+    await expect(list).toBeVisible();
+    await userEvent.click(within(list).getByRole('option', { name: t('common.status.active') }));
+    await expect(canvas.getByRole('status', { name: 'Filter values' })).toHaveTextContent(
+      '"ACTIVE"',
+    );
+  },
+};
 export const Text: Story = { args: { kind: 'text' } };
 export const DateRange: Story = { args: { kind: 'date' } };
 export const OptionsLoading: Story = { args: { state: 'loading' } };

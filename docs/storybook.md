@@ -91,3 +91,18 @@ scenario tests under the existing Vitest-only aliases. They do not establish
 that the real design system passes visual or accessibility checks.
 
 See [ADR 0051](adr/0051-storybook-for-table-components.md).
+
+## Diagnosing failures after transferring code
+
+If `getExpandableTreeKeys` returns no keys for a root with `hasChildren: true`
+and `children: []`, check that `src/ui/TreeDataTable/treeKeys.ts` accepts and uses
+the fourth `getHasChildren` argument, including recursive calls. Facilities
+passes `facilityNodeHasChildren` in `FacilitiesView`. An older helper that checks
+only the loaded array disables Expand all before it can request any descendants.
+The pure helper and root-only owner tests cover this without fetching the tree.
+
+Select tests must exercise the dropdown rather than assume native select markup.
+Popover tests must retain the button ref when the positioning layer clones its
+anchor. The local test adapters exercise both boundaries; the real IWA run is
+still required. When transferring tests into another application, transfer their
+helpers and component dependencies together and verify the same source revision.

@@ -7,6 +7,7 @@ import { UrlStateSync } from '@/features/urlState/UrlStateSync';
 import i18n from '@/i18n';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import { userWithFakeTimers } from '@/test/userWithFakeTimers';
+import { chooseDropdownOption } from '@/test/chooseDropdownOption';
 import { FacilitiesView } from './FacilitiesView';
 import type { FacilitiesViewProps } from './FacilitiesView';
 
@@ -55,6 +56,23 @@ function renderView(path = '/dev/facilities', extra: Partial<FacilitiesViewProps
 const url = () => screen.getByRole('status', { name: 'Current URL' }).textContent ?? '';
 
 describe('FacilitiesView', () => {
+  it('enables expand all from root-only lazy data and delegates fetching to the owner', async () => {
+    const root = facilityPreviewSnapshot.nodes[0];
+    if (!root) throw new Error('Expected a root fixture');
+    const onExpandAll = vi.fn(async (_signal: AbortSignal) => [root.key]);
+    renderView('/dev/facilities', {
+      snapshot: {
+        ...facilityPreviewSnapshot,
+        nodes: [{ ...root, children: [], childrenState: 'unloaded' }],
+      },
+      onExpandAll,
+    });
+    const expandAll = screen.getByRole('switch', { name: 'Expand all' });
+    expect(expandAll).toBeEnabled();
+    await userEvent.setup().click(expandAll);
+    expect(onExpandAll).toHaveBeenCalledExactlyOnceWith(expect.any(AbortSignal));
+    expect(screen.queryByRole('link', { name: 'F-1002' })).not.toBeInTheDocument();
+  });
   it('shows an expansion control for an unloaded branch even without query metadata', async () => {
     const root = facilityPreviewSnapshot.nodes[0];
     if (!root) throw new Error('Expected a root fixture');
@@ -151,18 +169,31 @@ describe('FacilitiesView', () => {
     const open = () => screen.getByLabelText('Customize filters', { selector: 'button' });
     await user.click(open());
     let dialog = screen.getByRole('dialog', { name: 'Customize filters' });
-    await user.selectOptions(within(dialog).getByRole('combobox', { name: 'Facility' }), '2');
+    await chooseDropdownOption(
+      user,
+      within(dialog).getByLabelText('Facility', { selector: 'input' }),
+      '1, 2',
+    );
     await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
     expect(url()).not.toContain('maxLevel');
     await user.click(open());
     dialog = screen.getByRole('dialog', { name: 'Customize filters' });
-    expect(within(dialog).getByRole('combobox', { name: 'Facility' })).toHaveValue('');
-    await user.selectOptions(within(dialog).getByRole('combobox', { name: 'Facility' }), '2');
-    await user.selectOptions(
-      within(dialog).getByRole('combobox', { name: 'Show amounts in' }),
+    expect(within(dialog).getByLabelText('Facility', { selector: 'input' })).toHaveValue('');
+    await chooseDropdownOption(
+      user,
+      within(dialog).getByLabelText('Facility', { selector: 'input' }),
+      '1, 2',
+    );
+    await chooseDropdownOption(
+      user,
+      within(dialog).getByLabelText('Show amounts in', { selector: 'input' }),
       'EUR',
     );
-    await user.selectOptions(within(dialog).getByRole('combobox', { name: 'C/U' }), 'U');
+    await chooseDropdownOption(
+      user,
+      within(dialog).getByLabelText('C/U', { selector: 'input' }),
+      'U (uncommitted)',
+    );
     await user.click(within(dialog).getByRole('button', { name: 'Save' }));
     expect(url()).toContain('maxLevel=2');
     expect(url()).toContain('displayCurrency=EUR');
@@ -179,8 +210,9 @@ describe('FacilitiesView', () => {
     await user.click(screen.getByRole('switch', { name: 'Expand all' }));
     await user.click(screen.getByLabelText('Customize filters', { selector: 'button' }));
     const dialog = screen.getByRole('dialog', { name: 'Customize filters' });
-    await user.selectOptions(
-      within(dialog).getByRole('combobox', { name: 'Show amounts in' }),
+    await chooseDropdownOption(
+      user,
+      within(dialog).getByLabelText('Show amounts in', { selector: 'input' }),
       'EUR',
     );
     await user.click(within(dialog).getByRole('button', { name: 'Save' }));

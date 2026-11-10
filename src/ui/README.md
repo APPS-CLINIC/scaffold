@@ -246,6 +246,11 @@ positioning and appearance. It uses `isPopoverOpen`, `setIsPopoverOpen`,
 deprecated `position`) and `closeOnClick={false}` for interactive content.
 The raw IWA `Popover` is also re-exported from `@/ui`.
 
+The positioning anchor is a non-focusable wrapper around the trigger button.
+This lets IWA attach its own anchor ref while preserving the caller's button
+ref and the Escape focus target. The test double clones the anchor with its
+own ref to exercise this boundary.
+
 Local tests exercise the interaction wrapper with a minimal controlled IWA
 double. Actual positioning, clipping inside scrolling tables and vendor
 dismissal behavior require verification with the real private package.
@@ -568,6 +573,11 @@ props the library documents — `options`, `value`, `onChange`, `disabled`,
 `readOnly`, `errorMessage`, `error`, `showErrorMessage`, `sortOptions`,
 `componentSize`, `className`, `dataTestId` — and label the field with
 surrounding markup rather than a placeholder.
+
+The test-only Select adapter also renders PrimeReact Dropdown. Tests open the
+labelled input's list and choose a rendered option; `user.selectOptions` is
+reserved for an actual native select. The keyboard input contains the displayed
+label, so assert filter values through the owner's summary or URL.
 
 ```tsx
 import { Select } from '@/ui';

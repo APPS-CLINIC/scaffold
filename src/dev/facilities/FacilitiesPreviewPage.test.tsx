@@ -1,5 +1,6 @@
 import { act, cleanup, screen, waitFor, within } from '@testing-library/react';
 import { userWithFakeTimers } from '@/test/userWithFakeTimers';
+import { chooseDropdownOption } from '@/test/chooseDropdownOption';
 import { Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { UrlStateSync } from '@/features/urlState/UrlStateSync';
@@ -152,8 +153,9 @@ describe('Facilities development preview', () => {
     );
     await user.click(screen.getByLabelText('Customize filters', { selector: 'button' }));
     const dialog = screen.getByRole('dialog', { name: 'Customize filters' });
-    await user.selectOptions(
-      within(dialog).getByRole('combobox', { name: 'Show amounts in' }),
+    await chooseDropdownOption(
+      user,
+      within(dialog).getByLabelText('Show amounts in', { selector: 'input' }),
       'EUR',
     );
     await user.click(within(dialog).getByRole('button', { name: 'Save' }));

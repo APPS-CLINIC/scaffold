@@ -1,4 +1,7 @@
-/** Collect branches at every depth; leaves never count towards "expand all". */
+/**
+ * Collect branches at every received depth. Lazy owners must supply getHasChildren:
+ * an empty children array can mean the first page has not been requested yet.
+ */
 export function getExpandableTreeKeys<T>(
   nodes: readonly T[],
   getKey: (row: T) => string,
@@ -7,8 +10,8 @@ export function getExpandableTreeKeys<T>(
 ): string[] {
   return nodes.flatMap((node) => {
     const children = getChildren(node);
-    return (getHasChildren?.(node) ?? children.length > 0)
-      ? [getKey(node), ...getExpandableTreeKeys(children, getKey, getChildren, getHasChildren)]
-      : [];
+    const hasChildren = getHasChildren?.(node) ?? children.length > 0;
+    if (!hasChildren) return [];
+    return [getKey(node), ...getExpandableTreeKeys(children, getKey, getChildren, getHasChildren)];
   });
 }

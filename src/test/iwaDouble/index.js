@@ -10,7 +10,7 @@
  *
  * Keep the rendered structure faithful to the real components. Tests query it by role and
  * accessible name, so a shape that drifts from the library makes them assert a fiction.
- * `Table` and `MultiSelect` delegate to PrimeReact because the IWA components are styled
+ * `Table`, `Select` and `MultiSelect` delegate to PrimeReact because the IWA components are styled
  * PrimeReact components that take PrimeReact props.
  */
 
@@ -22,9 +22,11 @@ import {
   useContext,
   useEffect,
   useId,
+  useRef,
   useState,
 } from 'react';
 import { DataTable } from 'primereact/datatable';
+import { Dropdown } from 'primereact/dropdown';
 import { MultiSelect as PrimeMultiSelect } from 'primereact/multiselect';
 
 export function Table({ dataTableRef, separatedRows, ...props }) {
@@ -37,11 +39,18 @@ export function PaginatorTable(props) {
 
 /**
  * Controlled Popover contract shown in the IWA Storybook screenshots.
- * This double only renders its supplied trigger/content; it does not emulate
- * positioning, portalling or dismissal behavior of the private implementation.
+ * The positioning layer owns the cloned trigger's ref. Keep that boundary in tests
+ * so callers cannot rely on a DOM ref on the element supplied directly to Popover.
+ * This does not emulate positioning, portalling or vendor dismissal behavior.
  */
 export function Popover({ isPopoverOpen, popoverChildren, popoverContent }) {
-  return createElement(Fragment, null, popoverChildren, isPopoverOpen ? popoverContent : null);
+  const anchorRef = useRef(null);
+  return createElement(
+    Fragment,
+    null,
+    cloneElement(popoverChildren, { ref: anchorRef }),
+    isPopoverOpen ? popoverContent : null,
+  );
 }
 
 export function twMerge(...classLists) {
@@ -773,6 +782,8 @@ export function Select({
   'aria-label': ariaLabel,
   'aria-labelledby': ariaLabelledBy,
   inputId,
+  sortOptions = true,
+  ...rest
 }) {
   const toValue = (option) =>
     typeof option === 'object' && option !== null ? option.value : option;
@@ -781,43 +792,30 @@ export function Select({
       ? ((optionLabel ? option[optionLabel] : option.label) ?? String(option.value))
       : String(option);
 
+  const mappedOptions = options.map((option) => ({
+    value: toValue(option),
+    label: toLabel(option),
+  }));
+  if (sortOptions) mappedOptions.sort((left, right) => left.label.localeCompare(right.label));
+
   return createElement(
     'div',
     { className: twMerge('inline-block', className) },
-    createElement(
-      'select',
-      {
-        value: value ?? '',
-        id: inputId,
-        disabled: disabled || readOnly,
-        'data-testid': dataTestId,
-        'aria-label': ariaLabel,
-        'aria-labelledby': ariaLabelledBy,
-        // IWA's Select takes PrimeReact Dropdown props: onChange receives a change event
-        // whose `value` is the picked option's value, never the bare value.
-        onChange: (event) => {
-          const picked = event.target.value || null;
-          onChange?.({
-            originalEvent: event,
-            value: picked,
-            stopPropagation: () => event.stopPropagation(),
-            preventDefault: () => event.preventDefault(),
-            target: { name: undefined, id: undefined, value: picked },
-          });
-        },
-        className: twMerge(
-          'h-10 w-full appearance-none rounded border border-[#c4c9ce] bg-white pl-3 pr-8 text-sm text-[#333333]',
-          "bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%226%22><path d=%22M0 0l5 6 5-6z%22 fill=%22%234a4f55%22/></svg>')] bg-[position:right_0.75rem_center] bg-no-repeat",
-          !value && 'text-[#8a8a8a]',
-          (disabled || readOnly) && 'opacity-50',
-          errorMessage && 'border-[#d70000]',
-        ),
-      },
-      createElement('option', { value: '' }, placeholder ?? ''),
-      options.map((option, index) =>
-        createElement('option', { key: index, value: toValue(option) }, toLabel(option)),
-      ),
-    ),
+    createElement(Dropdown, {
+      ...rest,
+      options: mappedOptions,
+      optionLabel: 'label',
+      optionValue: 'value',
+      value: value ?? null,
+      inputId,
+      disabled: disabled || readOnly,
+      'data-testid': dataTestId,
+      'aria-label': ariaLabel,
+      'aria-labelledby': ariaLabelledBy,
+      onChange,
+      placeholder,
+      className: 'w-full',
+    }),
     errorMessage
       ? createElement('p', { className: 'm-0 mt-1 text-xs text-[#d70000]' }, errorMessage)
       : null,

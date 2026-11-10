@@ -69,58 +69,62 @@ export const InfoPopover = forwardRef<HTMLButtonElement, InfoPopoverProps>(funct
       align="start"
       closeOnClick={false}
       popoverChildren={
-        <button
-          {...rest}
-          ref={(element) => {
-            button.current = element;
-            if (typeof forwardedRef === 'function') forwardedRef(element);
-            else if (forwardedRef) forwardedRef.current = element;
-          }}
-          type="button"
-          aria-label={label}
-          aria-haspopup="dialog"
-          aria-controls={open ? id : undefined}
-          aria-expanded={open}
-          className={twMerge(
-            'relative inline-flex h-8 min-w-8 items-center justify-center rounded text-[var(--navigation-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--focus)]',
-            muted && 'text-[var(--muted)] opacity-60',
-            className,
-          )}
-          onMouseEnter={() => {
-            cancelTimer();
-            timer.current = setTimeout(show, 250);
-          }}
-          onMouseLeave={leave}
-          onFocus={() => {
-            if (skipFocusOpen.current) skipFocusOpen.current = false;
-            else show();
-          }}
-          onBlur={(event) => {
-            if (!panel.current?.contains(event.relatedTarget)) leave();
-          }}
-          onClick={() => {
-            if (pinned.current) hide();
-            else {
-              pinned.current = true;
-              focusOnShow.current = true;
-              show();
-              if (open) {
-                focusOnShow.current = false;
+        // IWA's positioning layer may replace its child's ref. Anchor the wrapper
+        // so the actual button keeps its public ref and Escape focus target.
+        <span className="inline-flex">
+          <button
+            {...rest}
+            ref={(element) => {
+              button.current = element;
+              if (typeof forwardedRef === 'function') forwardedRef(element);
+              else if (forwardedRef) forwardedRef.current = element;
+            }}
+            type="button"
+            aria-label={label}
+            aria-haspopup="dialog"
+            aria-controls={open ? id : undefined}
+            aria-expanded={open}
+            className={twMerge(
+              'relative inline-flex h-8 min-w-8 items-center justify-center rounded text-[var(--navigation-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--focus)]',
+              muted && 'text-[var(--muted)] opacity-60',
+              className,
+            )}
+            onMouseEnter={() => {
+              cancelTimer();
+              timer.current = setTimeout(show, 250);
+            }}
+            onMouseLeave={leave}
+            onFocus={() => {
+              if (skipFocusOpen.current) skipFocusOpen.current = false;
+              else show();
+            }}
+            onBlur={(event) => {
+              if (!panel.current?.contains(event.relatedTarget)) leave();
+            }}
+            onClick={() => {
+              if (pinned.current) hide();
+              else {
+                pinned.current = true;
+                focusOnShow.current = true;
+                show();
+                if (open) {
+                  focusOnShow.current = false;
+                  focusPanel();
+                }
+              }
+            }}
+            onKeyDown={(event) => {
+              event.stopPropagation();
+              if (event.key === 'Escape') hide();
+              if (event.key === 'ArrowDown' && open) {
+                event.preventDefault();
                 focusPanel();
               }
-            }
-          }}
-          onKeyDown={(event) => {
-            event.stopPropagation();
-            if (event.key === 'Escape') hide();
-            if (event.key === 'ArrowDown' && open) {
-              event.preventDefault();
-              focusPanel();
-            }
-          }}
-        >
-          {trigger}
-        </button>
+            }}
+          >
+            {trigger}
+          </button>
+        </span>
       }
       popoverContent={
         <div
