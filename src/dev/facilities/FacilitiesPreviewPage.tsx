@@ -20,7 +20,7 @@ import {
   useLazyGetFacilityPreviewChildrenQuery,
 } from './facilitiesPreview.api';
 import { getFacilityPreviewDetail } from './facilitiesPreview.service';
-import type { FacilityPreviewQuery } from './facilitiesPreview.service';
+import type { FacilityChildrenRequest, FacilityPreviewQuery } from './facilitiesPreview.service';
 
 function flatten(nodes: readonly FacilityNode[]): FacilityNode[] {
   return nodes.flatMap((node) => [node, ...flatten(node.children)]);
@@ -49,6 +49,20 @@ export function FacilitiesPreviewPage() {
   const query = useMemo(() => JSON.parse(requestKey) as FacilityPreviewQuery, [requestKey]);
   const { currentData: data, isError, refetch } = useGetFacilityPreviewRootsQuery(query);
   const [fetchChildren] = useLazyGetFacilityPreviewChildrenQuery();
+  const loadPage = useCallback(
+    async (request: FacilityChildrenRequest, signal?: AbortSignal) => {
+      signal?.throwIfAborted();
+      const pending = fetchChildren(request);
+      const abort = () => pending.abort();
+      signal?.addEventListener('abort', abort, { once: true });
+      try {
+        return await pending.unwrap();
+      } finally {
+        signal?.removeEventListener('abort', abort);
+      }
+    },
+    [fetchChildren],
+  );
   const selected = facilityId ? getFacilityPreviewDetail(facilityId) : undefined;
   const readData = useCallback(
     () =>
@@ -59,23 +73,22 @@ export function FacilitiesPreviewPage() {
     [dispatch, query],
   );
   const loadChildren = useCallback(
-    async (key: string) => {
+    async (key: string, signal?: AbortSignal) => {
       const node = flatten(readData()?.snapshot.nodes ?? []).find((item) => item.key === key);
       if (!node?.hasChildren || (node.childrenState === 'loaded' && node.nextCursor === null))
         return;
-      return fetchChildren({
-        query,
-        parentKey: key,
-        cursor: node.nextCursor ?? undefined,
-      }).unwrap();
+      return loadPage({ query, parentKey: key, cursor: node.nextCursor ?? undefined }, signal);
     },
-    [readData, query, fetchChildren],
+    [readData, query, loadPage],
   );
   const response = data?.response;
-  const loadMoreRoots = useCallback(async () => {
-    const cursor = readData()?.nextRootCursor;
-    if (cursor) return fetchChildren({ query, parentKey: null, cursor }).unwrap();
-  }, [readData, fetchChildren, query]);
+  const loadMoreRoots = useCallback(
+    async (signal?: AbortSignal) => {
+      const cursor = readData()?.nextRootCursor;
+      if (cursor) return loadPage({ query, parentKey: null, cursor }, signal);
+    },
+    [readData, loadPage, query],
+  );
   useEffect(() => {
     let active = true;
     const revealMatches = async () => {
@@ -93,7 +106,7 @@ export function FacilitiesPreviewPage() {
     async (signal: AbortSignal) => {
       while (readData()?.nextRootCursor) {
         signal.throwIfAborted();
-        await loadMoreRoots();
+        await loadMoreRoots(signal);
       }
       const queue = [...(readData()?.snapshot.nodes ?? [])];
       const keys: string[] = [];
@@ -107,7 +120,7 @@ export function FacilitiesPreviewPage() {
         );
         while (current && (current.childrenState !== 'loaded' || current.nextCursor !== null)) {
           signal.throwIfAborted();
-          await loadChildren(current.key);
+          await loadChildren(current.key, signal);
           current = flatten(readData()?.snapshot.nodes ?? []).find(
             (node) => node.key === pending.key,
           );

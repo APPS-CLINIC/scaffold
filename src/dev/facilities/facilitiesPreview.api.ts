@@ -5,7 +5,7 @@ import type {
   FacilitySnapshot,
   FacilityChildrenResponse,
 } from '@/features/facilities';
-import { getFacilityPreviewChildren, getFacilityPreviewRoots } from './facilitiesPreview.service';
+import { facilitiesPreviewTransport } from './facilitiesPreview.transport';
 import type { FacilityChildrenRequest, FacilityPreviewQuery } from './facilitiesPreview.service';
 
 interface PreviewData {
@@ -34,21 +34,25 @@ function find(nodes: readonly FacilityNode[], key: string): FacilityNode | undef
 const rootsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getFacilityPreviewRoots: builder.query<PreviewData, FacilityPreviewQuery>({
-      queryFn: (query) => {
-        const response = getFacilityPreviewRoots(query);
-        return {
-          data: {
-            response,
-            nextRootCursor: response.nextCursor,
-            rootPageState: 'loaded',
-            snapshot: {
-              asOf: response.asOf,
-              summaries: response.summaries,
-              view: response.view,
-              nodes: response.nodes.map(fromDto),
+      queryFn: async (query, { signal }) => {
+        try {
+          const response = await facilitiesPreviewTransport.roots(query, signal);
+          return {
+            data: {
+              response,
+              nextRootCursor: response.nextCursor,
+              rootPageState: 'loaded',
+              snapshot: {
+                asOf: response.asOf,
+                summaries: response.summaries,
+                view: response.view,
+                nodes: response.nodes.map(fromDto),
+              },
             },
-          },
-        };
+          };
+        } catch {
+          return { error: { status: 'CUSTOM_ERROR', error: 'Could not load the example roots' } };
+        }
       },
     }),
   }),
@@ -57,15 +61,15 @@ const rootsApi = baseApi.injectEndpoints({
 export const facilitiesPreviewApi = rootsApi.injectEndpoints({
   endpoints: (builder) => ({
     getFacilityPreviewChildren: builder.query<FacilityChildrenResponse, FacilityChildrenRequest>({
-      queryFn: (arg) => {
+      queryFn: async (arg, { signal }) => {
         try {
-          return { data: getFacilityPreviewChildren(arg) };
+          return { data: await facilitiesPreviewTransport.children(arg, signal) };
         } catch {
           return { error: { status: 'CUSTOM_ERROR', error: 'Could not load the example branch' } };
         }
       },
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        dispatch(
+      async onQueryStarted(arg, { dispatch, queryFulfilled, getCacheEntry }) {
+        const pending = dispatch(
           rootsApi.util.updateQueryData('getFacilityPreviewRoots', arg.query, (draft) => {
             if (arg.parentKey === null) {
               draft.rootPageState = 'loading';
@@ -99,6 +103,11 @@ export const facilitiesPreviewApi = rootsApi.injectEndpoints({
             }),
           );
         } catch {
+          const error = getCacheEntry().error;
+          if (error && 'name' in error && error.name === 'AbortError') {
+            pending.undo();
+            return;
+          }
           dispatch(
             rootsApi.util.updateQueryData('getFacilityPreviewRoots', arg.query, (draft) => {
               if (arg.parentKey === null) {

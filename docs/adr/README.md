@@ -64,6 +64,7 @@ keep ADRs at all; use it as the template for new records.
 | [0046](0046-facilities-hierarchy-as-a-development-poc.md)         | Facilities hierarchy as a development PoC           | Accepted               |
 | [0047](0047-shared-table-fields-cells-and-toolbar.md)             | Shared table fields, cells and toolbar              | Accepted               |
 | [0048](0048-lazy-facilities-preview-data-contract.md)             | Lazy Facilities preview data contract               | Accepted               |
+| [0049](0049-asynchronous-facilities-preview-transport.md)         | Asynchronous Facilities preview transport           | Accepted               |
 
 ### Step 03 — Scope alignment (discovery)
 

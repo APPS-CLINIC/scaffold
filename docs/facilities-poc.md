@@ -52,9 +52,14 @@ independent supplied group totals, never a sum of parents and descendants.
   with Load more facilities. Child pages deliberately contain one record in
   this small example to exercise the multi-child parent. Root pages allow 50.
 - Display branch loading and retry controls without making loaded rows vanish.
+- Simulate each root/sibling response asynchronously with a deterministic 500 ms
+  delay. The table receives no children until that response completes. RTK
+  Query's abort signal cancels the pending timer before evaluating the page.
 - Expand all fetches remaining root and child pages sequentially, then expands
-  the complete result. Cancel expanding stops subsequent loads. Query changes
-  or leaving the page invalidate a pending expansion result.
+  the complete result. Cancel expanding aborts the current request and stops
+  subsequent loads. It restores the prior branch state without showing a
+  request-failure message; received pages stay cached. Query changes or leaving
+  the page also abort the pending expand-all request.
 - Evaluate search/filters on the complete simulated service-side catalogue,
   preserve ancestor context and reveal paths for deep matches. A broad match
   may still require sibling continuation. The group summary and counts are
@@ -78,6 +83,10 @@ verify this boundary, including after expanding the entire tree.
 The source catalogue is flat too. The complete forest used to evaluate the
 simulated service query is a derived service-side model, not another transport
 fixture or something sent to the table on entry.
+
+The asynchronous boundary is in `src/dev/facilities/facilitiesPreview.transport.ts`;
+the pure service functions remain separate. See
+[ADR 0049](adr/0049-asynchronous-facilities-preview-transport.md).
 
 ## Remaining backend/product decisions
 
