@@ -60,7 +60,7 @@ function renderPage(initialEntry = '/customers/all', columns?: readonly string[]
   );
 }
 
-const exportButton = () => screen.getByRole('button', { name: 'Download to Excel' });
+const exportButton = () => screen.getByRole('button', { name: 'Download (.xlsx)' });
 const exportDialog = () =>
   screen.getByRole('dialog', { name: 'You are downloading the customer list' });
 
