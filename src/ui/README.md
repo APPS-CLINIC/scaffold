@@ -68,6 +68,13 @@ cell per file. Features compose `TextCell`, `UnderlinedTextCell`, `DateCell`,
 `OverdueDateCell`, or `ActiveArchivalStatusCell`; a feature-specific renderer is
 only needed when those building blocks cannot express the domain value.
 
+`TableCell` dispatches a configured field to its cell component, or uses the safe
+primitive fallback. Flat columns, responsive details and tree columns all use
+this renderer and the same `GenericDataTableCellProps` contract. It takes
+`column`, `row`, `rowIndex`, `locale` and `notAvailable`.
+`UnderlinedTextCell` supports `to` for an internal React Router destination;
+`href` keeps the existing IWA link behavior. Either can be derived from the row.
+
 ```tsx
 import { ActiveArchivalStatusCell, UnderlinedTextCell } from '@/ui';
 import type { GenericDataTableConfig } from '@/ui';
@@ -207,6 +214,81 @@ const shown = filterByDueDate(rows, (row) => row.dueDate, windows);
 <DueDateFilter value={windows} onChange={setWindows} />;
 ```
 
+## `TreeDataTable` and `InfoPopover`
+
+`TreeDataTable<T>` is the presentational hierarchy adapter. Give it `nodes`,
+`getKey`, `getChildren`, `config.fields` using `GenericDataTableFieldConfig<T>`,
+`expandedKeys`,
+`onExpandedKeysChange`, `labels` and `noResults`. Rows are not indented:
+every depth starts at the same position and descendants share one column grid.
+Bracket guides in a fixed 36 px gutter of the first cell show the hierarchy,
+like an editor's bracket-pair guides: an expanded parent opens a bracket in
+`--tree-branch-<depth>` at the top of its row, which runs down its visible
+descendants and closes at the bottom of the last of them (or of a pending
+placeholder). The guides are decorative;
+`aria-level` carries depth. The caret is `--navigation-accent` while closed and
+`--text` when open. A field's `headerClassName`/`cellClassName` merge after the
+cell defaults, so they can replace the header surface. There is no pagination, fetching, URL state
+or responsive field accordion. Narrow screens scroll within its wrapper.
+`getExpandableTreeKeys` collects every branch recursively, excluding leaves.
+The caller controls expansion and supplies translated expand/collapse names.
+`labels.notAvailable` is the shared cell fallback. Headings resolve `labelKey`
+through i18n, and cells receive the active locale. Flat-table sorting and
+responsive detail options do not apply to the tree.
+
+For lazy branches, supply `getHasChildren` independently of `getChildren` and
+handle `onExpand`. A branch may have no loaded children while still being
+expandable. The optional fourth argument of `getExpandableTreeKeys` is the
+same has-children accessor. Fetching, cached pages and loading/retry UI remain
+owned by the caller.
+
+`TreeDataTableProps` and `TreeDataTableLabels` are declared in `TreeDataTable.tsx`
+alongside the adapter. `TreeDataTable.types.ts` forwards those types for existing
+imports. Facilities derives its loading props from the same contract and fixes
+its generic row type to `FacilityTableRow` when rendering the tree.
+
+`InfoPopover` adapts the controlled IWA `Popover` for
+information that may contain links/actions. Pass `label`, `trigger` and
+`children`; `muted` greys the trigger without making its information
+unreachable. Hover/focus opens, click pins, ArrowDown enters an action and
+Escape dismisses and restores focus. It has dialog semantics, not tooltip
+semantics. Caller button classes and refs are supported.
+The wrapper adds interaction and accessibility only; IWA owns panel rendering,
+positioning and appearance. It uses `isPopoverOpen`, `setIsPopoverOpen`,
+`popoverChildren`, `popoverContent`, `positions` (the current API, rather than
+deprecated `position`) and `closeOnClick={false}` for interactive content.
+The raw IWA `Popover` is also re-exported from `@/ui`.
+
+The positioning anchor is a non-focusable wrapper around the trigger button.
+This lets IWA attach its own anchor ref while preserving the caller's button
+ref and the Escape focus target. The test double clones the anchor with its
+own ref to exercise this boundary.
+
+Local tests exercise the interaction wrapper with a minimal controlled IWA
+double. Actual positioning, clipping inside scrolling tables and vendor
+dismissal behavior require verification with the real private package.
+
+See [Facilities PoC](../../docs/facilities-poc.md) for the first consumer.
+
+## `TableToolbar` and `TableActions`
+
+`TableToolbar` gives filters, search and actions a shared wrapping layout. Pass
+the controls as `filters`, `search` and optional `actions` slots. State, search
+remount keys and callbacks remain with the owner; both Customers and Facilities
+use this composition with the existing `TableFilters` and `GenericSearch`.
+
+`TableActions` receives `expandableKeys`, `expandedKeys` and
+`onExpandedKeysChange`. It offers optional `onExport` (with `exportLabel`) and
+`onOpenSettings` actions. An empty expandable set disables the switch. It never
+infers keys from records: a tree owner passes every branch, including hidden
+descendants. `GenericTableSettings` adapts its existing row-based API to this
+component. Both primitives forward refs/HTML attributes and merge caller classes.
+
+An optional `allExpanded` overrides the known-key calculation when unloaded
+branches or continuation pages mean expansion is not complete.
+
+See [ADR 0047](../../docs/adr/0047-shared-table-fields-cells-and-toolbar.md).
+
 ## `GenericSearch`
 
 `GenericSearch` is a search field built on IWA `SearchWithAutocomplete`, for
@@ -238,6 +320,11 @@ const { setQuery } = useListQueryState();
 ```
 
 ## `TableFilters`
+
+`SelectFilter` provides a single-choice control with translated or literal
+`options` and the standard `useSummary` contract. Clearing it emits an empty
+value list; selecting an option emits exactly one value. It is shared through
+`@/ui`, like `MultiSelectFilter`, `DateRangeFilter` and `TextFilter`.
 
 A table field declares the control that filters it, next to its cell
 component: `filter: tableFilter(Component, props)`. `tableFilter` checks the
@@ -449,7 +536,7 @@ neutral | accent | brand` (default `outline` — light surface with a subtle
 
 Components the app consumes from IWA without an adapter are re-exported
 verbatim from `index.ts` (`ActionLink`, `Button`, `Card`, `ChipInput`,
-`CustomizableDialog`, `DatePicker`, `LoadingSpinner`, `MultiSelect`, `RadioGroup`, `RichNotification`, `Select`,
+`CustomizableDialog`, `DatePicker`, `LoadingSpinner`, `MultiSelect`, `Popover`, `RadioGroup`, `RichNotification`, `Select`,
 `Snackbar`, `Switch`, `TabMenu`, `TextInput`, `TopBar`, …); `index.ts` is the complete list. Feature code imports them from
 `@/ui` like every local primitive.
 
@@ -499,6 +586,11 @@ props the library documents — `options`, `value`, `onChange`, `disabled`,
 `readOnly`, `errorMessage`, `error`, `showErrorMessage`, `sortOptions`,
 `componentSize`, `className`, `dataTestId` — and label the field with
 surrounding markup rather than a placeholder.
+
+The test-only Select adapter also renders PrimeReact Dropdown. Tests open the
+labelled input's list and choose a rendered option; `user.selectOptions` is
+reserved for an actual native select. The keyboard input contains the displayed
+label, so assert filter values through the owner's summary or URL.
 
 ```tsx
 import { Select } from '@/ui';
@@ -559,3 +651,17 @@ branches recurse through the application adapter while continuing to use IWA
 for each rendered item. Keep route matching, active-ancestor calculation, and
 branch expansion in the resolver; compose a separate semantic expand/collapse
 button only because the installed IWA item does not provide one.
+
+## Component catalogue
+
+Run `npm run storybook` for the shared tables, controls, cells and feedback
+examples. The catalogue renders the existing exports and isolates state per
+story. See [the catalogue guide](../../docs/storybook.md).
+
+### Shared pending rows
+
+`TableCellSkeleton` is the decorative cell placeholder shared by GenericDataTable
+and TreeDataTable. Both keep their configured headers while loading. TreeDataTable
+can append a pending root row with `loadingMore`, or a pending child row through
+`getChildrenLoading`; existing rows stay visible during continuation. These
+placeholder nodes remain internal to the adapter and never reach row callbacks.

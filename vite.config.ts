@@ -42,6 +42,7 @@ export default defineConfig(({ mode }) => {
         'iwa-react-components': fileURLToPath(
           new URL('./src/test/iwaDouble/index.js', import.meta.url),
         ),
+        'ing-react-icons': fileURLToPath(new URL('./src/test/ingIconsDouble.tsx', import.meta.url)),
       },
       globals: true,
       environment: 'jsdom',
@@ -62,7 +63,7 @@ export default defineConfig(({ mode }) => {
         provider: 'v8',
         reporter: ['text', 'html'],
         include: ['src/**/*.{ts,tsx}'],
-        exclude: ['src/**/*.test.{ts,tsx}', 'src/main.tsx', 'src/**/*.d.ts'],
+        exclude: ['src/**/*.test.{ts,tsx}', 'src/main.tsx', 'src/**/*.d.ts', 'src/stories/**'],
       },
     },
   };

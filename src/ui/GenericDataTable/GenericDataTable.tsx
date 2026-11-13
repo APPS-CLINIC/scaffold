@@ -12,7 +12,9 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Column } from 'primereact/column';
 import { PaginatorTable, twMerge } from '@/ui';
-import { ExpandedRowContent, PrimaryCell, RowExpansionButton } from './components';
+import { ExpandedRowContent, RowExpansionButton } from './components';
+import { TableCell } from './cells/TableCell';
+import { TableCellSkeleton } from './cells/TableCellSkeleton';
 import {
   createDataTablePassThrough,
   createPaginatorTemplate,
@@ -233,18 +235,13 @@ function GenericDataTableInner<T extends object>(
               showSkeletonRows ? (
                 // Sized to match a one-line row, so real rows land without a
                 // height jump.
-                <span aria-hidden="true" className="flex h-5 items-center">
-                  <span
-                    className="block h-3 w-3/4 rounded bg-[#ededed] motion-safe:animate-pulse"
-                    style={{ animationDelay: `${options.rowIndex * 50}ms` }}
-                  />
-                </span>
+                <TableCellSkeleton rowIndex={options.rowIndex} />
               ) : (
                 // Long content wraps line by line up to 168px, then the cell
                 // scrolls (design note) — never an ellipsis, never bleeding
                 // into the neighbouring cell.
                 <div className="max-h-[168px] overflow-x-hidden overflow-y-auto break-words">
-                  <PrimaryCell
+                  <TableCell
                     column={field}
                     locale={locale}
                     notAvailable={labels.notAvailable}

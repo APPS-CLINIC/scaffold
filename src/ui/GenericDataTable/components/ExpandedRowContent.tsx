@@ -3,7 +3,7 @@ import type {
   GenericDataTableFieldConfig,
   GenericDataTableLabels,
 } from '../GenericDataTable.types';
-import { DetailValue } from './DetailValue';
+import { TableCell } from '../cells/TableCell';
 
 interface ExpandedRowContentProps<T extends object> {
   fields: readonly GenericDataTableFieldConfig<T>[];
@@ -46,9 +46,9 @@ export function ExpandedRowContent<T extends object>({
           >
             <dt className="font-bold text-[var(--text)] sm:text-right">{t(field.labelKey)}</dt>
             <dd className="m-0 min-w-0 break-words">
-              <DetailValue
-                detail={field}
-                labels={labels}
+              <TableCell
+                column={field}
+                notAvailable={labels.notAvailable}
                 locale={locale}
                 row={row}
                 rowIndex={rowIndex}

@@ -150,6 +150,34 @@ ones are searched on the service as the user types.
 
 ### 6. UI seam — `src/ui`
 
+Flat and hierarchical tables now share typed field configuration and TableCell
+dispatch. TableToolbar and TableActions share list controls while owners choose
+their expansion keys and keep URL/data policies. Facilities reuses the existing
+date, text, status and link cells; only domain composition stays in the feature.
+→ [ADR 0047](../adr/0047-shared-table-fields-cells-and-toolbar.md).
+
+The Facilities pre-contract PoC adds a separate TreeDataTable for hierarchical
+rows. It has one shared column grid and no pagination; GenericDataTable keeps
+its responsive detail accordion. The root/child-page data proposal and interactive
+page are development-only until a real endpoint is agreed. This deliberately
+does not invent an RTK Query endpoint or a production fallback.
+→ [ADR 0046](../adr/0046-facilities-hierarchy-as-a-development-poc.md),
+[Facilities PoC](../facilities-poc.md).
+
+The development Facilities data source now exercises the proposed lazy DTO
+contract: explicit child metadata, bounded sibling responses, a separate
+loaded projection in RTK Query, and a root-only JSON export.
+→ [ADR 0048](../adr/0048-lazy-facilities-preview-data-contract.md).
+
+TreeDataTable rows are not indented; bracket guides in each parent's depth
+colour show nesting, and Facilities' level chips open the tree to a business
+level instead of filtering it. The preview is served below `/customers` for the
+nginx-proxied environment.
+→ [ADR 0053](../adr/0053-facilities-preview-route-below-customers.md),
+[ADR 0054](../adr/0054-flat-tree-rows-with-parent-stripes.md),
+[ADR 0055](../adr/0055-facility-level-chips-open-the-tree.md),
+[ADR 0056](../adr/0056-bracket-guides-for-tree-rows.md).
+
 Everything imports UI primitives from `@/ui`, a thin stub layer, so the
 organization's internal UI library can be plugged in within a single folder
 without touching feature code.

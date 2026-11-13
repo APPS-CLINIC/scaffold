@@ -142,9 +142,17 @@ describe('CustomersView', () => {
   it('links each customer name to its details page in a new tab', async () => {
     renderPage();
 
-    const nameLink = await screen.findByRole('link', {
-      name: 'ARCELORMITTAL WARSAW SP. Z O.O.',
-    });
+    const customerName = 'ARCELORMITTAL WARSAW SP. Z O.O.';
+    const name = await screen.findByText(customerName);
+    const nameLink = name.closest('a');
+    if (nameLink === null) {
+      const cell = name.closest('td') ?? name.parentElement ?? name;
+      throw new Error(
+        `Customer name has no anchor. Rendered cell: ${cell.outerHTML.slice(0, 2000)}`,
+      );
+    }
+    expect(nameLink).toHaveRole('link');
+    expect(nameLink).toHaveAccessibleName(customerName);
     expect(nameLink).toHaveAttribute('href', '/customers/23997');
     expect(nameLink).toHaveAttribute('target', '_blank');
   });

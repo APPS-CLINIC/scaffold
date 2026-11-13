@@ -39,11 +39,36 @@ npm run typecheck      # tsc -b (strict, no emit)
 npm run lint           # eslint (flat config)
 npm run format         # prettier --write
 npm run build          # tsc -b && vite build
+npm run storybook      # component catalogue on port 6006 (real UI packages)
+npm run build-storybook # static catalogue
+npm run test-storybook  # browser play tests in Chromium
 ```
 
 All four gates — **lint, typecheck, tests, build** — must pass before a PR is
 mergeable. Husky + lint-staged run eslint/prettier on staged files at commit
 time.
+
+### Private design-system dependencies in this workspace
+
+This workspace intentionally has no access to the private registry for
+`iwa-react-components`, `ing-react-icons`, and `iwa-react-error-handling`.
+Do not ask the user for registry access or credentials. Keep the real runtime
+imports; do not add fake package declarations or production replacements to
+make a build appear green.
+
+Vitest aliases IWA and the corporate icons to repository-owned test doubles,
+while exercising the real public PrimeReact components beneath the adapters.
+Lint and tests can run with the public dependencies represented in the lockfile.
+Full typecheck, production build, and visual verification against IWA require
+the corporate environment. State this limitation in the PR; a passing test
+double is not evidence that those remaining gates passed.
+
+### Component catalogue
+
+Storybook configuration lives in `.storybook/`; the scenarios and isolated owner
+examples live in `src/stories/`. See `docs/storybook.md` and ADR 0051. Keep real UI
+imports in Storybook; Vitest-only aliases must never leak into its Vite config.
+Story data uses the existing service/RTK Query seam with per-store dependencies.
 
 ## Stack
 
