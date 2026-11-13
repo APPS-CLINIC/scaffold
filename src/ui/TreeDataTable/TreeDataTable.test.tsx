@@ -175,6 +175,142 @@ describe('TreeDataTable', () => {
     expect(screen.queryByRole('button', { name: 'Expand Leaf' })).not.toBeInTheDocument();
   });
 
+  it('aligns every depth and draws bracket guides from each open parent to its last descendant', async () => {
+    const user = userEvent.setup();
+    const branches: Node[] = [
+      {
+        key: 'root',
+        label: 'Root',
+        children: [
+          {
+            key: 'a',
+            label: 'A',
+            children: [
+              { key: 'a1', label: 'A1', children: [] },
+              { key: 'a2', label: 'A2', children: [] },
+            ],
+          },
+          { key: 'b', label: 'B', children: [] },
+        ],
+      },
+      { key: 'other', label: 'Other', children: [] },
+    ];
+    function Table() {
+      const [keys, setKeys] = useState<readonly string[]>([]);
+      return (
+        <TreeDataTable
+          nodes={branches}
+          getKey={getKey}
+          getChildren={getChildren}
+          config={config}
+          expandedKeys={keys}
+          onExpandedKeysChange={setKeys}
+          labels={labels}
+          noResults="No rows"
+        />
+      );
+    }
+    render(<Table />);
+    const rowOf = (label: string) =>
+      screen.getByText(label, { exact: true }).closest('tr') as HTMLElement;
+    const guides = (label: string) =>
+      [...rowOf(label).querySelectorAll('[data-guide]')].map(
+        (guide) => guide.getAttribute('data-guide') + ':' + guide.getAttribute('data-guide-depth'),
+      );
+    const expandRoot = screen.getByRole('button', { name: 'Expand Root' });
+    expect(guides('Root')).toEqual([]);
+    expect(expandRoot).toHaveClass('text-[var(--navigation-accent)]');
+    await user.click(expandRoot);
+    await user.click(screen.getByRole('button', { name: 'Expand A' }));
+    expect(screen.getByRole('button', { name: 'Collapse Root' })).toHaveClass('text-[var(--text)]');
+    expect(guides('Root')).toEqual(['open:0']);
+    expect(guides('A')).toEqual(['through:0', 'open:1']);
+    expect(guides('A1')).toEqual(['through:0', 'through:1']);
+    expect(guides('A2')).toEqual(['through:0', 'close:1']);
+    expect(guides('B')).toEqual(['close:0']);
+    expect(guides('Other')).toEqual([]);
+    // A bracket spans from the top of the parent row to the bottom of its last descendant row.
+    const strokes = (label: string, kind: string) =>
+      [...(rowOf(label).querySelector(`[data-guide="${kind}"]`)?.children ?? [])].map(
+        (stroke) => (stroke as HTMLElement).style,
+      );
+    const [openLine, openArm] = strokes('Root', 'open');
+    expect([openLine?.top, openLine?.bottom, openArm?.top]).toEqual(['6px', '0px', '6px']);
+    const [closeLine, closeArm] = strokes('A2', 'close');
+    expect([closeLine?.top, closeLine?.bottom, closeArm?.bottom]).toEqual(['0px', '6px', '6px']);
+    expect(closeArm?.top).toBe('');
+    for (const label of ['Root', 'A', 'A1', 'B']) {
+      const firstCell = within(rowOf(label)).getAllByRole('gridcell')[0] as HTMLElement;
+      expect(firstCell).toHaveClass('relative', '!pl-9');
+      expect(firstCell.querySelector('[style*="margin"]')).toBeNull();
+      expect(firstCell.querySelector('[aria-hidden="true"] [data-guide]') ?? null).toBe(
+        firstCell.querySelector('[data-guide]'),
+      );
+    }
+    expect(rowOf('A1')).toHaveAttribute('aria-level', '3');
+    await user.click(screen.getByRole('button', { name: 'Collapse A' }));
+    expect(guides('A')).toEqual(['through:0']);
+    expect(guides('B')).toEqual(['close:0']);
+  });
+
+  it('closes the parent bracket on a pending child placeholder', () => {
+    render(
+      <TreeDataTable
+        nodes={tree}
+        getKey={getKey}
+        getChildren={getChildren}
+        getChildrenLoading={(node) => node.key === 'root'}
+        config={config}
+        expandedKeys={['root']}
+        onExpandedKeysChange={vi.fn()}
+        labels={labels}
+        noResults="No rows"
+      />,
+    );
+    const rows = screen.getAllByRole('row').slice(1);
+    const placeholder = rows.at(-1) as HTMLElement;
+    expect(screen.getByText('Child', { exact: true }).closest('tr')).not.toBe(placeholder);
+    expect(
+      [...placeholder.querySelectorAll('[data-guide]')].map((guide) =>
+        guide.getAttribute('data-guide'),
+      ),
+    ).toEqual(['close']);
+  });
+
+  it('applies field header and cell classes after the table defaults', () => {
+    const shaded = {
+      dataKey: 'key',
+      fields: [
+        {
+          field: 'label',
+          labelKey: 'facilities.table.basic',
+          width: 180,
+          headerClassName: '!bg-[var(--table-key-column)]',
+          cellClassName: 'bg-[var(--table-key-column)]',
+        },
+        { field: 'key', labelKey: 'facilities.table.description', width: 180 },
+      ],
+    } satisfies GenericDataTableConfig<Node>;
+    render(
+      <TreeDataTable
+        nodes={tree}
+        getKey={getKey}
+        getChildren={getChildren}
+        config={shaded}
+        expandedKeys={[]}
+        onExpandedKeysChange={vi.fn()}
+        labels={labels}
+        noResults="No rows"
+      />,
+    );
+    const [first, second] = screen.getAllByRole('columnheader');
+    expect(first).toHaveClass('px-3', '!bg-[var(--table-key-column)]');
+    expect(second).not.toHaveClass('!bg-[var(--table-key-column)]');
+    const [cell, plainCell] = screen.getAllByRole('gridcell');
+    expect(cell).toHaveClass('px-3', 'bg-[var(--table-key-column)]');
+    expect(plainCell).not.toHaveClass('bg-[var(--table-key-column)]');
+  });
+
   it('opens a focused row with the keyboard and gives its custom toggle an accessible name', async () => {
     const user = userEvent.setup();
     render(<ControlledTable />);

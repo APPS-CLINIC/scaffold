@@ -68,6 +68,11 @@ keep ADRs at all; use it as the template for new records.
 | [0050](0050-group-filters-keep-facilities-lazy.md)                | Group filters keep Facilities lazy                  | Accepted               |
 | [0051](0051-storybook-for-table-components.md)                    | Storybook for tables and shared list controls       | Accepted               |
 | [0052](0052-shared-pending-state-for-flat-and-tree-tables.md)     | Shared pending state for flat and tree tables       | Accepted               |
+| [0053](0053-facilities-preview-route-below-customers.md)          | Facilities preview route below /customers           | Accepted               |
+| [0054](0054-flat-tree-rows-with-parent-stripes.md)                | Flat tree rows with parent stripes                  | Accepted               |
+| [0055](0055-facility-level-chips-open-the-tree.md)                | Facility level chips open the tree                  | Accepted               |
+| [0056](0056-bracket-guides-for-tree-rows.md)                      | Bracket guides for tree rows                        | Accepted               |
+| [0057](0057-bracket-guides-span-whole-rows.md)                    | Bracket guides span whole rows                      | Accepted               |
 
 ### Step 03 — Scope alignment (discovery)
 

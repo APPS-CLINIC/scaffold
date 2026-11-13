@@ -21,7 +21,6 @@ export const facilityFiltersSchema = z
     displayCurrency: allowed(['original', 'PLN', 'EUR']).transform(
       (items) => items[0] ?? 'original',
     ),
-    maxLevel: allowed(['1', '2', '3', '4', '5', '6']).transform((items) => Number(items[0] ?? 6)),
     commitment: allowed(['C', 'U']).transform((items) => items.slice(0, 1)),
     'expiryDate.from': day,
     'expiryDate.to': day,
@@ -91,7 +90,6 @@ export function filterFacilities(
 
   function visit(items: readonly FacilityNode[]): FacilityNode[] {
     return items.flatMap((node) => {
-      if (node.businessLevel > filters.maxLevel) return [];
       const children = visit(node.children);
       const matched = matches(node, search, filters);
       if (!matched && !children.length) return [];
@@ -117,7 +115,6 @@ export function filterFacilities(
     filters.contractCurrency.length ||
     filters.facilityType.length ||
     filters.commitment.length ||
-    filters.maxLevel < 6 ||
     filters['expiryDate.from'].length ||
     filters['expiryDate.to'].length ||
     filters['looDate.from'].length ||

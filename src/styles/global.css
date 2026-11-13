@@ -9,6 +9,15 @@
   --surface-muted: #f5f7fa;
   --row-striped: #f5f5f5;
   --table-skeleton: #ededed;
+  /* Surface of a table's leading identity column (e.g. Facilities "Basic data"). */
+  --table-key-column: #f0f0f0;
+  /* TreeDataTable bracket guides, one colour per nesting depth of the parent row. */
+  --tree-branch-0: #ff6200;
+  --tree-branch-1: #3153a4;
+  --tree-branch-2: #349651;
+  --tree-branch-3: #ab0066;
+  --tree-branch-4: #00838f;
+  --tree-branch-5: #7a4ea3;
   --content-surface: #f0f0f0;
   --navigation-surface: #ffffff;
   --navigation-accent: #ff6200;

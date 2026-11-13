@@ -130,7 +130,7 @@ pagination, or manually refreshing still calls the real backend. The preview
 module and fixture are removed from production builds.
 
 The Facilities hierarchy PoC has a separate development-only page at
-`/dev/facilities`. It demonstrates all six levels, a tree starting at business
+`/customers/all/dev-facilities`. It demonstrates all six levels, a tree starting at business
 level three, URL-driven filtering, icon information, and example detail links.
 It needs no backend. It simulates lazy child pages; its root response, including
 `hasChildren` and `childrenCount`, can be downloaded as JSON from the page;

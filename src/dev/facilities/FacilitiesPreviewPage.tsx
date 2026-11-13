@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { FacilitiesView } from '@/features/facilities';
 import type {
   FacilityIndicator,
+  FacilityLevel,
   FacilityNode,
   FacilityRow,
   FacilitySnapshot,
@@ -25,6 +26,7 @@ import {
   useGetFacilityPreviewRootsQuery,
   useLazyGetFacilityPreviewChildrenQuery,
 } from './facilitiesPreview.api';
+import { FACILITIES_PREVIEW_PATH } from './facilitiesPreview.path';
 import { getFacilityPreviewDetail } from './facilitiesPreview.service';
 import type { FacilityChildrenRequest, FacilityPreviewQuery } from './facilitiesPreview.service';
 
@@ -124,8 +126,9 @@ export function FacilitiesPreviewPage() {
       active = false;
     };
   }, [response, loadChildren]);
-  const expandAll = useCallback(
-    async (signal: AbortSignal) => {
+  // Opens every branch above `level`, fetching the root and child pages it needs on the way.
+  const expandToLevel = useCallback(
+    async (level: FacilityLevel, signal: AbortSignal) => {
       while (readData()?.nextRootCursor) {
         signal.throwIfAborted();
         await loadMoreRoots(signal);
@@ -135,7 +138,7 @@ export function FacilitiesPreviewPage() {
       for (let index = 0; index < queue.length; index++) {
         signal.throwIfAborted();
         const pending = queue[index];
-        if (!pending?.hasChildren) continue;
+        if (!pending?.hasChildren || pending.businessLevel >= level) continue;
         keys.push(pending.key);
         let current = flatten(readData()?.snapshot.nodes ?? []).find(
           (node) => node.key === pending.key,
@@ -157,7 +160,7 @@ export function FacilitiesPreviewPage() {
 
   const close = () => {
     if (related) setRelated(null);
-    else navigate('/dev/facilities' + search, { replace: true });
+    else navigate(FACILITIES_PREVIEW_PATH + search, { replace: true });
   };
 
   const downloadExample = () => {
@@ -207,9 +210,9 @@ export function FacilitiesPreviewPage() {
         loadingMore={data?.rootPageState === 'loading'}
         toolbarReady={toolbarReady}
         onLoadChildren={loadChildren}
-        onExpandAll={expandAll}
+        onExpandToLevel={expandToLevel}
         getFacilityHref={(facility) =>
-          '/dev/facilities/' + encodeURIComponent(facility.id) + search
+          FACILITIES_PREVIEW_PATH + '/' + encodeURIComponent(facility.id) + search
         }
         onOpenRelated={(facility, indicator) => setRelated({ facility, indicator })}
       />

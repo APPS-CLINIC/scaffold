@@ -9,7 +9,8 @@ export const FACILITY_GROUPS = [
 export type FacilityGroup = (typeof FACILITY_GROUPS)[number];
 export type FacilityCurrency = 'PLN' | 'EUR';
 export type FacilityDisplayCurrency = 'original' | FacilityCurrency;
-export type FacilityLevel = 1 | 2 | 3 | 4 | 5 | 6;
+export const FACILITY_LEVELS = [1, 2, 3, 4, 5, 6] as const;
+export type FacilityLevel = (typeof FACILITY_LEVELS)[number];
 export type FacilityIndicator =
   | 'creditAccounts'
   | 'currencies'

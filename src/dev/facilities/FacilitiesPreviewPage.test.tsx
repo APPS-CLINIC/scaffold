@@ -8,6 +8,7 @@ import i18n from '@/i18n';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import { FacilitiesPreviewPage } from './FacilitiesPreviewPage';
 import type { FacilityRootsResponse } from '@/features/facilities';
+import { FACILITIES_PREVIEW_PATH } from './facilitiesPreview.path';
 import { FACILITIES_PREVIEW_DELAY_MS } from './facilitiesPreview.transport';
 
 const appendToHead = document.head.appendChild.bind(document.head);
@@ -24,12 +25,15 @@ function LocationProbe() {
   return <output aria-label="Preview URL">{location.pathname + location.search}</output>;
 }
 
-function renderPreview(path = '/dev/facilities') {
+function renderPreview(path = FACILITIES_PREVIEW_PATH) {
   return renderWithProviders(
     <>
       <UrlStateSync />
       <Routes>
-        <Route path="/dev/facilities/:facilityId?" element={<FacilitiesPreviewPage />} />
+        <Route
+          path={FACILITIES_PREVIEW_PATH + '/:facilityId?'}
+          element={<FacilitiesPreviewPage />}
+        />
       </Routes>
       <LocationProbe />
     </>,
@@ -250,13 +254,29 @@ describe('Facilities development preview', () => {
     ).toBe(true);
     expect(response.nodes.some((node) => node.data.id === '1006')).toBe(false);
   });
+  it('loads the pages needed to open the chosen facility level, including level five', async () => {
+    const user = userWithFakeTimers();
+    renderPreview();
+    await advance();
+    const levels = await screen.findByRole('group', { name: 'Facility level' });
+    const chip = (name: string) => within(levels).getByRole('button', { name });
+    await user.click(chip('1, 2, 3, 4, 5'));
+    await advance(10);
+    expect(screen.getByRole('link', { name: 'F-1005' })).toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'F-1006' })).not.toBeInTheDocument();
+    await user.click(chip('1, 2, 3, 4, 5, 6'));
+    await advance(10);
+    expect(screen.getByRole('link', { name: 'F-1006' })).toBeInTheDocument();
+    expect(chip('1, 2, 3, 4, 5, 6')).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('status', { name: 'Preview URL' })).not.toHaveTextContent('maxLevel');
+  });
   it('opens an example facility by a real link and preserves its query when the dialog closes', async () => {
     const user = userWithFakeTimers();
-    renderPreview('/dev/facilities?q=Target');
+    renderPreview(FACILITIES_PREVIEW_PATH + '?q=Target');
     await advance(8);
 
     const link = await screen.findByRole('link', { name: 'F-1006' });
-    expect(link).toHaveAttribute('href', '/dev/facilities/1006?q=Target');
+    expect(link).toHaveAttribute('href', FACILITIES_PREVIEW_PATH + '/1006?q=Target');
     await user.click(link);
     const dialog = screen.getByRole('dialog', { name: 'Facility F-1006' });
     expect(within(dialog).getByText('Target facility at level six')).toBeInTheDocument();
@@ -264,7 +284,7 @@ describe('Facilities development preview', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Close' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
     expect(screen.getByRole('status', { name: 'Preview URL' })).toHaveTextContent(
-      '/dev/facilities?q=Target',
+      FACILITIES_PREVIEW_PATH + '?q=Target',
     );
     expect(screen.getByRole('link', { name: 'F-1006' })).toBeInTheDocument();
   });

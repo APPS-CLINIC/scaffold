@@ -219,8 +219,16 @@ const shown = filterByDueDate(rows, (row) => row.dueDate, windows);
 `TreeDataTable<T>` is the presentational hierarchy adapter. Give it `nodes`,
 `getKey`, `getChildren`, `config.fields` using `GenericDataTableFieldConfig<T>`,
 `expandedKeys`,
-`onExpandedKeysChange`, `labels` and `noResults`. The first column indents;
-descendants share one column grid. There is no pagination, fetching, URL state
+`onExpandedKeysChange`, `labels` and `noResults`. Rows are not indented:
+every depth starts at the same position and descendants share one column grid.
+Bracket guides in a fixed 36 px gutter of the first cell show the hierarchy,
+like an editor's bracket-pair guides: an expanded parent opens a bracket in
+`--tree-branch-<depth>` at the top of its row, which runs down its visible
+descendants and closes at the bottom of the last of them (or of a pending
+placeholder). The guides are decorative;
+`aria-level` carries depth. The caret is `--navigation-accent` while closed and
+`--text` when open. A field's `headerClassName`/`cellClassName` merge after the
+cell defaults, so they can replace the header surface. There is no pagination, fetching, URL state
 or responsive field accordion. Narrow screens scroll within its wrapper.
 `getExpandableTreeKeys` collects every branch recursively, excluding leaves.
 The caller controls expansion and supplies translated expand/collapse names.

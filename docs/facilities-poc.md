@@ -1,8 +1,11 @@
 # Facilities lazy preview — story 15006016
 
-Open **/dev/facilities** during development. This page simulates a service using
-one flat synthetic catalogue. It sends no real Facilities HTTP requests and is
-excluded from production. The customer Limits route is unchanged.
+Open **/customers/all/dev-facilities** during development (below `/customers`
+because the shared environment's nginx forwards only application prefixes; see
+[ADR 0053](adr/0053-facilities-preview-route-below-customers.md)). This page
+simulates a service using one flat synthetic catalogue. It sends no real
+Facilities HTTP requests and is excluded from production. The customer Limits
+route is unchanged.
 
 The DTOs below are the frontend proposal for backend discussion. They are not
 an agreed backend contract. The same DTO format is used by the simulation,
@@ -76,6 +79,25 @@ default. Selecting a group never fetches descendants automatically. All selects
 all groups; the separate Expand all action loads and expands the hierarchy.
 See [ADR 0050](adr/0050-group-filters-keep-facilities-lazy.md).
 
+## Hierarchy presentation
+
+Rows are not indented: every depth starts at the same position. Bracket guides,
+like an editor's bracket-pair guides, show the hierarchy: an expanded parent
+opens a bracket in its depth colour at the top of its row, and the bracket closes
+at the bottom of its last visible descendant row. Nested brackets sit side by
+side in a fixed gutter. The caret is orange while a branch is closed and dark
+once open. The "Basic data" column has a grey surface. See
+[ADR 0054](adr/0054-flat-tree-rows-with-parent-stripes.md),
+[ADR 0056](adr/0056-bracket-guides-for-tree-rows.md) and
+[ADR 0057](adr/0057-bracket-guides-span-whole-rows.md).
+
+The "Facility level" chips above the toolbar open the tree: "1, 2, 3" expands
+every branch above business level three, loading the pages it needs like Expand
+all does. "1" collapses the tree and "1, …, 6" equals Expand all. They are not a
+filter: no row is hidden and nothing is written to the URL. Manual toggles keep
+working and do not change the chosen chip. See
+[ADR 0055](adr/0055-facility-level-chips-open-the-tree.md).
+
 ## Pending presentation
 
 Facilities uses GenericDataTable's shared TableCellSkeleton renderer. Initial
@@ -113,8 +135,9 @@ the pure service functions remain separate. See
    behavior when a customer does not own higher business levels.
 3. Confirm root/child page sizes and maximum volume. The tiny development
    catalogue is not a memory/throughput benchmark or a virtualization solution.
-4. Confirm whether the level filter means business levels 1 through N, and
-   whether group counts and summaries react to detailed filters.
+4. Confirm that the level chips should open the tree to level N rather than
+   filter it, whether the backend should offer a depth-limited response for
+   them, and whether group counts and summaries react to detailed filters.
 5. Supply indicator destinations/availability, dictionaries, FX values and
    timestamps, real forms and XLSX export.
 

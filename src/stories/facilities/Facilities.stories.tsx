@@ -3,11 +3,12 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Route, Routes } from 'react-router-dom';
 import { expect, userEvent, within } from 'storybook/test';
 import { FacilitiesPreviewPage } from '@/dev/facilities/FacilitiesPreviewPage';
+import { FACILITIES_PREVIEW_PATH } from '@/dev/facilities/facilitiesPreview.path';
 
 function FacilitiesExample() {
   return (
     <Routes>
-      <Route path="/dev/facilities/:facilityId?" element={<FacilitiesPreviewPage />} />
+      <Route path={FACILITIES_PREVIEW_PATH + '/:facilityId?'} element={<FacilitiesPreviewPage />} />
     </Routes>
   );
 }
@@ -15,12 +16,14 @@ const meta = {
   title: 'Tables/Facilities',
   component: FacilitiesExample,
   parameters: {
-    route: '/dev/facilities',
+    route: FACILITIES_PREVIEW_PATH,
     facilitiesScenario: 'default',
     docs: {
       description: {
         component:
-          'The same Facilities preview owner and RTK Query endpoints as /dev/facilities. Each story has an isolated store and asynchronous transport. Root DTOs contain hasChildren/childrenCount and no descendants; expansion requests direct-child pages. Groups scope the forest without fetching children. Backend HTTP integration is not implied.',
+          'The same Facilities preview owner and RTK Query endpoints as the development route ' +
+          FACILITIES_PREVIEW_PATH +
+          '. Each story has an isolated store and asynchronous transport. Root DTOs contain hasChildren/childrenCount and no descendants; expansion requests direct-child pages. Groups scope the forest without fetching children. Backend HTTP integration is not implied.',
       },
     },
   },
@@ -43,7 +46,7 @@ export const LazyLoading: Story = {
   },
 };
 export const LendingStaysLazy: Story = {
-  parameters: { route: '/dev/facilities?group=LENDING' },
+  parameters: { route: FACILITIES_PREVIEW_PATH + '?group=LENDING' },
   play: async ({ canvasElement, globals }) => {
     const t = storyText(globals);
     const canvas = within(canvasElement);
@@ -93,7 +96,7 @@ export const BranchErrorAndRetry: Story = {
   },
 };
 export const DeepSearch: Story = {
-  parameters: { route: '/dev/facilities?q=Target' },
+  parameters: { route: FACILITIES_PREVIEW_PATH + '?q=Target' },
   play: async ({ canvasElement, globals }) => {
     void globals;
     await expect(
@@ -146,5 +149,7 @@ export const ManySiblingsAndRootPages: Story = {
     await expect(canvas.getByRole('button', { name: t('facilities.moreRoots') })).toBeEnabled();
   },
 };
-export const Euro: Story = { parameters: { route: '/dev/facilities?displayCurrency=EUR' } };
+export const Euro: Story = {
+  parameters: { route: FACILITIES_PREVIEW_PATH + '?displayCurrency=EUR' },
+};
 export const Polish: Story = { globals: { locale: 'pl' } };

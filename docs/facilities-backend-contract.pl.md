@@ -5,7 +5,7 @@ Stan implementacji: **10.11.2026**.
 ## 1. Status kontraktu
 
 Poniżej opisujemy **obecny model FE i propozycję do uzgodnienia z BE**.
-Facilities działa obecnie na asynchronicznym symulatorze danych w `/dev/facilities`
+Facilities działa obecnie na asynchronicznym symulatorze danych w `/customers/all/dev-facilities`
 oraz w Storybooku. Nie ma jeszcze podpiętych produkcyjnych żądań HTTP dla tej tabeli.
 Metody HTTP, adresy endpointów i sposób przekazania kontekstu klienta pozostają
 do ustalenia. Nazwy operacji z kodu FE nie narzucają nazw endpointów BE.
@@ -33,6 +33,11 @@ To oddzielny model od wierszy używanych przez komponenty tabeli.
    a po zakończeniu otwiera cały pobrany wynik. Korzysta z tych samych operacji
    stronicowanych. Użytkownik może anulować aktywne pobranie i dalsze przechodzenie
    drzewa; wcześniej pobrane strony zostają w cache.
+9. **„Poziom facility” 1…N** otwiera drzewo do poziomu biznesowego N. Korzysta z tych
+   samych stron co „Rozwiń wszystko”, ale rozwija tylko węzły z `businessLevel < N`;
+   „1” zwija drzewo, a „1, …, 6” działa jak „Rozwiń wszystko”. To nie jest filtr: nic
+   nie jest ukrywane i parametr nie trafia do BE. Jeśli BE zechce to zoptymalizować,
+   może zaproponować parametr głębokości odpowiedzi.
 
 Zmiana zapytania lub opuszczenie widoku anuluje bieżącą operację „Rozwiń wszystko”.
 Odpowiedzi dla różnych zapytań trafiają do osobnych wpisów cache. Cache ma obecnie
@@ -75,7 +80,7 @@ jeszcze produkcyjnego kontraktu pobierania szczegółów.
 ### Wyszukiwanie i filtry
 
 Filtry mają postać `Record<string, string[]>`, również dla pojedynczego wyboru.
-Przykładowo: `{"group":["LENDING"],"maxLevel":["3"]}`.
+Przykładowo: `{"group":["LENDING"],"commitment":["U"]}`.
 
 | Parametr                           | Obecna semantyka                                                                                                                                                                                        |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -84,7 +89,6 @@ Przykładowo: `{"group":["LENDING"],"maxLevel":["3"]}`.
 | `contractCurrency`                 | Jeden wybór: `PLN` albo `EUR`.                                                                                                                                                                          |
 | `facilityType`                     | Jeden kod typu; słownik jest zwracany w metadanych korzeni.                                                                                                                                             |
 | `commitment`                       | Jeden wybór: `C` albo `U`.                                                                                                                                                                              |
-| `maxLevel`                         | Poziomy biznesowe od 1 do N, gdzie N to 1–6; domyślnie 6. Nie oznacza wyboru wyłącznie poziomu N.                                                                                                       |
 | `expiryDate.from`, `expiryDate.to` | Przedział daty wygaśnięcia, z włączonymi granicami.                                                                                                                                                     |
 | `looDate.from`, `looDate.to`       | Przedział daty LOO, z włączonymi granicami.                                                                                                                                                             |
 | `displayCurrency`                  | `original`, `PLN` albo `EUR`. Parametr prezentacji FE, usuwany z żądania i klucza cache danych. Nie powinien powodować ponownego pobierania drzewa w obecnym modelu.                                    |
@@ -116,8 +120,8 @@ interface FacilityNodeDto {
 | `data`          | Dane produktu opisane poniżej.                                                                                                                                                               |
 
 Oczekujemy zgodności `hasChildren` z `childrenCount > 0`. Po zastosowaniu filtrów
-lub limitu poziomów wartości te mogą się zmienić. Przykład: węzeł z dziećmi w pełnym
-zbiorze może nie mieć dzieci w wyniku ograniczonym do określonego poziomu.
+wartości te mogą się zmienić. Przykład: węzeł z dziećmi w pełnym zbiorze może nie mieć
+dzieci w wyniku zawężonym filtrem.
 
 **DTO nie zawiera zagnieżdżonego `children` ani stanu ładowania interfejsu.**
 Każda odpowiedź przekazuje płaską listę węzłów tej samej listy rodzeństwa.
@@ -293,7 +297,7 @@ Zawierają wyłącznie dane syntetyczne, wraz z pełnym `data`, kwotami i metada
 - [Korzenie po wyszukaniu `Target`](examples/facilities/roots-search.json):
   1 dopasowanie na poziomie 6 oraz metadane przodków.
 
-Przycisk pobrania JSON w `/dev/facilities` eksportuje oryginalną pierwszą odpowiedź
+Przycisk pobrania JSON w `/customers/all/dev-facilities` eksportuje oryginalną pierwszą odpowiedź
 korzeni dla bieżącego zapytania. Plik pozostaje płaską odpowiedzią transportową
 również po rozwinięciu tabeli; nie eksportuje całego scalonego cache.
 

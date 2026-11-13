@@ -17,7 +17,10 @@ import type { FacilityTableRow } from './facilityTable.types';
 
 type Actions = Pick<FacilitiesViewProps, 'getFacilityHref' | 'onOpenRelated' | 'onLoadChildren'>;
 
-/** Column filters live with their fields. View-only controls have no artificial columns. */
+/**
+ * Column filters live with their fields. View-only controls have no artificial columns.
+ * The level cap is not a filter: FacilitiesView shows it as the "Facility level" chips.
+ */
 export function createFacilityTableConfig({
   getFacilityHref,
   onOpenRelated,
@@ -32,6 +35,8 @@ export function createFacilityTableConfig({
         field: 'number',
         labelKey: 'facilities.table.basic',
         width: 520,
+        headerClassName: '!bg-[var(--table-key-column)]',
+        cellClassName: 'bg-[var(--table-key-column)]',
         component: (props) => (
           <FacilityBasicCell
             {...props}
@@ -88,9 +93,10 @@ export function createFacilityTableConfig({
       {
         field: 'utilization',
         labelKey: 'facilities.table.utilization',
-        width: 100,
+        // Wide enough for "% wykorzystania" on one line; the percent sign must not wrap alone.
+        width: 150,
         component: FacilityUtilizationCell,
-        headerClassName: 'text-right',
+        headerClassName: 'whitespace-nowrap text-right',
         cellClassName: 'text-right tabular-nums',
       },
     ],
@@ -123,17 +129,6 @@ export function createFacilityTableConfig({
           { value: 'EUR', label: 'EUR' },
           { value: 'PLN', label: 'PLN' },
         ],
-      }),
-    },
-    {
-      field: 'businessLevel',
-      filterParam: 'maxLevel',
-      labelKey: 'facilities.filter.level',
-      filter: tableFilter(SelectFilter, {
-        options: [1, 2, 3, 4, 5, 6].map((level) => ({
-          value: String(level),
-          label: Array.from({ length: level }, (_, index) => index + 1).join(', '),
-        })),
       }),
     },
     {

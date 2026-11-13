@@ -92,11 +92,11 @@ describe('Facilities tree filtering', () => {
     ).toEqual([]);
   });
 
-  it('applies the level cap to business levels, including roots that start at level three', () => {
-    const result = filterFacilities(source, { q: '', filters: { maxLevel: ['2'] } });
-    expect(flatten(result.nodes).every((node) => node.businessLevel <= 2)).toBe(true);
-    expect(result.nodes.some((node) => node.key === 'intraday-3')).toBe(false);
-    expect(flatten(source).some((node) => node.businessLevel === 6)).toBe(true);
+  it('ignores a legacy level cap: facility levels open the tree instead of hiding rows', () => {
+    const capped = filterFacilities(source, { q: '', filters: { maxLevel: ['2'] } });
+    expect(capped).toEqual(filterFacilities(source, { q: '', filters: {} }));
+    expect(capped.autoExpandedKeys).toEqual([]);
+    expect(flatten(capped.nodes).some((node) => node.businessLevel === 6)).toBe(true);
   });
 
   it('uses inclusive date bounds and excludes missing dates only when a bound applies', () => {
@@ -126,7 +126,6 @@ describe('Facilities tree filtering', () => {
   it('parses malformed URL values without throwing, drops reversed ranges and keeps single controls single', () => {
     const parsed = facilityFiltersSchema.parse({
       group: ['UNKNOWN', 'TFS'],
-      maxLevel: ['NaN'],
       displayCurrency: ['JPY'],
       commitment: ['U', 'C'],
       contractCurrency: ['EUR', 'PLN'],
@@ -137,7 +136,6 @@ describe('Facilities tree filtering', () => {
     });
     expect(parsed).toMatchObject({
       group: ['TFS'],
-      maxLevel: 6,
       displayCurrency: 'original',
       commitment: ['U'],
       contractCurrency: ['EUR'],

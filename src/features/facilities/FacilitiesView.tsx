@@ -15,9 +15,9 @@ import {
   TableActions,
   TableToolbar,
   TreeDataTable,
-  twMerge,
 } from '@/ui';
 import type { TableFilterValues, TreeDataTableProps } from '@/ui';
+import { FacilityChip } from './FacilityChip';
 import { createFacilityTableConfig } from './facilityTable.config';
 import { FACILITY_GROUP_LABELS } from './facilityGroupLabels';
 import {
@@ -36,6 +36,7 @@ import {
 import { formatFacilityAmount, sumFacilitySummaries } from './facilities.formatters';
 import {
   FACILITY_GROUPS,
+  FACILITY_LEVELS,
   facilityNodeChildren,
   facilityNodeKey,
   facilityNodeHasChildren,
@@ -43,6 +44,7 @@ import {
 import type {
   FacilityGroup,
   FacilityIndicator,
+  FacilityLevel,
   FacilityNode,
   FacilityRow,
   FacilitySnapshot,
@@ -53,6 +55,15 @@ const AMOUNT_LABELS = {
   utilizedMinor: 'facilities.amount.utilizedMinor',
   availableMinor: 'facilities.amount.availableMinor',
 } as const satisfies Record<string, MessageKey>;
+
+const TOP_LEVEL = FACILITY_LEVELS[0];
+// A literal tuple index: shortening FACILITY_LEVELS becomes a compile error here.
+const DEEPEST_LEVEL = FACILITY_LEVELS[5];
+
+/** "1, 2, 3": choosing a level opens the tree until every level down to it is visible. */
+function levelLabel(level: FacilityLevel): string {
+  return FACILITY_LEVELS.filter((item) => item <= level).join(', ');
+}
 
 function allNodes(nodes: readonly FacilityNode[]): FacilityNode[] {
   return nodes.flatMap((node) => [node, ...allNodes(node.children)]);
@@ -67,7 +78,11 @@ export interface FacilitiesViewProps extends Pick<
   getFacilityHref: (facility: FacilityRow) => string;
   onOpenRelated: (facility: FacilityRow, indicator: FacilityIndicator) => void;
   onLoadChildren?: (key: string) => Promise<unknown>;
-  onExpandAll?: (signal: AbortSignal) => Promise<readonly string[]>;
+  /**
+   * Lazy owners load the pages needed to open every branch above `level` and return the keys
+   * to expand. Without it, the view opens the branches it already has.
+   */
+  onExpandToLevel?: (level: FacilityLevel, signal: AbortSignal) => Promise<readonly string[]>;
 }
 
 /** Loaded-hierarchy presentation; the owner supplies data/loading intents, the URL owns queries. */
@@ -79,10 +94,11 @@ export function FacilitiesView({
   getFacilityHref,
   onOpenRelated,
   onLoadChildren,
-  onExpandAll,
+  onExpandToLevel,
 }: FacilitiesViewProps) {
   const { t, i18n } = useTranslation();
   const headingId = useId();
+  const levelLabelId = useId();
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const query = useAppSelector(selectListQuery);
   const { setQuery } = useListQueryState();
@@ -123,29 +139,53 @@ export function FacilitiesView({
     facilityNodeChildren,
     facilityNodeHasChildren,
   );
-  const [expandingAll, setExpandingAll] = useState(false);
+  // The chip records the last level the tree was opened to. Manual toggles do not change it,
+  // and a new query starts again from the top level like its expansion does.
+  const [openLevel, setOpenLevel] = useState<{ queryKey: string; level: FacilityLevel } | null>(
+    null,
+  );
+  const selectedLevel = openLevel?.queryKey === queryKey ? openLevel.level : TOP_LEVEL;
+  const [expandingTo, setExpandingTo] = useState<FacilityLevel | null>(null);
   const expansionRequest = useRef(0);
   const expansionController = useRef<AbortController | null>(null);
+  const levelBeforeExpanding = useRef<FacilityLevel>(TOP_LEVEL);
   const latestQueryKey = useRef(queryKey);
   latestQueryKey.current = queryKey;
   useEffect(() => {
-    setExpandingAll(false);
+    setExpandingTo(null);
     return () => {
       expansionController.current?.abort();
     };
   }, [queryKey]);
-  const changeAllExpansion = async (keys: readonly string[]) => {
-    if (!keys.length || !onExpandAll) {
-      setExpandedKeys(keys);
+  const cancelExpanding = () => {
+    expansionController.current?.abort();
+    expansionRequest.current++;
+    setExpandingTo(null);
+    setOpenLevel({ queryKey, level: levelBeforeExpanding.current });
+  };
+  const openToLevel = async (level: FacilityLevel) => {
+    const request = ++expansionRequest.current;
+    expansionController.current?.abort();
+    const forQuery = queryKey;
+    // While another level is still loading, the last fully opened level stays the fallback.
+    if (expandingTo === null) levelBeforeExpanding.current = selectedLevel;
+    setOpenLevel({ queryKey: forQuery, level });
+    if (level === TOP_LEVEL || !onExpandToLevel) {
+      setExpandingTo(null);
+      setExpandedKeys(
+        level === DEEPEST_LEVEL
+          ? branchKeys
+          : allNodes(result.nodes)
+              .filter((node) => node.hasChildren && node.businessLevel < level)
+              .map((node) => node.key),
+      );
       return;
     }
-    const request = ++expansionRequest.current;
     const controller = new AbortController();
     expansionController.current = controller;
-    const forQuery = queryKey;
-    setExpandingAll(true);
+    setExpandingTo(level);
     try {
-      const next = await onExpandAll(controller.signal);
+      const next = await onExpandToLevel(level, controller.signal);
       if (
         !controller.signal.aborted &&
         request === expansionRequest.current &&
@@ -153,10 +193,11 @@ export function FacilitiesView({
       )
         setExpansion({ queryKey: forQuery, keys: next });
     } catch {
-      /* A failed branch exposes its retry control. */
+      // A failed branch exposes its retry control; the chip returns to the previous choice.
+      if (request === expansionRequest.current)
+        setOpenLevel({ queryKey: forQuery, level: levelBeforeExpanding.current });
     } finally {
-      if (!controller.signal.aborted && request === expansionRequest.current)
-        setExpandingAll(false);
+      if (!controller.signal.aborted && request === expansionRequest.current) setExpandingTo(null);
     }
   };
   const shownCurrency = result.filters.displayCurrency;
@@ -183,7 +224,6 @@ export function FacilitiesView({
     facilityType: result.filters.facilityType.slice(0, 1),
     commitment: result.filters.commitment.slice(0, 1),
     displayCurrency: query.filters.displayCurrency ? [shownCurrency] : [],
-    maxLevel: query.filters.maxLevel ? [String(result.filters.maxLevel)] : [],
     'expiryDate.from': result.filters['expiryDate.from'],
     'expiryDate.to': result.filters['expiryDate.to'],
     'looDate.from': result.filters['looDate.from'],
@@ -216,35 +256,21 @@ export function FacilitiesView({
             aria-label={t('facilities.groups')}
             className="mb-6 flex flex-wrap gap-2"
           >
-            {[null, ...FACILITY_GROUPS].map((group) => {
-              const selected =
-                group === null
-                  ? result.filters.group.length === 0
-                  : result.filters.group.includes(group);
-              return (
-                <button
-                  key={group ?? 'all'}
-                  type="button"
-                  aria-pressed={selected}
-                  className={twMerge(
-                    'rounded-full border border-[var(--accent)] px-3 py-1 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--focus)]',
-                    selected
-                      ? 'bg-[var(--accent)] text-white'
-                      : 'bg-[var(--surface)] text-[var(--accent)]',
-                  )}
-                  onClick={() => changeGroups(group)}
-                >
-                  {selected ? (
-                    <span aria-hidden="true" className="mr-1">
-                      ✓
-                    </span>
-                  ) : null}
-                  {group === null
-                    ? t('facilities.group.all')
-                    : t(FACILITY_GROUP_LABELS[group]) + ' (' + groupCounts[group] + ')'}
-                </button>
-              );
-            })}
+            {[null, ...FACILITY_GROUPS].map((group) => (
+              <FacilityChip
+                key={group ?? 'all'}
+                selected={
+                  group === null
+                    ? result.filters.group.length === 0
+                    : result.filters.group.includes(group)
+                }
+                onClick={() => changeGroups(group)}
+              >
+                {group === null
+                  ? t('facilities.group.all')
+                  : t(FACILITY_GROUP_LABELS[group]) + ' (' + groupCounts[group] + ')'}
+              </FacilityChip>
+            ))}
           </div>
           <section
             aria-label={t('facilities.summary.title')}
@@ -262,6 +288,25 @@ export function FacilitiesView({
               ))}
             </dl>
           </section>
+          <div className="mb-6">
+            <p id={levelLabelId} className="mb-2 mt-0 text-sm font-bold">
+              {t('facilities.filter.level')}
+            </p>
+            <div role="group" aria-labelledby={levelLabelId} className="flex flex-wrap gap-2">
+              {FACILITY_LEVELS.map((level) => (
+                <FacilityChip
+                  key={level}
+                  selected={selectedLevel === level}
+                  disabled={loading}
+                  onClick={() => {
+                    void openToLevel(level);
+                  }}
+                >
+                  {levelLabel(level)}
+                </FacilityChip>
+              ))}
+            </div>
+          </div>
           <TableToolbar
             filters={
               <TableFilters
@@ -296,7 +341,8 @@ export function FacilitiesView({
                   )
                 }
                 onExpandedKeysChange={(keys) => {
-                  if (!expandingAll) void changeAllExpansion(keys);
+                  if (expandingTo === null)
+                    void openToLevel(keys.length ? DEEPEST_LEVEL : TOP_LEVEL);
                 }}
               />
             }
@@ -305,17 +351,15 @@ export function FacilitiesView({
       ) : (
         <ListToolbarSkeleton />
       )}
-      {expandingAll ? (
+      {expandingTo !== null ? (
         <p role="status">
-          {t('facilities.loadingAll')}{' '}
+          {expandingTo === DEEPEST_LEVEL
+            ? t('facilities.loadingAll')
+            : t('facilities.loadingLevels', { levels: levelLabel(expandingTo) })}{' '}
           <button
             type="button"
             className="text-[var(--accent)] underline"
-            onClick={() => {
-              expansionController.current?.abort();
-              expansionRequest.current++;
-              setExpandingAll(false);
-            }}
+            onClick={cancelExpanding}
           >
             {t('facilities.cancelLoadingAll')}
           </button>

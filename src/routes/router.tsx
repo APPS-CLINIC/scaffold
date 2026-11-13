@@ -15,10 +15,13 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <HomePage /> },
       // The PoC has no backend contract. Keep its route and fixture out of production.
+      // It lives below /customers because nginx forwards only application prefixes; the
+      // static `all` segment keeps it out of the customer id slot. Mirrors
+      // FACILITIES_PREVIEW_PATH, which is not imported so src/dev stays out of this chunk.
       ...(import.meta.env.DEV
         ? [
             {
-              path: 'dev/facilities/:facilityId?',
+              path: 'customers/all/dev-facilities/:facilityId?',
               caseSensitive: true,
               lazy: async () => {
                 const { FacilitiesPreviewPage } =

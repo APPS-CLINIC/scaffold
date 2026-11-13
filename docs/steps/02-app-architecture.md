@@ -169,6 +169,15 @@ contract: explicit child metadata, bounded sibling responses, a separate
 loaded projection in RTK Query, and a root-only JSON export.
 → [ADR 0048](../adr/0048-lazy-facilities-preview-data-contract.md).
 
+TreeDataTable rows are not indented; bracket guides in each parent's depth
+colour show nesting, and Facilities' level chips open the tree to a business
+level instead of filtering it. The preview is served below `/customers` for the
+nginx-proxied environment.
+→ [ADR 0053](../adr/0053-facilities-preview-route-below-customers.md),
+[ADR 0054](../adr/0054-flat-tree-rows-with-parent-stripes.md),
+[ADR 0055](../adr/0055-facility-level-chips-open-the-tree.md),
+[ADR 0056](../adr/0056-bracket-guides-for-tree-rows.md).
+
 Everything imports UI primitives from `@/ui`, a thin stub layer, so the
 organization's internal UI library can be plugged in within a single folder
 without touching feature code.

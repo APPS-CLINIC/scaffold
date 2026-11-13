@@ -35,14 +35,17 @@ function NavigationProbe() {
   );
 }
 
-function renderView(path = '/dev/facilities', extra: Partial<FacilitiesViewProps> = {}) {
+function renderView(
+  path = '/customers/all/dev-facilities',
+  extra: Partial<FacilitiesViewProps> = {},
+) {
   const onOpenRelated = vi.fn();
   const rendered = renderWithProviders(
     <>
       <UrlStateSync />
       <FacilitiesView
         snapshot={facilityPreviewSnapshot}
-        getFacilityHref={(facility) => '/dev/facilities/' + facility.id}
+        getFacilityHref={(facility) => '/customers/all/dev-facilities/' + facility.id}
         onOpenRelated={onOpenRelated}
         {...extra}
       />
@@ -59,25 +62,33 @@ describe('FacilitiesView', () => {
   it('enables expand all from root-only lazy data and delegates fetching to the owner', async () => {
     const root = facilityPreviewSnapshot.nodes[0];
     if (!root) throw new Error('Expected a root fixture');
-    const onExpandAll = vi.fn(async (_signal: AbortSignal) => [root.key]);
-    renderView('/dev/facilities', {
+    const onExpandToLevel = vi.fn(async (_level: number, _signal: AbortSignal) => [root.key]);
+    renderView('/customers/all/dev-facilities', {
       snapshot: {
         ...facilityPreviewSnapshot,
         nodes: [{ ...root, children: [], childrenState: 'unloaded' }],
       },
-      onExpandAll,
+      onExpandToLevel,
     });
+    const user = userEvent.setup();
     const expandAll = screen.getByRole('switch', { name: 'Expand all' });
     expect(expandAll).toBeEnabled();
-    await userEvent.setup().click(expandAll);
-    expect(onExpandAll).toHaveBeenCalledExactlyOnceWith(expect.any(AbortSignal));
+    await user.click(expandAll);
+    expect(onExpandToLevel).toHaveBeenCalledExactlyOnceWith(6, expect.any(AbortSignal));
     expect(screen.queryByRole('link', { name: 'F-1002' })).not.toBeInTheDocument();
+    const levels = screen.getByRole('group', { name: 'Facility level' });
+    expect(within(levels).getByRole('button', { name: '1, 2, 3, 4, 5, 6' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    await user.click(within(levels).getByRole('button', { name: '1, 2, 3' }));
+    expect(onExpandToLevel).toHaveBeenLastCalledWith(3, expect.any(AbortSignal));
   });
   it('shows an expansion control for an unloaded branch even without query metadata', async () => {
     const root = facilityPreviewSnapshot.nodes[0];
     if (!root) throw new Error('Expected a root fixture');
     const onLoadChildren = vi.fn(async () => undefined);
-    renderView('/dev/facilities', {
+    renderView('/customers/all/dev-facilities', {
       snapshot: {
         ...facilityPreviewSnapshot,
         nodes: [{ ...root, children: [], childrenState: 'unloaded' }],
@@ -90,17 +101,23 @@ describe('FacilitiesView', () => {
     expect(onLoadChildren).toHaveBeenCalledWith('lending-1');
     expect(screen.queryByRole('link', { name: 'F-1002' })).not.toBeInTheDocument();
   });
-  it('cancels expand all and ignores its eventual result', async () => {
+  it('cancels opening a level, restores the previous chip and ignores the eventual result', async () => {
     const user = userEvent.setup();
     let finish: (keys: readonly string[]) => void = () => undefined;
     const pending = new Promise<readonly string[]>((resolve) => {
       finish = resolve;
     });
-    const expandAll = vi.fn((_signal: AbortSignal) => pending);
-    renderView('/dev/facilities', { onExpandAll: expandAll });
-    await user.click(screen.getByRole('switch', { name: 'Expand all' }));
+    const expandToLevel = vi.fn((_level: number, _signal: AbortSignal) => pending);
+    renderView('/customers/all/dev-facilities', { onExpandToLevel: expandToLevel });
+    const levels = screen.getByRole('group', { name: 'Facility level' });
+    await user.click(within(levels).getByRole('button', { name: '1, 2, 3, 4' }));
+    expect(screen.getByText(/Opening levels 1, 2, 3, 4/)).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Cancel expanding' }));
-    expect(expandAll.mock.calls[0]?.[0].aborted).toBe(true);
+    expect(expandToLevel.mock.calls[0]?.[1].aborted).toBe(true);
+    expect(within(levels).getByRole('button', { name: '1' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
     await act(async () => {
       finish(['lending-1', 'lending-2', 'lending-3', 'lending-4', 'lending-5']);
       await pending;
@@ -151,7 +168,7 @@ describe('FacilitiesView', () => {
 
   it('applies quick groups to the URL, keeps unrelated params and uses group summaries once', async () => {
     const user = userEvent.setup();
-    renderView('/dev/facilities?utm_source=review');
+    renderView('/customers/all/dev-facilities?utm_source=review');
     await user.click(screen.getByRole('button', { name: 'Lending (inc. TFS) (8)' }));
     expect(url()).toContain('group=LENDING');
     expect(url()).toContain('utm_source=review');
@@ -163,27 +180,58 @@ describe('FacilitiesView', () => {
     expect(screen.getByRole('link', { name: 'F-2001' })).toBeInTheDocument();
   });
 
-  it('cancels a filter draft and then saves the level cap, currency and commitment together', async () => {
+  it('opens the tree to the chosen facility level without hiding rows or touching the URL', async () => {
     const user = userEvent.setup();
-    renderView('/dev/facilities?utm_source=review');
+    renderView('/customers/all/dev-facilities?utm_source=review');
+    const levels = screen.getByRole('group', { name: 'Facility level' });
+    const chip = (name: string) => within(levels).getByRole('button', { name });
+    const link = (name: string) => screen.queryByRole('link', { name });
+    expect(
+      within(levels)
+        .getAllByRole('button')
+        .map((button) => button.textContent),
+    ).toEqual(['✓1', '1, 2', '1, 2, 3', '1, 2, 3, 4', '1, 2, 3, 4, 5', '1, 2, 3, 4, 5, 6']);
+    expect(link('F-1002')).not.toBeInTheDocument();
+    await user.click(chip('1, 2, 3'));
+    expect(chip('1, 2, 3')).toHaveAttribute('aria-pressed', 'true');
+    expect(link('F-1003')).toBeInTheDocument();
+    expect(link('F-1004')).not.toBeInTheDocument();
+    // A root that starts at level three is shown but not opened by "1, 2, 3".
+    expect(link('F-2001')).toBeInTheDocument();
+    expect(link('F-2002')).not.toBeInTheDocument();
+    await user.click(chip('1, 2, 3, 4, 5'));
+    expect(link('F-1005')).toBeInTheDocument();
+    expect(link('F-1006')).not.toBeInTheDocument();
+    // Regression: the deepest choice must open level five rather than reset the tree.
+    await user.click(chip('1, 2, 3, 4, 5, 6'));
+    expect(link('F-1006')).toBeInTheDocument();
+    expect(screen.getByRole('switch', { name: 'Expand all' })).toBeChecked();
+    await user.click(screen.getByRole('switch', { name: 'Expand all' }));
+    expect(link('F-1002')).not.toBeInTheDocument();
+    expect(chip('1')).toHaveAttribute('aria-pressed', 'true');
+    expect(url()).not.toContain('maxLevel');
+    expect(url()).toContain('utm_source=review');
+    await user.click(screen.getByLabelText('Customize filters', { selector: 'button' }));
+    const dialog = screen.getByRole('dialog', { name: 'Customize filters' });
+    expect(within(dialog).queryByLabelText('Facility level')).not.toBeInTheDocument();
+  });
+
+  it('cancels a filter draft and then saves currency and commitment together', async () => {
+    const user = userEvent.setup();
+    renderView('/customers/all/dev-facilities?utm_source=review');
     const open = () => screen.getByLabelText('Customize filters', { selector: 'button' });
     await user.click(open());
     let dialog = screen.getByRole('dialog', { name: 'Customize filters' });
     await chooseDropdownOption(
       user,
-      within(dialog).getByLabelText('Facility', { selector: 'input' }),
-      '1, 2',
+      within(dialog).getByLabelText('C/U', { selector: 'input' }),
+      'U (uncommitted)',
     );
     await user.click(within(dialog).getByRole('button', { name: 'Cancel' }));
-    expect(url()).not.toContain('maxLevel');
+    expect(url()).not.toContain('commitment');
     await user.click(open());
     dialog = screen.getByRole('dialog', { name: 'Customize filters' });
-    expect(within(dialog).getByLabelText('Facility', { selector: 'input' })).toHaveValue('');
-    await chooseDropdownOption(
-      user,
-      within(dialog).getByLabelText('Facility', { selector: 'input' }),
-      '1, 2',
-    );
+    expect(within(dialog).getByLabelText('C/U', { selector: 'input' })).toHaveValue('');
     await chooseDropdownOption(
       user,
       within(dialog).getByLabelText('Show amounts in', { selector: 'input' }),
@@ -195,7 +243,6 @@ describe('FacilitiesView', () => {
       'U (uncommitted)',
     );
     await user.click(within(dialog).getByRole('button', { name: 'Save' }));
-    expect(url()).toContain('maxLevel=2');
     expect(url()).toContain('displayCurrency=EUR');
     expect(url()).toContain('commitment=U');
     expect(url()).toContain('utm_source=review');
