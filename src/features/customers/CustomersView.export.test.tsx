@@ -1,5 +1,5 @@
 import type { ComponentProps } from 'react';
-import { act, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type * as IwaComponents from 'iwa-react-components';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -13,6 +13,7 @@ import {
 } from '@/test/customerApiTestTransport';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import { mockTableContainerWidth } from '@/test/tableLayout';
+import { userWithFakeTimers } from '@/test/userWithFakeTimers';
 import { CustomersView } from './CustomersView';
 
 type RadioGroupProps = ComponentProps<typeof IwaComponents.RadioGroup>;
@@ -94,6 +95,8 @@ beforeEach(async () => {
 });
 
 afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
   vi.unstubAllGlobals();
   vi.restoreAllMocks();
 });
@@ -240,11 +243,17 @@ describe('CustomersView export', () => {
   });
 
   it('shows a download that ends while the list loads once the load is over', async () => {
-    const user = userEvent.setup();
+    const user = userWithFakeTimers();
+    const advance = async (ms: number) => {
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(ms);
+      });
+    };
     const download = vi
       .spyOn(baseApiModule, 'downloadFileFromResponse')
       .mockResolvedValue(undefined);
     renderPage();
+    await advance(1000);
     await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.');
     await user.click(exportButton());
     let answer: (response: Response) => void = () => {};
@@ -255,21 +264,30 @@ describe('CustomersView export', () => {
         }),
     );
     await user.click(within(exportDialog()).getByRole('button', { name: 'Download' }));
+    await advance(0);
     await screen.findByText(
       'Download started. To see the details, open the downloads in your web browser',
     );
 
     const { release } = holdCustomerListResponses();
     await user.click(screen.getByText('Refresh'));
-    expect(await screen.findByText('Loading the customer list')).toBeInTheDocument();
-
-    answer(new Response(new Blob(['xlsx'])));
-    await waitFor(() => expect(download).toHaveBeenCalledTimes(1));
+    await advance(300);
     expect(screen.getByText('Loading the customer list')).toBeInTheDocument();
 
-    release();
+    await act(async () => answer(new Response(new Blob(['xlsx']))));
+    await advance(0);
+    await waitFor(() => expect(download).toHaveBeenCalledTimes(1));
+    expect(screen.getByText('Loading the customer list')).toBeInTheDocument();
+    expect(screen.queryByText('The customer list has been downloaded')).not.toBeInTheDocument();
 
-    expect(await screen.findByText('The customer list has been downloaded')).toBeInTheDocument();
+    await act(async () => release());
+    await advance(0);
+    expect(screen.getByText('Loading the customer list')).toBeInTheDocument();
+    await advance(500);
+
+    expect(screen.queryByText('Loading the customer list')).not.toBeInTheDocument();
+    expect(snackbar()).toMatchObject({ visibility: true });
+    expect(screen.getByText('The customer list has been downloaded')).toBeInTheDocument();
   });
 
   it('says so under the table when the download fails', async () => {
