@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useId, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/app/hooks';
 import { selectListQuery } from '@/features/urlState/urlState.selectors';
@@ -8,7 +8,6 @@ import type { MessageKey } from '@/i18n/messages/pl';
 import {
   GenericSearch,
   ListToolbarSkeleton,
-  getExpandableTreeKeys,
   pickTableFilters,
   replaceTableFilters,
   TableFilters,
@@ -30,25 +29,26 @@ import {
 import type { FacilityTableRow } from './facilityTable.types';
 import {
   facilityFiltersSchema,
+  facilityQueryKey,
   filterFacilities,
   includesFacilityGroup,
 } from './facilities.filters';
 import { formatFacilityAmount, sumFacilitySummaries } from './facilities.formatters';
 import {
+  DEEPEST_FACILITY_LEVEL,
   FACILITY_GROUPS,
   FACILITY_LEVELS,
-  facilityNodeChildren,
-  facilityNodeKey,
-  facilityNodeHasChildren,
+  allFacilityNodes,
 } from './facilities.types';
 import type {
   FacilityGroup,
   FacilityIndicator,
   FacilityLevel,
-  FacilityNode,
   FacilityRow,
   FacilitySnapshot,
 } from './facilities.types';
+import { useFacilityTreeExpansion } from './useFacilityTreeExpansion';
+import type { FacilityTreeExpansionOptions } from './useFacilityTreeExpansion';
 
 const AMOUNT_LABELS = {
   grantedMinor: 'facilities.amount.grantedMinor',
@@ -56,17 +56,9 @@ const AMOUNT_LABELS = {
   availableMinor: 'facilities.amount.availableMinor',
 } as const satisfies Record<string, MessageKey>;
 
-const TOP_LEVEL = FACILITY_LEVELS[0];
-// A literal tuple index: shortening FACILITY_LEVELS becomes a compile error here.
-const DEEPEST_LEVEL = FACILITY_LEVELS[5];
-
 /** "1, 2, 3": choosing a level opens the tree until every level down to it is visible. */
 function levelLabel(level: FacilityLevel): string {
   return FACILITY_LEVELS.filter((item) => item <= level).join(', ');
-}
-
-function allNodes(nodes: readonly FacilityNode[]): FacilityNode[] {
-  return nodes.flatMap((node) => [node, ...allNodes(node.children)]);
 }
 
 export interface FacilitiesViewProps extends Pick<
@@ -78,11 +70,7 @@ export interface FacilitiesViewProps extends Pick<
   getFacilityHref: (facility: FacilityRow) => string;
   onOpenRelated: (facility: FacilityRow, indicator: FacilityIndicator) => void;
   onLoadChildren?: (key: string) => Promise<unknown>;
-  /**
-   * Lazy owners load the pages needed to open every branch above `level` and return the keys
-   * to expand. Without it, the view opens the branches it already has.
-   */
-  onExpandToLevel?: (level: FacilityLevel, signal: AbortSignal) => Promise<readonly string[]>;
+  onExpandToLevel?: FacilityTreeExpansionOptions['onExpandToLevel'];
 }
 
 /** Loaded-hierarchy presentation; the owner supplies data/loading intents, the URL owns queries. */
@@ -116,7 +104,7 @@ export function FacilitiesView({
   const facilityTypes = useMemo(
     () =>
       snapshot.view?.facilityTypes ??
-      [...new Set(allNodes(snapshot.nodes).map((node) => node.data.type))].sort(),
+      [...new Set(allFacilityNodes(snapshot.nodes).map((node) => node.data.type))].sort(),
     [snapshot],
   );
   const { config, filterFields: fields } = useMemo(
@@ -124,82 +112,12 @@ export function FacilitiesView({
       createFacilityTableConfig({ getFacilityHref, onOpenRelated, facilityTypes, onLoadChildren }),
     [getFacilityHref, onOpenRelated, facilityTypes, onLoadChildren],
   );
-  const queryKey = JSON.stringify({
-    q: query.q,
-    filters: { ...result.filters, displayCurrency: undefined },
+  const tree = useFacilityTreeExpansion({
+    queryKey: facilityQueryKey(query.q, result.filters),
+    nodes: result.nodes,
+    autoExpandedKeys: result.autoExpandedKeys,
+    onExpandToLevel,
   });
-  const [expansion, setExpansion] = useState<{ queryKey: string; keys: readonly string[] } | null>(
-    null,
-  );
-  const expandedKeys = expansion?.queryKey === queryKey ? expansion.keys : result.autoExpandedKeys;
-  const setExpandedKeys = (keys: readonly string[]) => setExpansion({ queryKey, keys });
-  const branchKeys = getExpandableTreeKeys(
-    result.nodes,
-    facilityNodeKey,
-    facilityNodeChildren,
-    facilityNodeHasChildren,
-  );
-  // The chip records the last level the tree was opened to. Manual toggles do not change it,
-  // and a new query starts again from the top level like its expansion does.
-  const [openLevel, setOpenLevel] = useState<{ queryKey: string; level: FacilityLevel } | null>(
-    null,
-  );
-  const selectedLevel = openLevel?.queryKey === queryKey ? openLevel.level : TOP_LEVEL;
-  const [expandingTo, setExpandingTo] = useState<FacilityLevel | null>(null);
-  const expansionRequest = useRef(0);
-  const expansionController = useRef<AbortController | null>(null);
-  const levelBeforeExpanding = useRef<FacilityLevel>(TOP_LEVEL);
-  const latestQueryKey = useRef(queryKey);
-  latestQueryKey.current = queryKey;
-  useEffect(() => {
-    setExpandingTo(null);
-    return () => {
-      expansionController.current?.abort();
-    };
-  }, [queryKey]);
-  const cancelExpanding = () => {
-    expansionController.current?.abort();
-    expansionRequest.current++;
-    setExpandingTo(null);
-    setOpenLevel({ queryKey, level: levelBeforeExpanding.current });
-  };
-  const openToLevel = async (level: FacilityLevel) => {
-    const request = ++expansionRequest.current;
-    expansionController.current?.abort();
-    const forQuery = queryKey;
-    // While another level is still loading, the last fully opened level stays the fallback.
-    if (expandingTo === null) levelBeforeExpanding.current = selectedLevel;
-    setOpenLevel({ queryKey: forQuery, level });
-    if (level === TOP_LEVEL || !onExpandToLevel) {
-      setExpandingTo(null);
-      setExpandedKeys(
-        level === DEEPEST_LEVEL
-          ? branchKeys
-          : allNodes(result.nodes)
-              .filter((node) => node.hasChildren && node.businessLevel < level)
-              .map((node) => node.key),
-      );
-      return;
-    }
-    const controller = new AbortController();
-    expansionController.current = controller;
-    setExpandingTo(level);
-    try {
-      const next = await onExpandToLevel(level, controller.signal);
-      if (
-        !controller.signal.aborted &&
-        request === expansionRequest.current &&
-        forQuery === latestQueryKey.current
-      )
-        setExpansion({ queryKey: forQuery, keys: next });
-    } catch {
-      // A failed branch exposes its retry control; the chip returns to the previous choice.
-      if (request === expansionRequest.current)
-        setOpenLevel({ queryKey: forQuery, level: levelBeforeExpanding.current });
-    } finally {
-      if (!controller.signal.aborted && request === expansionRequest.current) setExpandingTo(null);
-    }
-  };
   const shownCurrency = result.filters.displayCurrency;
   const tableRows = useMemo(
     () => toFacilityTableRows(result.nodes, shownCurrency, new Set(result.contextKeys)),
@@ -215,8 +133,9 @@ export function FacilitiesView({
     Object.fromEntries(
       FACILITY_GROUPS.map((group) => [
         group,
-        allNodes(snapshot.nodes).filter((node) => includesFacilityGroup(node.data.group, [group]))
-          .length,
+        allFacilityNodes(snapshot.nodes).filter((node) =>
+          includesFacilityGroup(node.data.group, [group]),
+        ).length,
       ]),
     );
   const ownedValues: TableFilterValues = {
@@ -296,10 +215,10 @@ export function FacilitiesView({
               {FACILITY_LEVELS.map((level) => (
                 <FacilityChip
                   key={level}
-                  selected={selectedLevel === level}
+                  selected={tree.selectedLevel === level}
                   disabled={loading}
                   onClick={() => {
-                    void openToLevel(level);
+                    void tree.openToLevel(level);
                   }}
                 >
                   {levelLabel(level)}
@@ -329,21 +248,10 @@ export function FacilitiesView({
             }
             actions={
               <TableActions
-                expandableKeys={loading ? [] : branchKeys}
-                expandedKeys={loading ? [] : expandedKeys}
-                allExpanded={
-                  branchKeys.length > 0 &&
-                  branchKeys.every((key) => expandedKeys.includes(key)) &&
-                  !allNodes(result.nodes).some(
-                    (node) =>
-                      node.hasChildren &&
-                      (node.childrenState !== 'loaded' || node.nextCursor !== null),
-                  )
-                }
-                onExpandedKeysChange={(keys) => {
-                  if (expandingTo === null)
-                    void openToLevel(keys.length ? DEEPEST_LEVEL : TOP_LEVEL);
-                }}
+                expandableKeys={loading ? [] : tree.branchKeys}
+                expandedKeys={loading ? [] : tree.expandedKeys}
+                allExpanded={tree.allExpanded}
+                onExpandedKeysChange={(keys) => tree.setAllExpanded(keys.length > 0)}
               />
             }
           />
@@ -351,15 +259,15 @@ export function FacilitiesView({
       ) : (
         <ListToolbarSkeleton />
       )}
-      {expandingTo !== null ? (
+      {tree.expandingTo !== null ? (
         <p role="status">
-          {expandingTo === DEEPEST_LEVEL
+          {tree.expandingTo === DEEPEST_FACILITY_LEVEL
             ? t('facilities.loadingAll')
-            : t('facilities.loadingLevels', { levels: levelLabel(expandingTo) })}{' '}
+            : t('facilities.loadingLevels', { levels: levelLabel(tree.expandingTo) })}{' '}
           <button
             type="button"
             className="text-[var(--accent)] underline"
-            onClick={cancelExpanding}
+            onClick={tree.cancelExpanding}
           >
             {t('facilities.cancelLoadingAll')}
           </button>
@@ -384,8 +292,8 @@ export function FacilitiesView({
             void onLoadChildren?.(row.key).catch(() => undefined);
         }}
         config={config}
-        expandedKeys={loading ? [] : expandedKeys}
-        onExpandedKeysChange={setExpandedKeys}
+        expandedKeys={loading ? [] : tree.expandedKeys}
+        onExpandedKeysChange={tree.setExpandedKeys}
         labels={{
           table: t('facilities.title'),
           notAvailable: '–',

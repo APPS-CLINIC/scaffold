@@ -2,7 +2,7 @@
 
 Storybook renders the existing table components, their configured cells and
 surrounding controls. It runs separately from the application and does not
-replace `/customers/all/dev-facilities` as an integration check.
+replace `/facilities` as an integration check.
 
 ## Commands
 

@@ -1,15 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import type { SetStateAction } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { FacilitiesView } from '@/features/facilities';
-import type {
-  FacilityIndicator,
-  FacilityLevel,
-  FacilityNode,
-  FacilityRow,
-  FacilitySnapshot,
-} from '@/features/facilities';
+import { FacilitiesView, allFacilityNodes } from '@/features/facilities';
+import type { FacilityIndicator, FacilityRow, FacilitySnapshot } from '@/features/facilities';
 import {
   Button,
   CustomizableDialog,
@@ -17,26 +11,14 @@ import {
   DIALOG_FOOTER_CLASS_NAME,
   DialogHeading,
   resolveVisibility,
-  useLoadingPhase,
 } from '@/ui';
-import { useAppDispatch, useAppSelector } from '@/app/hooks';
-import { selectListQuery } from '@/features/urlState/urlState.selectors';
-import {
-  facilitiesPreviewApi,
-  useGetFacilityPreviewRootsQuery,
-  useLazyGetFacilityPreviewChildrenQuery,
-} from './facilitiesPreview.api';
 import { FACILITIES_PREVIEW_PATH } from './facilitiesPreview.path';
 import { getFacilityPreviewDetail } from './facilitiesPreview.service';
-import type { FacilityChildrenRequest, FacilityPreviewQuery } from './facilitiesPreview.service';
+import { useFacilitiesPreview } from './useFacilitiesPreview';
 
 const EMPTY_SNAPSHOT: FacilitySnapshot = { asOf: '', nodes: [], summaries: [] };
 
-function flatten(nodes: readonly FacilityNode[]): FacilityNode[] {
-  return nodes.flatMap((node) => [node, ...flatten(node.children)]);
-}
-
-/** Development-only interactive PoC; no real customer, endpoint or summary request. */
+/** Interactive PoC on simulated data; no real customer, endpoint or summary request. */
 export function FacilitiesPreviewPage() {
   const { t } = useTranslation();
   const { facilityId } = useParams();
@@ -46,115 +28,30 @@ export function FacilitiesPreviewPage() {
     facility: FacilityRow;
     indicator: FacilityIndicator;
   } | null>(null);
-  const dispatch = useAppDispatch();
-  const listQuery = useAppSelector(selectListQuery);
-  // Display currency is a presentation variant; it must not invalidate loaded branches.
-  const requestKey = JSON.stringify({
-    q: listQuery.q,
-    filters: Object.fromEntries(
-      Object.entries(listQuery.filters).filter(([key]) => key !== 'displayCurrency'),
-    ),
-  });
-  // A currency-only URL change keeps the same service request and cached branches.
-  const query = useMemo(() => JSON.parse(requestKey) as FacilityPreviewQuery, [requestKey]);
   const {
-    currentData: data,
-    data: previousData,
+    data,
+    previousData,
     isError,
-    isLoading,
-    isFetching,
     refetch,
-  } = useGetFacilityPreviewRootsQuery(query);
-  const loadingPhase = useLoadingPhase(isFetching, requestKey);
-  const tableLoading = isLoading || loadingPhase !== 'idle';
-  const [toolbarReady, setToolbarReady] = useState(false);
-  if (!toolbarReady && (data !== undefined || isError)) setToolbarReady(true);
-  const [fetchChildren] = useLazyGetFacilityPreviewChildrenQuery();
-  const loadPage = useCallback(
-    async (request: FacilityChildrenRequest, signal?: AbortSignal) => {
-      signal?.throwIfAborted();
-      const pending = fetchChildren(request);
-      const abort = () => pending.abort();
-      signal?.addEventListener('abort', abort, { once: true });
-      try {
-        return await pending.unwrap();
-      } finally {
-        signal?.removeEventListener('abort', abort);
-      }
-    },
-    [fetchChildren],
-  );
+    tableLoading,
+    toolbarReady,
+    loadChildren,
+    loadMoreRoots,
+    expandToLevel,
+  } = useFacilitiesPreview();
   const selected = facilityId
-    ? (flatten(data?.snapshot.nodes ?? []).find((node) => node.data.id === facilityId) ??
+    ? (allFacilityNodes(data?.snapshot.nodes ?? []).find((node) => node.data.id === facilityId) ??
       getFacilityPreviewDetail(facilityId))
     : undefined;
-  const readData = useCallback(
-    () =>
-      dispatch(
-        (_dispatch, getState) =>
-          facilitiesPreviewApi.endpoints.getFacilityPreviewRoots.select(query)(getState()).data,
-      ),
-    [dispatch, query],
+  // Stable callbacks keep the view's memoised table config, so cells are not rebuilt per render.
+  const getFacilityHref = useCallback(
+    (facility: FacilityRow) =>
+      FACILITIES_PREVIEW_PATH + '/' + encodeURIComponent(facility.id) + search,
+    [search],
   );
-  const loadChildren = useCallback(
-    async (key: string, signal?: AbortSignal) => {
-      const node = flatten(readData()?.snapshot.nodes ?? []).find((item) => item.key === key);
-      if (!node?.hasChildren || (node.childrenState === 'loaded' && node.nextCursor === null))
-        return;
-      return loadPage({ query, parentKey: key, cursor: node.nextCursor ?? undefined }, signal);
-    },
-    [readData, query, loadPage],
-  );
-  const response = data?.response;
-  const loadMoreRoots = useCallback(
-    async (signal?: AbortSignal) => {
-      const cursor = readData()?.nextRootCursor;
-      if (cursor) return loadPage({ query, parentKey: null, cursor }, signal);
-    },
-    [readData, loadPage, query],
-  );
-  useEffect(() => {
-    let active = true;
-    const revealMatches = async () => {
-      for (const key of [...(response?.view.autoExpandedKeys ?? [])].reverse()) {
-        if (!active) return;
-        await loadChildren(key);
-      }
-    };
-    void revealMatches().catch(() => undefined);
-    return () => {
-      active = false;
-    };
-  }, [response, loadChildren]);
-  // Opens every branch above `level`, fetching the root and child pages it needs on the way.
-  const expandToLevel = useCallback(
-    async (level: FacilityLevel, signal: AbortSignal) => {
-      while (readData()?.nextRootCursor) {
-        signal.throwIfAborted();
-        await loadMoreRoots(signal);
-      }
-      const queue = [...(readData()?.snapshot.nodes ?? [])];
-      const keys: string[] = [];
-      for (let index = 0; index < queue.length; index++) {
-        signal.throwIfAborted();
-        const pending = queue[index];
-        if (!pending?.hasChildren || pending.businessLevel >= level) continue;
-        keys.push(pending.key);
-        let current = flatten(readData()?.snapshot.nodes ?? []).find(
-          (node) => node.key === pending.key,
-        );
-        while (current && (current.childrenState !== 'loaded' || current.nextCursor !== null)) {
-          signal.throwIfAborted();
-          await loadChildren(current.key, signal);
-          current = flatten(readData()?.snapshot.nodes ?? []).find(
-            (node) => node.key === pending.key,
-          );
-        }
-        queue.push(...(current?.children ?? []));
-      }
-      return keys;
-    },
-    [loadChildren, loadMoreRoots, readData],
+  const openRelated = useCallback(
+    (facility: FacilityRow, indicator: FacilityIndicator) => setRelated({ facility, indicator }),
+    [],
   );
   const shown = related?.facility ?? selected?.data;
 
@@ -211,10 +108,8 @@ export function FacilitiesPreviewPage() {
         toolbarReady={toolbarReady}
         onLoadChildren={loadChildren}
         onExpandToLevel={expandToLevel}
-        getFacilityHref={(facility) =>
-          FACILITIES_PREVIEW_PATH + '/' + encodeURIComponent(facility.id) + search
-        }
-        onOpenRelated={(facility, indicator) => setRelated({ facility, indicator })}
+        getFacilityHref={getFacilityHref}
+        onOpenRelated={openRelated}
       />
       {data?.nextRootCursor ? (
         <div>

@@ -171,9 +171,9 @@ loaded projection in RTK Query, and a root-only JSON export.
 
 TreeDataTable rows are not indented; bracket guides in each parent's depth
 colour show nesting, and Facilities' level chips open the tree to a business
-level instead of filtering it. The preview is served below `/customers` for the
-nginx-proxied environment.
-→ [ADR 0053](../adr/0053-facilities-preview-route-below-customers.md),
+level instead of filtering it. Until the backend exists, the preview is served
+at `/facilities` in every build, so it can be tried on the shared environment.
+→ [ADR 0058](../adr/0058-facilities-preview-at-facilities-in-every-build.md),
 [ADR 0054](../adr/0054-flat-tree-rows-with-parent-stripes.md),
 [ADR 0055](../adr/0055-facility-level-chips-open-the-tree.md),
 [ADR 0056](../adr/0056-bracket-guides-for-tree-rows.md).

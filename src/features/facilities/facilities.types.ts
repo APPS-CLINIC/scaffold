@@ -103,3 +103,17 @@ export interface FacilitySnapshot {
 export const facilityNodeKey = (node: FacilityNode) => node.key;
 export const facilityNodeChildren = (node: FacilityNode) => node.children;
 export const facilityNodeHasChildren = (node: FacilityNode) => node.hasChildren;
+
+export const TOP_FACILITY_LEVEL = FACILITY_LEVELS[0];
+// A literal tuple index: shortening FACILITY_LEVELS becomes a compile error here.
+export const DEEPEST_FACILITY_LEVEL = FACILITY_LEVELS[5];
+
+/** Every loaded node, parents before their children. */
+export function allFacilityNodes(nodes: readonly FacilityNode[]): FacilityNode[] {
+  return nodes.flatMap((node) => [node, ...allFacilityNodes(node.children)]);
+}
+
+/** True once every page of the node's direct children has been received. */
+export function facilityChildrenComplete(node: FacilityNode): boolean {
+  return node.childrenState === 'loaded' && node.nextCursor === null;
+}

@@ -5,7 +5,7 @@ Stan implementacji: **10.11.2026**.
 ## 1. Status kontraktu
 
 Poniżej opisujemy **obecny model FE i propozycję do uzgodnienia z BE**.
-Facilities działa obecnie na asynchronicznym symulatorze danych w `/customers/all/dev-facilities`
+Facilities działa obecnie na asynchronicznym symulatorze danych w `/facilities`
 oraz w Storybooku. Nie ma jeszcze podpiętych produkcyjnych żądań HTTP dla tej tabeli.
 Metody HTTP, adresy endpointów i sposób przekazania kontekstu klienta pozostają
 do ustalenia. Nazwy operacji z kodu FE nie narzucają nazw endpointów BE.
@@ -297,7 +297,7 @@ Zawierają wyłącznie dane syntetyczne, wraz z pełnym `data`, kwotami i metada
 - [Korzenie po wyszukaniu `Target`](examples/facilities/roots-search.json):
   1 dopasowanie na poziomie 6 oraz metadane przodków.
 
-Przycisk pobrania JSON w `/customers/all/dev-facilities` eksportuje oryginalną pierwszą odpowiedź
+Przycisk pobrania JSON w `/facilities` eksportuje oryginalną pierwszą odpowiedź
 korzeni dla bieżącego zapytania. Plik pozostaje płaską odpowiedzią transportową
 również po rozwinięciu tabeli; nie eksportuje całego scalonego cache.
 

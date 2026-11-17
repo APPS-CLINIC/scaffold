@@ -1,6 +1,6 @@
 # ADR 0053 — Facilities preview route below /customers
 
-- **Status:** Accepted
+- **Status:** Superseded by ADR-0058
 - **Date:** 2026-11-13
 - **Refines:** ADR 0046's development route
 

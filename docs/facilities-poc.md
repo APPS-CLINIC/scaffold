@@ -1,10 +1,10 @@
 # Facilities lazy preview — story 15006016
 
-Open **/customers/all/dev-facilities** during development (below `/customers`
-because the shared environment's nginx forwards only application prefixes; see
-[ADR 0053](adr/0053-facilities-preview-route-below-customers.md)). This page
+Open **/facilities**, locally or on the shared environment: until the backend
+exists the preview is served in every build (see
+[ADR 0058](adr/0058-facilities-preview-at-facilities-in-every-build.md)). This page
 simulates a service using one flat synthetic catalogue. It sends no real
-Facilities HTTP requests and is excluded from production. The customer Limits
+Facilities HTTP requests. The customer Limits
 route is unchanged.
 
 The DTOs below are the frontend proposal for backend discussion. They are not

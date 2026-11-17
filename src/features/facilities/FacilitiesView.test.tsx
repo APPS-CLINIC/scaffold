@@ -35,17 +35,14 @@ function NavigationProbe() {
   );
 }
 
-function renderView(
-  path = '/customers/all/dev-facilities',
-  extra: Partial<FacilitiesViewProps> = {},
-) {
+function renderView(path = '/facilities', extra: Partial<FacilitiesViewProps> = {}) {
   const onOpenRelated = vi.fn();
   const rendered = renderWithProviders(
     <>
       <UrlStateSync />
       <FacilitiesView
         snapshot={facilityPreviewSnapshot}
-        getFacilityHref={(facility) => '/customers/all/dev-facilities/' + facility.id}
+        getFacilityHref={(facility) => '/facilities/' + facility.id}
         onOpenRelated={onOpenRelated}
         {...extra}
       />
@@ -63,7 +60,7 @@ describe('FacilitiesView', () => {
     const root = facilityPreviewSnapshot.nodes[0];
     if (!root) throw new Error('Expected a root fixture');
     const onExpandToLevel = vi.fn(async (_level: number, _signal: AbortSignal) => [root.key]);
-    renderView('/customers/all/dev-facilities', {
+    renderView('/facilities', {
       snapshot: {
         ...facilityPreviewSnapshot,
         nodes: [{ ...root, children: [], childrenState: 'unloaded' }],
@@ -88,7 +85,7 @@ describe('FacilitiesView', () => {
     const root = facilityPreviewSnapshot.nodes[0];
     if (!root) throw new Error('Expected a root fixture');
     const onLoadChildren = vi.fn(async () => undefined);
-    renderView('/customers/all/dev-facilities', {
+    renderView('/facilities', {
       snapshot: {
         ...facilityPreviewSnapshot,
         nodes: [{ ...root, children: [], childrenState: 'unloaded' }],
@@ -108,7 +105,7 @@ describe('FacilitiesView', () => {
       finish = resolve;
     });
     const expandToLevel = vi.fn((_level: number, _signal: AbortSignal) => pending);
-    renderView('/customers/all/dev-facilities', { onExpandToLevel: expandToLevel });
+    renderView('/facilities', { onExpandToLevel: expandToLevel });
     const levels = screen.getByRole('group', { name: 'Facility level' });
     await user.click(within(levels).getByRole('button', { name: '1, 2, 3, 4' }));
     expect(screen.getByText(/Opening levels 1, 2, 3, 4/)).toBeInTheDocument();
@@ -168,7 +165,7 @@ describe('FacilitiesView', () => {
 
   it('applies quick groups to the URL, keeps unrelated params and uses group summaries once', async () => {
     const user = userEvent.setup();
-    renderView('/customers/all/dev-facilities?utm_source=review');
+    renderView('/facilities?utm_source=review');
     await user.click(screen.getByRole('button', { name: 'Lending (inc. TFS) (8)' }));
     expect(url()).toContain('group=LENDING');
     expect(url()).toContain('utm_source=review');
@@ -182,7 +179,7 @@ describe('FacilitiesView', () => {
 
   it('opens the tree to the chosen facility level without hiding rows or touching the URL', async () => {
     const user = userEvent.setup();
-    renderView('/customers/all/dev-facilities?utm_source=review');
+    renderView('/facilities?utm_source=review');
     const levels = screen.getByRole('group', { name: 'Facility level' });
     const chip = (name: string) => within(levels).getByRole('button', { name });
     const link = (name: string) => screen.queryByRole('link', { name });
@@ -218,7 +215,7 @@ describe('FacilitiesView', () => {
 
   it('cancels a filter draft and then saves currency and commitment together', async () => {
     const user = userEvent.setup();
-    renderView('/customers/all/dev-facilities?utm_source=review');
+    renderView('/facilities?utm_source=review');
     const open = () => screen.getByLabelText('Customize filters', { selector: 'button' });
     await user.click(open());
     let dialog = screen.getByRole('dialog', { name: 'Customize filters' });

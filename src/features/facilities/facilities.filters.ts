@@ -44,6 +44,19 @@ export const facilityFiltersSchema = z
 
 export type FacilityFilters = z.output<typeof facilityFiltersSchema>;
 
+/**
+ * Identifies one Facilities request. Display currency is only a presentation variant, so it
+ * never changes the key: a currency switch keeps loaded branches, expansion and the level chip.
+ */
+export function facilityQueryKey(q: string, filters: object): string {
+  return JSON.stringify({
+    q,
+    filters: Object.fromEntries(
+      Object.entries(filters).filter(([key]) => key !== 'displayCurrency'),
+    ),
+  });
+}
+
 /** The mock-up names Lending "including TFS"; overlapping choices remain a union. */
 export function includesFacilityGroup(
   group: FacilityGroup,

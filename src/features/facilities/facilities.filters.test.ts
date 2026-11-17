@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { facilityPreviewSnapshot } from '@/dev/facilities/facilities.fixture';
-import { filterFacilities, facilityFiltersSchema } from './facilities.filters';
+import { filterFacilities, facilityFiltersSchema, facilityQueryKey } from './facilities.filters';
 import type { FacilityNode } from './facilities.types';
 
 function flatten(nodes: readonly FacilityNode[]): FacilityNode[] {
@@ -144,5 +144,18 @@ describe('Facilities tree filtering', () => {
       'expiryDate.from': [],
       'expiryDate.to': [],
     });
+  });
+});
+
+describe('facilityQueryKey', () => {
+  it('ignores display currency in raw URL filters and in parsed filters', () => {
+    const raw = facilityQueryKey('Target', { group: ['TFS'], displayCurrency: ['EUR'] });
+    expect(raw).toBe(facilityQueryKey('Target', { group: ['TFS'] }));
+    expect(raw).toBe(facilityQueryKey('Target', { group: ['TFS'], displayCurrency: 'PLN' }));
+  });
+  it('changes with the search text and with request filters', () => {
+    const key = facilityQueryKey('Target', { group: ['TFS'] });
+    expect(facilityQueryKey('Other', { group: ['TFS'] })).not.toBe(key);
+    expect(facilityQueryKey('Target', { group: ['LENDING'] })).not.toBe(key);
   });
 });
