@@ -14,9 +14,9 @@ export const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       { index: true, element: <HomePage /> },
-      // Until the Facilities backend exists, every build serves the simulated preview here
-      // (ADR 0058). Mirrors FACILITIES_PREVIEW_PATH, which is not imported so src/dev stays
-      // in its own lazy chunk.
+      // Until the Facilities backend exists, every build serves the simulated preview here.
+      // Mirrors FACILITIES_PREVIEW_PATH, which is not imported so src/dev stays in its own
+      // lazy chunk.
       {
         path: 'facilities/:facilityId?',
         caseSensitive: true,

@@ -59,3 +59,20 @@ They have different jobs. `facilityTable.config.tsx` defines the columns and the
 commitment and contract currency are filters there). `FacilityTableCells.tsx` only draws the
 "Basic data" column, which shows several values in one cell. So the names are in both files,
 but nothing is defined twice. I'll add a short comment in the cells file to make this clear.
+
+## Emil — `useFacilitiesPreview.ts`: only one page of children per ancestor
+
+No, it was not intentional for this case. It was written down as a known limit, but your
+example shows it is a bug: the search result has only matches and their parents, so every
+child page of a revealed branch is needed. Now the hook loads all child pages of each
+revealed branch (`loadAllChildren`), the same way "Expand all" does. A new query also
+aborts the request in progress. I added your test (`?q=F-100` shows F-1004 and F-1007,
+and there is no "Load more children" button). For a large real result this means many page
+requests, so I noted in the backend contract that we need a limit there.
+
+## Emil — `FacilitiesPreviewPage.test.tsx`: make the long tests easier to follow
+
+Done. I split the long test into three scenarios: loading only the direct children,
+loading the next child page, and reusing loaded children after collapse and after a
+currency change. I added small helpers (`expandFacility`, `rowOf`, `requestIds`) and short
+comments before the main steps, also in the other long tests.

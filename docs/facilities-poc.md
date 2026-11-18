@@ -66,8 +66,10 @@ independent supplied group totals, never a sum of parents and descendants.
   request-failure message; received pages stay cached. Query changes or leaving
   the page also abort the pending expand-all request.
 - Evaluate search/filters on the complete simulated service-side catalogue,
-  preserve ancestor context and reveal paths for deep matches. A broad match
-  may still require sibling continuation. The group summary and counts are
+  preserve ancestor context and reveal paths for deep matches. Revealing loads
+  every child page of the revealed branches, so a match on a later sibling page
+  is shown too; a broad result therefore costs one request per page. The group
+  summary and counts are
   explicitly independent of detailed filters/search, following the PoC choice.
 - Reuse GenericDataTable field configuration, TableCell, shared date/text/link/
   status cells, TableToolbar, TableFilters, SelectFilter and TableActions.

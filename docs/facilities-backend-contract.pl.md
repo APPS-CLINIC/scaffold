@@ -211,10 +211,11 @@ Obecny symulator zwraca `autoExpandedKeys` w kolejności od niższych gałęzi d
 przodków; owner FE odwraca tę listę przed pobieraniem. Produkcyjny format ścieżek
 i gwarancję ich kolejności trzeba uzgodnić lub odpowiednio zmienić adapter FE.
 
-Przy szerokim wyniku samo automatyczne odsłanianie może wymagać ręcznej kontynuacji
-stron. Obecny kod nie gwarantuje automatycznego znalezienia każdej ścieżki ukrytej
-za dalszą stroną rodzeństwa. To istotny temat do rozwiązania przy integracji
-wyszukiwania z dużym zbiorem.
+Dla każdej gałęzi z `autoExpandedKeys` FE pobiera wszystkie strony dzieci. W wyniku
+filtrowania gałąź zawiera tylko dopasowania i ich przodków, więc każda strona jest
+potrzebna: dopasowanie może być na dalszej stronie rodzeństwa. Przy szerokim wyniku
+oznacza to wiele żądań stron. Limit lub inny sposób odsłaniania trzeba ustalić przy
+integracji wyszukiwania z dużym zbiorem.
 
 Listy `contextKeys` i `autoExpandedKeys` są obecnie metadanymi całego wyniku.
 Dla bardzo dużego wyniku również one mogą urosnąć. Musimy ustalić ograniczenie ich

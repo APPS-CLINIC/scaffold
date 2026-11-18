@@ -7,6 +7,7 @@ import { UrlStateSync } from '@/features/urlState/UrlStateSync';
 import i18n from '@/i18n';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import { FacilitiesPreviewPage } from './FacilitiesPreviewPage';
+import type { AppStore } from '@/app/store';
 import type { FacilityRootsResponse } from '@/features/facilities';
 import { FACILITIES_PREVIEW_PATH } from './facilitiesPreview.path';
 import { FACILITIES_PREVIEW_DELAY_MS } from './facilitiesPreview.transport';
@@ -44,6 +45,29 @@ async function advance(pages = 2) {
   await act(async () => {
     await vi.advanceTimersByTimeAsync(pages * FACILITIES_PREVIEW_DELAY_MS);
   });
+}
+type User = ReturnType<typeof userWithFakeTimers>;
+async function expandFacility(user: User, number: string) {
+  await user.click(screen.getByRole('button', { name: 'Expand facility ' + number }));
+  await advance();
+}
+function rowOf(number: string): HTMLElement {
+  const row = screen.getByRole('link', { name: number }).closest('tr');
+  if (!row) throw new Error('Expected the row of ' + number);
+  return row;
+}
+function requestIds(store: AppStore) {
+  return Object.values(store.getState().api.queries).map((entry) => entry?.requestId);
+}
+/** Opens F-1001 → F-1003 and loads the second child page of F-1003 (F-1007). */
+async function openBothChildPagesOfF1003(user: User) {
+  await advance();
+  await expandFacility(user, 'F-1001');
+  await expandFacility(user, 'F-1002');
+  await expandFacility(user, 'F-1003');
+  await user.click(within(rowOf('F-1003')).getByRole('button', { name: 'Load more children' }));
+  await advance();
+  expect(screen.getByRole('link', { name: 'F-1007' })).toBeInTheDocument();
 }
 
 afterEach(() => {
@@ -90,6 +114,8 @@ describe('Facilities development preview', () => {
     const user = userWithFakeTimers();
     const { store } = renderPreview();
     await advance();
+
+    // Choosing a group loads only roots: no branch opens and no child page is requested.
     await user.click(screen.getByRole('button', { name: 'Lending (inc. TFS) (8)' }));
     await advance(8);
     expect(screen.queryByRole('link', { name: 'F-1002' })).not.toBeInTheDocument();
@@ -102,10 +128,13 @@ describe('Facilities development preview', () => {
         (request) => request?.endpointName === 'getFacilityPreviewChildren',
       ),
     ).toHaveLength(0);
-    await user.click(screen.getByRole('button', { name: 'Expand facility F-1001' }));
-    await advance();
+
+    // Expanding a row loads its direct children only.
+    await expandFacility(user, 'F-1001');
     expect(screen.getByRole('link', { name: 'F-1002' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'F-1003' })).not.toBeInTheDocument();
+
+    // Back on All the tree starts collapsed again and the row can be expanded as before.
     await user.click(screen.getByRole('button', { name: 'All' }));
     await advance();
     expect(screen.getByRole('button', { name: 'Expand facility F-1001' })).toHaveAttribute(
@@ -113,48 +142,69 @@ describe('Facilities development preview', () => {
       'false',
     );
     expect(screen.getByRole('link', { name: 'F-2001' })).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Expand facility F-1001' }));
-    await advance();
+    await expandFacility(user, 'F-1001');
     expect(screen.getByRole('link', { name: 'F-1002' })).toBeInTheDocument();
   });
-  it('loads only the requested branch, continues its sibling page and reuses it after collapse', async () => {
+
+  it('loads only the direct children of the expanded branch', async () => {
     const user = userWithFakeTimers();
-    const { store } = renderPreview();
+    renderPreview();
+
+    // Before the roots arrive there are no rows and nothing to download.
     expect(screen.queryByRole('link', { name: 'F-1001' })).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Download example data (.json)' })).toBeDisabled();
     await advance();
-    await screen.findByRole('link', { name: 'F-1001' });
+    expect(screen.getByRole('link', { name: 'F-1001' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'F-1002' })).not.toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: 'Expand facility F-3001' }),
     ).not.toBeInTheDocument();
+
+    // Expanding F-1001 shows a loading row until its first child page arrives.
     await user.click(screen.getByRole('button', { name: 'Expand facility F-1001' }));
     expect(screen.getByText('Loading children…')).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'F-1002' })).not.toBeInTheDocument();
     await advance();
-    await screen.findByRole('link', { name: 'F-1002' });
+
+    // Only the direct child is loaded, not the deeper levels.
+    expect(screen.getByRole('link', { name: 'F-1002' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'F-1003' })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Expand facility F-1002' }));
+  });
+
+  it('loads the next child page without removing the children already shown', async () => {
+    const user = userWithFakeTimers();
+    renderPreview();
     await advance();
-    await screen.findByRole('link', { name: 'F-1003' });
-    await user.click(screen.getByRole('button', { name: 'Expand facility F-1003' }));
-    await advance();
-    await screen.findByRole('link', { name: 'F-1004' });
+
+    // Load the first child page of F-1003.
+    await expandFacility(user, 'F-1001');
+    await expandFacility(user, 'F-1002');
+    await expandFacility(user, 'F-1003');
+    expect(screen.getByRole('link', { name: 'F-1004' })).toBeVisible();
     expect(screen.queryByRole('link', { name: 'F-1007' })).not.toBeInTheDocument();
-    const parentRow = screen.getByRole('link', { name: 'F-1003' }).closest('tr') as HTMLElement;
-    await user.click(within(parentRow).getByRole('button', { name: 'Load more children' }));
-    expect(screen.getByRole('link', { name: 'F-1004' })).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'F-1007' })).not.toBeInTheDocument();
+
+    // Load the next page: F-1004 stays while the request runs, then F-1007 is added.
+    await user.click(within(rowOf('F-1003')).getByRole('button', { name: 'Load more children' }));
+    expect(screen.getByRole('link', { name: 'F-1004' })).toBeVisible();
     await advance();
-    await screen.findByRole('link', { name: 'F-1007' });
-    const requests = Object.values(store.getState().api.queries).map((entry) => entry?.requestId);
+    expect(screen.getByRole('link', { name: 'F-1004' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'F-1007' })).toBeVisible();
+  });
+
+  it('reuses loaded children after collapse and after a currency change', async () => {
+    const user = userWithFakeTimers();
+    const { store } = renderPreview();
+    await openBothChildPagesOfF1003(user);
+    const requests = requestIds(store);
+
+    // Collapse and reopen the branch: its loaded children appear at once, with no request.
     await user.click(screen.getByRole('button', { name: 'Collapse facility F-1001' }));
     await user.click(screen.getByRole('button', { name: 'Expand facility F-1001' }));
     expect(screen.queryByText('Loading children…')).not.toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'F-1007' })).toBeInTheDocument();
-    expect(Object.values(store.getState().api.queries).map((entry) => entry?.requestId)).toEqual(
-      requests,
-    );
+    expect(screen.getByRole('link', { name: 'F-1007' })).toBeVisible();
+    expect(requestIds(store)).toEqual(requests);
+
+    // Change the display currency: amounts switch to EUR and nothing is requested again.
     await user.click(screen.getByLabelText('Customize filters', { selector: 'button' }));
     const dialog = screen.getByRole('dialog', { name: 'Customize filters' });
     await chooseDropdownOption(
@@ -163,23 +213,36 @@ describe('Facilities development preview', () => {
       'EUR',
     );
     await user.click(within(dialog).getByRole('button', { name: 'Save' }));
-    expect(screen.getByRole('link', { name: 'F-1007' })).toBeInTheDocument();
-    const childRow = screen.getByRole('link', { name: 'F-1004' }).closest('tr') as HTMLElement;
-    expect(within(childRow).getByText('€100,000.00')).toBeInTheDocument();
-    expect(Object.values(store.getState().api.queries).map((entry) => entry?.requestId)).toEqual(
-      requests,
-    );
+    expect(screen.getByRole('link', { name: 'F-1007' })).toBeVisible();
+    expect(within(rowOf('F-1004')).getByText('€100,000.00')).toBeInTheDocument();
+    expect(requestIds(store)).toEqual(requests);
+  });
+
+  it('reveals search matches from every child page of the matching branches', async () => {
+    userWithFakeTimers();
+    // F-1001 … F-1007 all match. F-1003 has two child pages: F-1004, then F-1007.
+    renderPreview(FACILITIES_PREVIEW_PATH + '?q=F-100');
+
+    // One page per step: the roots, then the child pages along the path.
+    for (let page = 0; page < 10; page++) await advance(1);
+
+    expect(screen.getByRole('link', { name: 'F-1006' })).toBeVisible();
+    expect(screen.getByRole('link', { name: 'F-1004' })).toBeVisible();
+    // F-1007 is on the second child page of F-1003.
+    expect(screen.getByRole('link', { name: 'F-1007' })).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Load more children' })).not.toBeInTheDocument();
   });
 
   it('fetches all descendant pages only when expand all is requested', async () => {
     const user = userWithFakeTimers();
     renderPreview();
     await advance();
-    await screen.findByRole('link', { name: 'F-1001' });
     expect(screen.queryByRole('link', { name: 'F-1006' })).not.toBeInTheDocument();
+
+    // Expand all follows every child page down to the deepest level.
     await user.click(screen.getByRole('switch', { name: 'Expand all' }));
     await advance(8);
-    await screen.findByRole('link', { name: 'F-1006' });
+    expect(screen.getByRole('link', { name: 'F-1006' })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'F-1007' })).toBeInTheDocument();
     await waitFor(() =>
       expect(screen.getByRole('switch', { name: 'Expand all' })).toHaveAttribute(
@@ -187,6 +250,8 @@ describe('Facilities development preview', () => {
         'true',
       ),
     );
+
+    // Switching it off collapses the tree back to the top level.
     await user.click(screen.getByRole('switch', { name: 'Expand all' }));
     await advance(8);
     expect(screen.queryByRole('link', { name: 'F-1006' })).not.toBeInTheDocument();
@@ -196,17 +261,22 @@ describe('Facilities development preview', () => {
     const user = userWithFakeTimers();
     renderPreview();
     await advance();
+
+    // Cancel while the first child page is still loading.
     await user.click(screen.getByRole('switch', { name: 'Expand all' }));
     expect(screen.getByText('Loading children…')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Cancel expanding' }));
     await advance(8);
+
+    // The cancelled page adds no rows, no error and no loading row.
     expect(screen.queryByRole('link', { name: 'F-1002' })).not.toBeInTheDocument();
     expect(
       screen.queryByRole('button', { name: 'Retry loading children' }),
     ).not.toBeInTheDocument();
     expect(screen.queryByText('Loading children…')).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Expand facility F-1001' }));
-    await advance();
+
+    // The branch can still be expanded by hand afterwards.
+    await expandFacility(user, 'F-1001');
     expect(screen.getByRole('link', { name: 'F-1002' })).toBeInTheDocument();
   });
 
@@ -260,10 +330,14 @@ describe('Facilities development preview', () => {
     await advance();
     const levels = await screen.findByRole('group', { name: 'Facility level' });
     const chip = (name: string) => within(levels).getByRole('button', { name });
+
+    // Level five opens every branch above it, so F-1005 shows but its child F-1006 does not.
     await user.click(chip('1, 2, 3, 4, 5'));
     await advance(10);
     expect(screen.getByRole('link', { name: 'F-1005' })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: 'F-1006' })).not.toBeInTheDocument();
+
+    // Level six opens the whole tree; the chosen level is not written to the URL.
     await user.click(chip('1, 2, 3, 4, 5, 6'));
     await advance(10);
     expect(screen.getByRole('link', { name: 'F-1006' })).toBeInTheDocument();

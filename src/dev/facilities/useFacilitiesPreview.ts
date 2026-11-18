@@ -82,21 +82,33 @@ export function useFacilitiesPreview() {
     },
     [readData, loadPage, query],
   );
+  // Follows the branch's remaining child pages and returns the branch as cached afterwards.
+  const loadAllChildren = useCallback(
+    async (key: string, signal?: AbortSignal) => {
+      let node = findNode(key);
+      while (node?.hasChildren && !facilityChildrenComplete(node)) {
+        signal?.throwIfAborted();
+        await loadChildren(key, signal);
+        node = findNode(key);
+      }
+      return node;
+    },
+    [findNode, loadChildren],
+  );
 
+  // A filtered branch holds only matches and their ancestors, so every child page of a
+  // revealed branch is needed: a match can sit on a later sibling page.
   const response = data?.response;
   useEffect(() => {
-    let active = true;
+    const controller = new AbortController();
     const revealMatches = async () => {
-      for (const key of [...(response?.view.autoExpandedKeys ?? [])].reverse()) {
-        if (!active) return;
-        await loadChildren(key);
-      }
+      // The simulator lists deeper branches first; parents must be loaded before children.
+      for (const key of [...(response?.view.autoExpandedKeys ?? [])].reverse())
+        await loadAllChildren(key, controller.signal);
     };
     void revealMatches().catch(() => undefined);
-    return () => {
-      active = false;
-    };
-  }, [response, loadChildren]);
+    return () => controller.abort();
+  }, [response, loadAllChildren]);
 
   // Opens every branch above `level`, fetching the root and child pages it needs on the way.
   const expandToLevel = useCallback(
@@ -112,17 +124,12 @@ export function useFacilitiesPreview() {
         const pending = queue[index];
         if (!pending?.hasChildren || pending.businessLevel >= level) continue;
         keys.push(pending.key);
-        let current = findNode(pending.key);
-        while (current && !facilityChildrenComplete(current)) {
-          signal.throwIfAborted();
-          await loadChildren(current.key, signal);
-          current = findNode(pending.key);
-        }
+        const current = await loadAllChildren(pending.key, signal);
         queue.push(...(current?.children ?? []));
       }
       return keys;
     },
-    [findNode, loadChildren, loadMoreRoots, readData],
+    [loadAllChildren, loadMoreRoots, readData],
   );
 
   return {
