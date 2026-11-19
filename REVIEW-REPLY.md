@@ -19,6 +19,7 @@ reply to paste. Reviewers are named by role only.
 | 12  | Reviewer 2 | `TreeDataTable.types.ts` — define the types here      | Done                                               |
 | 13  | Reviewer 2 | `FacilityTableCells.tsx` — fields here and in config  | Done                                               |
 | 14  | Reviewer 2 | `facilityGroupLabels.ts` — dictionaries from backend  | Already answered and resolved                      |
+| 15  | Reviewer 1 | Whole app — security cookies, CSRF, CORS              | Reply ready (frontend points only)                 |
 
 ## 1. Reviewer 1 — PR description
 
@@ -216,3 +217,52 @@ this clear.
 > I guess this will be moved to dictionaries and fetched from the BE in the future, correct?
 
 **Reply (already sent):** yes
+
+## 15. Reviewer 1 — security cookies, CSRF, CORS (whole application)
+
+The comment and the reply are in Polish, as written in the thread; the reply covers only
+the frontend.
+
+> Zdaję się, że obecnie nie używamy żadnych security Cookies, kojarzysz temat Author?
+> Musimy się określić w dokumentacji co będziemy ustawiać np Secure, MaxAge, HttpOnly,
+> Spring default cookies. CSRF i CrossOrigin też by się przydało w sumie.
+>
+> _(screenshot of the application)_
+>
+> Edit: Dobra wrzucę coś takiego, nad XSS/CORS itd można się zastanowić przy robieniu Entra
+>
+> > Standard Spring Cookies, attributes: Secure, MaxAge, HttpOnly.
+> >
+> > - Secure: Ensures that the cookie is sent only over HTTPS, preventing it from being
+> >   transmitted over an unencrypted HTTP connection.
+> > - Max-Age ≤ token lifetime: Ensures that the cookie expires no later than the credential
+> >   it contains. This prevents expired credentials from leaving stale cookies in the
+> >   browser.
+> > - HttpOnly: Prevents JavaScript from reading the cookie through document.cookie,
+> >   reducing the risk of credential theft through an XSS vulnerability.
+>
+> Daj znać czy ok Author.
+
+**Reply:**
+
+Tak, kojarzę. Przejrzałem całą aplikację, nie tylko ten PR. Z perspektywy frontu:
+
+1. **Cookies:** front dziś nie ustawia ani nie czyta żadnych cookies i nie potrzebuje zmian
+   pod HttpOnly, Secure ani Max-Age. Wszystkie zapytania w aplikacji idą przez jednego
+   klienta (baseApi) na względne `/api`, czyli pod ten sam adres co front, więc przeglądarka
+   sama dokleja do nich cookie. JS nie musi znać tokenu.
+2. **Wygaśnięcie sesji:** dziś front nie obsługuje 401, więc po wygaśnięciu cookie
+   użytkownik zobaczy ogólny błąd zamiast ponownego logowania. Obsługę 401 dodamy w jednym
+   miejscu (baseApi) razem z Entra.
+3. **CSRF:** dziś wszystkie zapytania w aplikacji to GET (listy, szczegóły, słowniki,
+   eksport), więc nie ma czego chronić. Gdy dojdą POST, PUT lub DELETE, front będzie
+   dokładał nagłówek `X-XSRF-TOKEN` w baseApi. Przy `CookieCsrfTokenRepository` cookie
+   `XSRF-TOKEN` musi być czytelne z JS, czyli bez HttpOnly.
+4. **CORS:** przy tym samym adresie front i API nie potrzebują CORS. Jeśli API będzie na
+   innej domenie, front musi wysyłać zapytania z `credentials: 'include'`.
+5. **Wylogowanie:** „Wyloguj” w topbarze dziś nic nie robi. Cookie z HttpOnly nie da się
+   usunąć z JS, więc przycisk będzie wołał endpoint w backendzie, który je kasuje.
+6. **XSS:** front nie używa `dangerouslySetInnerHTML`, `innerHTML` ani `eval`, a React
+   escapuje dane. Linki do nowej karty mają `noopener noreferrer`. W localStorage są tylko
+   ustawienia interfejsu (język, sidebar, kolumny), bez tokenów, i przy Entra tak powinno
+   zostać.
