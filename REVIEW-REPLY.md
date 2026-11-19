@@ -1,26 +1,26 @@
 # Replies to review comments — Facilities PoC
 
 Each section is one comment thread in the Azure PR: the file, the comment, then the
-reply to paste.
+reply to paste. Reviewers are named by role only.
 
-| #   | Who  | File                                                  | Status                                             |
-| --- | ---- | ----------------------------------------------------- | -------------------------------------------------- |
-| 1   | Emil | PR description                                        | Done (paste the new description into the Azure PR) |
-| 2   | Emil | `FacilitiesPreviewPage.tsx` — move logic into a hook  | Done                                               |
-| 3   | Emil | `FacilitiesPreviewPage.tsx` — shared query key        | Done                                               |
-| 4   | Emil | `FacilitiesView.tsx` — `useFacilityTreeExpansion`     | Done                                               |
-| 5   | Emil | `FacilitiesPreviewPage.tsx` — `useCallback`           | Done                                               |
-| 6   | Emil | `useFacilitiesPreview.ts` — one page per ancestor     | Done                                               |
-| 7   | Emil | `FacilitiesPreviewPage.test.tsx` — long tests         | Done                                               |
-| 8   | Anna | `facilitiesPreview.path.ts` — is it used? / nginx     | Done                                               |
-| 9   | Anna | `facilities.formatters.ts` — return directly          | Done                                               |
-| 10  | Anna | `facilitiesPreview.api.ts` — constants (two comments) | Done                                               |
-| 11  | Anna | `TableActions.tsx` — `customers.actions.*` keys       | Done                                               |
-| 12  | Anna | `TreeDataTable.types.ts` — define the types here      | Done                                               |
-| 13  | Anna | `FacilityTableCells.tsx` — fields here and in config  | Done                                               |
-| 14  | Anna | `facilityGroupLabels.ts` — dictionaries from backend  | Already answered and resolved                      |
+| #   | Who        | File                                                  | Status                                             |
+| --- | ---------- | ----------------------------------------------------- | -------------------------------------------------- |
+| 1   | Reviewer 1 | PR description                                        | Done (paste the new description into the Azure PR) |
+| 2   | Reviewer 1 | `FacilitiesPreviewPage.tsx` — move logic into a hook  | Done                                               |
+| 3   | Reviewer 1 | `FacilitiesPreviewPage.tsx` — shared query key        | Done                                               |
+| 4   | Reviewer 1 | `FacilitiesView.tsx` — `useFacilityTreeExpansion`     | Done                                               |
+| 5   | Reviewer 1 | `FacilitiesPreviewPage.tsx` — `useCallback`           | Done                                               |
+| 6   | Reviewer 1 | `useFacilitiesPreview.ts` — one page per ancestor     | Done                                               |
+| 7   | Reviewer 1 | `FacilitiesPreviewPage.test.tsx` — long tests         | Done                                               |
+| 8   | Reviewer 2 | `facilitiesPreview.path.ts` — is it used? / nginx     | Done                                               |
+| 9   | Reviewer 2 | `facilities.formatters.ts` — return directly          | Done                                               |
+| 10  | Reviewer 2 | `facilitiesPreview.api.ts` — constants (two comments) | Done                                               |
+| 11  | Reviewer 2 | `TableActions.tsx` — `customers.actions.*` keys       | Done                                               |
+| 12  | Reviewer 2 | `TreeDataTable.types.ts` — define the types here      | Done                                               |
+| 13  | Reviewer 2 | `FacilityTableCells.tsx` — fields here and in config  | Done                                               |
+| 14  | Reviewer 2 | `facilityGroupLabels.ts` — dictionaries from backend  | Already answered and resolved                      |
 
-## 1. Emil — PR description
+## 1. Reviewer 1 — PR description
 
 > PR description was cut down (stops mid sentence). What was ommited? 😅
 > This description is too long to be readable in my opinion. If you think LLM-generated
@@ -31,7 +31,7 @@ reply to paste.
 
 You're right, it was too long and it got cut. I replaced it with a short summary.
 
-## 2. Emil — `FacilitiesPreviewPage.tsx` (`expandToLevel`)
+## 2. Reviewer 1 — `FacilitiesPreviewPage.tsx` (`expandToLevel`)
 
 > This page combines rendering with query construction, data fetching, tree pagination,
 > and expansion behavior, which makes the component dense and difficult to follow without
@@ -48,7 +48,7 @@ Done. The page now uses `useFacilitiesPreview()`. It returns the data, the loadi
 state and the handlers (`loadChildren`, `loadMoreRoots`, `expandToLevel`). The page only
 handles the URL, the dialog and the rendering.
 
-## 3. Emil — `FacilitiesPreviewPage.tsx` (`requestKey`)
+## 3. Reviewer 1 — `FacilitiesPreviewPage.tsx` (`requestKey`)
 
 > Could we share this query-key logic with FacilitiesView (by adding some util)? The page
 > builds a key from raw URL filters, while the view builds one from parsed filters and
@@ -59,7 +59,7 @@ handles the URL, the dialog and the rendering.
 Done. Both now use `facilityQueryKey(q, filters)`. It removes the display currency in one
 place and works with raw URL filters and with parsed filters. I added tests for it.
 
-## 4. Emil — `FacilitiesView.tsx` (`expansionRequest`)
+## 4. Reviewer 1 — `FacilitiesView.tsx` (`expansionRequest`)
 
 > Could we move the level-expansion behavior into a focused hook, such as
 > `useFacilityTreeExpansion`? The hook would own the selected/loading levels, request
@@ -76,7 +76,7 @@ Done. The new hook keeps the selected and loading level, cancels a running load,
 through `onExpandToLevel` and goes back to the previous level after an error. The view only
 renders. I added tests for the hook, also for the error case, which had no test before.
 
-## 5. Emil — `FacilitiesPreviewPage.tsx` (`getFacilityHref`, `onOpenRelated`)
+## 5. Reviewer 1 — `FacilitiesPreviewPage.tsx` (`getFacilityHref`, `onOpenRelated`)
 
 > Copilot says that since `getFacilityHref` and `onOpenRelated` are created inline in the
 > `<FacilitiesView>` props, they get recreated on each page render. That causes the table
@@ -89,7 +89,7 @@ Yes, Copilot was right here. The view builds the table config in `useMemo` with 
 functions as dependencies, so new functions on every render rebuilt the config. Both are now
 `useCallback`.
 
-## 6. Emil — `useFacilitiesPreview.ts` (`await loadChildren(key)`)
+## 6. Reviewer 1 — `useFacilitiesPreview.ts` (`await loadChildren(key)`)
 
 > This loads only one page of children per ancestor. Is that intentional? Searching for
 > F-100 leaves the matching F-1007 hidden behind "Load more children."
@@ -106,7 +106,7 @@ progress. I added your test (`?q=F-100` shows F-1004 and F-1007, and there is no
 children" button). For a large real result this means many page requests, so we will need a
 limit when we connect the backend.
 
-## 7. Emil — `FacilitiesPreviewPage.test.tsx` (long tests)
+## 7. Reviewer 1 — `FacilitiesPreviewPage.test.tsx` (long tests)
 
 > Could we make the longer tests easier to follow by separating the scenarios and adding
 > short comments around the main steps? There are many interactions and timer advances in
@@ -122,17 +122,17 @@ the next child page, and reusing loaded children after collapse and after a curr
 I added small helpers (`expandFacility`, `rowOf`, `requestIds`) and short comments before the
 main steps, also in the other long tests.
 
-## 8. Anna — `facilitiesPreview.path.ts` (`FACILITIES_PREVIEW_PATH`)
+## 8. Reviewer 2 — `facilitiesPreview.path.ts` (`FACILITIES_PREVIEW_PATH`)
 
-> **Anna:** is it used? In dev it's not shown under: `<env>/customers/all/dev-facilities`
+> **Reviewer 2:** is it used? In dev it's not shown under: `<env>/customers/all/dev-facilities`
 >
-> **Anna:** Also in nginx.conf there is no mention about customer, so I'm not sure if the
+> **Reviewer 2:** Also in nginx.conf there is no mention about customer, so I'm not sure if the
 > diagnostic from this comment is right
 >
-> **Paweł:** On my local environment works as expected, I didn't verify whether the changes
+> **Author:** On my local environment works as expected, I didn't verify whether the changes
 > were deployed correctly
 >
-> **Anna:** Imo either we should make it working on env or delete this comment, becuase as
+> **Reviewer 2:** Imo either we should make it working on env or delete this comment, becuase as
 > far as I understand it's not correct
 
 **Reply:**
@@ -143,11 +143,11 @@ production build. nginx was not the problem. I removed the comment and moved the
 `/facilities`. It now works in every build until the backend is ready. The constant is still
 used by the page for the facility links and for closing the dialog.
 
-## 9. Anna — `facilities.formatters.ts` (`const result = summaries.reduce(`)
+## 9. Reviewer 2 — `facilities.formatters.ts` (`const result = summaries.reduce(`)
 
-> **Anna:** you can immediately return, without using result variable
+> **Reviewer 2:** you can immediately return, without using result variable
 >
-> **Anna:** it's not changed
+> **Reviewer 2:** it's not changed
 
 **Reply:**
 
@@ -155,17 +155,17 @@ Sorry, you're right, I missed it. Now the function returns the `reduce` result d
 also replaced `as FacilityAmounts` with `reduce<FacilityAmounts>`, so the start value is
 type-checked instead of cast.
 
-## 10. Anna — `facilitiesPreview.api.ts` (two comments)
+## 10. Reviewer 2 — `facilitiesPreview.api.ts` (two comments)
 
 On `rootPageState: 'loaded' | 'loading' | 'error';` and on
 `childrenState: node.hasChildren ? 'unloaded' : 'loaded',`:
 
-> **Anna:** maybe constants could be used here
+> **Reviewer 2:** maybe constants could be used here
 >
-> **Anna (on `rootPageState`):** I see like, but it's not changed. Is it fixed or are you going
+> **Reviewer 2 (on `rootPageState`):** I see like, but it's not changed. Is it fixed or are you going
 > to use plain strings intentionally?
 >
-> **Anna (on `childrenState`):** same here - unloaded and loaded is still string. Is it
+> **Reviewer 2 (on `childrenState`):** same here - unloaded and loaded is still string. Is it
 > intentional?
 
 **Reply (same for both):**
@@ -176,19 +176,19 @@ it. `childrenState` uses this type, and `rootPageState` uses it without `unloade
 in the Facilities code use the constant now (API, page, view, cells, filters), not plain
 strings.
 
-## 11. Anna — `TableActions.tsx` (`t('customers.actions.expandAll')`)
+## 11. Reviewer 2 — `TableActions.tsx` (`t('customers.actions.expandAll')`)
 
-> **Anna:** minor: it's not related to the customer, maybe table.actions.expandAll. The same
+> **Reviewer 2:** minor: it's not related to the customer, maybe table.actions.expandAll. The same
 > for customers.actions.export
 >
-> **Anna:** not changed
+> **Reviewer 2:** not changed
 
 **Reply:**
 
 Sorry, fixed now. The keys are `table.actions.expandAll` and `table.actions.export` in `pl` and
 `en`, and `TableActions.tsx` uses them.
 
-## 12. Anna — `TreeDataTable.types.ts`
+## 12. Reviewer 2 — `TreeDataTable.types.ts`
 
 > Should types be defined in this file? It will make TreeDataTable smaller and more focused
 > on the logic
@@ -198,7 +198,7 @@ Sorry, fixed now. The keys are `table.actions.expandAll` and `table.actions.expo
 Done. `TreeDataTableProps` and `TreeDataTableLabels` are now defined in
 `TreeDataTable.types.ts`. The component and `index.ts` import them from there.
 
-## 13. Anna — `FacilityTableCells.tsx`
+## 13. Reviewer 2 — `FacilityTableCells.tsx`
 
 > why some fields are defined here and some are defined in facilityTable.config.tsx? Some
 > are defined in both like commitment or contractCurrency
@@ -211,7 +211,7 @@ commitment and contract currency are filters there). `FacilityTableCells.tsx` on
 but nothing is defined twice. I added a short comment above `FacilityBasicCell` to make
 this clear.
 
-## 14. Anna — `facilityGroupLabels.ts` (already resolved)
+## 14. Reviewer 2 — `facilityGroupLabels.ts` (already resolved)
 
 > I guess this will be moved to dictionaries and fetched from the BE in the future, correct?
 
