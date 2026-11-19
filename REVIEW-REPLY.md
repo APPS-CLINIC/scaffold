@@ -1,78 +1,201 @@
 # Replies to review comments — Facilities PoC
 
-## Emil — PR description
+Each section is one comment thread in the Azure PR: the file, the comment, then the
+reply to paste.
+
+| #   | Who  | File                                                  | Status                                             |
+| --- | ---- | ----------------------------------------------------- | -------------------------------------------------- |
+| 1   | Emil | PR description                                        | Done (paste the new description into the Azure PR) |
+| 2   | Emil | `FacilitiesPreviewPage.tsx` — move logic into a hook  | Done                                               |
+| 3   | Emil | `FacilitiesPreviewPage.tsx` — shared query key        | Done                                               |
+| 4   | Emil | `FacilitiesView.tsx` — `useFacilityTreeExpansion`     | Done                                               |
+| 5   | Emil | `FacilitiesPreviewPage.tsx` — `useCallback`           | Done                                               |
+| 6   | Emil | `useFacilitiesPreview.ts` — one page per ancestor     | Done                                               |
+| 7   | Emil | `FacilitiesPreviewPage.test.tsx` — long tests         | Done                                               |
+| 8   | Anna | `facilitiesPreview.path.ts` — is it used? / nginx     | Done                                               |
+| 9   | Anna | `facilities.formatters.ts` — return directly          | Not done yet                                       |
+| 10  | Anna | `facilitiesPreview.api.ts` — constants (two comments) | Not done yet                                       |
+| 11  | Anna | `TableActions.tsx` — `customers.actions.*` keys       | Not done yet                                       |
+| 12  | Anna | `TreeDataTable.types.ts` — define the types here      | Not done yet                                       |
+| 13  | Anna | `FacilityTableCells.tsx` — fields here and in config  | Explained; comment in code not added yet           |
+| 14  | Anna | `facilityGroupLabels.ts` — dictionaries from backend  | Already answered and resolved                      |
+
+## 1. Emil — PR description
+
+> PR description was cut down (stops mid sentence). What was ommited? 😅
+> This description is too long to be readable in my opinion. If you think LLM-generated
+> output is enough ask for a concise description. I would prefer a human-made summary
+> though.
+
+**Reply:**
 
 You're right, it was too long and it got cut. I replaced it with a short summary.
 
-## Emil — `FacilitiesPreviewPage.tsx`: move the logic into a hook
+## 2. Emil — `FacilitiesPreviewPage.tsx` (`expandToLevel`)
+
+> This page combines rendering with query construction, data fetching, tree pagination,
+> and expansion behavior, which makes the component dense and difficult to follow without
+> external explanation.
+>
+> Could we move the preview query/tree-loading logic into a focused hook and keep the page
+> primarily presentational? For example, `useFacilitiesPreview()` hook could return a big
+> DTO with data, loading/error state, and handlers such as `loadChildren` and
+> `expandToLevel`.
+
+**Reply:**
 
 Done. The page now uses `useFacilitiesPreview()`. It returns the data, the loading and error
 state and the handlers (`loadChildren`, `loadMoreRoots`, `expandToLevel`). The page only
 handles the URL, the dialog and the rendering.
 
-## Emil — `FacilitiesPreviewPage.tsx`: share the query key with `FacilitiesView`
+## 3. Emil — `FacilitiesPreviewPage.tsx` (`requestKey`)
+
+> Could we share this query-key logic with FacilitiesView (by adding some util)? The page
+> builds a key from raw URL filters, while the view builds one from parsed filters and
+> separately excludes display currency.
+
+**Reply:**
 
 Done. Both now use `facilityQueryKey(q, filters)`. It removes the display currency in one
 place and works with raw URL filters and with parsed filters. I added tests for it.
 
-## Emil — `FacilitiesView.tsx`: `useFacilityTreeExpansion`
+## 4. Emil — `FacilitiesView.tsx` (`expansionRequest`)
+
+> Could we move the level-expansion behavior into a focused hook, such as
+> `useFacilityTreeExpansion`? The hook would own the selected/loading levels, request
+> cancellation, loading branches through `onExpandToLevel`, and restoring the previous
+> level after failure; the view would call its returned handlers and render the resulting
+> state.
+>
+> This follows the React convention of extracting reusable or cohesive stateful behavior
+> into custom hooks, while keeping the component focused on rendering.
+
+**Reply:**
 
 Done. The new hook keeps the selected and loading level, cancels a running load, loads pages
 through `onExpandToLevel` and goes back to the previous level after an error. The view only
 renders. I added tests for the hook, also for the error case, which had no test before.
 
-## Emil — `FacilitiesPreviewPage.tsx`: inline `getFacilityHref` and `onOpenRelated`
+## 5. Emil — `FacilitiesPreviewPage.tsx` (`getFacilityHref`, `onOpenRelated`)
+
+> Copilot says that since `getFacilityHref` and `onOpenRelated` are created inline in the
+> `<FacilitiesView>` props, they get recreated on each page render. That causes the table
+> config to be rebuilt and can remount its cells.
+> Maybe w should wrap them in `useCallback` and pass the callbacks by name?
+
+**Reply:**
 
 Yes, Copilot was right here. The view builds the table config in `useMemo` with these two
 functions as dependencies, so new functions on every render rebuilt the config. Both are now
 `useCallback`.
 
-## Anna — `facilitiesPreview.path.ts`: is it used? / nginx
+## 6. Emil — `useFacilitiesPreview.ts` (`await loadChildren(key)`)
+
+> This loads only one page of children per ancestor. Is that intentional? Searching for
+> F-100 leaves the matching F-1007 hidden behind "Load more children."
+>
+> (with a test: `?q=F-100` should show F-1004 and, from the next page, F-1007)
+
+**Reply:**
+
+No, it was not intentional for this case. I knew about this limit, but your example shows
+it is a bug: the search result has only matches and their parents, so every child page of a
+revealed branch is needed. Now the hook loads all child pages of each revealed branch
+(`loadAllChildren`), the same way "Expand all" does. A new query also aborts the request in
+progress. I added your test (`?q=F-100` shows F-1004 and F-1007, and there is no "Load more
+children" button). For a large real result this means many page requests, so we will need a
+limit when we connect the backend.
+
+## 7. Emil — `FacilitiesPreviewPage.test.tsx` (long tests)
+
+> Could we make the longer tests easier to follow by separating the scenarios and adding
+> short comments around the main steps? There are many interactions and timer advances in
+> sequence, so it's difficult to see what each section is proving.
+>
+> (with an example split into: load the first child page of F-1003 / load the next page /
+> collapse and reopen the branch)
+
+**Reply:**
+
+Done. I split the long test into three scenarios: loading only the direct children, loading
+the next child page, and reusing loaded children after collapse and after a currency change.
+I added small helpers (`expandFacility`, `rowOf`, `requestIds`) and short comments before the
+main steps, also in the other long tests.
+
+## 8. Anna — `facilitiesPreview.path.ts` (`FACILITIES_PREVIEW_PATH`)
+
+> **Anna:** is it used? In dev it's not shown under: `<env>/customers/all/dev-facilities`
+>
+> **Anna:** Also in nginx.conf there is no mention about customer, so I'm not sure if the
+> diagnostic from this comment is right
+>
+> **Paweł:** On my local environment works as expected, I didn't verify whether the changes
+> were deployed correctly
+>
+> **Anna:** Imo either we should make it working on env or delete this comment, becuase as
+> far as I understand it's not correct
+
+**Reply:**
 
 You were right, the comment was wrong. The page was missing on the environment because the
 route was added only in dev mode (`import.meta.env.DEV`), and the environment runs a
 production build. nginx was not the problem. I removed the comment and moved the page to
-`/facilities`. It now works in every build until the backend is ready (ADR 0058). The
-constant is still used by the page for the facility links and for closing the dialog.
+`/facilities`. It now works in every build until the backend is ready. The constant is still
+used by the page for the facility links and for closing the dialog.
 
-## Anna — `facilities.formatters.ts`: return without the `result` variable
+## 9. Anna — `facilities.formatters.ts` (`const result = summaries.reduce(`)
+
+> you can immediately return, without using result variable
+
+**Reply:**
 
 Good point, I'll return the `reduce` result directly.
 
-## Anna — `facilitiesPreview.api.ts`: constants for the states (two comments)
+## 10. Anna — `facilitiesPreview.api.ts` (two comments)
+
+On `rootPageState: 'loaded' | 'loading' | 'error';` and on
+`childrenState: node.hasChildren ? 'unloaded' : 'loaded',`:
+
+> maybe constants could be used here
+
+**Reply (same for both):**
 
 Agreed. I'll keep the state names (`unloaded`, `loading`, `loaded`, `error`) in one place and
 build the types from it.
 
-## Anna — `TableActions.tsx`: `customers.actions.expandAll` / `customers.actions.export`
+## 11. Anna — `TableActions.tsx` (`t('customers.actions.expandAll')`)
+
+> minor: it's not related to the customer, maybe table.actions.expandAll. The same for
+> customers.actions.export
+
+**Reply:**
 
 Right, these are not about customers. I'll rename them to `table.actions.expandAll` and
 `table.actions.export`.
 
-## Anna — `TreeDataTable.types.ts`: define the types in this file
+## 12. Anna — `TreeDataTable.types.ts`
+
+> Should types be defined in this file? It will make TreeDataTable smaller and more focused
+> on the logic
+
+**Reply:**
 
 Yes, I'll move the props types into this file and import them in the component.
 
-## Anna — `FacilityTableCells.tsx`: fields here and in `facilityTable.config.tsx`
+## 13. Anna — `FacilityTableCells.tsx`
+
+> why some fields are defined here and some are defined in facilityTable.config.tsx? Some
+> are defined in both like commitment or contractCurrency
+
+**Reply:**
 
 They have different jobs. `facilityTable.config.tsx` defines the columns and the filters (type,
 commitment and contract currency are filters there). `FacilityTableCells.tsx` only draws the
 "Basic data" column, which shows several values in one cell. So the names are in both files,
 but nothing is defined twice. I'll add a short comment in the cells file to make this clear.
 
-## Emil — `useFacilitiesPreview.ts`: only one page of children per ancestor
+## 14. Anna — `facilityGroupLabels.ts` (already resolved)
 
-No, it was not intentional for this case. It was written down as a known limit, but your
-example shows it is a bug: the search result has only matches and their parents, so every
-child page of a revealed branch is needed. Now the hook loads all child pages of each
-revealed branch (`loadAllChildren`), the same way "Expand all" does. A new query also
-aborts the request in progress. I added your test (`?q=F-100` shows F-1004 and F-1007,
-and there is no "Load more children" button). For a large real result this means many page
-requests, so I noted in the backend contract that we need a limit there.
+> I guess this will be moved to dictionaries and fetched from the BE in the future, correct?
 
-## Emil — `FacilitiesPreviewPage.test.tsx`: make the long tests easier to follow
-
-Done. I split the long test into three scenarios: loading only the direct children,
-loading the next child page, and reusing loaded children after collapse and after a
-currency change. I added small helpers (`expandFacility`, `rowOf`, `requestIds`) and short
-comments before the main steps, also in the other long tests.
+**Reply (already sent):** yes
