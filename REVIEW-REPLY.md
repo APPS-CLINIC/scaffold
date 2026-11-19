@@ -13,11 +13,11 @@ reply to paste.
 | 6   | Emil | `useFacilitiesPreview.ts` — one page per ancestor     | Done                                               |
 | 7   | Emil | `FacilitiesPreviewPage.test.tsx` — long tests         | Done                                               |
 | 8   | Anna | `facilitiesPreview.path.ts` — is it used? / nginx     | Done                                               |
-| 9   | Anna | `facilities.formatters.ts` — return directly          | Not done yet                                       |
-| 10  | Anna | `facilitiesPreview.api.ts` — constants (two comments) | Not done yet                                       |
-| 11  | Anna | `TableActions.tsx` — `customers.actions.*` keys       | Not done yet                                       |
-| 12  | Anna | `TreeDataTable.types.ts` — define the types here      | Not done yet                                       |
-| 13  | Anna | `FacilityTableCells.tsx` — fields here and in config  | Explained; comment in code not added yet           |
+| 9   | Anna | `facilities.formatters.ts` — return directly          | Done                                               |
+| 10  | Anna | `facilitiesPreview.api.ts` — constants (two comments) | Done                                               |
+| 11  | Anna | `TableActions.tsx` — `customers.actions.*` keys       | Done                                               |
+| 12  | Anna | `TreeDataTable.types.ts` — define the types here      | Done                                               |
+| 13  | Anna | `FacilityTableCells.tsx` — fields here and in config  | Done                                               |
 | 14  | Anna | `facilityGroupLabels.ts` — dictionaries from backend  | Already answered and resolved                      |
 
 ## 1. Emil — PR description
@@ -145,33 +145,48 @@ used by the page for the facility links and for closing the dialog.
 
 ## 9. Anna — `facilities.formatters.ts` (`const result = summaries.reduce(`)
 
-> you can immediately return, without using result variable
+> **Anna:** you can immediately return, without using result variable
+>
+> **Anna:** it's not changed
 
 **Reply:**
 
-Good point, I'll return the `reduce` result directly.
+Sorry, you're right, I missed it. Now the function returns the `reduce` result directly. I
+also replaced `as FacilityAmounts` with `reduce<FacilityAmounts>`, so the start value is
+type-checked instead of cast.
 
 ## 10. Anna — `facilitiesPreview.api.ts` (two comments)
 
 On `rootPageState: 'loaded' | 'loading' | 'error';` and on
 `childrenState: node.hasChildren ? 'unloaded' : 'loaded',`:
 
-> maybe constants could be used here
+> **Anna:** maybe constants could be used here
+>
+> **Anna (on `rootPageState`):** I see like, but it's not changed. Is it fixed or are you going
+> to use plain strings intentionally?
+>
+> **Anna (on `childrenState`):** same here - unloaded and loaded is still string. Is it
+> intentional?
 
 **Reply (same for both):**
 
-Agreed. I'll keep the state names (`unloaded`, `loading`, `loaded`, `error`) in one place and
-build the types from it.
+Not intentional, sorry, it was not pushed yet. It's fixed now. The state names are in one place,
+`FACILITY_LOAD_STATE` in `facilities.types.ts`, and the type `FacilityLoadState` is built from
+it. `childrenState` uses this type, and `rootPageState` uses it without `unloaded`. All places
+in the Facilities code use the constant now (API, page, view, cells, filters), not plain
+strings.
 
 ## 11. Anna — `TableActions.tsx` (`t('customers.actions.expandAll')`)
 
-> minor: it's not related to the customer, maybe table.actions.expandAll. The same for
-> customers.actions.export
+> **Anna:** minor: it's not related to the customer, maybe table.actions.expandAll. The same
+> for customers.actions.export
+>
+> **Anna:** not changed
 
 **Reply:**
 
-Right, these are not about customers. I'll rename them to `table.actions.expandAll` and
-`table.actions.export`.
+Sorry, fixed now. The keys are `table.actions.expandAll` and `table.actions.export` in `pl` and
+`en`, and `TableActions.tsx` uses them.
 
 ## 12. Anna — `TreeDataTable.types.ts`
 
@@ -180,7 +195,8 @@ Right, these are not about customers. I'll rename them to `table.actions.expandA
 
 **Reply:**
 
-Yes, I'll move the props types into this file and import them in the component.
+Done. `TreeDataTableProps` and `TreeDataTableLabels` are now defined in
+`TreeDataTable.types.ts`. The component and `index.ts` import them from there.
 
 ## 13. Anna — `FacilityTableCells.tsx`
 
@@ -192,7 +208,8 @@ Yes, I'll move the props types into this file and import them in the component.
 They have different jobs. `facilityTable.config.tsx` defines the columns and the filters (type,
 commitment and contract currency are filters there). `FacilityTableCells.tsx` only draws the
 "Basic data" column, which shows several values in one cell. So the names are in both files,
-but nothing is defined twice. I'll add a short comment in the cells file to make this clear.
+but nothing is defined twice. I added a short comment above `FacilityBasicCell` to make
+this clear.
 
 ## 14. Anna — `facilityGroupLabels.ts` (already resolved)
 

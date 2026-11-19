@@ -109,11 +109,7 @@ export const ExpandAllAndCancel: Story = {
     const t = storyText(globals);
     const canvas = within(canvasElement);
     await userEvent.click(
-      await canvas.findByRole(
-        'switch',
-        { name: t('customers.actions.expandAll') },
-        { timeout: 5000 },
-      ),
+      await canvas.findByRole('switch', { name: t('table.actions.expandAll') }, { timeout: 5000 }),
     );
     await userEvent.click(canvas.getByRole('button', { name: t('facilities.cancelLoadingAll') }));
     await expect(canvas.queryByRole('link', { name: 'F-1002' })).not.toBeInTheDocument();

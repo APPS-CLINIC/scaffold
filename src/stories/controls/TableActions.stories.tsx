@@ -49,10 +49,8 @@ export const Default: Story = {
   play: async ({ canvasElement, args, globals }) => {
     const t = storyText(globals);
     const canvas = within(canvasElement);
-    await userEvent.click(canvas.getByRole('switch', { name: t('customers.actions.expandAll') }));
-    await expect(
-      canvas.getByRole('switch', { name: t('customers.actions.expandAll') }),
-    ).toBeChecked();
+    await userEvent.click(canvas.getByRole('switch', { name: t('table.actions.expandAll') }));
+    await expect(canvas.getByRole('switch', { name: t('table.actions.expandAll') })).toBeChecked();
     await userEvent.click(canvas.getByRole('button', { name: t('table.settings.open') }));
     await expect(args.onOpenSettings).toHaveBeenCalled();
   },

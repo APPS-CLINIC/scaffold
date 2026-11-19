@@ -17,7 +17,7 @@ export function sumFacilitySummaries(
   summaries: readonly FacilityGroupSummary[],
   currency: FacilityCurrency,
 ): FacilityAmounts {
-  const result = summaries.reduce(
+  return summaries.reduce<FacilityAmounts>(
     (sum, summary) => {
       const amounts = summary.amounts[currency];
       return {
@@ -28,13 +28,6 @@ export function sumFacilitySummaries(
         utilization: null,
       };
     },
-    {
-      currency,
-      grantedMinor: 0,
-      utilizedMinor: 0,
-      availableMinor: 0,
-      utilization: null,
-    } as FacilityAmounts,
+    { currency, grantedMinor: 0, utilizedMinor: 0, availableMinor: 0, utilization: null },
   );
-  return result;
 }

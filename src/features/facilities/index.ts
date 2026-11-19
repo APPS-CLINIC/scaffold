@@ -1,6 +1,10 @@
 export { FacilitiesView, type FacilitiesViewProps } from './FacilitiesView';
 export { facilityQueryKey } from './facilities.filters';
-export { allFacilityNodes, facilityChildrenComplete } from './facilities.types';
+export {
+  FACILITY_LOAD_STATE,
+  allFacilityNodes,
+  facilityChildrenComplete,
+} from './facilities.types';
 export type {
   FacilityAmounts,
   FacilityCurrency,
@@ -9,6 +13,7 @@ export type {
   FacilityGroupSummary,
   FacilityIndicator,
   FacilityLevel,
+  FacilityLoadState,
   FacilityNode,
   FacilityNodeDto,
   FacilityChildrenResponse,

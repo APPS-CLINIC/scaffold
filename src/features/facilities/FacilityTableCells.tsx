@@ -7,13 +7,18 @@ import { formatFacilityAmount } from './facilities.formatters';
 import type { FacilitiesViewProps } from './FacilitiesView';
 import type { FacilityTableRow } from './facilityTable.types';
 import { FACILITY_GROUP_LABELS } from './facilityGroupLabels';
+import { FACILITY_LOAD_STATE } from './facilities.types';
 
 type BasicCellProps = GenericDataTableCellProps<FacilityTableRow, 'number'> &
   Pick<FacilitiesViewProps, 'getFacilityHref'> &
   Pick<FacilitiesViewProps, 'onLoadChildren'> &
   Pick<FacilityIndicatorsProps, 'onOpenRelated'>;
 
-/** Feature-specific composition of shared link, status and text cells. */
+/**
+ * Draws the "Basic data" column: one cell that shows several row values together. It only
+ * renders them. The columns and the filters (also for type, commitment and contract currency)
+ * are defined in facilityTable.config.tsx, so the same field names appear in both files.
+ */
 export function FacilityBasicCell({
   getFacilityHref,
   onOpenRelated,
@@ -55,22 +60,23 @@ export function FacilityBasicCell({
         </div>
         <div>{t('facilities.contractCurrency', { currency: row.contractCurrency })}</div>
         {row.isContext ? <div className="text-xs">{t('facilities.context')}</div> : null}
-        {row.childrenState === 'loading' ? (
+        {row.childrenState === FACILITY_LOAD_STATE.loading ? (
           <p className="sr-only" role="status">
             {t('facilities.loadingChildren')}
           </p>
         ) : null}
-        {onLoadChildren && (row.childrenState === 'error' || row.nextCursor !== null) ? (
+        {onLoadChildren &&
+        (row.childrenState === FACILITY_LOAD_STATE.error || row.nextCursor !== null) ? (
           <button
             type="button"
-            disabled={row.childrenState === 'loading'}
+            disabled={row.childrenState === FACILITY_LOAD_STATE.loading}
             className="rounded text-xs text-[var(--accent)] underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[var(--focus)]"
             onClick={() => {
               void onLoadChildren(row.key).catch(() => undefined);
             }}
           >
             {t(
-              row.childrenState === 'error'
+              row.childrenState === FACILITY_LOAD_STATE.error
                 ? 'facilities.retryChildren'
                 : 'facilities.moreChildren',
             )}

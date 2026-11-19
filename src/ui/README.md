@@ -242,9 +242,9 @@ expandable. The optional fourth argument of `getExpandableTreeKeys` is the
 same has-children accessor. Fetching, cached pages and loading/retry UI remain
 owned by the caller.
 
-`TreeDataTableProps` and `TreeDataTableLabels` are declared in `TreeDataTable.tsx`
-alongside the adapter. `TreeDataTable.types.ts` forwards those types for existing
-imports. Facilities derives its loading props from the same contract and fixes
+`TreeDataTableProps` and `TreeDataTableLabels` are declared in
+`TreeDataTable.types.ts`; the component imports them, and a change to the props
+needs both files. Facilities derives its loading props from the same contract and fixes
 its generic row type to `FacilityTableRow` when rendering the tree.
 
 `InfoPopover` adapts the controlled IWA `Popover` for

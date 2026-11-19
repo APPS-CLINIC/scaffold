@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import type { ListQuery } from '@/features/urlState/urlState.schema';
 import { parseIsoDate } from '@/i18n/dateFormats';
-import { FACILITY_GROUPS } from './facilities.types';
+import { FACILITY_GROUPS, FACILITY_LOAD_STATE } from './facilities.types';
 import type { FacilityGroup, FacilityNode } from './facilities.types';
 
 const values = z.array(z.string()).catch([]);
@@ -109,7 +109,8 @@ export function filterFacilities(
       if (matched) matchingCount++;
       else contextKeys.push(node.key);
       if (children.length) ancestorKeys.push(node.key);
-      const incomplete = node.childrenState !== 'loaded' || node.nextCursor !== null;
+      const incomplete =
+        node.childrenState !== FACILITY_LOAD_STATE.loaded || node.nextCursor !== null;
       return [
         {
           ...node,

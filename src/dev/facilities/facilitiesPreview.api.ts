@@ -1,5 +1,7 @@
 import { baseApi } from '@/api/baseApi';
+import { FACILITY_LOAD_STATE } from '@/features/facilities';
 import type {
+  FacilityLoadState,
   FacilityNode,
   FacilityRootsResponse,
   FacilitySnapshot,
@@ -12,13 +14,14 @@ interface PreviewData {
   response: FacilityRootsResponse;
   snapshot: FacilitySnapshot;
   nextRootCursor: string | null;
-  rootPageState: 'loaded' | 'loading' | 'error';
+  /** The root list is never unloaded: the first page arrives with the response. */
+  rootPageState: Exclude<FacilityLoadState, typeof FACILITY_LOAD_STATE.unloaded>;
 }
 function fromDto(node: FacilityRootsResponse['nodes'][number]): FacilityNode {
   return {
     ...node,
     children: [],
-    childrenState: node.hasChildren ? 'unloaded' : 'loaded',
+    childrenState: node.hasChildren ? FACILITY_LOAD_STATE.unloaded : FACILITY_LOAD_STATE.loaded,
     nextCursor: null,
   };
 }
@@ -41,7 +44,7 @@ const rootsApi = baseApi.injectEndpoints({
             data: {
               response,
               nextRootCursor: response.nextCursor,
-              rootPageState: 'loaded',
+              rootPageState: FACILITY_LOAD_STATE.loaded,
               snapshot: {
                 asOf: response.asOf,
                 summaries: response.summaries,
@@ -72,11 +75,11 @@ export const facilitiesPreviewApi = rootsApi.injectEndpoints({
         const pending = dispatch(
           rootsApi.util.updateQueryData('getFacilityPreviewRoots', arg.query, (draft) => {
             if (arg.parentKey === null) {
-              draft.rootPageState = 'loading';
+              draft.rootPageState = FACILITY_LOAD_STATE.loading;
               return;
             }
             const node = find(draft.snapshot.nodes, arg.parentKey);
-            if (node) node.childrenState = 'loading';
+            if (node) node.childrenState = FACILITY_LOAD_STATE.loading;
           }),
         );
         try {
@@ -89,7 +92,7 @@ export const facilitiesPreviewApi = rootsApi.injectEndpoints({
                   if (!previous.has(node.key)) previous.set(node.key, fromDto(node));
                 draft.snapshot.nodes = [...previous.values()];
                 draft.nextRootCursor = data.nextCursor;
-                draft.rootPageState = 'loaded';
+                draft.rootPageState = FACILITY_LOAD_STATE.loaded;
                 return;
               }
               const node = find(draft.snapshot.nodes, arg.parentKey);
@@ -98,7 +101,7 @@ export const facilitiesPreviewApi = rootsApi.injectEndpoints({
               for (const child of data.nodes)
                 if (!previous.has(child.key)) previous.set(child.key, fromDto(child));
               node.children = [...previous.values()];
-              node.childrenState = 'loaded';
+              node.childrenState = FACILITY_LOAD_STATE.loaded;
               node.nextCursor = data.nextCursor;
             }),
           );
@@ -111,11 +114,11 @@ export const facilitiesPreviewApi = rootsApi.injectEndpoints({
           dispatch(
             rootsApi.util.updateQueryData('getFacilityPreviewRoots', arg.query, (draft) => {
               if (arg.parentKey === null) {
-                draft.rootPageState = 'error';
+                draft.rootPageState = FACILITY_LOAD_STATE.error;
                 return;
               }
               const node = find(draft.snapshot.nodes, arg.parentKey);
-              if (node) node.childrenState = 'error';
+              if (node) node.childrenState = FACILITY_LOAD_STATE.error;
             }),
           );
         }

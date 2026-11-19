@@ -11,6 +11,14 @@ export type FacilityCurrency = 'PLN' | 'EUR';
 export type FacilityDisplayCurrency = 'original' | FacilityCurrency;
 export const FACILITY_LEVELS = [1, 2, 3, 4, 5, 6] as const;
 export type FacilityLevel = (typeof FACILITY_LEVELS)[number];
+/** Load state of a branch's children. The root page list uses the same names. */
+export const FACILITY_LOAD_STATE = {
+  unloaded: 'unloaded',
+  loading: 'loading',
+  loaded: 'loaded',
+  error: 'error',
+} as const;
+export type FacilityLoadState = (typeof FACILITY_LOAD_STATE)[keyof typeof FACILITY_LOAD_STATE];
 export type FacilityIndicator =
   | 'creditAccounts'
   | 'currencies'
@@ -59,7 +67,7 @@ export interface FacilityNodeDto {
 
 export interface FacilityNode extends FacilityNodeDto {
   children: readonly FacilityNode[];
-  childrenState: 'unloaded' | 'loading' | 'loaded' | 'error';
+  childrenState: FacilityLoadState;
   nextCursor: string | null;
 }
 
@@ -115,5 +123,5 @@ export function allFacilityNodes(nodes: readonly FacilityNode[]): FacilityNode[]
 
 /** True once every page of the node's direct children has been received. */
 export function facilityChildrenComplete(node: FacilityNode): boolean {
-  return node.childrenState === 'loaded' && node.nextCursor === null;
+  return node.childrenState === FACILITY_LOAD_STATE.loaded && node.nextCursor === null;
 }

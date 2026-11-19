@@ -1,3 +1,4 @@
+import { FACILITY_LOAD_STATE } from '@/features/facilities';
 import type {
   FacilityAmounts,
   FacilityRow,
@@ -161,7 +162,7 @@ function completeNodes(parentKey: string | null): FacilityNode[] {
     .filter((node) => node.parentKey === parentKey)
     .map((node) => ({
       ...node,
-      childrenState: 'loaded',
+      childrenState: FACILITY_LOAD_STATE.loaded,
       nextCursor: null,
       children: completeNodes(node.key),
     }));

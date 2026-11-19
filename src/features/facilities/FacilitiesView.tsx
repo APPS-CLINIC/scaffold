@@ -38,6 +38,7 @@ import {
   DEEPEST_FACILITY_LEVEL,
   FACILITY_GROUPS,
   FACILITY_LEVELS,
+  FACILITY_LOAD_STATE,
   allFacilityNodes,
 } from './facilities.types';
 import type {
@@ -288,7 +289,10 @@ export function FacilitiesView({
         loadingMore={loadingMore}
         loadingLabel={t('common.loading')}
         onExpand={(row: FacilityTableRow) => {
-          if (row.childrenState === 'unloaded' || row.childrenState === 'error')
+          if (
+            row.childrenState === FACILITY_LOAD_STATE.unloaded ||
+            row.childrenState === FACILITY_LOAD_STATE.error
+          )
             void onLoadChildren?.(row.key).catch(() => undefined);
         }}
         config={config}

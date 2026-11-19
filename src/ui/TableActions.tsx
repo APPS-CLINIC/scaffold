@@ -56,14 +56,14 @@ export const TableActions = forwardRef<HTMLDivElement, TableActionsProps>(functi
         <button type="button" className={ACTION_CLASS_NAME} onClick={onExport}>
           <DownloadIcon />
           <span className="underline group-hover:no-underline">
-            {exportLabel ?? t('customers.actions.export')}
+            {exportLabel ?? t('table.actions.export')}
           </span>
         </button>
       ) : null}
       <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 whitespace-nowrap text-sm text-[var(--muted)]">
-        <span>{t('customers.actions.expandAll')}</span>
+        <span>{t('table.actions.expandAll')}</span>
         <Switch
-          aria-label={t('customers.actions.expandAll')}
+          aria-label={t('table.actions.expandAll')}
           checked={allExpanded}
           disabled={expandableKeys.length === 0}
           onChange={() => onExpandedKeysChange(allExpanded ? [] : expandableKeys)}

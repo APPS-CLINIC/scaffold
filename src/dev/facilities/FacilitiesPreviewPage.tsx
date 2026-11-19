@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import type { SetStateAction } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { FacilitiesView, allFacilityNodes } from '@/features/facilities';
+import { FACILITY_LOAD_STATE, FacilitiesView, allFacilityNodes } from '@/features/facilities';
 import type { FacilityIndicator, FacilityRow, FacilitySnapshot } from '@/features/facilities';
 import {
   Button,
@@ -104,7 +104,7 @@ export function FacilitiesPreviewPage() {
       <FacilitiesView
         snapshot={data?.snapshot ?? previousData?.snapshot ?? EMPTY_SNAPSHOT}
         loading={tableLoading || isError}
-        loadingMore={data?.rootPageState === 'loading'}
+        loadingMore={data?.rootPageState === FACILITY_LOAD_STATE.loading}
         toolbarReady={toolbarReady}
         onLoadChildren={loadChildren}
         onExpandToLevel={expandToLevel}
@@ -113,12 +113,14 @@ export function FacilitiesPreviewPage() {
       />
       {data?.nextRootCursor ? (
         <div>
-          {data.rootPageState === 'error' ? <p role="alert">{t('facilities.loadFailed')}</p> : null}
+          {data.rootPageState === FACILITY_LOAD_STATE.error ? (
+            <p role="alert">{t('facilities.loadFailed')}</p>
+          ) : null}
           <Button
             label={t('facilities.moreRoots')}
             style="outline"
             size="medium"
-            disabled={data.rootPageState === 'loading'}
+            disabled={data.rootPageState === FACILITY_LOAD_STATE.loading}
             onClick={() => {
               void loadMoreRoots().catch(() => undefined);
             }}

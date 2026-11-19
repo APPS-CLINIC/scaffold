@@ -113,7 +113,7 @@ TypeScript errors for missing props identify mismatched component revisions:
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `loading` is missing from `FacilitiesViewProps`                     | `src/features/facilities/FacilitiesView.tsx`, including its props, defaults and render logic, alongside `src/dev/facilities/FacilitiesPreviewPage.tsx` |
 | `allExpanded` is missing from `TableActionsProps`                   | `src/ui/TableActions.tsx`, including the owner-supplied completeness check                                                                             |
-| `getHasChildren` or `onExpand` is missing from `TreeDataTableProps` | `src/ui/TreeDataTable/TreeDataTable.tsx`, its `index.ts` and `treeKeys.ts`; `TreeDataTable.types.ts` forwards the component's contract                 |
+| `getHasChildren` or `onExpand` is missing from `TreeDataTableProps` | `src/ui/TreeDataTable/TreeDataTable.types.ts`, `TreeDataTable.tsx`, its `index.ts` and `treeKeys.ts`                                                   |
 
 Pending tree rendering also uses `getChildrenLoading`, `loadingMore` and the
 shared `TableCellSkeleton`. Transfer its feature row accessor and the UI exports
