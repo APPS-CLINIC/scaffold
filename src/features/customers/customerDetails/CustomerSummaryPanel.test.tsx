@@ -1,5 +1,7 @@
 import { screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { makeStore } from '@/app/store';
+import { dictionariesApi } from '@/features/dictionaries';
 import i18n from '@/i18n';
 import {
   customerSummaryResponseFixture,
@@ -48,6 +50,25 @@ describe('CustomerSummaryPanel', () => {
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
     expect(screen.queryByRole('link')).not.toBeInTheDocument();
     expect(container.querySelector('.pi-briefcase')).toBeInTheDocument();
+  });
+
+  it('labels the status by the dictionary instead of the built-in translation', async () => {
+    const store = makeStore();
+    store.dispatch(
+      dictionariesApi.util.upsertQueryEntries([
+        {
+          endpointName: 'getStaticDictionaries',
+          arg: 'pl',
+          value: { 'customer-status': [{ code: 'ACTIVE', label: 'Klient aktywny' }] },
+        },
+      ]),
+    );
+    stubCustomerSummaryFetch();
+
+    renderWithProviders(<CustomerSummaryPanel customerId="42" />, { store });
+
+    expect(await screen.findByText('Klient aktywny')).toBeInTheDocument();
+    expect(screen.queryByText(i18n.t('common.status.active'))).toBeNull();
   });
 
   it('formats the rating date with the active locale', async () => {

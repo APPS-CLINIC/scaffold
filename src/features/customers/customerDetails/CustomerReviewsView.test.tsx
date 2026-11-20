@@ -7,6 +7,7 @@ import {
   customerDetailsResponseFixture,
   customerSummaryResponseFixture,
 } from '@/test/customerDetails.fixtures';
+import { seedStaticDictionaries } from '@/test/customerFilterDictionaries.fixture';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import { CustomerReviewsView } from './CustomerReviewsView';
 import { mapCustomerDetailsResponse } from './customerDetails.adapter';
@@ -91,6 +92,7 @@ describe('Review dates', () => {
   function renderReviewDates(overrides: Partial<CustomerDetailsResponse> = {}) {
     const customerId = '23997';
     const store = makeStore();
+    seedStaticDictionaries(store);
     store.dispatch(
       customerDetailsApi.util.upsertQueryEntries([
         {
@@ -157,14 +159,24 @@ describe('Review dates', () => {
     expect(separators[0]?.parentElement).not.toHaveTextContent('FATCA review date');
   });
 
-  it('formats every date and shows the TS status as the service sends it', () => {
+  it('formats every date and shows the TS status by the label of its dictionary', () => {
     renderReviewDates();
 
     expect(row('Lending review date')).toHaveTextContent('11/30/2026');
     expect(row('Review extension date')).toHaveTextContent('12/15/2026');
     expect(row('Lending rating review date')).toHaveTextContent('10/15/2026');
-    expect(row('TS pricing condition status')).toHaveTextContent('STANDARD_CONTRACT_END_DATE');
+    expect(row('TS pricing condition status')).toHaveTextContent(
+      '1 - Contract end date, standard terms',
+    );
     expect(row('TS pricing conditions end date')).toHaveTextContent('12/31/2026');
+  });
+
+  it('shows a TS status the dictionary does not know as the service sends it', () => {
+    renderReviewDates({
+      tsPrice: { tsPriceConditionStatus: 'RENEGOTIATED', tsPriceConditionEndDate: null },
+    });
+
+    expect(row('TS pricing condition status')).toHaveTextContent('RENEGOTIATED');
   });
 
   it('takes the CDD expiration date from the customer details', () => {
@@ -354,7 +366,10 @@ describe('Review dates over the network', () => {
       'fetch',
       vi.fn(async (input: RequestInfo | URL): Promise<Response> => {
         const request = input instanceof NativeRequest ? input : new NativeRequest(input);
-        requestedPaths.push(new URL(request.url).pathname);
+        const { pathname } = new URL(request.url);
+        // The TS status row asks for its dictionary; only the details requests are counted.
+        if (pathname === '/api/dictionaries') return new Response(null, { status: 404 });
+        requestedPaths.push(pathname);
         return respond();
       }),
     );

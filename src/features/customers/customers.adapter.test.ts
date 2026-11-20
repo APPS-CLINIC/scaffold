@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { pl } from '@/i18n/messages/pl';
-import { mapCustomerResponse } from './customers.adapter';
+import { mapCustomerResponse, toTsPriceConditionStatusCode } from './customers.adapter';
 import type { CustomerResponse } from './customers.types';
 
 const response: CustomerResponse = {
@@ -45,9 +45,24 @@ describe('customer response adapter', () => {
       fullName: response.fullName,
       taxId: response.taxId,
       status: 'ACTIVE',
-      tsPriceConditionStatus: 2,
+      tsPriceConditionStatus: 'NON_STANDARD_CONTRACT_END_DATE',
       type: 'Bank Inwestycyjny',
     });
+  });
+
+  it('turns the TS status number the list sends into the code the dictionary knows', () => {
+    expect([1, 2, 3].map(toTsPriceConditionStatusCode)).toEqual([
+      'STANDARD_CONTRACT_END_DATE',
+      'NON_STANDARD_CONTRACT_END_DATE',
+      'NO_CONTRACT_END_DATE',
+    ]);
+  });
+
+  it('keeps a TS status that is already a code, and one outside the known numbers, as sent', () => {
+    expect(toTsPriceConditionStatusCode('NO_CONTRACT_END_DATE')).toBe('NO_CONTRACT_END_DATE');
+    expect(toTsPriceConditionStatusCode(7)).toBe('7');
+    expect(toTsPriceConditionStatusCode(0)).toBe('0');
+    expect(toTsPriceConditionStatusCode(null)).toBeNull();
   });
 
   it('maps the archival status case-insensitively', () => {

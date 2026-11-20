@@ -1,5 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { CustomerDetailSection, type CustomerFieldRow } from './CustomerFields';
+import {
+  CustomerDetailSection,
+  CustomerDictionaryValue,
+  type CustomerFieldRow,
+} from './CustomerFields';
 import { EMPTY_CUSTOMER_ADVISORS, EMPTY_CUSTOMER_DETAILS } from './customerDetails.adapter';
 import {
   isAwaitingData,
@@ -40,7 +44,9 @@ export function CustomerGeneralDataView({ customerId }: CustomerGeneralDataViewP
     },
     {
       labelKey: 'customers.details.generalData.field.customerType',
-      value: details.basicData.customerType,
+      value: (
+        <CustomerDictionaryValue dictionary="customer-type" code={details.basicData.customerType} />
+      ),
     },
     { labelKey: 'customers.details.generalData.field.sector', value: details.basicData.sector },
     {

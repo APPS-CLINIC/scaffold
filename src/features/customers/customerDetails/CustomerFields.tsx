@@ -1,5 +1,6 @@
 import { useId, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useDictionary, type StaticDictionary } from '@/features/dictionaries';
 import type { MessageKey } from '@/i18n/messages/pl';
 import { Card, Skeleton } from '@/ui';
 
@@ -73,6 +74,24 @@ export function ValueSkeleton() {
       <Skeleton width="100%" height="100%" borderRadius="inherit" />
     </span>
   );
+}
+
+/**
+ * The value of a field that holds a dictionary code: its label once the dictionary loads. A code
+ * the dictionary does not know is shown as the service sent it.
+ */
+export function CustomerDictionaryValue({
+  dictionary,
+  code,
+}: {
+  dictionary: StaticDictionary;
+  code: string | null;
+}) {
+  const { t } = useTranslation();
+  const { labelOf, loading } = useDictionary(dictionary);
+
+  if (!code?.trim()) return t('customers.value.notAvailable');
+  return loading ? <ValueSkeleton /> : (labelOf(code) ?? code);
 }
 
 export interface CustomerFieldGroup {

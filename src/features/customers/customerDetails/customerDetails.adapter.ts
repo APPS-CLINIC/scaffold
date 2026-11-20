@@ -1,3 +1,4 @@
+import { toTsPriceConditionStatusCode } from '../customers.adapter';
 import type {
   CustomerAddress,
   CustomerAddresses,
@@ -141,11 +142,8 @@ function mapAddress(value: CustomerAddress | null): CustomerAddress | null {
 }
 
 function mapTsPrice(value: CustomerTsPriceResponse | null): CustomerTsPrice {
-  const status: unknown = value?.tsPriceConditionStatus;
-
   return {
-    tsPriceConditionStatus:
-      typeof status === 'string' ? status : typeof status === 'number' ? String(status) : null,
+    tsPriceConditionStatus: toTsPriceConditionStatusCode(value?.tsPriceConditionStatus),
     tsPriceConditionEndDate: value?.tsPriceConditionEndDate ?? null,
   };
 }

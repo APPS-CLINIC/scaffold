@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useLocation, useNavigationType } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -69,7 +69,7 @@ describe('CustomersView', () => {
     expect(await screen.findAllByText('Przekroczona')).toHaveLength(2);
   });
 
-  it('renders the development preview cache without an HTTP request', async () => {
+  it('renders the development preview cache without asking for the customer list', async () => {
     const fetchMock = vi.mocked(globalThis.fetch);
     const store = makeStore({ urlState: createUrlState('/customers/all') });
     seedCustomerPreviewData(store);
@@ -78,7 +78,23 @@ describe('CustomersView', () => {
 
     expect(await screen.findByText('ARCELORMITTAL WARSAW SP. Z O.O.')).toBeInTheDocument();
     expect(screen.getByText('15 results')).toBeInTheDocument();
-    expect(fetchMock).not.toHaveBeenCalled();
+    // The cells still ask for their dictionaries; the seeded list is what must not be fetched.
+    const requestedPaths = fetchMock.mock.calls.map(
+      ([request]) => new URL((request as Request).url).pathname,
+    );
+    expect(requestedPaths).not.toContain('/api/v1/customers');
+  });
+
+  it('shows the type of a customer by the label of its dictionary, in the current language', async () => {
+    renderPage('/customers/all?q=bank');
+
+    expect(await screen.findByText('NORTHERN INVESTMENT BANK S.A.')).toBeInTheDocument();
+    expect(await screen.findByText('Investment bank')).toBeInTheDocument();
+    expect(screen.queryByText('INVESTMENT_BANK')).toBeNull();
+
+    await act(() => i18n.changeLanguage('pl'));
+
+    expect(await screen.findByText('Bank Inwestycyjny')).toBeInTheDocument();
   });
 
   it('uses the deep-link query for the first and only initial customer list request', async () => {

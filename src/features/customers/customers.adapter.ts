@@ -1,5 +1,10 @@
 import { normalizeDomainValue } from '@/i18n/domainValues';
-import type { Customer, CustomerResponse, CustomerStatus } from './customers.types';
+import {
+  TS_PRICE_CONDITION_STATUSES,
+  type Customer,
+  type CustomerResponse,
+  type CustomerStatus,
+} from './customers.types';
 
 /** Keys are `normalizeDomainValue` outputs; values are the status contract. */
 export const customerStatusByDomainValue: Readonly<Record<string, CustomerStatus>> = {
@@ -25,10 +30,20 @@ function normalizeCustomerStatus(value: unknown): CustomerStatus | null {
   return lookupDomainValue(customerStatusByDomainValue, value);
 }
 
+/**
+ * The list sends the TS price condition status as its number, 1 to 3, while the dictionary and
+ * the filter know it by its code. A number outside that range stays as sent.
+ */
+export function toTsPriceConditionStatusCode(value: unknown): string | null {
+  if (typeof value === 'number') return TS_PRICE_CONDITION_STATUSES[value - 1] ?? String(value);
+  return typeof value === 'string' ? value : null;
+}
+
 /** Keep transport vocabulary at the RTK Query boundary. */
 export function mapCustomerResponse(response: CustomerResponse): Customer {
   return {
     ...response,
     status: normalizeCustomerStatus(response.status),
+    tsPriceConditionStatus: toTsPriceConditionStatusCode(response.tsPriceConditionStatus),
   };
 }

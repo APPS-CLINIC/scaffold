@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { useDictionary } from '@/features/dictionaries';
 import { Card, PrimeIcon, Skeleton, Status, useCustomIcon } from '@/ui';
 import { CustomerField, ValueSkeleton, type CustomerFieldRow } from './CustomerFields';
 import { isAwaitingData } from './customerDetails.api';
@@ -17,6 +18,7 @@ const SPLIT =
 
 function SummaryHeader({ summary, empty }: { summary: CustomerSummary; empty: string }) {
   const { t } = useTranslation();
+  const { labelOf } = useDictionary('customer-status');
   const fullName = summary.fullName?.trim() ? summary.fullName : empty;
 
   return (
@@ -29,9 +31,9 @@ function SummaryHeader({ summary, empty }: { summary: CustomerSummary; empty: st
       </h2>
       <div className="min-h-7">
         {summary.status === 'ACTIVE' ? (
-          <Status type="active" label={t('common.status.active')} />
+          <Status type="active" label={labelOf('ACTIVE') ?? t('common.status.active')} />
         ) : summary.status === 'ARCHIVAL' ? (
-          <Status type="disabled" label={t('common.status.archival')} />
+          <Status type="disabled" label={labelOf('ARCHIVAL') ?? t('common.status.archival')} />
         ) : (
           <span className="text-sm text-[var(--text)]">{empty}</span>
         )}

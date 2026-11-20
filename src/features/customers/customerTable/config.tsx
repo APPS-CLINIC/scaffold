@@ -1,6 +1,5 @@
 import type { Customer } from '@/features/customers/customers.types';
 import {
-  ActiveArchivalStatusCell,
   DateRangeFilter,
   OverdueDateCell,
   tableFilter,
@@ -9,6 +8,7 @@ import {
   UnderlinedTextCell,
 } from '@/ui';
 import type { GenericDataTableConfig } from '@/ui';
+import { CustomerDictionaryCell, CustomerStatusCell } from './CustomerDictionaryCells';
 import { CustomerDictionaryFilter } from './CustomerDictionaryFilter';
 import { CustomerSearchFilter } from './CustomerSearchFilter';
 import {
@@ -24,7 +24,8 @@ import {
  * this order). Widths are pixel budgets for the responsive fit engine. A field
  * with a `filter` gets that control in the filter dialog while the table uses it:
  * `CustomerDictionaryFilter` for a dictionary the service serves whole, `CustomerSearchFilter`
- * for a list it serves a page at a time and searches as the user types.
+ * for a list it serves a page at a time and searches as the user types. The cells of those
+ * dictionary fields show the same labels as their filters.
  */
 export const customerTableConfig = {
   id: 'customers',
@@ -46,7 +47,7 @@ export const customerTableConfig = {
       field: 'status',
       labelKey: 'customers.table.field.status',
       filter: tableFilter(CustomerDictionaryFilter, { dictionary: 'customer-status' }),
-      component: ActiveArchivalStatusCell,
+      component: CustomerStatusCell,
       sortable: true,
       width: 112,
     },
@@ -77,7 +78,7 @@ export const customerTableConfig = {
       field: 'type',
       labelKey: 'customers.table.field.type',
       filter: tableFilter(CustomerDictionaryFilter, { dictionary: 'customer-type' }),
-      component: TextCell,
+      component: (props) => <CustomerDictionaryCell {...props} dictionary="customer-type" />,
       sortable: true,
       width: 128,
     },
@@ -121,7 +122,9 @@ export const customerTableConfig = {
         dictionary: 'ts-price-condition-status',
         noneOption: NO_TS_PRICE_CONDITION_STATUS_OPTION,
       }),
-      component: TextCell,
+      component: (props) => (
+        <CustomerDictionaryCell {...props} dictionary="ts-price-condition-status" />
+      ),
       sortable: true,
       width: 176,
     },

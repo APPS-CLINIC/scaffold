@@ -67,13 +67,15 @@ describe('customer details adapter', () => {
     });
   });
 
-  it('shows a numeric TS price condition status as text', () => {
+  it('turns a numeric TS price condition status into its code', () => {
     const response: CustomerDetailsResponse = {
       ...customerDetailsResponseFixture,
       tsPrice: { tsPriceConditionStatus: 2, tsPriceConditionEndDate: null },
     };
 
-    expect(mapCustomerDetailsResponse(response).tsPrice.tsPriceConditionStatus).toBe('2');
+    expect(mapCustomerDetailsResponse(response).tsPrice.tsPriceConditionStatus).toBe(
+      'NON_STANDARD_CONTRACT_END_DATE',
+    );
   });
 
   it('drops a TS price condition status that is neither text nor a number', () => {

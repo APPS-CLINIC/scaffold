@@ -7,6 +7,7 @@ import {
   stubCustomerSummaryFetch,
 } from '@/test/customerDetails.fixtures';
 import i18n from '@/i18n';
+import { seedStaticDictionaries } from '@/test/customerFilterDictionaries.fixture';
 import { renderWithProviders } from '@/test/renderWithProviders';
 import { CustomerCddCrsFatcaView } from './CustomerCddCrsFatcaView';
 import { CustomerGeneralDataView } from './CustomerGeneralDataView';
@@ -72,6 +73,39 @@ describe('customer detail views', () => {
     expect(screen.getAllByText('No').length).toBeGreaterThan(0);
   });
 
+  it('shows the customer type by the label of its dictionary', () => {
+    const store = makeStore();
+    seedStaticDictionaries(store);
+    seedDetails(store);
+    const details = mapCustomerDetailsResponse(customerDetailsResponseFixture);
+    store.dispatch(
+      customerDetailsApi.util.upsertQueryEntries([
+        {
+          endpointName: 'getCustomerDetails',
+          arg: '23997',
+          value: {
+            ...details,
+            basicData: { ...details.basicData, customerType: 'INVESTMENT_BANK' },
+          },
+        },
+      ]),
+    );
+
+    renderWithProviders(<CustomerGeneralDataView customerId="23997" />, { store });
+
+    expect(screen.getByText('Customer type').closest('dl')).toHaveTextContent('Investment bank');
+  });
+
+  it('shows a customer type the dictionary does not know as the service sends it', () => {
+    const store = makeStore();
+    seedStaticDictionaries(store);
+    seedDetails(store);
+
+    renderWithProviders(<CustomerGeneralDataView customerId="23997" />, { store });
+
+    expect(screen.getByText('Customer type').closest('dl')).toHaveTextContent('Corporate');
+  });
+
   it('keeps every General data row visible as an en dash for null values', () => {
     const store = makeStore();
     store.dispatch(
@@ -92,6 +126,7 @@ describe('customer detail views', () => {
     renderWithProviders(<CustomerGeneralDataView customerId="empty" />, { store });
 
     expect(screen.getByText('Tax ID').closest('dl')).toHaveTextContent('–');
+    expect(screen.getByText('Customer type').closest('dl')).toHaveTextContent('–');
     expect(screen.getByText('Address').closest('dl')).toHaveTextContent('–');
     expect(screen.getByText('RM advisor').closest('dl')).toHaveTextContent('–');
     expect(screen.getByText('ING electronic marketing').closest('dl')).toHaveTextContent('–');

@@ -74,9 +74,10 @@ export interface CustomerResponse {
   status: string;
 }
 
-/** App-facing row with the backend status label normalized for reusable cells. */
-export interface Customer extends Omit<CustomerResponse, 'status'> {
+/** App-facing row: the status is normalized for reusable cells, the TS status is its code. */
+export interface Customer extends Omit<CustomerResponse, 'status' | 'tsPriceConditionStatus'> {
   status: CustomerStatus | null;
+  tsPriceConditionStatus: string | null;
 }
 
 /**

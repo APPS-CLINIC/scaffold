@@ -31,6 +31,17 @@ const carrefourPage: PageResponse<CustomerResponse> = {
   page: { size: 10, number: 0, totalElements: 1, totalPages: 1 },
 };
 
+/** What a search for `bank` returns: a type and a TS status the dictionaries have labels for. */
+const investmentBankPage: PageResponse<CustomerResponse> = {
+  content: [
+    createCustomerResponseFixture(38109, 'NORTHERN INVESTMENT BANK S.A.', {
+      type: 'INVESTMENT_BANK',
+      tsPriceConditionStatus: 3,
+    }),
+  ],
+  page: { size: 10, number: 0, totalElements: 1, totalPages: 1 },
+};
+
 const archivalPage: PageResponse<CustomerResponse> = {
   content: [
     createCustomerResponseFixture(25788, 'OZAROW CEMENT S.A.', { status: 'ARCHIVAL' }),
@@ -51,6 +62,7 @@ function getTestResponse(searchParams: URLSearchParams): PageResponse<CustomerRe
   if (searchParams.get('query') === 'nobody') return noCustomersPage;
   if (searchParams.getAll('type').join() === 'TECHNICAL_RECORD') return noCustomersPage;
   if (searchParams.get('query') === 'carrefour') return carrefourPage;
+  if (searchParams.get('query') === 'bank') return investmentBankPage;
   if (searchParams.getAll('status').join() === 'ARCHIVAL') return archivalPage;
   return customerFirstPageResponse;
 }
