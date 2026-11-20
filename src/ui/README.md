@@ -67,6 +67,8 @@ Reusable, domain-neutral cell components live with the table seam, one public
 cell per file. Features compose `TextCell`, `UnderlinedTextCell`, `DateCell`,
 `OverdueDateCell`, or `ActiveArchivalStatusCell`; a feature-specific renderer is
 only needed when those building blocks cannot express the domain value.
+`ActiveArchivalStatusCell` takes optional `labels`, for a feature that has its
+own, such as a dictionary's.
 
 `TableCell` dispatches a configured field to its cell component, or uses the safe
 primitive fallback. Flat columns, responsive details and tree columns all use

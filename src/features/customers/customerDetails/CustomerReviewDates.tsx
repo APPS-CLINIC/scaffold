@@ -3,6 +3,7 @@ import type { MessageKey } from '@/i18n/messages/pl';
 import { ALL_DUE_DATES, filterByDueDate, type DueDateSelection } from '@/ui';
 import { CustomerDataAsOf } from './CustomerDataAsOf';
 import {
+  CustomerDictionaryValue,
   CustomerFieldGroups,
   type CustomerFieldGroup,
   type CustomerFieldValue,
@@ -60,7 +61,12 @@ export function CustomerReviewDates({ customerId, dueDateWindows }: CustomerRevi
       {
         labelKey: 'customers.details.reviews.field.tsPriceConditionStatus',
         date: null,
-        value: details.tsPrice.tsPriceConditionStatus,
+        value: (
+          <CustomerDictionaryValue
+            dictionary="ts-price-condition-status"
+            code={details.tsPrice.tsPriceConditionStatus}
+          />
+        ),
       },
       dated(
         'customers.details.reviews.field.tsPriceConditionEndDate',

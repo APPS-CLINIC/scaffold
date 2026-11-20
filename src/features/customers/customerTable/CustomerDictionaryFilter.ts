@@ -1,11 +1,7 @@
 import { useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useDictionary, type StaticDictionary } from '@/features/dictionaries';
 import { MAX_FILTER_VALUES } from '@/features/urlState/urlState.schema';
 import { createMultiSelectFilter, type LoadedFilterOptions, type TableFilterOption } from '@/ui';
-import {
-  useGetStaticDictionariesQuery,
-  type StaticDictionary,
-} from '../customerFilterDictionaries.api';
 
 interface CustomerDictionaryFilterProps {
   dictionary: StaticDictionary;
@@ -17,19 +13,18 @@ function useCustomerDictionaryOptions({
   dictionary,
   noneOption,
 }: CustomerDictionaryFilterProps): LoadedFilterOptions {
-  const { i18n } = useTranslation();
-  const { data, isLoading, isError } = useGetStaticDictionariesQuery(
-    i18n.resolvedLanguage ?? i18n.language,
-  );
-  const entries = data?.[dictionary];
+  const { entries, loading, failed } = useDictionary(dictionary);
 
   return useMemo(
     () => ({
-      options: [...(noneOption === undefined ? [] : [noneOption]), ...(entries ?? [])],
-      loading: isLoading,
-      failed: isError,
+      options: [
+        ...(noneOption === undefined ? [] : [noneOption]),
+        ...entries.map(({ code, label }) => ({ value: code, label })),
+      ],
+      loading,
+      failed,
     }),
-    [entries, isError, isLoading, noneOption],
+    [entries, failed, loading, noneOption],
   );
 }
 

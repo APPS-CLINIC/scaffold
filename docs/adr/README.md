@@ -74,6 +74,7 @@ keep ADRs at all; use it as the template for new records.
 | [0056](0056-bracket-guides-for-tree-rows.md)                      | Bracket guides for tree rows                        | Accepted               |
 | [0057](0057-bracket-guides-span-whole-rows.md)                    | Bracket guides span whole rows                      | Accepted               |
 | [0058](0058-facilities-preview-at-facilities-in-every-build.md)   | Facilities preview at /facilities in every build    | Accepted               |
+| [0059](0059-static-dictionaries-shared-by-the-whole-app.md)       | Static dictionaries shared by the whole app         | Accepted               |
 
 ### Step 03 — Scope alignment (discovery)
 

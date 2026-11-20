@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ContextualSidebar } from '@/components/ContextualSidebar';
 import { TopBarCustom } from '@/components/TopBarCustom';
+import { usePreloadDictionaries } from '@/features/dictionaries';
 import { UrlStateSync } from '@/features/urlState/UrlStateSync';
 import { ToastProvider } from '@/ui';
 
@@ -16,6 +17,7 @@ import { ToastProvider } from '@/ui';
  */
 export function RootLayout() {
   const { t } = useTranslation();
+  usePreloadDictionaries();
   return (
     <div className="grid h-dvh w-full min-w-0 max-w-full grid-rows-[auto_minmax(0,1fr)_auto] overflow-hidden">
       <UrlStateSync />

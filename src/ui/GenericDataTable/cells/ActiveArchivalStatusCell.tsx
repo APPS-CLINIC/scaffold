@@ -11,7 +11,14 @@ type ActiveArchivalStatus = 'ACTIVE' | 'ARCHIVAL';
 export function ActiveArchivalStatusCell<
   T extends object,
   K extends GenericDataTableFieldWithValue<T, ActiveArchivalStatus>,
->({ value, notAvailable }: GenericDataTableCellProps<T, K>) {
+>({
+  value,
+  notAvailable,
+  labels,
+}: GenericDataTableCellProps<T, K> & {
+  /** Labels to show instead of the built-in translations, such as a dictionary's. */
+  labels?: Partial<Record<ActiveArchivalStatus, string | undefined>>;
+}) {
   const { t } = useTranslation();
 
   switch (value) {
@@ -19,7 +26,7 @@ export function ActiveArchivalStatusCell<
       return (
         <Status
           type="active"
-          label={t('common.status.active')}
+          label={labels?.ACTIVE ?? t('common.status.active')}
           className="[&_*]:!text-sm [&_*]:!leading-5"
         />
       );
@@ -27,7 +34,7 @@ export function ActiveArchivalStatusCell<
       return (
         <Status
           type="disabled"
-          label={t('common.status.archival')}
+          label={labels?.ARCHIVAL ?? t('common.status.archival')}
           className="[&_*]:!text-sm [&_*]:!leading-5"
         />
       );

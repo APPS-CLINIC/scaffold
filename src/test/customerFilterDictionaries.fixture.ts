@@ -1,3 +1,6 @@
+import type { AppStore } from '@/app/store';
+import { dictionariesApi } from '@/features/dictionaries';
+
 /** Made-up answers of the dictionary endpoints, shaped like the service's. */
 
 interface Entry {
@@ -45,6 +48,19 @@ export const staticDictionariesByLanguage: Record<
     ],
   },
 };
+
+/** Puts the dictionaries of `language` in the cache, as if the service had already answered. */
+export function seedStaticDictionaries(store: AppStore, language = 'en'): void {
+  store.dispatch(
+    dictionariesApi.util.upsertQueryEntries([
+      {
+        endpointName: 'getStaticDictionaries',
+        arg: language,
+        value: staticDictionariesByLanguage[language] ?? {},
+      },
+    ]),
+  );
+}
 
 /** `GET /api/v1/internalGroups` and `/corporateGroups`, before the `name` search and paging. */
 export const groupsByList: Record<string, Entry[]> = {

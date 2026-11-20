@@ -130,7 +130,8 @@ public cell component in its own file:
 - `DateCell` for locale-aware date formatting;
 - `OverdueDateCell` for a date that shows the IWA "incomplete" overdue status
   once it is past;
-- `ActiveArchivalStatusCell` for ACTIVE/ARCHIVAL status presentation.
+- `ActiveArchivalStatusCell` for ACTIVE/ARCHIVAL status presentation; optional `labels`
+  replace its built-in translations.
 
 These cells are domain-neutral building blocks exported through `@/ui`. The
 customer feature only composes them in its configuration. A future feature

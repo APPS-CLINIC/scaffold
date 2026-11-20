@@ -1,22 +1,11 @@
 import type { FetchArgs } from '@reduxjs/toolkit/query/react';
-import { apiRootBaseQuery, baseApi } from '@/api/baseApi';
+import { baseApi } from '@/api/baseApi';
 import type { RootState } from '@/app/store';
 import type { TableFilterOption } from '@/ui';
 import type { PageResponse } from './customers.types';
 
-/** The language every dictionary has labels in. */
-const DEFAULT_LANGUAGE = 'pl';
-
-/** Dictionaries change with releases, not with what the user does, so they stay cached. */
-const DICTIONARY_CACHE_SECONDS = 60 * 60;
-
-/** The dictionaries `GET /api/dictionaries` serves, by the service's names. */
-export const STATIC_DICTIONARIES = [
-  'customer-status',
-  'customer-type',
-  'ts-price-condition-status',
-] as const;
-export type StaticDictionary = (typeof STATIC_DICTIONARIES)[number];
+/** The lists change with releases, not with what the user does, so they stay cached. */
+const LIST_CACHE_SECONDS = 60 * 60;
 
 /** How many entries of a list one request asks for; the open list loads more as it scrolls. */
 const FILTER_LIST_PAGE_SIZE = 20;
@@ -52,27 +41,9 @@ export interface FilterListPage {
   totalPages: number;
 }
 
-interface StaticDictionaryEntry {
-  code: string;
-  label: string;
-}
-
 interface FilterListEntry {
   id: number;
   name: string;
-}
-
-export type StaticDictionaryOptions = Partial<Record<string, readonly TableFilterOption[]>>;
-
-function toStaticDictionaryOptions(
-  response: Partial<Record<string, readonly StaticDictionaryEntry[]>>,
-): StaticDictionaryOptions {
-  return Object.fromEntries(
-    Object.entries(response).map(([dictionary, entries = []]) => [
-      dictionary,
-      entries.map(({ code, label }) => ({ value: code, label })),
-    ]),
-  );
 }
 
 /** The filters send the id as text, like every value they keep in the URL. */
@@ -85,28 +56,6 @@ function toFilterListPage({ content, page }: PageResponse<FilterListEntry>): Fil
 
 export const customerFilterDictionariesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    /** Every static dictionary, labelled in `language`, or in Polish when the service has none in it. */
-    getStaticDictionaries: builder.query<StaticDictionaryOptions, string>({
-      async queryFn(language, api, extraOptions) {
-        const fetchIn = (acceptLanguage: string) =>
-          apiRootBaseQuery(
-            { url: 'dictionaries', headers: { 'Accept-Language': acceptLanguage } },
-            api,
-            extraOptions,
-          );
-        let result = await fetchIn(language);
-        if (result.error?.status === 400 && language !== DEFAULT_LANGUAGE) {
-          result = await fetchIn(DEFAULT_LANGUAGE);
-        }
-        if (result.error) return { error: result.error };
-        return {
-          data: toStaticDictionaryOptions(
-            result.data as Partial<Record<string, readonly StaticDictionaryEntry[]>>,
-          ),
-        };
-      },
-      keepUnusedDataFor: DICTIONARY_CACHE_SECONDS,
-    }),
     /** A list, or the entries whose names contain `name`, a page at a time from the first. */
     getFilterListPages: builder.infiniteQuery<FilterListPage, FilterListSearch, number>({
       infiniteQueryOptions: {
@@ -127,13 +76,12 @@ export const customerFilterDictionariesApi = baseApi.injectEndpoints({
         };
       },
       transformResponse: toFilterListPage,
-      keepUnusedDataFor: DICTIONARY_CACHE_SECONDS,
+      keepUnusedDataFor: LIST_CACHE_SECONDS,
     }),
   }),
 });
 
-export const { useGetStaticDictionariesQuery, useGetFilterListPagesInfiniteQuery } =
-  customerFilterDictionariesApi;
+export const { useGetFilterListPagesInfiniteQuery } = customerFilterDictionariesApi;
 
 /**
  * The label the service gave `value` in any page of `list` still cached, searched or not, so a
