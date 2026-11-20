@@ -41,7 +41,7 @@ export const en: Record<MessageKey, string> = {
   'customers.filters.noTsPriceConditionStatus': 'No status',
   'customers.actions.expandAll': 'Expand all',
   'customers.actions.refresh': 'Refresh',
-  'customers.actions.export': 'Download to Excel',
+  'customers.actions.export': 'Download (.xlsx)',
   'customers.export.title': 'You are downloading the customer list',
   'customers.export.choice': 'I want to download',
   'customers.export.fullList': 'Full customer list matching the current filters',

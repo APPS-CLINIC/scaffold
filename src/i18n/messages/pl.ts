@@ -43,7 +43,7 @@ export const pl = {
   'customers.filters.noTsPriceConditionStatus': 'Bez statusu',
   'customers.actions.expandAll': 'Rozwiń wszystkie',
   'customers.actions.refresh': 'Odśwież',
-  'customers.actions.export': 'Pobierz do excela',
+  'customers.actions.export': 'Pobierz (.xlsx)',
   'customers.export.title': 'Pobierasz listę klientów',
   'customers.export.choice': 'Chcę pobrać',
   'customers.export.fullList': 'Pełną listę klientów według filtrów',

@@ -41,7 +41,7 @@ describe('GenericTableSettings', () => {
     const user = userEvent.setup();
     const { handleExport } = renderSettings();
 
-    await user.click(screen.getByText('Download to Excel'));
+    await user.click(screen.getByText('Download (.xlsx)'));
 
     expect(handleExport).toHaveBeenCalledTimes(1);
   });
@@ -50,7 +50,7 @@ describe('GenericTableSettings', () => {
     const user = userEvent.setup();
     const { handleExport } = renderSettings();
 
-    const exportAction = screen.getByRole('button', { name: 'Download to Excel' });
+    const exportAction = screen.getByRole('button', { name: 'Download (.xlsx)' });
     exportAction.focus();
     await user.keyboard('{Enter}');
 
@@ -91,7 +91,7 @@ describe('GenericTableSettings', () => {
     renderSettings({ onOpenSettings });
 
     const settings = screen.getByRole('button', { name: 'List settings' });
-    const exportAction = screen.getByText('Download to Excel');
+    const exportAction = screen.getByText('Download (.xlsx)');
     expect(
       settings.compareDocumentPosition(exportAction) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
@@ -105,7 +105,7 @@ describe('GenericTableSettings', () => {
     renderSettings({ onOpenSettings: vi.fn() });
 
     const settings = screen.getByRole('button', { name: 'List settings' });
-    const exportAction = screen.getByRole('button', { name: 'Download to Excel' });
+    const exportAction = screen.getByRole('button', { name: 'Download (.xlsx)' });
     const actionClasses = ['group', 'text-sm', '!text-[#506579]'];
     expect(settings).toHaveClass(...actionClasses);
     expect(exportAction).toHaveClass(...actionClasses);
@@ -115,7 +115,7 @@ describe('GenericTableSettings', () => {
   it('underlines only the action labels, which follow the icon directly', () => {
     renderSettings({ onOpenSettings: vi.fn() });
 
-    const labels = [screen.getByText('List settings'), screen.getByText('Download to Excel')];
+    const labels = [screen.getByText('List settings'), screen.getByText('Download (.xlsx)')];
     for (const label of labels) {
       expect(label).toHaveClass('underline', 'group-hover:no-underline');
       expect(label.parentElement).not.toHaveClass('underline');
