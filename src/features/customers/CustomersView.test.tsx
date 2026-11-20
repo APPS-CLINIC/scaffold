@@ -64,6 +64,7 @@ describe('CustomersView', () => {
       await screen.findByLabelText('Dostosuj filtry', { selector: 'button' }),
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Ustawienia listy' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Pobierz (.xlsx)' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Szukaj na liście')).toBeInTheDocument();
     expect(await screen.findAllByText('Przekroczona')).toHaveLength(2);
   });
