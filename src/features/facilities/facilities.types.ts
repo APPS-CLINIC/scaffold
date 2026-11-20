@@ -1,0 +1,127 @@
+export const FACILITY_GROUPS = [
+  'LENDING',
+  'TFS',
+  'INTRADAY',
+  'INVESTMENT',
+  'CARD',
+  'OTHER',
+] as const;
+export type FacilityGroup = (typeof FACILITY_GROUPS)[number];
+export type FacilityCurrency = 'PLN' | 'EUR';
+export type FacilityDisplayCurrency = 'original' | FacilityCurrency;
+export const FACILITY_LEVELS = [1, 2, 3, 4, 5, 6] as const;
+export type FacilityLevel = (typeof FACILITY_LEVELS)[number];
+/** Load state of a branch's children. The root page list uses the same names. */
+export const FACILITY_LOAD_STATE = {
+  unloaded: 'unloaded',
+  loading: 'loading',
+  loaded: 'loaded',
+  error: 'error',
+} as const;
+export type FacilityLoadState = (typeof FACILITY_LOAD_STATE)[keyof typeof FACILITY_LOAD_STATE];
+export type FacilityIndicator =
+  | 'creditAccounts'
+  | 'currencies'
+  | 'borrowers'
+  | 'collaterals'
+  | 'structure'
+  | 'ownership'
+  | 'ratings';
+
+/** Integer minor units avoid rounding while combining the supplied group summaries. */
+export interface FacilityAmounts {
+  currency: FacilityCurrency;
+  grantedMinor: number;
+  utilizedMinor: number;
+  availableMinor: number;
+  utilization: number | null;
+}
+
+/** A proposed FE presentation model, not a backend DTO or an agreed service contract. */
+export interface FacilityRow {
+  id: string;
+  number: string;
+  status: 'ACTIVE' | 'ARCHIVAL';
+  group: FacilityGroup;
+  type: string;
+  description: string;
+  commitment: 'C' | 'U';
+  contractCurrency: FacilityCurrency;
+  expiryDate: string | null;
+  looDate: string | null;
+  amounts: Readonly<Record<FacilityDisplayCurrency, FacilityAmounts>>;
+  /** Empty entries mean an unavailable action; its information remains readable. */
+  indicators: Readonly<Record<FacilityIndicator, readonly string[]>>;
+}
+
+/** Proposed transport node: one occurrence, with no embedded descendants or UI state. */
+export interface FacilityNodeDto {
+  key: string;
+  parentKey: string | null;
+  businessLevel: FacilityLevel;
+  hasChildren: boolean;
+  /** Number of direct children in the current query, not all descendants. */
+  childrenCount: number;
+  data: FacilityRow;
+}
+
+export interface FacilityNode extends FacilityNodeDto {
+  children: readonly FacilityNode[];
+  childrenState: FacilityLoadState;
+  nextCursor: string | null;
+}
+
+/** A bounded page of siblings. Each parent has its own cursor. */
+export interface FacilityChildrenResponse {
+  parentKey: string | null;
+  nodes: readonly FacilityNodeDto[];
+  total: number;
+  nextCursor: string | null;
+}
+
+export interface FacilityQueryMetadata {
+  matchingCount: number;
+  contextKeys: readonly string[];
+  autoExpandedKeys: readonly string[];
+  groupCounts: Readonly<Record<FacilityGroup, number>>;
+  facilityTypes: readonly string[];
+}
+
+export interface FacilityRootsResponse extends FacilityChildrenResponse {
+  parentKey: null;
+  asOf: string;
+  summaries: readonly FacilityGroupSummary[];
+  view: FacilityQueryMetadata;
+}
+
+export interface FacilityGroupSummary {
+  group: FacilityGroup;
+  /** Precomputed values from the data provider; descendants must not be summed again. */
+  amounts: Readonly<Record<FacilityCurrency, FacilityAmounts>>;
+}
+
+export interface FacilitySnapshot {
+  asOf: string;
+  nodes: readonly FacilityNode[];
+  summaries: readonly FacilityGroupSummary[];
+  /** Server-wide metadata prevents filtering/counting only the loaded portion. */
+  view?: FacilityQueryMetadata;
+}
+
+export const facilityNodeKey = (node: FacilityNode) => node.key;
+export const facilityNodeChildren = (node: FacilityNode) => node.children;
+export const facilityNodeHasChildren = (node: FacilityNode) => node.hasChildren;
+
+export const TOP_FACILITY_LEVEL = FACILITY_LEVELS[0];
+// A literal tuple index: shortening FACILITY_LEVELS becomes a compile error here.
+export const DEEPEST_FACILITY_LEVEL = FACILITY_LEVELS[5];
+
+/** Every loaded node, parents before their children. */
+export function allFacilityNodes(nodes: readonly FacilityNode[]): FacilityNode[] {
+  return nodes.flatMap((node) => [node, ...allFacilityNodes(node.children)]);
+}
+
+/** True once every page of the node's direct children has been received. */
+export function facilityChildrenComplete(node: FacilityNode): boolean {
+  return node.childrenState === FACILITY_LOAD_STATE.loaded && node.nextCursor === null;
+}

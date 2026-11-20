@@ -1,0 +1,58 @@
+{
+  "parentKey": "lending-3",
+  "nodes": [
+    {
+      "key": "lending-sibling",
+      "parentKey": "lending-3",
+      "businessLevel": 4,
+      "data": {
+        "id": "1007",
+        "number": "F-1007",
+        "status": "ACTIVE",
+        "group": "LENDING",
+        "type": "OVERDRAFT",
+        "description": "Example credit facility",
+        "commitment": "C",
+        "contractCurrency": "PLN",
+        "expiryDate": "2027-09-29",
+        "looDate": "2026-09-29",
+        "amounts": {
+          "original": {
+            "currency": "PLN",
+            "grantedMinor": 40000000,
+            "utilizedMinor": 8000000,
+            "availableMinor": 32000000,
+            "utilization": 0.2
+          },
+          "PLN": {
+            "currency": "PLN",
+            "grantedMinor": 40000000,
+            "utilizedMinor": 8000000,
+            "availableMinor": 32000000,
+            "utilization": 0.2
+          },
+          "EUR": {
+            "currency": "EUR",
+            "grantedMinor": 10000000,
+            "utilizedMinor": 2000000,
+            "availableMinor": 8000000,
+            "utilization": 0.2
+          }
+        },
+        "indicators": {
+          "creditAccounts": ["Example account 001", "Example account 002"],
+          "currencies": ["PLN", "EUR"],
+          "borrowers": ["Example company"],
+          "collaterals": ["Example collateral"],
+          "structure": ["Example facility structure"],
+          "ownership": [],
+          "ratings": ["Example rating"]
+        }
+      },
+      "hasChildren": false,
+      "childrenCount": 0
+    }
+  ],
+  "total": 2,
+  "nextCursor": null
+}

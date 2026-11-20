@@ -14,6 +14,8 @@ node_modules
 dist
 dist-ssr
 coverage
+storybook-static
+debug-storybook.log
 
 # Editor / OS
 .vscode/*

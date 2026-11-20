@@ -1,4 +1,5 @@
 import { twMerge } from '@/ui';
+import { ChevronDownIcon } from 'primereact/icons/chevrondown';
 import type { GenericDataTableLabels } from '../GenericDataTable.types';
 
 interface RowExpansionButtonProps<T extends object> {
@@ -26,10 +27,10 @@ export function RowExpansionButton<T extends object>({
       aria-label={expanded ? labels.collapseRow(row) : labels.expandRow(row)}
       onClick={onToggle}
     >
-      <span
+      <ChevronDownIcon
         aria-hidden="true"
         className={twMerge(
-          'pi pi-chevron-down text-xs transition-transform motion-reduce:transition-none',
+          'h-3 w-3 transition-transform motion-reduce:transition-none',
           expanded && 'rotate-180',
         )}
       />

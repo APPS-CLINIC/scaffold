@@ -334,7 +334,7 @@ additional pages without adding feature-specific conditions to the router.
   — isolated PrimeReact event and pass-through mapping.
 - [`src/ui/GenericDataTable/cells`](../src/ui/GenericDataTable/cells)
   — reusable cell components.
-- [`src/features/customers/customerTable/config.ts`](../src/features/customers/customerTable/config.ts)
+- [`src/features/customers/customerTable/config.ts`](../src/features/customers/customerTable/config.tsx)
   — customer-specific composition of the generic contract.
 - [`src/features/customers/customers.api.ts`](../src/features/customers/customers.api.ts)
   — backend parameter adapter and injected RTK Query endpoint.

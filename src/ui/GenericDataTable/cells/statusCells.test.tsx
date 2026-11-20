@@ -1,4 +1,6 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
 import { DATE_DMY_FORMAT_OPTIONS } from '@/i18n/dateFormats';
@@ -6,6 +8,7 @@ import type { GenericDataTableCellProps } from '../GenericDataTable.types';
 import { ActiveArchivalStatusCell } from './ActiveArchivalStatusCell';
 import { OverdueDateCell } from './OverdueDateCell';
 import { UnderlinedTextCell } from './UnderlinedTextCell';
+import { renderWithProviders } from '@/test/renderWithProviders';
 
 interface TestRow {
   id: number;
@@ -15,6 +18,11 @@ interface TestRow {
 }
 
 const row: TestRow = { id: 23997, name: 'Example', status: 'ACTIVE', date: null };
+
+function Destination() {
+  const location = useLocation();
+  return <output aria-label="Destination">{location.pathname + location.search}</output>;
+}
 
 function cellProps<K extends keyof TestRow>(
   field: K,
@@ -49,6 +57,26 @@ describe('ActiveArchivalStatusCell', () => {
 });
 
 describe('UnderlinedTextCell', () => {
+  it('follows an internal route by keyboard without reloading the page', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(
+      <>
+        <UnderlinedTextCell
+          {...cellProps('name', 'Facility')}
+          to={(current) => `/facilities/${current.id}?group=TFS`}
+        />
+        <Destination />
+      </>,
+    );
+    const link = screen.getByRole('link', { name: 'Facility' });
+    expect(link).toHaveAttribute('href', '/facilities/23997?group=TFS');
+    expect(link).toHaveClass('focus-visible:outline');
+    await user.tab();
+    await user.keyboard('{Enter}');
+    expect(screen.getByRole('status', { name: 'Destination' })).toHaveTextContent(
+      '/facilities/23997?group=TFS',
+    );
+  });
   it('derives the link URL from the row and falls back when the value is empty', () => {
     const { rerender } = render(
       <UnderlinedTextCell

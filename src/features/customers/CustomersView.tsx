@@ -20,6 +20,7 @@ import {
   replaceTableFilters,
   TableColumnSettingsDialog,
   TableFilters,
+  TableToolbar,
   Refresh,
   type GenericDataTableField,
   type GenericDataTableLabels,
@@ -299,15 +300,17 @@ export function CustomersView() {
               />
             </div>
 
-            <div className="mb-4 flex flex-col items-start gap-8 rounded bg-[var(--surface-muted)] p-3">
-              <TableFilters
-                fields={tableSettings.config.fields}
-                values={customerQuery.filters}
-                onChange={handleFiltersChange}
-                dialogValues={filterDialog}
-                onDialogValuesChange={setFilterDialog}
-              />
-              <div className="flex w-full flex-wrap items-center justify-between gap-x-4 gap-y-2">
+            <TableToolbar
+              filters={
+                <TableFilters
+                  fields={tableSettings.config.fields}
+                  values={customerQuery.filters}
+                  onChange={handleFiltersChange}
+                  dialogValues={filterDialog}
+                  onDialogValuesChange={setFilterDialog}
+                />
+              }
+              search={
                 <GenericSearch
                   key={searchField.key}
                   value={listQuery.q}
@@ -316,6 +319,8 @@ export function CustomersView() {
                   placeholder={t('customers.search.placeholder')}
                   onSearch={(q) => setQuery({ q }, { replace: true })}
                 />
+              }
+              actions={
                 <GenericTableSettings
                   dataContent={tableHidden ? undefined : data?.content}
                   onExpandedRowKeysChange={setExpandedRowKeys}
@@ -323,8 +328,8 @@ export function CustomersView() {
                   handleExport={openExport}
                   onOpenSettings={() => setSettingsOpen(true)}
                 />
-              </div>
-            </div>
+              }
+            />
           </>
         ) : (
           <ListToolbarSkeleton />

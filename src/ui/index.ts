@@ -16,6 +16,7 @@ export {
   MultiSelect,
   NavigationMenuItem,
   PaginatorTable,
+  Popover,
   RadioGroup,
   RichNotification,
   SearchWithAutocomplete,
@@ -70,6 +71,8 @@ export { NavigationPanel, type NavigationPanelProps } from './NavigationPanel';
 export {
   GenericDataTable,
   GenericTableSettings,
+  TableCell,
+  TableCellSkeleton,
   TableColumnSettingsDialog,
   ActiveArchivalStatusCell,
   DateCell,
@@ -93,6 +96,8 @@ export {
   type GenericDataTableSortChange,
   type GenericDataTableSortOrder,
   type GenericTableSettingsProps,
+  type TableCellProps,
+  type TableCellSkeletonProps,
   type TableColumnOption,
   type TableColumnSettingsDialogProps,
 } from './GenericDataTable';
@@ -133,6 +138,7 @@ export {
   DateRangeFilter,
   isFilterableField,
   MultiSelectFilter,
+  SelectFilter,
   pickTableFilters,
   replaceTableFilters,
   tableFilter,
@@ -142,6 +148,7 @@ export {
   type FilterOptionSearch,
   type LoadedFilterOptions,
   type MultiSelectFilterProps,
+  type SelectFilterProps,
   type TableFilterField,
   type TableFilterOption,
   type TableFilterProps,
@@ -151,6 +158,15 @@ export {
 export { useLoadingPhase, type LoadingPhase } from './useLoadingPhase';
 export { ListToolbarSkeleton } from './ListToolbarSkeleton';
 export { cx } from './cx';
+export {
+  TreeDataTable,
+  getExpandableTreeKeys,
+  type TreeDataTableLabels,
+  type TreeDataTableProps,
+} from './TreeDataTable';
+export { InfoPopover, type InfoPopoverProps } from './InfoPopover';
+export { TableToolbar, type TableToolbarProps } from './TableToolbar';
+export { TableActions, type TableActionsProps } from './TableActions';
 export { ToastProvider } from './toast/ToastProvider';
 export { useToast } from './toast/useToast';
 export { ToastErrorIcon } from './toast/ToastErrorIcon';

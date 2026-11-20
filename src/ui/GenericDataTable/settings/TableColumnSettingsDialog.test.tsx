@@ -2,6 +2,7 @@ import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import i18n from '@/i18n';
+import { chooseDropdownOption } from '@/test/chooseDropdownOption';
 import type { TableColumnOption, TableColumnSettingsDialogProps } from '../GenericDataTable.types';
 import { TableColumnSettingsDialog } from './TableColumnSettingsDialog';
 
@@ -21,6 +22,7 @@ const fields: readonly TableColumnOption<Row>[] = [
   { field: 'grid', labelKey: 'customers.table.field.grid' },
   { field: 'note', labelKey: 'customers.table.field.kkf' },
 ];
+const appendToHead = document.head.appendChild.bind(document.head);
 
 function renderDialog(props: Partial<TableColumnSettingsDialogProps<Row>> = {}) {
   const handlers = {
@@ -41,15 +43,14 @@ const settingsDialog = () => screen.getByRole('dialog', { name: 'List settings' 
 const counter = () => within(settingsDialog()).getByText(/^Used columns:/);
 const columnRows = () => within(settingsDialog()).getAllByRole('listitem');
 const rowNames = () => columnRows().map((row) => row.textContent);
-const selects = () => within(settingsDialog()).queryAllByRole('combobox');
-const optionLabels = (select: HTMLElement) =>
-  within(select)
-    .getAllByRole('option')
-    .map((option) => option.textContent)
-    .filter(Boolean);
+const selects = () => within(settingsDialog()).queryAllByRole('textbox');
 
 beforeEach(async () => {
   await i18n.changeLanguage('en');
+  vi.spyOn(document.head, 'appendChild').mockImplementation(<T extends Node>(node: T): T => {
+    if (node instanceof HTMLStyleElement) return node;
+    return appendToHead(node) as T;
+  });
 });
 
 describe('TableColumnSettingsDialog', () => {
@@ -87,7 +88,14 @@ describe('TableColumnSettingsDialog', () => {
     await user.click(screen.getByRole('button', { name: 'Add column' }));
 
     const [added] = selects();
-    expect(added && optionLabels(added)).toEqual(['Status', 'KKF']);
+    if (!added) throw new Error('Expected the added column dropdown');
+    added.focus();
+    await user.keyboard('{ArrowDown}');
+    expect(
+      within(await screen.findByRole('listbox', { hidden: true }))
+        .getAllByRole('option', { hidden: true })
+        .map((option) => option.textContent),
+    ).toEqual(['Status', 'KKF']);
   });
 
   it('appends an empty row on Add column and disables it once every field is used', async () => {
@@ -96,7 +104,8 @@ describe('TableColumnSettingsDialog', () => {
 
     await user.click(screen.getByRole('button', { name: 'Add column' }));
     expect(columnRows()).toHaveLength(3);
-    expect(selects().map((select) => (select as HTMLSelectElement).value)).toEqual(['']);
+    expect(selects()).toHaveLength(1);
+    expect(selects()[0]).toHaveValue('');
     expect(counter()).toHaveTextContent('Used columns: 2 of 4');
 
     await user.click(screen.getByRole('button', { name: 'Add column' }));
@@ -151,11 +160,11 @@ describe('TableColumnSettingsDialog', () => {
 
     const [empty] = selects();
     expect(empty).toBeDefined();
-    if (empty) await user.selectOptions(empty, 'note');
+    if (empty) await chooseDropdownOption(user, empty, 'KKF');
 
     expect(screen.queryByText('Fill in or remove the column')).not.toBeInTheDocument();
     // An added row keeps its Select until Save, so the choice can still be corrected.
-    expect(empty).toHaveValue('note');
+    expect(empty).toHaveValue('KKF');
   });
 
   it('starts a column added again after the marked one was removed without the message', async () => {
@@ -210,7 +219,7 @@ describe('TableColumnSettingsDialog', () => {
     const { onSave } = renderDialog();
     await user.click(screen.getByRole('button', { name: 'Add column' }));
     const [empty] = selects();
-    if (empty) await user.selectOptions(empty, 'status');
+    if (empty) await chooseDropdownOption(user, empty, 'Status');
 
     await user.click(screen.getByRole('button', { name: 'Save' }));
 

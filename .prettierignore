@@ -1,5 +1,7 @@
 dist
 coverage
+storybook-static
+debug-storybook.log
 package-lock.json
 node_modules
 

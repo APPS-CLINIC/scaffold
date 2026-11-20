@@ -14,6 +14,17 @@ export const router = createBrowserRouter([
     element: <RootLayout />,
     children: [
       { index: true, element: <HomePage /> },
+      // Until the Facilities backend exists, every build serves the simulated preview here.
+      // Mirrors FACILITIES_PREVIEW_PATH, which is not imported so src/dev stays in its own
+      // lazy chunk.
+      {
+        path: 'facilities/:facilityId?',
+        caseSensitive: true,
+        lazy: async () => {
+          const { FacilitiesPreviewPage } = await import('@/dev/facilities/FacilitiesPreviewPage');
+          return { Component: FacilitiesPreviewPage };
+        },
+      },
       // Navigation metadata is configured once. Each section is one nested
       // route tree: the bare section path is its index route (redirecting to
       // the default destination when the section has items), navigation items

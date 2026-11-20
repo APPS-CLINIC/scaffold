@@ -22,12 +22,19 @@ const testEnhancerOptions =
  * tests isolated — every test can spin up a fresh store, optionally with
  * preloaded state — and leaves the door open for SSR.
  */
-export const makeStore = (preloadedState?: Partial<RootState>) => {
+export interface StoreOptions {
+  /** Host-supplied dependencies, also available as RTK Query's `extra`. */
+  extraArgument?: unknown;
+  /** Isolated previews do not register application-wide focus/reconnect listeners. */
+  listenToBrowserEvents?: boolean;
+}
+
+export const makeStore = (preloadedState?: Partial<RootState>, options: StoreOptions = {}) => {
   const store = configureStore({
     reducer: rootReducer,
     preloadedState,
     middleware: (getDefaultMiddleware) =>
-      getDefaultMiddleware()
+      getDefaultMiddleware({ thunk: { extraArgument: options.extraArgument } })
         // listener middleware must run before the API middleware.
         .prepend(listenerMiddleware.middleware)
         .concat(baseApi.middleware)
@@ -36,7 +43,7 @@ export const makeStore = (preloadedState?: Partial<RootState>) => {
   });
 
   // Enables refetchOnFocus / refetchOnReconnect behaviors.
-  setupListeners(store.dispatch);
+  if (options.listenToBrowserEvents !== false) setupListeners(store.dispatch);
 
   return store;
 };

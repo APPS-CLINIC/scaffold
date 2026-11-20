@@ -6,7 +6,7 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import prettier from 'eslint-config-prettier';
 
 export default tseslint.config(
-  { ignores: ['dist', 'coverage', 'node_modules'] },
+  { ignores: ['dist', 'coverage', 'storybook-static', 'node_modules'] },
   {
     files: ['**/*.{ts,tsx}'],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
@@ -39,9 +39,19 @@ export default tseslint.config(
     files: ['src/test/**/*.{ts,tsx}'],
     rules: { 'react-refresh/only-export-components': 'off' },
   },
+  // CSF files and fixtures intentionally export stories, render owners and metadata together.
+  {
+    files: ['src/stories/**/*.{ts,tsx}', '.storybook/**/*.{ts,tsx}'],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
   // Node-land config files.
   {
-    files: ['*.config.{js,ts}', 'vitest.setup.ts'],
+    files: [
+      '*.config.{js,ts}',
+      'vitest.setup.ts',
+      '.storybook/main.ts',
+      '.storybook/vite.config.ts',
+    ],
     languageOptions: { globals: globals.node },
   },
   prettier,
